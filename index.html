@@ -726,9 +726,9 @@ document.querySelectorAll('.faq2-trigger').forEach(function(btn){
 <!-- ═══ SERVICE MODAL ═══ -->
 <div id="svc-modal" style="position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;display:none;">
   <div id="svc-modal-bg" style="position:absolute;inset:0;background:rgba(0,4,8,0.88);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);"></div>
-  <div id="svc-modal-box" style="position:relative;z-index:1;width:min(560px,92vw);background:rgba(4,6,20,0.96);border:1px solid rgba(201,168,76,0.25);border-radius:4px;overflow:hidden;box-shadow:0 0 80px rgba(0,0,0,0.8),0 0 40px rgba(201,168,76,0.08);">
+  <div id="svc-modal-box" style="position:relative;z-index:1;width:min(560px,92vw);max-width:100%;background:rgba(4,6,20,0.96);border:1px solid rgba(201,168,76,0.25);border-radius:4px;overflow:hidden;box-shadow:0 0 80px rgba(0,0,0,0.8),0 0 40px rgba(201,168,76,0.08);">
     <button id="svc-modal-close" style="position:absolute;top:14px;right:18px;background:none;border:none;color:rgba(201,168,76,0.6);font-size:22px;cursor:pointer;z-index:2;font-family:'Cinzel',serif;line-height:1;" aria-label="Close">×</button>
-    <canvas id="svc-anim-canvas" width="560" height="320" style="width:100%;display:block;"></canvas>
+    <canvas id="svc-anim-canvas" style="display:block;width:min(90vw,560px);height:auto;aspect-ratio:7/4;"></canvas>
     <div style="padding:24px 28px 30px;">
       <div id="svc-modal-num" style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.5em;color:var(--gold);opacity:0.6;margin-bottom:8px;"></div>
       <div id="svc-modal-title" style="font-family:'Cinzel Decorative',serif;font-size:clamp(16px,2.2vw,22px);color:#e8e4f0;margin-bottom:10px;"></div>
@@ -1329,7 +1329,7 @@ var modal=document.getElementById('svc-modal');
 var modalBg=document.getElementById('svc-modal-bg');
 var modalBox=document.getElementById('svc-modal-box');
 var canvas=document.getElementById('svc-anim-canvas');
-var ctx2=canvas.getContext('2d');
+var ctx2=null; /* set fresh in openModal with DPR scale */
 var modalTitle=document.getElementById('svc-modal-title');
 var modalDesc=document.getElementById('svc-modal-desc');
 var modalNum=document.getElementById('svc-modal-num');
@@ -1359,7 +1359,10 @@ function openModal(svcId){
   modal.classList.add('open');
   document.body.style.overflow='hidden';
   var W=560, H=320;
-  canvas.width=W; canvas.height=H;
+  var dpr=Math.min(window.devicePixelRatio||1,3);
+  canvas.width=W*dpr; canvas.height=H*dpr;
+  var ctx2=canvas.getContext('2d');
+  ctx2.scale(dpr,dpr);
   var start=null;
   function tick(ts){
     if(!start) start=ts;
