@@ -293,12 +293,285 @@ footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.28em;color:rgb
 <div class="rit-div"><span>✦ &nbsp; Distance Healing &nbsp; ✦</span></div>
 
 <!-- ═══ DISTANCE HEALING ═══ -->
-<section id="distance" style="background:#000;padding:0;margin:0;">
-  <img src="assets/distance-healing.jpg" alt="Distance Healing — Royal Energy Alchemy" style="width:100%;display:block;margin:0;padding:0;line-height:0;">
-  <div style="background:#000;padding:40px 24px 56px;text-align:center;">
-    <a href="#contact" style="display:inline-block;font-family:'Cinzel',serif;font-size:13px;letter-spacing:.35em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(201,168,76,0.45);padding:16px 40px;text-decoration:none;transition:background 0.3s,border-color 0.3s,box-shadow 0.3s;" onmouseover="this.style.background='rgba(201,168,76,0.08)';this.style.borderColor='rgba(201,168,76,0.8)';this.style.boxShadow='0 0 24px rgba(201,168,76,0.18)'" onmouseout="this.style.background='transparent';this.style.borderColor='rgba(201,168,76,0.45)';this.style.boxShadow='none'">Book a Distance Session</a>
+<section id="distance" style="position:relative;overflow:hidden;padding:110px 48px 90px;background:radial-gradient(ellipse at 60% 40%,rgba(8,16,50,0.98) 0%,rgba(0,4,8,1) 70%);">
+
+  <!-- Subtle star field -->
+  <div aria-hidden="true" style="position:absolute;inset:0;pointer-events:none;z-index:0;" id="dist-stars"></div>
+
+  <div style="position:relative;z-index:1;max-width:1100px;margin:0 auto;">
+
+    <!-- Header -->
+    <div class="reveal" style="text-align:center;margin-bottom:72px;">
+      <span class="sec-label">Beyond Physical Space</span>
+      <h2 class="sec-title" style="font-size:clamp(28px,4vw,56px);margin-bottom:20px;">The Distance<br>Does Not Matter</h2>
+      <p style="font-family:'EB Garamond',serif;font-size:clamp(17px,1.6vw,20px);font-style:italic;line-height:1.9;color:rgba(232,228,240,0.72);max-width:620px;margin:0 auto 0;">Energy is not bound by physical location. The subject does not need to be present, aware, or even in the same country. Daron and his Galactic Team locate and work on the energetic field directly — regardless of where you are in the world.</p>
+    </div>
+
+    <!-- Canvas wormhole visual -->
+    <div class="reveal reveal-d1" style="text-align:center;margin-bottom:72px;">
+      <canvas id="dist-canvas" style="display:inline-block;width:min(92vw,680px);height:auto;aspect-ratio:17/8;border-radius:3px;"></canvas>
+    </div>
+
+    <!-- 4 principle cards -->
+    <div class="reveal reveal-d2" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;">
+
+      <div class="dist-card">
+        <div class="dist-card-icon">
+          <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+            <circle cx="18" cy="18" r="14" stroke="rgba(201,168,76,0.5)" stroke-width="1"/>
+            <circle cx="18" cy="18" r="7" stroke="rgba(68,136,255,0.6)" stroke-width="1"/>
+            <line x1="18" y1="4" x2="18" y2="32" stroke="rgba(201,168,76,0.35)" stroke-width="0.8"/>
+            <line x1="4" y1="18" x2="32" y2="18" stroke="rgba(201,168,76,0.35)" stroke-width="0.8"/>
+          </svg>
+        </div>
+        <div class="dist-card-title">No Presence Required</div>
+        <p class="dist-card-body">The subject does not need to be in the room, on the phone, or even awake. Daron works on the energetic field directly. Physical location is irrelevant to the work.</p>
+      </div>
+
+      <div class="dist-card">
+        <div class="dist-card-icon">
+          <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+            <polygon points="18,4 32,28 4,28" stroke="rgba(201,168,76,0.5)" stroke-width="1" fill="none"/>
+            <polygon points="18,32 4,8 32,8" stroke="rgba(68,136,255,0.5)" stroke-width="1" fill="none"/>
+            <circle cx="18" cy="18" r="4" fill="rgba(201,168,76,0.3)"/>
+          </svg>
+        </div>
+        <div class="dist-card-title">Same Work, Same Results</div>
+        <p class="dist-card-body">A distance session includes the full body scan, removal, transmutation, and shield placement. Nothing is skipped. The Galactic Team shows up regardless of where the client is.</p>
+      </div>
+
+      <div class="dist-card">
+        <div class="dist-card-icon">
+          <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+            <circle cx="10" cy="18" r="7" stroke="rgba(68,136,255,0.6)" stroke-width="1"/>
+            <circle cx="26" cy="18" r="7" stroke="rgba(201,168,76,0.5)" stroke-width="1"/>
+            <line x1="17" y1="18" x2="19" y2="18" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+          </svg>
+        </div>
+        <div class="dist-card-title">You Are the Consenting Party</div>
+        <p class="dist-card-body">When someone books a distance session for another person, the booking party holds the intention. You do not need the subject's permission. Your consent and intention are enough to open the session.</p>
+      </div>
+
+      <div class="dist-card">
+        <div class="dist-card-icon">
+          <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+            <path d="M4 18 Q18 4 32 18 Q18 32 4 18Z" stroke="rgba(68,136,255,0.55)" stroke-width="1" fill="none"/>
+            <path d="M10 18 Q18 10 26 18 Q18 26 10 18Z" stroke="rgba(201,168,76,0.5)" stroke-width="1" fill="none"/>
+            <circle cx="18" cy="18" r="3" fill="rgba(201,168,76,0.4)"/>
+          </svg>
+        </div>
+        <div class="dist-card-title">Quantum Entanglement</div>
+        <p class="dist-card-body">Once an energetic connection exists between two fields, distance does not dissolve it. Daron operates at the level where that connection lives — below physical space, in the field itself.</p>
+      </div>
+
+    </div>
+
+    <!-- CTA -->
+    <div style="text-align:center;margin-top:60px;">
+      <a href="#contact" class="dist-cta" onmouseover="this.style.background='rgba(201,168,76,0.08)';this.style.borderColor='rgba(201,168,76,0.8)';this.style.boxShadow='0 0 32px rgba(201,168,76,0.2)'" onmouseout="this.style.background='transparent';this.style.borderColor='rgba(201,168,76,0.45)';this.style.boxShadow='none'">Book a Distance Session</a>
+    </div>
+
   </div>
 </section>
+
+<style>
+/* Distance section */
+.dist-card {
+  background: rgba(4,8,24,0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(201,168,76,0.14);
+  padding: 28px 22px 26px;
+  transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+}
+.dist-card:hover {
+  border-color: rgba(201,168,76,0.38);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 36px rgba(0,0,0,0.4), 0 0 20px rgba(201,168,76,0.07);
+}
+.dist-card-icon { margin-bottom: 18px; }
+.dist-card-title {
+  font-family: 'Cinzel', serif;
+  font-size: clamp(11px, 1.1vw, 13px);
+  letter-spacing: 0.05em;
+  color: var(--gold);
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+.dist-card-body {
+  font-family: 'EB Garamond', serif;
+  font-size: 15px;
+  line-height: 1.85;
+  color: rgba(232,228,240,0.6);
+  margin: 0;
+}
+.dist-cta {
+  display: inline-block;
+  font-family: 'Cinzel', serif;
+  font-size: 13px;
+  letter-spacing: .35em;
+  text-transform: uppercase;
+  color: var(--gold);
+  border: 1px solid rgba(201,168,76,0.45);
+  padding: 16px 44px;
+  text-decoration: none;
+  transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
+}
+@media(max-width:860px){
+  #distance { padding: 80px 24px 70px; }
+  [style*="grid-template-columns:repeat(4"]{grid-template-columns:repeat(2,1fr)!important;}
+}
+@media(max-width:480px){
+  [style*="grid-template-columns:repeat(4"]{grid-template-columns:1fr!important;}
+}
+</style>
+
+<script>
+/* ── Distance section: wormhole canvas + star field ── */
+(function(){
+  /* star field */
+  var starsEl = document.getElementById('dist-stars');
+  if(starsEl){
+    var sf = '';
+    for(var i=0;i<120;i++){
+      var x=Math.random()*100, y=Math.random()*100, s=Math.random()*1.4+0.3, o=Math.random()*0.5+0.1;
+      sf+='<div style="position:absolute;left:'+x+'%;top:'+y+'%;width:'+s+'px;height:'+s+'px;border-radius:50%;background:rgba(220,215,255,'+o+');animation:twinkle '+(2+Math.random()*3).toFixed(1)+'s '+(Math.random()*2).toFixed(1)+'s infinite alternate;"></div>';
+    }
+    starsEl.innerHTML = sf;
+  }
+
+  /* wormhole canvas */
+  var dc = document.getElementById('dist-canvas');
+  if(!dc) return;
+  var dpr = Math.min(window.devicePixelRatio||1,3);
+  var W=680, H=320;
+  dc.width=W*dpr; dc.height=H*dpr;
+  var dctx = dc.getContext('2d');
+  dctx.scale(dpr,dpr);
+
+  /* particles array */
+  var particles=[];
+  for(var i=0;i<60;i++){
+    particles.push({ t: Math.random(), speed: 0.0015+Math.random()*0.0025, size: Math.random()*2+0.5, gold: Math.random()>0.5 });
+  }
+
+  var frame=0;
+  function drawDist(){
+    dctx.clearRect(0,0,W,H);
+    dctx.fillStyle='rgba(0,4,12,1)';
+    dctx.fillRect(0,0,W,H);
+
+    var cx=W/2, cy=H/2;
+
+    /* deep space nebula bg */
+    var nb=dctx.createRadialGradient(cx,cy,0,cx,cy,H*0.75);
+    nb.addColorStop(0,'rgba(8,20,60,0.7)');
+    nb.addColorStop(0.5,'rgba(4,10,32,0.4)');
+    nb.addColorStop(1,'rgba(0,4,12,0)');
+    dctx.fillStyle=nb; dctx.fillRect(0,0,W,H);
+
+    /* left figure glow */
+    var lx=W*0.14, rx=W*0.86;
+    var lg=dctx.createRadialGradient(lx,cy,0,lx,cy,55);
+    lg.addColorStop(0,'rgba(68,136,255,0.22)'); lg.addColorStop(1,'rgba(0,0,0,0)');
+    dctx.fillStyle=lg; dctx.beginPath(); dctx.arc(lx,cy,55,0,Math.PI*2); dctx.fill();
+
+    /* right figure glow */
+    var rg=dctx.createRadialGradient(rx,cy,0,rx,cy,55);
+    rg.addColorStop(0,'rgba(201,168,76,0.18)'); rg.addColorStop(1,'rgba(0,0,0,0)');
+    dctx.fillStyle=rg; dctx.beginPath(); dctx.arc(rx,cy,55,0,Math.PI*2); dctx.fill();
+
+    /* left silhouette */
+    drawFig(dctx,lx,cy,'rgba(68,136,255,0.55)');
+    /* right silhouette */
+    drawFig(dctx,rx,cy,'rgba(201,168,76,0.5)');
+
+    /* wormhole portal rings */
+    var t=frame*0.008;
+    for(var r=0;r<5;r++){
+      var rr=22+r*14, rot=t*(r%2===0?1:-0.7)+r*0.4;
+      dctx.beginPath();
+      dctx.ellipse(cx,cy,rr,rr*0.42,rot,0,Math.PI*2);
+      var rc=r<3?'rgba(68,136,255,':'rgba(201,168,76,';
+      dctx.strokeStyle=rc+(0.55-r*0.08)+')';
+      dctx.lineWidth=1.2-r*0.15;
+      dctx.stroke();
+    }
+    /* portal centre glow */
+    var pg=dctx.createRadialGradient(cx,cy,0,cx,cy,35);
+    pg.addColorStop(0,'rgba(68,136,255,0.25)'); pg.addColorStop(0.5,'rgba(201,168,76,0.12)'); pg.addColorStop(1,'rgba(0,0,0,0)');
+    dctx.fillStyle=pg; dctx.beginPath(); dctx.arc(cx,cy,35,0,Math.PI*2); dctx.fill();
+
+    /* energy beam left → portal */
+    drawBeam(dctx, lx+28, cy, cx-20, cy, 'rgba(68,136,255,', t);
+    /* energy beam portal → right */
+    drawBeam(dctx, cx+20, cy, rx-28, cy, 'rgba(201,168,76,', t+0.5);
+
+    /* particles travelling along beam */
+    particles.forEach(function(p){
+      p.t += p.speed;
+      if(p.t>1) p.t=0;
+      var px, py, col;
+      if(p.t<0.5){
+        var pt=p.t*2;
+        px=lx+28+(cx-20-(lx+28))*pt;
+        py=cy+Math.sin(pt*Math.PI*2+t*3)*6;
+        col=p.gold?'rgba(201,168,76,':'rgba(120,180,255,';
+      } else {
+        var pt2=(p.t-0.5)*2;
+        px=cx+20+(rx-28-(cx+20))*pt2;
+        py=cy+Math.sin(pt2*Math.PI*2+t*3+1)*6;
+        col=p.gold?'rgba(201,168,76,':'rgba(120,180,255,';
+      }
+      var pa=Math.sin(p.t*Math.PI)*0.9;
+      dctx.beginPath(); dctx.arc(px,py,p.size,0,Math.PI*2);
+      dctx.fillStyle=col+pa+')'; dctx.fill();
+    });
+
+    /* sacred geo lines on portal */
+    for(var k=0;k<6;k++){
+      var ka=k/6*Math.PI*2+t*0.4;
+      dctx.beginPath();
+      dctx.moveTo(cx,cy);
+      dctx.lineTo(cx+Math.cos(ka)*22,cy+Math.sin(ka)*22*0.42);
+      dctx.strokeStyle='rgba(201,168,76,0.2)';
+      dctx.lineWidth=0.7; dctx.stroke();
+    }
+
+    frame++;
+    requestAnimationFrame(drawDist);
+  }
+
+  function drawFig(c,x,y,col){
+    c.save(); c.globalAlpha=1;
+    c.fillStyle=col; c.strokeStyle=col; c.lineWidth=5; c.lineCap='round';
+    /* head */ c.beginPath(); c.arc(x,y-38,11,0,Math.PI*2); c.fill();
+    /* torso */ c.beginPath(); c.moveTo(x,y-27); c.lineTo(x,y+10); c.stroke();
+    /* arms */ c.beginPath(); c.moveTo(x-18,y-10); c.lineTo(x+18,y-10); c.stroke();
+    /* legs */ c.beginPath(); c.moveTo(x,y+10); c.lineTo(x-12,y+36); c.stroke();
+    c.beginPath(); c.moveTo(x,y+10); c.lineTo(x+12,y+36); c.stroke();
+    c.restore();
+  }
+
+  function drawBeam(c,x1,y1,x2,y2,col,offset){
+    var bg=c.createLinearGradient(x1,y1,x2,y2);
+    bg.addColorStop(0,col+'0)'); bg.addColorStop(0.3,col+'0.45)'); bg.addColorStop(0.7,col+'0.45)'); bg.addColorStop(1,col+'0)');
+    c.beginPath(); c.moveTo(x1,y1); c.lineTo(x2,y2);
+    c.strokeStyle=bg; c.lineWidth=2; c.stroke();
+    /* shimmer */
+    var shimX=x1+(x2-x1)*((offset%1+1)%1);
+    var sg=c.createRadialGradient(shimX,y1,0,shimX,y1,18);
+    sg.addColorStop(0,col+'0.5)'); sg.addColorStop(1,'rgba(0,0,0,0)');
+    c.fillStyle=sg; c.beginPath(); c.arc(shimX,y1,18,0,Math.PI*2); c.fill();
+  }
+
+  drawDist();
+})();
+</script>
+
+<style>
+@keyframes twinkle { from{opacity:0.1} to{opacity:0.7} }
+</style>
 
 <div class="rit-div"><span>✦ &nbsp; Questions &nbsp; ✦</span></div>
 
