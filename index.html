@@ -215,60 +215,75 @@ footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.28em;color:rgb
 <section id="about" style="position:relative;overflow:hidden;padding:110px 48px 80px;background-image:url('assets/about-bg.jpg');background-size:cover;background-position:center top;">
 
   <!-- Base dark overlay -->
-  <div style="position:absolute;inset:0;background:rgba(0,4,8,0.52);z-index:0;"></div>
+  <div style="position:absolute;inset:0;background:rgba(0,4,8,0.48);z-index:0;"></div>
 
-  <!-- Edge darkening — pushes team members back -->
-  <div style="position:absolute;inset:0;background:radial-gradient(ellipse 55% 70% at 50% 40%, transparent 0%, rgba(0,4,8,0.45) 60%, rgba(0,4,8,0.75) 100%);z-index:1;pointer-events:none;"></div>
+  <!-- Heavy edge vignette — team members pushed back, Daron center stays bright -->
+  <div style="position:absolute;inset:0;background:radial-gradient(ellipse 42% 60% at 50% 38%, transparent 0%, rgba(0,4,8,0.38) 50%, rgba(0,4,8,0.82) 100%);z-index:1;pointer-events:none;"></div>
 
-  <!-- Gold radial glow centered on Daron -->
-  <div style="position:absolute;inset:0;background:radial-gradient(ellipse 30% 40% at 50% 32%, rgba(201,168,76,0.18) 0%, rgba(201,168,76,0.06) 45%, transparent 70%);z-index:2;pointer-events:none;"></div>
+  <!-- Atmospheric haze left — blurs dragon/left figure -->
+  <div style="position:absolute;inset:0;background:linear-gradient(to right, rgba(0,4,8,0.45) 0%, transparent 35%);z-index:1;pointer-events:none;"></div>
 
-  <!-- Gold halo crown arc above Daron -->
-  <div style="position:absolute;inset:0;background:radial-gradient(ellipse 22% 18% at 50% 18%, rgba(201,168,76,0.22) 0%, rgba(201,168,76,0.08) 50%, transparent 75%);z-index:2;pointer-events:none;"></div>
+  <!-- Atmospheric haze right — blurs blue figure -->
+  <div style="position:absolute;inset:0;background:linear-gradient(to left, rgba(0,4,8,0.45) 0%, transparent 35%);z-index:1;pointer-events:none;"></div>
 
-  <!-- Blue energy streams — left team member -->
-  <div style="position:absolute;inset:0;background:linear-gradient(135deg, rgba(68,136,255,0.08) 0%, transparent 40%);z-index:2;pointer-events:none;"></div>
+  <!-- Gold brightness boost — Daron center -->
+  <div style="position:absolute;inset:0;background:radial-gradient(ellipse 28% 38% at 50% 34%, rgba(255,220,120,0.22) 0%, rgba(201,168,76,0.10) 40%, transparent 68%);z-index:2;pointer-events:none;"></div>
 
-  <!-- Blue energy streams — right team member -->
-  <div style="position:absolute;inset:0;background:linear-gradient(225deg, rgba(68,136,255,0.08) 0%, transparent 40%);z-index:2;pointer-events:none;"></div>
+  <!-- Gold silhouette glow — warm outline around Daron -->
+  <div style="position:absolute;inset:0;background:radial-gradient(ellipse 18% 28% at 50% 36%, transparent 55%, rgba(201,168,76,0.14) 70%, transparent 85%);z-index:2;pointer-events:none;"></div>
+
+  <!-- Gold crown halo above Daron -->
+  <div style="position:absolute;inset:0;background:radial-gradient(ellipse 26% 16% at 50% 14%, rgba(201,168,76,0.28) 0%, rgba(201,168,76,0.10) 50%, transparent 78%);z-index:2;pointer-events:none;"></div>
+
+  <!-- Blue energy arc — Daron to left team member -->
+  <div style="position:absolute;inset:0;background:linear-gradient(145deg, rgba(68,136,255,0.0) 0%, rgba(68,136,255,0.09) 18%, transparent 34%);z-index:2;pointer-events:none;"></div>
+
+  <!-- Blue energy arc — Daron to right team member -->
+  <div style="position:absolute;inset:0;background:linear-gradient(215deg, rgba(68,136,255,0.0) 0%, rgba(68,136,255,0.09) 18%, transparent 34%);z-index:2;pointer-events:none;"></div>
+
+  <!-- Gold energy arc — center pulse -->
+  <div style="position:absolute;inset:0;background:radial-gradient(ellipse 6% 8% at 50% 48%, rgba(201,168,76,0.30) 0%, transparent 100%);z-index:2;pointer-events:none;"></div>
+
+  <!-- Dark text backdrop behind headline -->
+  <div style="position:absolute;left:50%;transform:translateX(-50%);top:80px;width:min(860px,90%);height:200px;background:radial-gradient(ellipse 80% 100% at 50% 30%, rgba(0,4,8,0.55) 0%, transparent 100%);z-index:2;pointer-events:none;"></div>
 
   <div style="position:relative;z-index:3;max-width:800px;margin:0 auto;text-align:center;">
 
-    <!-- Bio column -->
-    <div>
-      <span class="sec-label">The Practitioner</span>
-      <h2 class="sec-title" style="font-size:clamp(32px,4vw,56px);margin-bottom:24px;">Who Is<br>Daron Royal?</h2>
-      <div style="width:48px;height:2px;background:var(--gold);margin:0 auto 32px;opacity:0.6;"></div>
-      <p style="font-family:'EB Garamond',serif;font-size:18px;font-style:italic;line-height:1.8;color:rgba(232,228,240,0.92);margin-bottom:24px;">Daron Royal is a Galactic Healer based in Erie, Pennsylvania. He has been doing this work for years — in shops, in homes, and across distance — helping people clear what is attached to them, release what is draining them, and reset what has been disrupted.</p>
-      <p style="font-family:'EB Garamond',serif;font-size:17px;line-height:1.8;color:rgba(232,228,240,0.78);margin-bottom:24px;">His sessions include full body scans, chakra clearing, parasite and cord removal, pain extraction, and energy transmutation. He closes every session by placing a shield of light around the client and sealing their field.</p>
-      <p style="font-family:'EB Garamond',serif;font-size:17px;line-height:1.8;color:rgba(232,228,240,0.78);margin-bottom:24px;">Daron does not work alone. He works in active partnership with his Galactic Team — a collective of higher dimensional beings and cosmic allies who show up in every session. When you book with Daron, you get the whole team.</p>
-      <p style="font-family:'EB Garamond',serif;font-size:17px;line-height:1.8;color:rgba(232,228,240,0.78);margin-bottom:48px;">He has over 16,000 followers on Facebook. His content on energetic parasites, cord removal, and transmutation reaches tens of thousands of people because he names what they are already feeling but could not explain.</p>
+    <!-- Headline -->
+    <span class="sec-label">The Practitioner</span>
+    <h2 class="sec-title" style="font-size:clamp(32px,4vw,56px);margin-bottom:24px;">Who Is<br>Daron Royal?</h2>
+    <div style="width:48px;height:2px;background:var(--gold);margin:0 auto 36px;opacity:0.6;"></div>
 
-      <!-- Stats -->
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-bottom:56px;">
-        <div><div style="font-family:'Cinzel Decorative',serif;font-size:32px;color:var(--gold);font-weight:700;">16K+</div><div style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.4em;color:rgba(201,168,76,0.6);text-transform:uppercase;margin-top:4px;">Followers</div></div>
-        <div><div style="font-family:'Cinzel Decorative',serif;font-size:32px;color:var(--gold);font-weight:700;">276K</div><div style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.4em;color:rgba(201,168,76,0.6);text-transform:uppercase;margin-top:4px;">Top Reel Views</div></div>
-        <div><div style="font-family:'Cinzel Decorative',serif;font-size:32px;color:var(--gold);font-weight:700;">Erie</div><div style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.4em;color:rgba(201,168,76,0.6);text-transform:uppercase;margin-top:4px;">Pennsylvania</div></div>
-      </div>
+    <!-- Bio -->
+    <p style="font-family:'EB Garamond',serif;font-size:20px;font-style:italic;line-height:2;color:rgba(232,228,240,0.93);margin-bottom:28px;">Daron Royal is a Galactic Healer based in Erie, Pennsylvania. He has been doing this work for years — in shops, in homes, and across distance — helping people clear what is attached to them, release what is draining them, and reset what has been disrupted.</p>
+    <p style="font-family:'EB Garamond',serif;font-size:19px;line-height:1.95;color:rgba(232,228,240,0.80);margin-bottom:28px;">His sessions include full body scans, chakra clearing, parasite and cord removal, pain extraction, and energy transmutation. He closes every session by placing a shield of light around the client and sealing their field.</p>
+    <p style="font-family:'EB Garamond',serif;font-size:19px;line-height:1.95;color:rgba(232,228,240,0.80);margin-bottom:28px;">Daron does not work alone. He works in active partnership with his Galactic Team — a collective of higher dimensional beings and cosmic allies who show up in every session. <span style="color:var(--gold);font-size:21px;font-style:italic;text-shadow:0 0 18px rgba(201,168,76,0.5),0 0 36px rgba(201,168,76,0.25);">When you book with Daron, you get the whole team.</span></p>
+    <p style="font-family:'EB Garamond',serif;font-size:19px;line-height:1.95;color:rgba(232,228,240,0.80);margin-bottom:36px;">He has over 16,000 followers on Facebook. His content on energetic parasites, cord removal, and transmutation reaches tens of thousands of people because he names what they are already feeling but could not explain.</p>
+
+    <!-- Stats — tighter to bio -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-bottom:40px;">
+      <div><div style="font-family:'Cinzel Decorative',serif;font-size:32px;color:var(--gold);font-weight:700;">16K+</div><div style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.4em;color:rgba(201,168,76,0.6);text-transform:uppercase;margin-top:4px;">Followers</div></div>
+      <div><div style="font-family:'Cinzel Decorative',serif;font-size:32px;color:var(--gold);font-weight:700;">276K</div><div style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.4em;color:rgba(201,168,76,0.6);text-transform:uppercase;margin-top:4px;">Top Reel Views</div></div>
+      <div><div style="font-family:'Cinzel Decorative',serif;font-size:32px;color:var(--gold);font-weight:700;">Erie</div><div style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.4em;color:rgba(201,168,76,0.6);text-transform:uppercase;margin-top:4px;">Pennsylvania</div></div>
     </div>
 
-    <!-- Footer info cards -->
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;">
-      <div style="background:rgba(4,3,14,0.72);backdrop-filter:blur(12px);border:1px solid rgba(201,168,76,0.25);padding:20px 24px;">
-        <div style="font-family:'Cinzel',serif;font-size:8px;letter-spacing:.45em;color:var(--gold);text-transform:uppercase;margin-bottom:10px;">Title</div>
-        <div style="font-family:'EB Garamond',serif;font-size:17px;color:#e8e4f0;">Galactic Healer</div>
+    <!-- Footer info cards — tighter, metadata feel -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+      <div style="background:rgba(4,3,14,0.75);backdrop-filter:blur(12px);border:1px solid rgba(201,168,76,0.22);padding:14px 18px;">
+        <div style="font-family:'Cinzel',serif;font-size:8px;letter-spacing:.45em;color:var(--gold);text-transform:uppercase;margin-bottom:7px;">Title</div>
+        <div style="font-family:'EB Garamond',serif;font-size:15px;color:#e8e4f0;">Galactic Healer</div>
       </div>
-      <div style="background:rgba(4,3,14,0.72);backdrop-filter:blur(12px);border:1px solid rgba(201,168,76,0.25);padding:20px 24px;">
-        <div style="font-family:'Cinzel',serif;font-size:8px;letter-spacing:.45em;color:var(--gold);text-transform:uppercase;margin-bottom:10px;">Location</div>
-        <div style="font-family:'EB Garamond',serif;font-size:17px;color:#e8e4f0;">Erie, PA</div>
+      <div style="background:rgba(4,3,14,0.75);backdrop-filter:blur(12px);border:1px solid rgba(201,168,76,0.22);padding:14px 18px;">
+        <div style="font-family:'Cinzel',serif;font-size:8px;letter-spacing:.45em;color:var(--gold);text-transform:uppercase;margin-bottom:7px;">Location</div>
+        <div style="font-family:'EB Garamond',serif;font-size:15px;color:#e8e4f0;">Erie, PA</div>
       </div>
-      <div style="background:rgba(4,3,14,0.72);backdrop-filter:blur(12px);border:1px solid rgba(201,168,76,0.25);padding:20px 24px;">
-        <div style="font-family:'Cinzel',serif;font-size:8px;letter-spacing:.45em;color:var(--gold);text-transform:uppercase;margin-bottom:10px;">Sessions</div>
-        <div style="font-family:'EB Garamond',serif;font-size:17px;color:#e8e4f0;">Local + Distance</div>
+      <div style="background:rgba(4,3,14,0.75);backdrop-filter:blur(12px);border:1px solid rgba(201,168,76,0.22);padding:14px 18px;">
+        <div style="font-family:'Cinzel',serif;font-size:8px;letter-spacing:.45em;color:var(--gold);text-transform:uppercase;margin-bottom:7px;">Sessions</div>
+        <div style="font-family:'EB Garamond',serif;font-size:15px;color:#e8e4f0;">Local + Distance</div>
       </div>
-      <div style="background:rgba(4,3,14,0.72);backdrop-filter:blur(12px);border:1px solid rgba(201,168,76,0.25);padding:20px 24px;">
-        <div style="font-family:'Cinzel',serif;font-size:8px;letter-spacing:.45em;color:var(--gold);text-transform:uppercase;margin-bottom:10px;">Team</div>
-        <div style="font-family:'EB Garamond',serif;font-size:17px;color:#e8e4f0;">The Galactic Team</div>
+      <div style="background:rgba(4,3,14,0.75);backdrop-filter:blur(12px);border:1px solid rgba(201,168,76,0.22);padding:14px 18px;">
+        <div style="font-family:'Cinzel',serif;font-size:8px;letter-spacing:.45em;color:var(--gold);text-transform:uppercase;margin-bottom:7px;">Team</div>
+        <div style="font-family:'EB Garamond',serif;font-size:15px;color:#e8e4f0;">The Galactic Team</div>
       </div>
     </div>
 
