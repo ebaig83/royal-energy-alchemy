@@ -724,7 +724,7 @@ document.querySelectorAll('.faq2-trigger').forEach(function(btn){
 </section>
 
 <!-- ═══ SERVICE MODAL ═══ -->
-<div id="svc-modal" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;">
+<div id="svc-modal" style="position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;display:none;">
   <div id="svc-modal-bg" style="position:absolute;inset:0;background:rgba(0,4,8,0.88);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);"></div>
   <div id="svc-modal-box" style="position:relative;z-index:1;width:min(560px,92vw);background:rgba(4,6,20,0.96);border:1px solid rgba(201,168,76,0.25);border-radius:4px;overflow:hidden;box-shadow:0 0 80px rgba(0,0,0,0.8),0 0 40px rgba(201,168,76,0.08);">
     <button id="svc-modal-close" style="position:absolute;top:14px;right:18px;background:none;border:none;color:rgba(201,168,76,0.6);font-size:22px;cursor:pointer;z-index:2;font-family:'Cinzel',serif;line-height:1;" aria-label="Close">×</button>
@@ -790,9 +790,7 @@ document.querySelectorAll('.faq2-trigger').forEach(function(btn){
 .svc2-card:hover .svc2-play { opacity:1;transform:translateY(0); }
 .svc2-card:hover .svc2-play { color:rgba(201,168,76,0.85); }
 
-/* modal flex */
-#svc-modal { display:none; }
-#svc-modal.open { display:flex; }
+/* modal */
 #svc-modal-box { animation: modalIn 0.35s cubic-bezier(0.2,0,0,1) both; }
 @keyframes modalIn { from { opacity:0; transform:scale(0.92) translateY(16px); } to { opacity:1; transform:scale(1) translateY(0); } }
 #svc-modal.closing #svc-modal-box { animation: modalOut 0.3s ease forwards; }
@@ -1217,7 +1215,7 @@ var ANIMS = {
       ctx.fillStyle=flip<0.5?'rgba(20,10,50,0.95)':'rgba(4,6,20,0.95)';
       ctx.strokeStyle=GOLD+cardA*0.7+')';
       ctx.lineWidth=1.5;
-      ctx.beginPath(); ctx.roundRect(-26,-40,52,75,3); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.rect(-26,-40,52,75); ctx.fill(); ctx.stroke();
       if(flip>=0.5){
         // symbol
         ctx.fillStyle='rgba(201,168,76,'+cardA*0.9+')';
@@ -1357,6 +1355,7 @@ function openModal(svcId){
   modalNum.textContent='0'+svcId+' — '+data.price;
   modalTitle.textContent=data.name;
   modalDesc.textContent=data.desc;
+  modal.style.display='flex';
   modal.classList.add('open');
   document.body.style.overflow='hidden';
   var W=canvas.offsetWidth, H=canvas.height;
@@ -1384,6 +1383,7 @@ function closeModal(){
   if(RAF){ cancelAnimationFrame(RAF); RAF=null; }
   modal.classList.add('closing');
   setTimeout(function(){
+    modal.style.display='none';
     modal.classList.remove('open','closing');
     document.body.style.overflow='';
   },320);
