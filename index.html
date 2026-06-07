@@ -562,25 +562,21 @@ footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.28em;color:rgb
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function(){
-  /* ── Accordion ── */
-  document.querySelectorAll('.faq2-trigger').forEach(function(btn){
-    btn.addEventListener('click', function(e){
-      e.preventDefault();
-      var item = btn.closest('.faq2-item');
-      if(!item) return;
-      var isOpen = item.hasAttribute('data-open');
-      /* close all */
-      document.querySelectorAll('.faq2-item').forEach(function(el){
-        el.removeAttribute('data-open');
-        el.querySelector('.faq2-trigger').setAttribute('aria-expanded','false');
-      });
-      /* open clicked if it was closed */
-      if(!isOpen){
-        item.setAttribute('data-open','');
-        btn.setAttribute('aria-expanded','true');
-      }
+/* ── Accordion — runs inline after elements are in the DOM ── */
+document.querySelectorAll('.faq2-trigger').forEach(function(btn){
+  btn.addEventListener('click', function(e){
+    e.preventDefault();
+    var item = btn.closest('.faq2-item');
+    if(!item) return;
+    var isOpen = item.hasAttribute('data-open');
+    document.querySelectorAll('.faq2-item').forEach(function(el){
+      el.removeAttribute('data-open');
+      el.querySelector('.faq2-trigger').setAttribute('aria-expanded','false');
     });
+    if(!isOpen){
+      item.setAttribute('data-open','');
+      btn.setAttribute('aria-expanded','true');
+    }
   });
 });
 
