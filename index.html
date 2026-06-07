@@ -1358,8 +1358,8 @@ function openModal(svcId){
   modal.style.display='flex';
   modal.classList.add('open');
   document.body.style.overflow='hidden';
-  var W=canvas.offsetWidth, H=canvas.height;
-  canvas.width=W;
+  var W=560, H=320;
+  canvas.width=W; canvas.height=H;
   var start=null;
   function tick(ts){
     if(!start) start=ts;
