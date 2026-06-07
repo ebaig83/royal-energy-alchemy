@@ -635,12 +635,771 @@ document.querySelectorAll('.faq2-trigger').forEach(function(btn){
 <div class="rit-div"><span>✦ &nbsp; The Work &nbsp; ✦</span></div>
 
 <!-- ═══ SERVICES ═══ -->
-<section id="services" style="background:#000;padding:0;margin:0;">
-  <img src="assets/services-grid.jpg" alt="Royal Energy Alchemy — Services" style="width:100%;display:block;margin:0;padding:0;line-height:0;">
-  <div style="background:#000;padding:40px 24px 56px;text-align:center;">
-    <a href="#assess" style="display:inline-block;font-family:'Cinzel',serif;font-size:13px;letter-spacing:.35em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(201,168,76,0.45);padding:16px 40px;text-decoration:none;transition:background 0.3s,border-color 0.3s,box-shadow 0.3s;" onmouseover="this.style.background='rgba(201,168,76,0.08)';this.style.borderColor='rgba(201,168,76,0.8)';this.style.boxShadow='0 0 24px rgba(201,168,76,0.18)'" onmouseout="this.style.background='transparent';this.style.borderColor='rgba(201,168,76,0.45)';this.style.boxShadow='none'">Start Assessment →</a>
+<section id="services" style="background:radial-gradient(ellipse at 30% 50%,rgba(10,15,40,0.95) 0%,var(--deep) 70%);padding:100px 48px 80px;">
+  <div style="max-width:1100px;margin:0 auto;">
+    <div class="reveal" style="text-align:center;margin-bottom:64px;">
+      <span class="sec-label">The Work</span>
+      <h2 class="sec-title">Choose Your Session</h2>
+      <p class="sec-body" style="margin:0 auto 0;">Click any session to see what happens during the work.</p>
+    </div>
+    <div id="svc-card-grid" class="reveal reveal-d1" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+
+      <div class="svc2-card" data-svc="1">
+        <div class="svc2-num">01</div>
+        <div class="svc2-name">Energetic Parasite Removal</div>
+        <div class="svc2-price">$80</div>
+        <p class="svc2-desc">Deep intuitive clearing for attachments and disruptive patterns. Includes 24, 48, and 72-hour aftercare check-ins.</p>
+        <div class="svc2-play"><svg width="18" height="18" viewBox="0 0 18 18"><polygon points="4,2 16,9 4,16" fill="currentColor"/></svg> Preview</div>
+      </div>
+
+      <div class="svc2-card" data-svc="2">
+        <div class="svc2-num">02</div>
+        <div class="svc2-name">Cord Removal &amp; Transmutation</div>
+        <div class="svc2-price">from $40</div>
+        <p class="svc2-desc">Targeted removal of cords, hooks, and emotional charges tied to people, places, or patterns that keep returning.</p>
+        <div class="svc2-play"><svg width="18" height="18" viewBox="0 0 18 18"><polygon points="4,2 16,9 4,16" fill="currentColor"/></svg> Preview</div>
+      </div>
+
+      <div class="svc2-card" data-svc="3">
+        <div class="svc2-num">03</div>
+        <div class="svc2-name">Energy Alchemy Exorcism</div>
+        <div class="svc2-price">$100</div>
+        <p class="svc2-desc">Deep spiritual clearing for intense concerns. Requires intake assessment first. Not for the faint of heart.</p>
+        <div class="svc2-play"><svg width="18" height="18" viewBox="0 0 18 18"><polygon points="4,2 16,9 4,16" fill="currentColor"/></svg> Preview</div>
+      </div>
+
+      <div class="svc2-card" data-svc="4">
+        <div class="svc2-num">04</div>
+        <div class="svc2-name">Distance Energy Session</div>
+        <div class="svc2-price">$70</div>
+        <p class="svc2-desc">The subject does not need to be present or aware. Distance is no barrier to this work.</p>
+        <div class="svc2-play"><svg width="18" height="18" viewBox="0 0 18 18"><polygon points="4,2 16,9 4,16" fill="currentColor"/></svg> Preview</div>
+      </div>
+
+      <div class="svc2-card" data-svc="5">
+        <div class="svc2-num">05</div>
+        <div class="svc2-name">House Cleansing &amp; Blessing</div>
+        <div class="svc2-price">$60</div>
+        <p class="svc2-desc">Energetic support for homes and spaces that feel heavy, unsettled, or occupied by something unwelcome.</p>
+        <div class="svc2-play"><svg width="18" height="18" viewBox="0 0 18 18"><polygon points="4,2 16,9 4,16" fill="currentColor"/></svg> Preview</div>
+      </div>
+
+      <div class="svc2-card" data-svc="6">
+        <div class="svc2-num">06</div>
+        <div class="svc2-name">Emergency Removal Session</div>
+        <div class="svc2-price">$120</div>
+        <p class="svc2-desc">Priority session for urgent concerns. When you cannot wait. When it is too heavy to carry another day.</p>
+        <div class="svc2-play"><svg width="18" height="18" viewBox="0 0 18 18"><polygon points="4,2 16,9 4,16" fill="currentColor"/></svg> Preview</div>
+      </div>
+
+      <div class="svc2-card" data-svc="7">
+        <div class="svc2-num">07</div>
+        <div class="svc2-name">Removal + Tarot Bundle</div>
+        <div class="svc2-price">$100</div>
+        <p class="svc2-desc">Bundled removal session plus tarot support for direction and next steps after the clearing.</p>
+        <div class="svc2-play"><svg width="18" height="18" viewBox="0 0 18 18"><polygon points="4,2 16,9 4,16" fill="currentColor"/></svg> Preview</div>
+      </div>
+
+      <div class="svc2-card" data-svc="8">
+        <div class="svc2-num">08</div>
+        <div class="svc2-name">Spiritual Coaching</div>
+        <div class="svc2-price">$50</div>
+        <p class="svc2-desc">One-hour spiritual coaching session for support, reflection, and guidance on your path.</p>
+        <div class="svc2-play"><svg width="18" height="18" viewBox="0 0 18 18"><polygon points="4,2 16,9 4,16" fill="currentColor"/></svg> Preview</div>
+      </div>
+
+      <div class="svc2-card" data-svc="9">
+        <div class="svc2-num">09</div>
+        <div class="svc2-name">Youth Sessions (Ages 9–14)</div>
+        <div class="svc2-price">$20–$30</div>
+        <p class="svc2-desc">Short focused energy sessions for younger clients with parent or guardian consent and simple aftercare guidance.</p>
+        <div class="svc2-play"><svg width="18" height="18" viewBox="0 0 18 18"><polygon points="4,2 16,9 4,16" fill="currentColor"/></svg> Preview</div>
+      </div>
+
+    </div>
+    <div style="text-align:center;margin-top:52px;">
+      <a href="#assess" style="display:inline-block;font-family:'Cinzel',serif;font-size:13px;letter-spacing:.35em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(201,168,76,0.45);padding:16px 40px;text-decoration:none;transition:background 0.3s,border-color 0.3s,box-shadow 0.3s;" onmouseover="this.style.background='rgba(201,168,76,0.08)';this.style.borderColor='rgba(201,168,76,0.8)';this.style.boxShadow='0 0 24px rgba(201,168,76,0.18)'" onmouseout="this.style.background='transparent';this.style.borderColor='rgba(201,168,76,0.45)';this.style.boxShadow='none'">Start Assessment →</a>
+    </div>
   </div>
 </section>
+
+<!-- ═══ SERVICE MODAL ═══ -->
+<div id="svc-modal" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;">
+  <div id="svc-modal-bg" style="position:absolute;inset:0;background:rgba(0,4,8,0.88);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);"></div>
+  <div id="svc-modal-box" style="position:relative;z-index:1;width:min(560px,92vw);background:rgba(4,6,20,0.96);border:1px solid rgba(201,168,76,0.25);border-radius:4px;overflow:hidden;box-shadow:0 0 80px rgba(0,0,0,0.8),0 0 40px rgba(201,168,76,0.08);">
+    <button id="svc-modal-close" style="position:absolute;top:14px;right:18px;background:none;border:none;color:rgba(201,168,76,0.6);font-size:22px;cursor:pointer;z-index:2;font-family:'Cinzel',serif;line-height:1;" aria-label="Close">×</button>
+    <canvas id="svc-anim-canvas" width="560" height="320" style="width:100%;display:block;"></canvas>
+    <div style="padding:24px 28px 30px;">
+      <div id="svc-modal-num" style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.5em;color:var(--gold);opacity:0.6;margin-bottom:8px;"></div>
+      <div id="svc-modal-title" style="font-family:'Cinzel Decorative',serif;font-size:clamp(16px,2.2vw,22px);color:#e8e4f0;margin-bottom:10px;"></div>
+      <p id="svc-modal-desc" style="font-family:'EB Garamond',serif;font-size:16px;line-height:1.85;color:rgba(232,228,240,0.68);margin:0;"></p>
+      <div id="svc-modal-timer" style="margin-top:18px;height:2px;background:rgba(201,168,76,0.12);border-radius:1px;overflow:hidden;">
+        <div id="svc-modal-bar" style="height:100%;width:100%;background:linear-gradient(to right,rgba(68,136,255,0.6),rgba(201,168,76,0.8));transform-origin:left;transform:scaleX(1);transition:none;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* ── Service Cards v2 ── */
+.svc2-card {
+  position: relative;
+  background: rgba(4,6,20,0.7);
+  border: 1px solid rgba(201,168,76,0.14);
+  padding: 28px 24px 24px;
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 0.3s cubic-bezier(0.2,0,0,1), border-color 0.3s, box-shadow 0.3s;
+}
+.svc2-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(68,136,255,0.06) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+.svc2-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(201,168,76,0.06), transparent);
+  transition: left 0.55s ease;
+}
+.svc2-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(201,168,76,0.5);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 24px rgba(201,168,76,0.12), inset 0 0 0 1px rgba(201,168,76,0.08);
+}
+.svc2-card:hover::before { opacity: 1; }
+.svc2-card:hover::after { left: 140%; }
+.svc2-num { font-family:'Cinzel',serif;font-size:9px;letter-spacing:.5em;color:var(--gold);opacity:0.5;margin-bottom:12px; }
+.svc2-name { font-family:'Cinzel',serif;font-size:clamp(12px,1.2vw,14px);color:#e8e4f0;letter-spacing:0.04em;line-height:1.4;margin-bottom:8px;transition:color 0.2s; }
+.svc2-card:hover .svc2-name { color:#fff; }
+.svc2-price { font-family:'Cinzel Decorative',serif;font-size:18px;color:var(--gold);margin-bottom:12px; }
+.svc2-desc { font-family:'EB Garamond',serif;font-size:15px;line-height:1.8;color:rgba(232,228,240,0.55);margin:0 0 20px; }
+.svc2-play {
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:'Cinzel',serif;font-size:9px;letter-spacing:.4em;text-transform:uppercase;
+  color:rgba(201,168,76,0.5);
+  opacity:0;transform:translateY(4px);
+  transition:opacity 0.3s,transform 0.3s,color 0.2s;
+}
+.svc2-card:hover .svc2-play { opacity:1;transform:translateY(0); }
+.svc2-card:hover .svc2-play { color:rgba(201,168,76,0.85); }
+
+/* modal flex */
+#svc-modal { display:none; }
+#svc-modal.open { display:flex; }
+#svc-modal-box { animation: modalIn 0.35s cubic-bezier(0.2,0,0,1) both; }
+@keyframes modalIn { from { opacity:0; transform:scale(0.92) translateY(16px); } to { opacity:1; transform:scale(1) translateY(0); } }
+#svc-modal.closing #svc-modal-box { animation: modalOut 0.3s ease forwards; }
+@keyframes modalOut { to { opacity:0; transform:scale(0.94) translateY(8px); } }
+
+@media(max-width:700px){
+  #svc-card-grid { grid-template-columns: 1fr 1fr !important; }
+}
+@media(max-width:480px){
+  #svc-card-grid { grid-template-columns: 1fr !important; }
+}
+</style>
+
+<script>
+(function(){
+
+var GOLD = 'rgba(201,168,76,', BLUE = 'rgba(68,136,255,', WHITE = 'rgba(232,228,240,';
+
+/* ── draw helpers ── */
+function body(ctx,x,y,a,col){
+  ctx.save(); ctx.globalAlpha=a;
+  // head
+  ctx.beginPath(); ctx.arc(x,y-54,18,0,Math.PI*2);
+  ctx.fillStyle=col; ctx.fill();
+  // torso
+  ctx.beginPath(); ctx.roundRect(x-14,y-36,28,52,4);
+  ctx.fill();
+  // arms
+  ctx.lineWidth=8; ctx.strokeStyle=col; ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(x-14,y-28); ctx.lineTo(x-38,y-4); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x+14,y-28); ctx.lineTo(x+38,y-4); ctx.stroke();
+  // legs
+  ctx.beginPath(); ctx.moveTo(x-8,y+16); ctx.lineTo(x-16,y+54); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x+8,y+16); ctx.lineTo(x+16,y+54); ctx.stroke();
+  ctx.restore();
+}
+
+function glow(ctx,x,y,r,col,a){
+  var g=ctx.createRadialGradient(x,y,0,x,y,r);
+  g.addColorStop(0,col.replace(')',','+a+')')); g.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+}
+
+function ring(ctx,x,y,r,col,a,lw){
+  ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
+  ctx.strokeStyle=col.replace(')',','+a+')'); ctx.lineWidth=lw||1.5; ctx.stroke();
+}
+
+function hexagon(ctx,x,y,r,col,a,lw){
+  ctx.beginPath();
+  for(var i=0;i<6;i++){ var ang=i*Math.PI/3-Math.PI/6; var fn=i===0?ctx.moveTo.bind(ctx):ctx.lineTo.bind(ctx); fn(x+Math.cos(ang)*r,y+Math.sin(ang)*r); }
+  ctx.closePath(); ctx.strokeStyle=col.replace(')',','+a+')'); ctx.lineWidth=lw||1; ctx.stroke();
+}
+
+function star(ctx,x,y,r,col,a){
+  ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
+  ctx.fillStyle=col.replace(')',','+a+')'); ctx.fill();
+}
+
+function easeInOut(t){ return t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2; }
+function clamp01(v,s,e){ return Math.max(0,Math.min(1,(v-s)/(e-s))); }
+function lerp(a,b,t){ return a+(b-a)*t; }
+
+/* ── 9 animations ── */
+var ANIMS = {
+
+  /* 1 — Parasite Removal */
+  1: function(ctx,t,W,H){
+    var cx=W/2, cy=H*0.42;
+    // bg glow
+    glow(ctx,cx,cy-20,H*0.6,BLUE,0.08);
+    // silhouette
+    body(ctx,cx,cy,0.5,BLUE+'0.55)');
+    // parasites (t < 0.5)
+    var pa=clamp01(t,0,0.1)*easeInOut(clamp01(1-t,0.3,0.5));
+    if(pa>0){
+      for(var i=0;i<7;i++){
+        var ang=i/7*Math.PI*2+t*1.5, pr=52+Math.sin(t*8+i)*8;
+        var px=cx+Math.cos(ang)*pr, py=cy+Math.sin(ang)*pr*0.6-14;
+        glow(ctx,px,py,22,'rgba(70,5,100,',pa*0.7);
+        ctx.beginPath(); ctx.arc(px,py,7+Math.sin(t*6+i)*2,0,Math.PI*2);
+        ctx.fillStyle='rgba(50,0,80,'+pa*0.9+')'; ctx.fill();
+      }
+    }
+    // gold beam sweep (0.28–0.68)
+    var bt=clamp01(t,0.28,0.68);
+    if(bt>0&&bt<1){
+      var by=(cy-90)+bt*200, ba=bt<0.1?bt*10:bt>0.9?(1-bt)*10:1;
+      var bg2=ctx.createLinearGradient(cx-90,by,cx+90,by);
+      bg2.addColorStop(0,'rgba(201,168,76,0)'); bg2.addColorStop(0.5,'rgba(255,220,120,'+ba*0.95+')'); bg2.addColorStop(1,'rgba(201,168,76,0)');
+      ctx.fillStyle=bg2; ctx.fillRect(cx-90,by-5,180,10);
+      glow(ctx,cx,by,50,GOLD,ba*0.35);
+    }
+    // sparks (0.52–0.82)
+    var st=clamp01(t,0.52,0.82);
+    if(st>0){
+      for(var j=0;j<24;j++){
+        var sa=Math.max(0,1-st*1.4);
+        var sx=cx+Math.cos(j*137.5)*( 28+st*70+Math.sin(j)*20);
+        var sy=cy+Math.sin(j*137.5)*( 20+st*55)-14;
+        star(ctx,sx,sy,1.5+Math.random()*1,GOLD,sa);
+      }
+    }
+    // shield (0.72–1)
+    var sh=easeInOut(clamp01(t,0.72,1));
+    if(sh>0){
+      ring(ctx,cx,cy-20,sh*88,GOLD,sh*0.85,2);
+      glow(ctx,cx,cy-20,sh*110,GOLD,sh*0.12);
+      for(var k=0;k<6;k++){
+        var ka=k/6*Math.PI*2;
+        var kx=cx+Math.cos(ka)*sh*88, ky=(cy-20)+Math.sin(ka)*sh*88;
+        var kx2=cx+Math.cos(ka+Math.PI/3)*sh*88, ky2=(cy-20)+Math.sin(ka+Math.PI/3)*sh*88;
+        ctx.beginPath(); ctx.moveTo(kx,ky); ctx.lineTo(kx2,ky2);
+        ctx.strokeStyle=GOLD+sh*0.45+')'; ctx.lineWidth=0.8; ctx.stroke();
+      }
+    }
+  },
+
+  /* 2 — Cord Removal */
+  2: function(ctx,t,W,H){
+    var cx=W/2, cy=H*0.42;
+    body(ctx,cx,cy,0.55,BLUE+'0.5)');
+    // cords in (fade out at 0.5)
+    var ca=Math.max(0,1-easeInOut(clamp01(t,0.42,0.6)));
+    if(ca>0){
+      var cordEnds=[[-80,-30],[-90,10],[80,-30],[90,10],[-60,50],[60,50]];
+      cordEnds.forEach(function(e){
+        ctx.beginPath(); ctx.moveTo(cx,cy-10);
+        ctx.quadraticCurveTo(cx+e[0]*0.4+Math.sin(t*4)*8,cy+e[1]*0.3,cx+e[0],cy+e[1]);
+        ctx.strokeStyle=BLUE+ca*0.7+')'; ctx.lineWidth=2; ctx.stroke();
+        glow(ctx,cx+e[0],cy+e[1],18,BLUE,ca*0.4);
+      });
+    }
+    // sacred geometry appears (0.2–0.55)
+    var ga=easeInOut(clamp01(t,0.2,0.45))*Math.max(0,1-easeInOut(clamp01(t,0.55,0.72)));
+    if(ga>0){
+      ring(ctx,cx,cy-14,70,GOLD,ga*0.6,1);
+      hexagon(ctx,cx,cy-14,55,GOLD,ga*0.5,1);
+      ring(ctx,cx,cy-14,40,GOLD,ga*0.35,0.7);
+    }
+    // gold cut flash (0.48–0.62)
+    var cf=easeInOut(clamp01(t,0.48,0.55))*(1-easeInOut(clamp01(t,0.55,0.62)));
+    if(cf>0){
+      ctx.beginPath(); ctx.moveTo(cx-100,cy-80); ctx.lineTo(cx+100,cy+40);
+      ctx.strokeStyle='rgba(255,230,100,'+cf*0.9+')'; ctx.lineWidth=3; ctx.stroke();
+      glow(ctx,cx,cy-20,80,GOLD,cf*0.5);
+    }
+    // particles dispersing (0.58–0.95)
+    var pt=clamp01(t,0.58,0.95);
+    if(pt>0){
+      for(var i=0;i<30;i++){
+        var ang=i/30*Math.PI*2+i*0.4, dist=40+pt*100+i*2;
+        var px=cx+Math.cos(ang)*dist, py=(cy-10)+Math.sin(ang)*dist*0.7;
+        var pa2=Math.max(0,(1-pt*1.2))*(i%3===0?0.9:0.5);
+        var isGold=i%2===0;
+        star(ctx,px,py,1.8,isGold?GOLD:BLUE,pa2);
+      }
+    }
+    // clean field glow (0.8–1)
+    var cf2=easeInOut(clamp01(t,0.8,1));
+    if(cf2>0){ glow(ctx,cx,cy-20,100,BLUE,cf2*0.15); ring(ctx,cx,cy-20,85,BLUE,cf2*0.5,1.5); }
+  },
+
+  /* 3 — Exorcism */
+  3: function(ctx,t,W,H){
+    var cx=W/2, cy=H*0.44;
+    // dark vortex (0–0.5)
+    var va=Math.max(0,1-easeInOut(clamp01(t,0.38,0.6)));
+    if(va>0){
+      for(var i=0;i<5;i++){
+        var vr=35+i*18, vang=t*3*(i%2===0?1:-1);
+        for(var j=0;j<8;j++){
+          var a2=vang+j/8*Math.PI*2;
+          var px=cx+Math.cos(a2)*vr, py=cy+Math.sin(a2)*vr*0.5;
+          glow(ctx,px,py,20,'rgba(40,5,20,',va*(0.6-i*0.08));
+        }
+      }
+      ctx.beginPath(); ctx.arc(cx,cy,80,0,Math.PI*2);
+      ctx.fillStyle='rgba(20,0,10,'+va*0.4+')'; ctx.fill();
+    }
+    body(ctx,cx,cy,0.5,'rgba(120,80,160,0.6)');
+    // sacred geometry explosion (0.35–0.8)
+    var ge=easeInOut(clamp01(t,0.35,0.65));
+    if(ge>0){
+      [90,70,50,32].forEach(function(r,i){
+        var ri=ge*(1+i*0.08); if(ri>1)ri=1;
+        ring(ctx,cx,cy,r*ri*1.6,GOLD,easeInOut(ri)*0.7*(1-i*0.15),1.5-i*0.3);
+      });
+      hexagon(ctx,cx,cy,ge*75,GOLD,ge*0.5,1);
+      // triangles
+      [0,Math.PI/3].forEach(function(offset){
+        ctx.beginPath();
+        for(var k=0;k<3;k++){
+          var a=offset+k*Math.PI*2/3;
+          var fn=k===0?ctx.moveTo.bind(ctx):ctx.lineTo.bind(ctx);
+          fn(cx+Math.cos(a)*ge*65,cy+Math.sin(a)*ge*65);
+        }
+        ctx.closePath(); ctx.strokeStyle=GOLD+ge*0.45+')'; ctx.lineWidth=1; ctx.stroke();
+      });
+    }
+    // dark energy expelled (0.5–0.85)
+    var de=clamp01(t,0.5,0.85);
+    if(de>0){
+      for(var m=0;m<16;m++){
+        var da=m/16*Math.PI*2, dr=60+de*120;
+        var dpx=cx+Math.cos(da)*dr, dpy=cy+Math.sin(da)*dr*0.7;
+        var dpa=Math.max(0,1-de*1.3);
+        glow(ctx,dpx,dpy,16,'rgba(30,0,15,',dpa*0.7);
+      }
+    }
+    // gold seal (0.72–1)
+    var gs=easeInOut(clamp01(t,0.72,1));
+    if(gs>0){
+      glow(ctx,cx,cy,gs*110,GOLD,gs*0.2);
+      ring(ctx,cx,cy,gs*90,GOLD,gs*0.9,2.5);
+      ring(ctx,cx,cy,gs*70,GOLD,gs*0.4,0.8);
+      // inner star of david
+      [0,Math.PI/3].forEach(function(offset){
+        ctx.beginPath();
+        for(var k=0;k<3;k++){
+          var a=offset+k*Math.PI*2/3;
+          var fn=k===0?ctx.moveTo.bind(ctx):ctx.lineTo.bind(ctx);
+          fn(cx+Math.cos(a)*gs*50,cy+Math.sin(a)*gs*50);
+        }
+        ctx.closePath(); ctx.strokeStyle=GOLD+gs*0.6+')'; ctx.lineWidth=1.2; ctx.stroke();
+      });
+    }
+  },
+
+  /* 4 — Distance Session */
+  4: function(ctx,t,W,H){
+    var lx=W*0.25, rx=W*0.75, cy=H*0.42;
+    // two figures
+    body(ctx,lx,cy,0.55,BLUE+'0.5)');
+    body(ctx,rx,cy,0.55,'rgba(100,200,160,0.45)');
+    // ambient glow
+    glow(ctx,lx,cy-20,60,BLUE,0.15); glow(ctx,rx,cy-20,60,'rgba(80,200,140,',0.12);
+    // portal (0.15–0.9)
+    var pt=easeInOut(clamp01(t,0.15,0.45));
+    var pm=W/2, pcx=pm;
+    if(pt>0){
+      ring(ctx,pcx,cy-14,pt*50,GOLD,pt*0.8,2);
+      ring(ctx,pcx,cy-14,pt*35,BLUE,pt*0.5,1.2);
+      hexagon(ctx,pcx,cy-14,pt*42,GOLD,pt*0.4,0.8);
+      // rotating lines
+      for(var i=0;i<6;i++){
+        var ra=i/6*Math.PI*2+t*2;
+        ctx.beginPath();
+        ctx.moveTo(pcx,cy-14);
+        ctx.lineTo(pcx+Math.cos(ra)*pt*48,cy-14+Math.sin(ra)*pt*48);
+        ctx.strokeStyle=GOLD+pt*0.25+')'; ctx.lineWidth=0.8; ctx.stroke();
+      }
+    }
+    // energy stream (0.4–0.9)
+    var et=clamp01(t,0.4,0.9);
+    if(et>0){
+      var streamX=lerp(lx+40,rx-40,et);
+      for(var j=0;j<12;j++){
+        var ej=j/12, ex=lerp(lx+40,rx-40,Math.max(0,et-ej*0.2));
+        if(ex>lx+40&&ex<rx-40){
+          var ey=(cy-14)+Math.sin(ex*0.05+t*4+j)*12;
+          var ea=Math.max(0,1-Math.abs(et-ej-0.5)*2.5);
+          star(ctx,ex,ey,2,j%2===0?GOLD:BLUE,ea*0.8);
+        }
+      }
+      glow(ctx,streamX,cy-14,30,GOLD,0.3);
+    }
+    // received glow (0.75–1)
+    var rg=easeInOut(clamp01(t,0.75,1));
+    if(rg>0){
+      glow(ctx,rx,cy-20,80,GOLD,rg*0.25);
+      ring(ctx,rx,cy-20,rg*65,GOLD,rg*0.6,1.5);
+    }
+  },
+
+  /* 5 — House Cleansing */
+  5: function(ctx,t,W,H){
+    var cx=W/2, cy=H*0.5;
+    var hw=90, hh=70, rh=40; // house dims
+    // draw house outline
+    function house(col,a){
+      ctx.save(); ctx.globalAlpha=a; ctx.strokeStyle=col; ctx.lineWidth=2;
+      // walls
+      ctx.strokeRect(cx-hw,cy-hh+rh,hw*2,hh);
+      // roof
+      ctx.beginPath(); ctx.moveTo(cx-hw-10,cy-hh+rh); ctx.lineTo(cx,cy-hh-20); ctx.lineTo(cx+hw+10,cy-hh+rh);
+      ctx.stroke();
+      // door
+      ctx.strokeRect(cx-14,cy,28,hh);
+      // windows
+      ctx.strokeRect(cx-hw+16,cy-hh+rh+14,26,22);
+      ctx.strokeRect(cx+hw-42,cy-hh+rh+14,26,22);
+      ctx.restore();
+    }
+    // dark smoke (0–0.5)
+    var sa=Math.max(0,1-easeInOut(clamp01(t,0.3,0.6)));
+    if(sa>0){
+      for(var i=0;i<8;i++){
+        var sx=cx-60+i*18+Math.sin(t*3+i)*12, sy=(cy-hh)+Math.sin(t*2+i*0.7)*20-sa*30;
+        glow(ctx,sx,sy,28+i*4,'rgba(20,10,30,',sa*0.55);
+      }
+    }
+    house(BLUE+'0.55)',0.7);
+    // gold light fills rooms (0.25–0.75)
+    var gl=easeInOut(clamp01(t,0.25,0.65));
+    if(gl>0){
+      // left window fill
+      ctx.fillStyle='rgba(201,168,76,'+gl*0.25+')';
+      ctx.fillRect(cx-hw+17,cy-hh+rh+15,24,20);
+      // right window fill
+      ctx.fillRect(cx+hw-41,cy-hh+rh+15,24,20);
+      // door fill
+      ctx.fillStyle='rgba(201,168,76,'+gl*0.2+')';
+      ctx.fillRect(cx-13,cy+1,26,hh-1);
+      // interior glow
+      glow(ctx,cx,cy-hh/2+rh,80,GOLD,gl*0.3);
+    }
+    // smoke exits (0.55–0.85)
+    var se=clamp01(t,0.55,0.85);
+    if(se>0){
+      for(var j=0;j<6;j++){
+        var spx=cx-30+j*12, spy=cy-hh-20-se*60+Math.sin(se*4+j)*15;
+        var spa=Math.max(0,1-se*1.3);
+        glow(ctx,spx,spy,14,'rgba(15,5,25,',spa*0.5);
+      }
+    }
+    // protective dome (0.7–1)
+    var pd=easeInOut(clamp01(t,0.7,1));
+    if(pd>0){
+      ctx.beginPath(); ctx.arc(cx,cy+hh*0.2,pd*130,Math.PI,0);
+      ctx.strokeStyle=GOLD+pd*0.7+')'; ctx.lineWidth=1.8; ctx.stroke();
+      glow(ctx,cx,cy-hh/2,pd*140,GOLD,pd*0.1);
+      ring(ctx,cx,cy+hh*0.2,pd*130,GOLD,pd*0.12,12);
+    }
+  },
+
+  /* 6 — Emergency Removal */
+  6: function(ctx,t,W,H){
+    var cx=W/2, cy=H*0.44;
+    // chaotic dark energy (0–0.45)
+    var ce=Math.max(0,1-easeInOut(clamp01(t,0.32,0.52)));
+    if(ce>0){
+      for(var i=0;i<12;i++){
+        var ca=i/12*Math.PI*2+t*4*(i%2?1:-1);
+        var cr=40+Math.sin(t*7+i)*20;
+        var cpx=cx+Math.cos(ca)*cr, cpy=cy+Math.sin(ca)*cr*0.6;
+        glow(ctx,cpx,cpy,22,'rgba(120,5,20,',ce*0.7);
+        glow(ctx,cpx,cpy,10,'rgba(20,0,5,',ce*0.9);
+      }
+      glow(ctx,cx,cy,100,'rgba(80,0,20,',ce*0.35);
+    }
+    body(ctx,cx,cy, ce>0?0.4:0.6, ce>0?'rgba(160,80,80,0.5)':BLUE+'0.5)');
+    // gold flash (0.38–0.55)
+    var gf=easeInOut(clamp01(t,0.38,0.455))*(1-easeInOut(clamp01(t,0.455,0.58)));
+    if(gf>0){
+      glow(ctx,cx,cy,W*0.6,GOLD,gf*0.7);
+      glow(ctx,cx,cy,W*0.3,WHITE,gf*0.5);
+      // radial flash lines
+      for(var j=0;j<16;j++){
+        var fa=j/16*Math.PI*2;
+        ctx.beginPath(); ctx.moveTo(cx,cy);
+        ctx.lineTo(cx+Math.cos(fa)*W*0.5,cy+Math.sin(fa)*H*0.5);
+        ctx.strokeStyle='rgba(255,220,100,'+gf*0.6+')'; ctx.lineWidth=1; ctx.stroke();
+      }
+    }
+    // instant shield (0.5–1)
+    var is2=easeInOut(clamp01(t,0.5,0.75));
+    if(is2>0){
+      ring(ctx,cx,cy-20,is2*95,GOLD,is2*0.9,3);
+      ring(ctx,cx,cy-20,is2*75,GOLD,is2*0.35,1);
+      glow(ctx,cx,cy-20,is2*120,GOLD,is2*0.2);
+      hexagon(ctx,cx,cy-20,is2*80,GOLD,is2*0.4,1);
+    }
+    // sparks (0.5–0.85)
+    var sp=clamp01(t,0.5,0.85);
+    if(sp>0){
+      for(var k=0;k<30;k++){
+        var ska=k*137.5, skr=20+sp*110;
+        var skx=cx+Math.cos(ska)*skr, sky=cy+Math.sin(ska)*skr*0.7-14;
+        star(ctx,skx,sky,1.5,GOLD,Math.max(0,1-sp*1.5));
+      }
+    }
+  },
+
+  /* 7 — Tarot Bundle */
+  7: function(ctx,t,W,H){
+    var cx=W/2, cy=H*0.42;
+    // removal phase (0–0.45)
+    body(ctx,cx,cy,0.55,BLUE+'0.5)');
+    var ba=Math.max(0,1-easeInOut(clamp01(t,0.2,0.45)));
+    if(ba>0){
+      glow(ctx,cx,cy-20,80,'rgba(100,20,100,',ba*0.4);
+      ring(ctx,cx,cy-20,ba*70,GOLD,ba*0.6,1.5);
+    }
+    // clearing beam (0.2–0.48)
+    var cb=easeInOut(clamp01(t,0.2,0.38))*(1-easeInOut(clamp01(t,0.38,0.5)));
+    if(cb>0){
+      glow(ctx,cx,cy-20,90,GOLD,cb*0.5);
+      var bg2=ctx.createLinearGradient(cx,cy-110,cx,cy+90);
+      bg2.addColorStop(0,'rgba(255,220,100,0)'); bg2.addColorStop(0.5,'rgba(255,220,100,'+cb*0.7+')'); bg2.addColorStop(1,'rgba(255,220,100,0)');
+      ctx.fillStyle=bg2; ctx.fillRect(cx-10,cy-110,20,200);
+    }
+    // three tarot cards rising (0.42–1)
+    var ct=easeInOut(clamp01(t,0.42,0.75));
+    var positions=[[cx-90, cy-20],[cx, cy-30],[cx+90, cy-20]];
+    var symbols=['☽','✦','☀'];
+    var labels=['CLARITY','GUIDANCE','DIRECTION'];
+    positions.forEach(function(pos,i){
+      var delay=i*0.12;
+      var ct2=easeInOut(Math.max(0,Math.min(1,(t-0.42-delay)/0.33)));
+      if(ct2<=0) return;
+      var cardY=pos[1]+50*(1-ct2);
+      var cardA=ct2;
+      // flip effect
+      var flip=easeInOut(clamp01(t,0.62+delay,0.85+delay));
+      var scaleX=flip<0.5?1-flip*2:flip*2-1;
+      ctx.save();
+      ctx.globalAlpha=cardA;
+      ctx.translate(pos[0],cardY);
+      ctx.scale(Math.max(0.05,scaleX),1);
+      // card bg
+      ctx.fillStyle=flip<0.5?'rgba(20,10,50,0.95)':'rgba(4,6,20,0.95)';
+      ctx.strokeStyle=GOLD+cardA*0.7+')';
+      ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.roundRect(-26,-40,52,75,3); ctx.fill(); ctx.stroke();
+      if(flip>=0.5){
+        // symbol
+        ctx.fillStyle='rgba(201,168,76,'+cardA*0.9+')';
+        ctx.font='22px serif'; ctx.textAlign='center';
+        ctx.fillText(symbols[i],0,-10);
+        // label
+        ctx.font='6px Cinzel,serif'; ctx.fillStyle='rgba(201,168,76,'+cardA*0.55+')';
+        ctx.fillText(labels[i],0,22);
+        // card glow
+        glow(ctx,0,0,40,GOLD,cardA*0.2*flip);
+      }
+      ctx.restore();
+    });
+  },
+
+  /* 8 — Spiritual Coaching */
+  8: function(ctx,t,W,H){
+    var cx=W/2, cy=H*0.55;
+    // starfield
+    for(var i=0;i<40;i++){
+      var sx=((i*137.5)%W), sy=((i*97.3)%H*0.6);
+      var sa=0.3+0.4*Math.sin(t*2+i*0.8);
+      star(ctx,sx,sy,0.8+Math.random()*0.6,WHITE,sa*0.5);
+    }
+    // crossroads paths
+    var pa=easeInOut(clamp01(t,0,0.3));
+    if(pa>0){
+      // dark path left
+      ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx-W*0.4,cy+H*0.25);
+      ctx.strokeStyle='rgba(60,60,100,'+pa*0.5+')'; ctx.lineWidth=3; ctx.stroke();
+      // dark path right
+      ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+W*0.4,cy+H*0.25);
+      ctx.strokeStyle='rgba(60,60,100,'+pa*0.5+')'; ctx.lineWidth=3; ctx.stroke();
+    }
+    // golden path illuminates forward (0.2–0.75)
+    var gp=easeInOut(clamp01(t,0.2,0.65));
+    if(gp>0){
+      var gpg=ctx.createLinearGradient(cx,cy,cx,cy-H*0.45);
+      gpg.addColorStop(0,'rgba(201,168,76,'+gp*0.8+')'); gpg.addColorStop(1,'rgba(201,168,76,0)');
+      ctx.strokeStyle=gpg; ctx.lineWidth=4;
+      ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx,cy-H*0.45*gp); ctx.stroke();
+      // path glow
+      glow(ctx,cx,cy-H*0.45*gp*0.5,50,GOLD,gp*0.25);
+    }
+    body(ctx,cx,cy,0.6,BLUE+'0.55)');
+    // compass star (0.5–1)
+    var cs=easeInOut(clamp01(t,0.5,0.8));
+    if(cs>0){
+      var sy2=cy-H*0.38;
+      glow(ctx,cx,sy2,cs*60,GOLD,cs*0.4);
+      // 8-pointed star
+      for(var j=0;j<8;j++){
+        var sa2=j/8*Math.PI*2+t*0.5;
+        var sr=j%2===0?cs*38:cs*18;
+        var ex2=cx+Math.cos(sa2)*sr, ey2=sy2+Math.sin(sa2)*sr;
+        ctx.beginPath(); ctx.moveTo(cx,sy2); ctx.lineTo(ex2,ey2);
+        ctx.strokeStyle=GOLD+cs*(j%2===0?0.8:0.4)+')'; ctx.lineWidth=j%2===0?1.5:0.8; ctx.stroke();
+      }
+      ring(ctx,cx,sy2,cs*22,GOLD,cs*0.6,1);
+    }
+    // ambient blue arc around figure (0.65–1)
+    var ab=easeInOut(clamp01(t,0.65,1));
+    if(ab>0){ ring(ctx,cx,cy-14,ab*70,BLUE,ab*0.5,1.5); glow(ctx,cx,cy-14,ab*80,BLUE,ab*0.1); }
+  },
+
+  /* 9 — Youth Sessions */
+  9: function(ctx,t,W,H){
+    var cx=W/2, cy=H*0.48;
+    // soft background
+    glow(ctx,cx,cy,H*0.55,'rgba(80,120,220,',0.08);
+    // child silhouette (slightly smaller)
+    ctx.save(); ctx.scale(0.78,0.78); ctx.translate(cx*0.28,cy*0.27);
+    body(ctx,cx,cy,0.6,'rgba(130,170,255,0.55)');
+    ctx.restore();
+    // protective bubble (forms 0–0.4)
+    var bb=easeInOut(clamp01(t,0,0.4));
+    if(bb>0){
+      ring(ctx,cx,cy-10,bb*90,BLUE,bb*0.6,2);
+      ring(ctx,cx,cy-10,bb*90,'rgba(200,220,255,',bb*0.2,1);
+      glow(ctx,cx,cy-10,bb*100,BLUE,bb*0.12);
+      // shimmer
+      var shimA=0.15+0.1*Math.sin(t*3);
+      glow(ctx,cx,cy-10,85,'rgba(180,210,255,',shimA*bb);
+    }
+    // orbiting stars
+    for(var i=0;i<8;i++){
+      var oa=i/8*Math.PI*2+t*1.2*(i%2===0?1:-0.7), or2=72+Math.sin(t*2+i)*8;
+      var ox=cx+Math.cos(oa)*or2, oy=(cy-10)+Math.sin(oa)*or2*0.8;
+      var osa=0.5+0.4*Math.sin(t*3+i);
+      var sz=i%3===0?3:2;
+      glow(ctx,ox,oy,10,i%2===0?GOLD:BLUE,osa*0.4);
+      star(ctx,ox,oy,sz,i%2===0?GOLD:BLUE,osa*0.9);
+    }
+    // gentle sparkles inside bubble
+    for(var j=0;j<12;j++){
+      var jt=(t+j/12)%1;
+      var jx=cx+Math.cos(j*137.5)*50*jt, jy=(cy-10)+Math.sin(j*97.3)*40*jt-jt*30;
+      star(ctx,jx,jy,1.2,j%2===0?GOLD:WHITE,Math.max(0,(1-jt*2)*0.7));
+    }
+    // gold ring accent (0.35–1)
+    var gr2=easeInOut(clamp01(t,0.35,0.65));
+    if(gr2>0){ ring(ctx,cx,cy-10,gr2*105,GOLD,gr2*0.35,1); }
+    // calming text glow at base
+    glow(ctx,cx,H*0.85,80,GOLD,0.06+0.04*Math.sin(t*2));
+  }
+
+};
+
+/* ── modal system ── */
+var modal=document.getElementById('svc-modal');
+var modalBg=document.getElementById('svc-modal-bg');
+var modalBox=document.getElementById('svc-modal-box');
+var canvas=document.getElementById('svc-anim-canvas');
+var ctx2=canvas.getContext('2d');
+var modalTitle=document.getElementById('svc-modal-title');
+var modalDesc=document.getElementById('svc-modal-desc');
+var modalNum=document.getElementById('svc-modal-num');
+var modalBar=document.getElementById('svc-modal-bar');
+var RAF=null, timerRAF=null, closeTimer=null;
+var DURATION=3800;
+
+var SVC_DATA=[
+  null,
+  {name:'Energetic Parasite Removal',price:'$80',desc:'Daron scans your full energetic field, locates what is attached, removes and transmutes it, then seals your field with a shield of light.'},
+  {name:'Cord Removal & Transmutation',price:'from $40',desc:'Targeted removal of energetic cords and hooks connected to people, places, or patterns. Each cord is cut and transmuted into neutral energy.'},
+  {name:'Energy Alchemy Exorcism',price:'$100',desc:'Deep clearing for intense spiritual disturbances. Sacred geometry is deployed and the field is sealed with a gold sigil when the work is complete.'},
+  {name:'Distance Energy Session',price:'$70',desc:'The subject does not need to be present. Daron and his Galactic Team locate and work on the energetic field directly across any distance.'},
+  {name:'House Cleansing & Blessing',price:'$60',desc:'Gold light is sent through every room. Dark energy is expelled through windows and roof. A protective dome is placed over the structure when complete.'},
+  {name:'Emergency Removal Session',price:'$120',desc:'Urgent priority clearing. Daron removes the disturbance rapidly and installs a strong protective field immediately. When it is too heavy to carry another day.'},
+  {name:'Removal + Tarot Bundle',price:'$100',desc:'Full energy removal followed by a three-card tarot pull for clarity, guidance, and direction on what comes next after the clearing.'},
+  {name:'Spiritual Coaching',price:'$50',desc:'One-hour guidance session. Daron illuminates the path forward and helps you navigate what your energy is telling you about your next steps.'},
+  {name:'Youth Sessions (Ages 9–14)',price:'$20–$30',desc:'Gentle, safe clearing sessions for young clients. A protective bubble is placed around the child and the work is calm, supportive, and age-appropriate.'}
+];
+
+function openModal(svcId){
+  var data=SVC_DATA[svcId]; if(!data) return;
+  modalNum.textContent='0'+svcId+' — '+data.price;
+  modalTitle.textContent=data.name;
+  modalDesc.textContent=data.desc;
+  modal.classList.add('open');
+  document.body.style.overflow='hidden';
+  var W=canvas.offsetWidth, H=canvas.height;
+  canvas.width=W;
+  var start=null;
+  function tick(ts){
+    if(!start) start=ts;
+    var elapsed=ts-start;
+    var progress=Math.min(1,elapsed/DURATION);
+    ctx2.clearRect(0,0,W,H);
+    // dark bg
+    ctx2.fillStyle='rgba(2,4,16,1)'; ctx2.fillRect(0,0,W,H);
+    ANIMS[svcId](ctx2,progress,W,H);
+    // timer bar
+    modalBar.style.transform='scaleX('+(1-progress)+')';
+    modalBar.style.transition='none';
+    if(progress<1){ RAF=requestAnimationFrame(tick); }
+    else { setTimeout(function(){ closeModal(); },400); }
+  }
+  if(RAF) cancelAnimationFrame(RAF);
+  RAF=requestAnimationFrame(tick);
+}
+
+function closeModal(){
+  if(RAF){ cancelAnimationFrame(RAF); RAF=null; }
+  modal.classList.add('closing');
+  setTimeout(function(){
+    modal.classList.remove('open','closing');
+    document.body.style.overflow='';
+  },320);
+}
+
+// card clicks
+document.querySelectorAll('.svc2-card').forEach(function(card){
+  card.addEventListener('click',function(){ openModal(parseInt(card.dataset.svc)); });
+});
+// close triggers
+document.getElementById('svc-modal-close').addEventListener('click',closeModal);
+modalBg.addEventListener('click',closeModal);
+document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&modal.classList.contains('open')) closeModal(); });
+
+})();
+</script>
 
 <div class="rit-div"><span>✦ &nbsp; Treatment Plans &nbsp; ✦</span></div>
 
