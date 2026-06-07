@@ -538,7 +538,7 @@ footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.28em;color:rgb
   transition: grid-template-rows 0.42s cubic-bezier(0.4,0,0.2,1);
   padding: 0 32px;
 }
-.faq2-inner { overflow: hidden; }
+.faq2-inner { overflow: hidden; min-height: 0; }
 .faq2-item[data-open] .faq2-body {
   grid-template-rows: 1fr;
 }
@@ -562,17 +562,29 @@ footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.28em;color:rgb
 </style>
 
 <script>
-(function(){
+document.addEventListener('DOMContentLoaded', function(){
   /* ── Accordion ── */
   document.querySelectorAll('.faq2-trigger').forEach(function(btn){
-    btn.addEventListener('click', function(){
-      var item = btn.parentElement;
+    btn.addEventListener('click', function(e){
+      e.preventDefault();
+      var item = btn.closest('.faq2-item');
+      if(!item) return;
       var isOpen = item.hasAttribute('data-open');
       /* close all */
-      document.querySelectorAll('.faq2-item[data-open]').forEach(function(el){ el.removeAttribute('data-open'); el.querySelector('.faq2-trigger').setAttribute('aria-expanded','false'); });
-      if(!isOpen){ item.setAttribute('data-open',''); btn.setAttribute('aria-expanded','true'); }
+      document.querySelectorAll('.faq2-item').forEach(function(el){
+        el.removeAttribute('data-open');
+        el.querySelector('.faq2-trigger').setAttribute('aria-expanded','false');
+      });
+      /* open clicked if it was closed */
+      if(!isOpen){
+        item.setAttribute('data-open','');
+        btn.setAttribute('aria-expanded','true');
+      }
     });
   });
+});
+
+(function(){
 
   /* ── Cosmic canvas ── */
   var canvas = document.getElementById('faq-cosmos');
