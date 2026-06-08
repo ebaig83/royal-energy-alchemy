@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Treatment Plan — Royal Energy Alchemy</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet"/>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{--gold:rgb(201,168,76);--gold-dim:rgba(201,168,76,0.4);--deep:#00040a;--text:#e8e4f0;--blue:rgba(68,136,255,0.85)}
+  body{background:var(--deep);color:var(--text);font-family:'EB Garamond',serif;min-height:100vh;-webkit-font-smoothing:antialiased}
+
+  /* ── NAV ── */
+  nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:20px 48px;background:rgba(0,4,10,.88);backdrop-filter:blur(14px);border-bottom:1px solid rgba(201,168,76,.07)}
+  .nav-brand{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;color:rgba(201,168,76,.7);text-transform:uppercase;text-decoration:none}
+  .nav-back{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:rgba(232,228,240,.45);text-transform:uppercase;text-decoration:none;transition:color .25s}
+  .nav-back:hover{color:var(--gold)}
+
+  /* ── HERO BAND ── */
+  .page-hero{padding:130px 48px 64px;text-align:center;border-bottom:1px solid rgba(201,168,76,.08);background:radial-gradient(ellipse at 50% 0%,rgba(10,15,45,.95) 0%,var(--deep) 75%);position:relative;overflow:hidden}
+  .page-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 40% at 50% 70%,rgba(68,136,255,.04) 0%,transparent 70%);pointer-events:none}
+  .sec-label{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.5em;color:var(--gold);text-transform:uppercase;display:block;margin-bottom:14px}
+  h1{font-family:'Cinzel Decorative',serif;font-size:clamp(22px,3.5vw,42px);font-weight:400;color:var(--text);margin-bottom:18px;line-height:1.15}
+  .hero-sub{font-family:'EB Garamond',serif;font-size:17px;font-style:italic;color:rgba(232,228,240,.5);line-height:1.8;max-width:580px;margin:0 auto}
+
+  /* ── LAYOUT ── */
+  .plan-wrap{max-width:820px;margin:0 auto;padding:64px 48px 100px}
+
+  /* ── CLIENT INFO BLOCK ── */
+  .client-block{border:1px solid rgba(201,168,76,.14);background:rgba(6,4,18,.7);padding:32px 36px;margin-bottom:48px}
+  .client-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:20px}
+  .client-field label{font-family:'Cinzel',serif;font-size:8.5px;letter-spacing:.38em;color:rgba(201,168,76,.5);text-transform:uppercase;display:block;margin-bottom:6px}
+  .client-field p{font-size:17px;color:rgba(232,228,240,.85);line-height:1.4}
+  .client-field p.blank{border-bottom:1px solid rgba(201,168,76,.14);min-height:26px}
+
+  /* ── SECTION HEADERS ── */
+  .plan-section{margin-bottom:52px}
+  .plan-section-header{display:flex;align-items:center;gap:18px;margin-bottom:24px}
+  .plan-section-num{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.4em;color:rgba(201,168,76,.4);text-transform:uppercase;flex-shrink:0}
+  .plan-section-title{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.38em;color:rgba(201,168,76,.85);text-transform:uppercase}
+  .plan-section-line{flex:1;height:1px;background:linear-gradient(to right,rgba(201,168,76,.18),transparent)}
+
+  /* ── BODY TEXT ── */
+  .plan-body{font-size:16px;line-height:1.88;color:rgba(232,228,240,.70);margin-bottom:14px}
+  .plan-body strong{color:rgba(232,228,240,.9);font-weight:500;font-style:normal}
+
+  /* ── SERVICE CARD (recommended) ── */
+  .rec-card{border:1px solid rgba(201,168,76,.22);background:rgba(201,168,76,.04);padding:24px 28px;margin-bottom:20px;display:flex;align-items:flex-start;gap:20px}
+  .rec-card-badge{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.35em;color:rgba(201,168,76,.55);text-transform:uppercase;border:1px solid rgba(201,168,76,.22);padding:4px 10px;white-space:nowrap;flex-shrink:0;margin-top:3px}
+  .rec-card-name{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.2em;color:rgba(232,228,240,.9);margin-bottom:6px}
+  .rec-card-desc{font-size:15px;line-height:1.75;color:rgba(232,228,240,.6)}
+  .rec-card-price{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:var(--gold);margin-top:10px}
+
+  /* ── TIMELINE ── */
+  .timeline{position:relative;padding-left:0}
+  .tl-row{display:flex;gap:24px;margin-bottom:24px;align-items:flex-start}
+  .tl-dot{width:44px;height:44px;border-radius:50%;border:1px solid rgba(201,168,76,.28);background:rgba(0,4,8,.95);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .tl-dot span{font-family:'Cinzel',serif;font-size:7.5px;letter-spacing:.1em;color:var(--gold)}
+  .tl-content{padding-top:10px}
+  .tl-title{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.28em;color:rgba(232,228,240,.85);text-transform:uppercase;margin-bottom:6px}
+  .tl-body{font-size:15px;line-height:1.78;color:rgba(232,228,240,.6)}
+
+  /* ── HOME AFTERCARE PROTOCOL ── */
+  .aftercare-intro{font-size:16px;font-style:italic;line-height:1.85;color:rgba(232,228,240,.6);margin-bottom:32px}
+
+  .hap-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+  .hap-card{border:1px solid rgba(201,168,76,.14);background:rgba(4,3,14,.75);padding:28px 26px;position:relative;overflow:hidden;transition:border-color .3s}
+  .hap-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(to right,rgba(201,168,76,.5),rgba(68,136,255,.3),transparent)}
+  .hap-card:hover{border-color:rgba(201,168,76,.28)}
+
+  .hap-icon{font-size:22px;margin-bottom:12px;display:block}
+  .hap-area{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.45em;color:rgba(201,168,76,.45);text-transform:uppercase;margin-bottom:4px;display:block}
+  .hap-name{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.22em;color:rgba(232,228,240,.9);text-transform:uppercase;margin-bottom:14px;display:block}
+  .hap-body{font-size:15px;line-height:1.82;color:rgba(232,228,240,.62)}
+  .hap-body ul{padding-left:18px;margin-top:8px}
+  .hap-body li{margin-bottom:6px;color:rgba(232,228,240,.62)}
+  .hap-body strong{color:rgba(232,228,240,.85);font-weight:500;font-style:normal}
+
+  .affirmation-block{margin-top:12px;padding:12px 16px;border-left:2px solid rgba(201,168,76,.3);background:rgba(201,168,76,.03)}
+  .affirmation-block p{font-style:italic;font-size:15px;color:rgba(201,168,76,.75);line-height:1.7}
+
+  /* ── CRYSTALS LIST ── */
+  .crystal-list{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
+  .crystal-item{display:flex;align-items:center;gap:10px;font-size:14px;color:rgba(232,228,240,.65)}
+  .crystal-dot{width:6px;height:6px;border-radius:50%;background:rgba(201,168,76,.5);flex-shrink:0}
+
+  /* ── THERAPY REFERRAL ── */
+  .referral-box{border:1px solid rgba(68,136,255,.18);background:rgba(68,136,255,.03);padding:28px 32px;margin-top:0}
+  .referral-box h3{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;color:rgba(68,136,255,.7);text-transform:uppercase;margin-bottom:12px}
+  .referral-box p{font-size:15px;line-height:1.8;color:rgba(232,228,240,.6);margin-bottom:10px}
+  .referral-box p:last-child{margin-bottom:0}
+  .referral-link{color:rgba(68,136,255,.75);text-decoration:underline;text-underline-offset:3px}
+
+  /* ── NOTES AREA ── */
+  .notes-area{border:1px solid rgba(201,168,76,.10);background:rgba(6,4,18,.5);padding:24px 28px;min-height:140px}
+  .notes-area p{font-size:15px;color:rgba(232,228,240,.3);font-style:italic}
+
+  /* ── PRINT BUTTON ── */
+  .actions{display:flex;gap:16px;margin-top:48px;justify-content:center;flex-wrap:wrap}
+  .btn-gold{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.35em;color:#000;text-transform:uppercase;text-decoration:none;background:linear-gradient(135deg,#f0dfa0,var(--gold));padding:14px 36px;border:none;cursor:pointer;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);display:inline-block;transition:filter .25s,transform .25s}
+  .btn-gold:hover{filter:brightness(1.1);transform:translateY(-2px)}
+  .btn-outline{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.35em;color:rgba(201,168,76,.7);text-transform:uppercase;text-decoration:none;border:1px solid rgba(201,168,76,.35);padding:13px 36px;display:inline-block;transition:background .25s,border-color .25s;background:transparent}
+  .btn-outline:hover{background:rgba(201,168,76,.07);border-color:rgba(201,168,76,.65)}
+
+  /* ── DIVIDER ── */
+  .rit{display:flex;align-items:center;gap:20px;padding:0;opacity:.4;margin-bottom:36px}
+  .rit::before,.rit::after{content:'';flex:1;height:1px;background:linear-gradient(to right,transparent,rgba(201,168,76,.3),transparent)}
+  .rit span{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.45em;color:var(--gold);white-space:nowrap}
+
+  /* ── FOOTER ── */
+  footer{padding:32px 48px;border-top:1px solid rgba(201,168,76,.07);text-align:center}
+  footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.28em;color:rgba(180,170,200,.2);text-transform:uppercase;line-height:2.2}
+
+  /* ── PRINT STYLES ── */
+  @media print{
+    nav,.actions{display:none}
+    body{background:#fff;color:#111}
+    .plan-wrap{padding:20px}
+    .page-hero{padding:30px 20px 20px;background:#fff}
+    h1,.sec-label,.plan-section-title,.tl-title,.hap-name,.hap-area,.rec-card-badge,.rec-card-name{color:#111}
+    .plan-body,.tl-body,.hap-body,.rec-card-desc,.plan-body,.aftercare-intro{color:#333}
+    .client-block,.rec-card,.hap-card,.notes-area,.referral-box{border-color:#ccc;background:#fafafa}
+    .hap-card::before{display:none}
+    .affirmation-block{border-left-color:#bbb}
+    footer{display:none}
+  }
+
+  @media(max-width:700px){
+    nav{padding:16px 20px}
+    .page-hero{padding:110px 20px 50px}
+    .plan-wrap{padding:40px 20px 72px}
+    .client-grid{grid-template-columns:1fr 1fr}
+    .hap-grid{grid-template-columns:1fr}
+    .crystal-list{grid-template-columns:1fr}
+    .actions{flex-direction:column;align-items:center}
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="/" class="nav-brand">Royal Energy Alchemy</a>
+  <a href="/" class="nav-back">← Back to Site</a>
+</nav>
+
+<!-- HERO -->
+<div class="page-hero">
+  <span class="sec-label">Daron Royal · Galactic Healer</span>
+  <h1>Client Treatment Plan</h1>
+  <p class="hero-sub">Your personalized energetic care plan — sessions, check-ins, home aftercare, and professional referral guidance.</p>
+</div>
+
+<!-- PLAN BODY -->
+<div class="plan-wrap">
+
+  <!-- 1 · CLIENT INFORMATION -->
+  <div class="plan-section">
+    <div class="plan-section-header">
+      <span class="plan-section-num">01</span>
+      <span class="plan-section-title">Client Information</span>
+      <div class="plan-section-line"></div>
+    </div>
+    <div class="client-block">
+      <div class="client-grid">
+        <div class="client-field">
+          <label>Client Name</label>
+          <p class="blank">&nbsp;</p>
+        </div>
+        <div class="client-field">
+          <label>Session Date</label>
+          <p class="blank">&nbsp;</p>
+        </div>
+        <div class="client-field">
+          <label>Plan Type</label>
+          <p class="blank">&nbsp;</p>
+        </div>
+        <div class="client-field">
+          <label>Primary Concern</label>
+          <p class="blank">&nbsp;</p>
+        </div>
+        <div class="client-field">
+          <label>Contact</label>
+          <p class="blank">&nbsp;</p>
+        </div>
+        <div class="client-field">
+          <label>Practitioner</label>
+          <p>Daron Royal</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2 · RECOMMENDED SERVICE -->
+  <div class="plan-section">
+    <div class="plan-section-header">
+      <span class="plan-section-num">02</span>
+      <span class="plan-section-title">Recommended Service</span>
+      <div class="plan-section-line"></div>
+    </div>
+    <p class="plan-body">Based on your intake assessment, the following session type has been selected as the best match for your current energetic condition.</p>
+
+    <div class="rec-card">
+      <span class="rec-card-badge">Recommended</span>
+      <div>
+        <div class="rec-card-name">[ Session Type ]</div>
+        <p class="rec-card-desc">Session description and scope of work — filled in after intake assessment is complete.</p>
+        <div class="rec-card-price">[ Price ]</div>
+      </div>
+    </div>
+
+    <p class="plan-body">Payment is required in full at the time of scheduling. Your appointment is not confirmed until payment is received. PayPal: <strong>droyal168@gmail.com</strong> · Venmo: <strong>@Daron-Royal</strong> · Cash App: <strong>$DaronRoyal</strong> · Zelle: <strong>droyal168@gmail.com</strong></p>
+  </div>
+
+  <!-- 3 · SESSION PLAN & SCHEDULE -->
+  <div class="plan-section">
+    <div class="plan-section-header">
+      <span class="plan-section-num">03</span>
+      <span class="plan-section-title">Session Plan &amp; Schedule</span>
+      <div class="plan-section-line"></div>
+    </div>
+    <p class="plan-body">Your treatment plan spans the duration below. Each session is tracked with structured check-ins. Daron will reach out at each milestone — your responsibility is to respond honestly.</p>
+
+    <div class="rec-card" style="display:grid;grid-template-columns:repeat(3,1fr);gap:0;padding:0;overflow:hidden">
+      <div style="padding:20px 22px;border-right:1px solid rgba(201,168,76,.10)">
+        <label style="font-family:'Cinzel',serif;font-size:8px;letter-spacing:.4em;color:rgba(201,168,76,.45);text-transform:uppercase;display:block;margin-bottom:8px">Plan Length</label>
+        <p style="font-size:17px;color:rgba(232,228,240,.85)">[ Duration ]</p>
+      </div>
+      <div style="padding:20px 22px;border-right:1px solid rgba(201,168,76,.10)">
+        <label style="font-family:'Cinzel',serif;font-size:8px;letter-spacing:.4em;color:rgba(201,168,76,.45);text-transform:uppercase;display:block;margin-bottom:8px">Sessions</label>
+        <p style="font-size:17px;color:rgba(232,228,240,.85)">[ Count ]</p>
+      </div>
+      <div style="padding:20px 22px">
+        <label style="font-family:'Cinzel',serif;font-size:8px;letter-spacing:.4em;color:rgba(201,168,76,.45);text-transform:uppercase;display:block;margin-bottom:8px">Frequency</label>
+        <p style="font-size:17px;color:rgba(232,228,240,.85)">[ Cadence ]</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4 · AFTERCARE CHECK-IN TIMELINE -->
+  <div class="plan-section">
+    <div class="plan-section-header">
+      <span class="plan-section-num">04</span>
+      <span class="plan-section-title">Aftercare Check-In Timeline</span>
+      <div class="plan-section-line"></div>
+    </div>
+    <p class="plan-body">Every session is followed by a structured check-in sequence. These are not optional — they allow Daron to monitor your field and catch anything that needs a follow-up before the next session.</p>
+
+    <div class="timeline">
+      <div class="tl-row">
+        <div class="tl-dot"><span>24H</span></div>
+        <div class="tl-content">
+          <div class="tl-title">First Check-In</div>
+          <p class="tl-body">Sleep quality, mood, body sensations, dreams, water intake. What feels lighter. What still feels active or present.</p>
+        </div>
+      </div>
+      <div class="tl-row">
+        <div class="tl-dot"><span>48H</span></div>
+        <div class="tl-content">
+          <div class="tl-title">Second Check-In</div>
+          <p class="tl-body">What has shifted since the first check-in. What still feels present. Whether additional support is needed before the 72-hour mark.</p>
+        </div>
+      </div>
+      <div class="tl-row">
+        <div class="tl-dot"><span>72H</span></div>
+        <div class="tl-content">
+          <div class="tl-title">Deep Survey + Therapy Referral</div>
+          <p class="tl-body">Full symptom survey. Daron recommends booking a session with your therapist or provider within the next week to process what shifted. ZocDoc referral provided if needed.</p>
+        </div>
+      </div>
+      <div class="tl-row">
+        <div class="tl-dot"><span>1MO</span></div>
+        <div class="tl-content">
+          <div class="tl-title">Monthly Review</div>
+          <p class="tl-body">Pattern review, space energy check, recurring symptoms, and optional tune-up session recommendation.</p>
+        </div>
+      </div>
+      <div class="tl-row">
+        <div class="tl-dot"><span>3MO</span></div>
+        <div class="tl-content">
+          <div class="tl-title">Long-Term Check-In</div>
+          <p class="tl-body">Longitudinal progress summary, rebooking offer, referral request, and updated care plan for the next quarter.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- 5 · HOME AFTERCARE PROTOCOL                 -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="plan-section">
+    <div class="plan-section-header">
+      <span class="plan-section-num">05</span>
+      <span class="plan-section-title">Home Aftercare Protocol</span>
+      <div class="plan-section-line"></div>
+    </div>
+
+    <p class="aftercare-intro">What Daron clears in a session, your environment can reintroduce. The following four practices reinforce the work energetically — in your home, your body, and your field. Begin these the day of your session and continue for a minimum of two weeks.</p>
+
+    <div class="hap-grid">
+
+      <!-- Card 1: Salt Cleansing -->
+      <div class="hap-card">
+        <span class="hap-icon">🧂</span>
+        <span class="hap-area">Home</span>
+        <span class="hap-name">Salt Cleansing</span>
+        <div class="hap-body">
+          <p>Use sea salt or Himalayan salt to physically and energetically clean your home. Sprinkle along <strong>doorways and windowsills</strong>. Mop floors with salt water. <strong>Replace every 3 days</strong> for the first week after your session.</p>
+        </div>
+      </div>
+
+      <!-- Card 2: Sound -->
+      <div class="hap-card">
+        <span class="hap-icon">🎵</span>
+        <span class="hap-area">Sound</span>
+        <span class="hap-name">High Vibrational Audio</span>
+        <div class="hap-body">
+          <p>Play <strong>432hz, 528hz, or Solfeggio frequencies</strong> in your home daily. These frequencies repel low vibrational entities and attachments. YouTube and Spotify have free playlists.</p>
+          <p style="margin-top:10px">Play for a minimum of <strong>30 minutes per day</strong>, especially in the room where you sleep.</p>
+        </div>
+      </div>
+
+      <!-- Card 3: Body -->
+      <div class="hap-card">
+        <span class="hap-icon">🛁</span>
+        <span class="hap-area">Body</span>
+        <span class="hap-name">Physical Protection Protocol</span>
+        <div class="hap-body">
+          <ul>
+            <li><strong>Salt or baking soda foot soak</strong> before bed — ½ cup in warm water, soak 15 minutes</li>
+            <li>Place <strong>salt under your bed</strong> in a small dish — refresh weekly</li>
+            <li>Repeat this affirmation at bedtime:</li>
+          </ul>
+          <div class="affirmation-block">
+            <p>"My energy is my own. I am protected. Nothing that does not belong to me may remain."</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 4: Crystals -->
+      <div class="hap-card">
+        <span class="hap-icon">🔮</span>
+        <span class="hap-area">Crystals</span>
+        <span class="hap-name">Protection Grid</span>
+        <div class="hap-body">
+          <p>Recommended crystals for your protection grid:</p>
+          <div class="crystal-list">
+            <div class="crystal-item"><div class="crystal-dot"></div><span><strong>Black Tourmaline</strong> — protection</span></div>
+            <div class="crystal-item"><div class="crystal-dot" style="background:rgba(220,220,255,.6)"></div><span><strong>Selenite</strong> — clearing</span></div>
+            <div class="crystal-item"><div class="crystal-dot" style="background:rgba(30,30,30,.9);border:1px solid rgba(201,168,76,.3)"></div><span><strong>Obsidian</strong> — shielding</span></div>
+            <div class="crystal-item"><div class="crystal-dot" style="background:rgba(160,100,220,.7)"></div><span><strong>Amethyst</strong> — spiritual protection</span></div>
+          </div>
+          <p style="margin-top:12px">Place at <strong>bedroom corners</strong> or carry on your person. Cleanse crystals <strong>weekly</strong> with salt water or moonlight.</p>
+        </div>
+      </div>
+
+    </div><!-- /.hap-grid -->
+  </div><!-- /.plan-section -->
+
+  <!-- 6 · THERAPY REFERRAL -->
+  <div class="plan-section">
+    <div class="plan-section-header">
+      <span class="plan-section-num">06</span>
+      <span class="plan-section-title">Professional Referral</span>
+      <div class="plan-section-line"></div>
+    </div>
+    <div class="referral-box">
+      <h3>Therapist &amp; Medical Coordination</h3>
+      <p>Energetic clearing moves things. What surfaces emotionally or physically after a session may need professional support to be fully processed. This is not a limitation of the work — it is how the work integrates.</p>
+      <p>Daron recommends scheduling a session with your therapist or primary care provider within one week of your 72-hour check-in. If you do not have a provider, <a href="https://www.zocdoc.com" target="_blank" rel="noopener" class="referral-link">ZocDoc</a> can match you to a licensed therapist near you at little or no cost through your insurance.</p>
+      <p>If you are experiencing acute distress at any point, please contact the <strong>988 Suicide &amp; Crisis Lifeline</strong> (call or text 988) or your nearest emergency room. Daron is a spiritual practitioner, not a licensed medical provider.</p>
+    </div>
+  </div>
+
+  <!-- 7 · PRACTITIONER NOTES -->
+  <div class="plan-section">
+    <div class="plan-section-header">
+      <span class="plan-section-num">07</span>
+      <span class="plan-section-title">Practitioner Notes</span>
+      <div class="plan-section-line"></div>
+    </div>
+    <div class="notes-area">
+      <p>Session notes and observations from Daron — added after your session is complete.</p>
+    </div>
+  </div>
+
+  <!-- DIVIDER -->
+  <div class="rit"><span>✦ &nbsp; Royal Energy Alchemy &nbsp; ✦</span></div>
+
+  <!-- CONTACT REMINDER -->
+  <div style="text-align:center;margin-bottom:40px">
+    <p style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.35em;color:rgba(201,168,76,.45);text-transform:uppercase;line-height:2.4">Questions between sessions<br><span style="color:rgba(201,168,76,.65)">royalenergyalchemy@gmail.com &nbsp;·&nbsp; 814-392-2095</span></p>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="actions">
+    <button class="btn-gold" onclick="window.print()">Print / Save as PDF</button>
+    <a href="/contact#contact" class="btn-outline">Book Your Session →</a>
+    <a href="/waiver-esign.html" class="btn-outline">Sign Waiver →</a>
+  </div>
+
+</div><!-- /.plan-wrap -->
+
+<footer>
+  <p>Royal Energy Alchemy LLC &nbsp;·&nbsp; Erie / Waterford, Pennsylvania &nbsp;·&nbsp; Distance Sessions Available</p>
+  <p>Spiritual and energetic services are complementary wellness offerings and are not medical, legal, psychological, or financial advice.</p>
+  <p style="margin-top:6px"><a href="/" style="color:rgba(201,168,76,.3);text-decoration:none;font-family:'Cinzel',serif;font-size:9px;letter-spacing:.3em;">← Return to Site</a></p>
+</footer>
+
+</body>
+</html>
