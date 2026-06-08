@@ -119,11 +119,14 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:18px 48px;display:fl
 .tl-body{font-family:'EB Garamond',serif;font-size:15px;color:rgba(180,170,200,.65);line-height:1.6}
 
 /* PAYMENTS */
-.pay-grid{display:flex;gap:1px;flex-wrap:wrap;background:#e8b84b12;max-width:900px;margin:0 auto}
-.pay-card{background:rgba(0,4,8,.96);padding:28px 32px;flex:1;min-width:160px;text-align:center;cursor:pointer;transition:background .3s}
-.pay-card:hover{background:rgba(8,6,22,.98)}
-.pay-method{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.35em;color:#e8b84b8c;text-transform:uppercase;margin-bottom:10px;display:block}
+.pay-grid{display:flex;gap:1px;flex-wrap:wrap;background:#e8b84b12;max-width:980px;margin:0 auto 24px}
+.pay-card{background:#04020e;padding:24px 20px;flex:1;min-width:200px;text-align:center;cursor:pointer;transition:background .3s;display:flex;flex-direction:column;align-items:center;gap:10px;text-decoration:none;color:inherit}
+.pay-card:hover{background:#0a0612}
+.pay-method{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.35em;color:#e8b84b99;text-transform:uppercase;display:block}
 .pay-handle{font-family:'EB Garamond',serif;font-size:18px;color:#f0ecff}
+.pay-qr{background:#fff;padding:8px;display:inline-block;margin:4px 0}
+.pay-qr img{display:block;width:90px;height:90px;object-fit:contain}
+.pay-scan{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.2em;color:#e8b84b4d;text-transform:uppercase}
 
 /* CONTACT */
 .contact-wrap{max-width:680px;margin:0 auto}
@@ -1920,11 +1923,38 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&modal.clas
     <p class="sec-body">Payment is collected after Daron confirms the right session. Send through any of the methods below.</p>
   </div>
   <div class="pay-grid reveal reveal-d1">
-    <div class="pay-card"><span class="pay-method">Cash App</span><div class="pay-handle">$DaronRoyal</div></div>
-    <div class="pay-card"><span class="pay-method">PayPal</span><div class="pay-handle">droyal168@gmail.com</div><div style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.2em;color:#e8b84b66;text-transform:uppercase;margin-top:8px;line-height:1.5;">Personal account<br>Business coming soon</div></div>
-    <div class="pay-card"><span class="pay-method">Venmo</span><div class="pay-handle">@Daron-Royal</div><div style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.2em;color:#e8b84b66;text-transform:uppercase;margin-top:8px;line-height:1.5;">Personal account<br>Business coming soon</div></div>
-    <div class="pay-card"><span class="pay-method">Zelle</span><div class="pay-handle">droyal168@gmail.com</div></div>
-    <div class="pay-card"><span class="pay-method">Cash</span><div class="pay-handle">Local sessions</div></div>
+    <a href="/pay.html" class="pay-card">
+      <span class="pay-method">Cash App</span>
+      <div class="pay-qr"><img src="images/cashapp-qr.png" alt="Cash App QR"></div>
+      <div class="pay-handle">$DaronRoyal</div>
+      <span class="pay-scan">Scan to pay</span>
+    </a>
+    <a href="/pay.html" class="pay-card">
+      <span class="pay-method">Venmo</span>
+      <div class="pay-qr"><img src="images/venmo-qr.png" alt="Venmo QR"></div>
+      <div class="pay-handle">@Daron-Royal</div>
+      <span class="pay-scan">Scan to pay</span>
+    </a>
+    <a href="/pay.html" class="pay-card">
+      <span class="pay-method">PayPal</span>
+      <div class="pay-qr"><img src="images/paypal-qr.png" alt="PayPal QR"></div>
+      <div class="pay-handle">Daron Royal</div>
+      <span class="pay-scan">Scan to pay</span>
+    </a>
+    <a href="/pay.html" class="pay-card">
+      <span class="pay-method">Zelle</span>
+      <div class="pay-qr"><img src="images/zelle-qr.png" alt="Zelle QR"></div>
+      <div class="pay-handle">814-392-2095</div>
+      <span class="pay-scan">Scan with bank app</span>
+    </a>
+    <a href="/pay.html" class="pay-card" style="justify-content:center">
+      <span class="pay-method">Cash</span>
+      <div class="pay-handle" style="margin-top:8px">Local sessions</div>
+      <span class="pay-scan" style="margin-top:4px">In person only</span>
+    </a>
+  </div>
+  <div style="text-align:center" class="reveal reveal-d2">
+    <a href="/pay.html" class="btn-gold" style="font-size:11px">View All QR Codes →</a>
   </div>
 </section>
 

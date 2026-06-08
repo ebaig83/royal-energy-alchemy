@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pay Daron Royal — Royal Energy Alchemy</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--gold:#e8b84b;--gold-light:#f8e090}
+body{background:#04020e;color:#f0ecff;font-family:'EB Garamond',serif;min-height:100vh}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:18px 48px;background:rgba(0,2,8,.92);backdrop-filter:blur(14px);border-bottom:1px solid #e8b84b14}
+.nav-brand{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;color:#e8b84bb3;text-transform:uppercase;text-decoration:none}
+.nav-back{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#d8d4f073;text-transform:uppercase;text-decoration:none;transition:color .25s}
+.nav-back:hover{color:var(--gold)}
+
+.wrap{max-width:960px;margin:0 auto;padding:100px 24px 64px}
+
+.header{text-align:center;margin-bottom:56px;padding-bottom:32px;border-bottom:1px solid #e8b84b1a}
+.sec-label{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.5em;color:#e8b84b80;text-transform:uppercase;display:block;margin-bottom:14px}
+.header h1{font-family:'Cinzel',serif;font-size:clamp(20px,3vw,32px);color:#fff;letter-spacing:.08em;margin-bottom:12px}
+.header p{font-size:17px;font-style:italic;color:#d8d4f099;line-height:1.8;max-width:520px;margin:0 auto}
+
+.qr-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:2px;background:#e8b84b14;margin-bottom:40px}
+
+.qr-card{background:#0a0612;padding:36px 24px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:16px;transition:background .3s}
+.qr-card:hover{background:#0f0a1a}
+
+.qr-method{font-family:'Cinzel',serif;font-size:15px;letter-spacing:.3em;color:#e8b84bb3;text-transform:uppercase}
+.qr-handle{font-family:'EB Garamond',serif;font-size:20px;color:#f0ecff;line-height:1.4}
+.qr-sub{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.2em;color:#e8b84b66;text-transform:uppercase;line-height:1.6}
+
+.qr-img-wrap{background:#fff;padding:14px;display:inline-block;border-radius:2px;margin:4px 0}
+.qr-img-wrap img{display:block;width:200px;height:200px;object-fit:contain}
+.qr-img-placeholder{width:200px;height:200px;display:flex;align-items:center;justify-content:center;background:#f5f5f5;color:#999;font-family:sans-serif;font-size:12px;text-align:center;padding:20px;line-height:1.5}
+
+.scan-note{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#e8b84b4d;text-transform:uppercase;margin-top:4px}
+
+.notice{background:#e8b84b0a;border:1px solid #e8b84b1f;padding:20px 28px;max-width:640px;margin:0 auto 40px;text-align:center}
+.notice p{font-size:16px;color:#d8d4f099;line-height:1.8}
+.notice strong{color:#f0ecff;font-style:normal}
+
+.back-wrap{text-align:center;margin-top:16px}
+.btn-outline{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;color:var(--gold);text-transform:uppercase;text-decoration:none;border:1px solid #e8b84b59;padding:13px 36px;display:inline-block;transition:all .3s;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%)}
+.btn-outline:hover{border-color:var(--gold);background:#e8b84b0f}
+
+footer{text-align:center;padding:32px 24px;border-top:1px solid #e8b84b0f;margin-top:48px}
+footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.28em;color:#c8c4e033;text-transform:uppercase;line-height:2}
+
+@media(max-width:600px){
+  nav{padding:14px 20px}
+  .wrap{padding:80px 16px 48px}
+  .qr-grid{grid-template-columns:1fr 1fr}
+  .qr-img-wrap img,.qr-img-placeholder{width:160px;height:160px}
+}
+@media(max-width:420px){
+  .qr-grid{grid-template-columns:1fr}
+  .qr-img-wrap img,.qr-img-placeholder{width:220px;height:220px}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-brand">Royal Energy Alchemy</a>
+  <a href="/" class="nav-back">← Back to Site</a>
+</nav>
+
+<div class="wrap">
+
+  <div class="header">
+    <span class="sec-label">Accepted Payments</span>
+    <h1>Scan to Pay</h1>
+    <p>Open your banking or payment app and scan the QR code for your preferred method. Payment confirms your session.</p>
+  </div>
+
+  <div class="qr-grid">
+
+    <!-- CASH APP -->
+    <div class="qr-card">
+      <span class="qr-method">Cash App</span>
+      <div class="qr-img-wrap">
+        <img src="images/cashapp-qr.png" alt="Cash App QR code for $DaronRoyal" onerror="this.parentElement.innerHTML='<div class=qr-img-placeholder>Save cashapp-qr.png to images/ folder</div>'">
+      </div>
+      <div class="qr-handle">$DaronRoyal</div>
+      <span class="scan-note">Scan with Cash App</span>
+    </div>
+
+    <!-- VENMO -->
+    <div class="qr-card">
+      <span class="qr-method">Venmo</span>
+      <div class="qr-img-wrap">
+        <img src="images/venmo-qr.png" alt="Venmo QR code for @Daron-Royal" onerror="this.parentElement.innerHTML='<div class=qr-img-placeholder>Save venmo-qr.png to images/ folder</div>'">
+      </div>
+      <div class="qr-handle">@Daron-Royal</div>
+      <span class="scan-note">Scan with Venmo</span>
+    </div>
+
+    <!-- PAYPAL -->
+    <div class="qr-card">
+      <span class="qr-method">PayPal</span>
+      <div class="qr-img-wrap">
+        <img src="images/paypal-qr.png" alt="PayPal QR code for Daron Royal" onerror="this.parentElement.innerHTML='<div class=qr-img-placeholder>Save paypal-qr.png to images/ folder</div>'">
+      </div>
+      <div class="qr-handle">Daron Royal</div>
+      <span class="scan-note">Scan with PayPal</span>
+    </div>
+
+    <!-- ZELLE -->
+    <div class="qr-card">
+      <span class="qr-method">Zelle</span>
+      <div class="qr-img-wrap">
+        <img src="images/zelle-qr.png" alt="Zelle QR code for Daron Royal" onerror="this.parentElement.innerHTML='<div class=qr-img-placeholder>Save zelle-qr.png to images/ folder</div>'">
+      </div>
+      <div class="qr-handle">DARON ROYAL</div>
+      <div class="qr-sub">(814) 392-2095</div>
+      <span class="scan-note">Scan with your bank app</span>
+    </div>
+
+  </div>
+
+  <div class="notice">
+    <p><strong>Payment confirms your appointment.</strong> Send payment after Daron has confirmed the right session for you. Include your name and session type in the note. If you have any issues, contact <a href="mailto:royalenergyalchemy@gmail.com" style="color:#e8b84bb3">royalenergyalchemy@gmail.com</a> or <a href="tel:8143922095" style="color:#e8b84bb3">814-392-2095</a>.</p>
+  </div>
+
+  <div class="back-wrap">
+    <a href="/" class="btn-outline">← Return to Site</a>
+  </div>
+
+</div>
+
+<footer>
+  <p>Royal Energy Alchemy LLC · Erie / Waterford, Pennsylvania · royalenergyalchemy@gmail.com</p>
+  <p>Spiritual and energetic services are complementary wellness offerings and are not medical, legal, or financial advice.</p>
+</footer>
+
+</body>
+</html>
