@@ -16,7 +16,7 @@ body{background:#04020e;color:#f0ecff;font-family:'EB Garamond',serif;min-height
 .nav-links{display:flex;gap:12px}
 .nav-link{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#e8b84bbb;text-transform:uppercase;text-decoration:none;border:1px solid #e8b84b44;padding:7px 14px;transition:all .2s}
 .nav-link:hover,.nav-link.active{border-color:var(--gold);color:var(--gold);background:#e8b84b0d}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;background:#e8b84b1a;margin-bottom:28px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:1px;background:#e8b84b1a;margin-bottom:28px}
 .stat{background:#0a0612;padding:20px 20px;text-align:center}
 .stat-val{font-family:'Cinzel',serif;font-size:32px;font-weight:700;color:var(--gold);display:block;margin-bottom:4px}
 .stat-label{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#e8b84b99;text-transform:uppercase}
@@ -59,6 +59,26 @@ body{background:#04020e;color:#f0ecff;font-family:'EB Garamond',serif;min-height
 .checkin-detail strong{color:#e8b84bdd;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.2em;text-transform:uppercase;display:block;margin-top:10px;margin-bottom:3px}
 .intensity-bar{height:6px;background:#e8b84b14;border-radius:3px;margin-top:4px;overflow:hidden}
 .intensity-fill{height:100%;background:linear-gradient(to right,var(--teal),var(--gold));border-radius:3px;transition:width .5s}
+.stat-sub{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b66;text-transform:uppercase;display:block;margin-top:2px}
+.stat-val.warn{color:#ee9944}
+.stat-val.good{color:#22c98a}
+.client-card{background:#0a0612;border:1px solid #e8b84b22;padding:22px;margin-bottom:10px;position:relative}
+.client-card:hover{border-color:#e8b84b55}
+.client-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:4px 20px;margin:12px 0}
+.client-meta-item{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.15em;color:#c8c4e0;text-transform:uppercase}
+.client-meta-item span{color:#e8b84bcc;display:block;font-size:13px;margin-top:2px}
+.outcome-track{display:flex;align-items:center;gap:6px;margin:10px 0 4px}
+.outcome-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.outcome-dot.high{background:#ee4444}
+.outcome-dot.mid{background:#e8b84b}
+.outcome-dot.low{background:#22c98a}
+.outcome-line{height:2px;flex:1;background:linear-gradient(to right,#ee4444,#e8b84b,#22c98a)}
+.client-notes{font-size:15px;font-style:italic;color:#c8c4e0;line-height:1.75;margin:10px 0;padding:10px 14px;border-left:2px solid #e8b84b33}
+.followup-bar{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}
+.fu-badge{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;text-transform:uppercase;padding:3px 9px;border:1px solid}
+.fu-badge.done{color:#22c98acc;border-color:#22c98a55;background:#22c98a0d}
+.fu-badge.pending{color:#e8b84bcc;border-color:#e8b84b55;background:#e8b84b0a}
+.fu-badge.missed{color:#ee707099;border-color:#ee707044;background:#ee70700a}
 footer{text-align:center;padding:32px;border-top:1px solid #e8b84b11;margin-top:48px}
 footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#c8c4e055;text-transform:uppercase}
 @media(max-width:600px){.wrap{padding:20px 14px}.header{flex-direction:column;gap:14px;align-items:flex-start}.nav-links{flex-wrap:wrap}}
@@ -86,6 +106,11 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#c
     <div class="stat"><span class="stat-val" id="statCheckins">0</span><span class="stat-label">Check-Ins This Week</span></div>
     <div class="stat"><span class="stat-val" id="statRevenue">$0</span><span class="stat-label">Total Revenue</span></div>
     <div class="stat"><span class="stat-val" id="statNps">—</span><span class="stat-label">NPS Score</span></div>
+    <div class="stat"><span class="stat-val" id="statActiveClients">48</span><span class="stat-label">Active Clients</span><span class="stat-sub" id="statTotalClients">250 total</span></div>
+    <div class="stat"><span class="stat-val warn" id="statCancelRate">14%</span><span class="stat-label">Cancellation Rate</span></div>
+    <div class="stat"><span class="stat-val warn" id="statNoShow">6%</span><span class="stat-label">No-Show Rate</span></div>
+    <div class="stat"><span class="stat-val" id="statRepeatRate">42%</span><span class="stat-label">Repeat Client Rate</span></div>
+    <div class="stat"><span class="stat-val good" id="statFollowUp">78%</span><span class="stat-label">Follow-Up Completion</span></div>
   </div>
 
   <!-- Tabs -->
@@ -93,6 +118,7 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#c
     <button class="tab active" onclick="showTab('ratings')">Ratings & Reviews</button>
     <button class="tab" onclick="showTab('checkins')">Check-In Responses</button>
     <button class="tab" onclick="showTab('sessions')">Session Log</button>
+    <button class="tab" onclick="showTab('clients')">Clients</button>
     <button class="tab" onclick="showTab('analytics')">Analytics</button>
   </div>
 
@@ -230,6 +256,125 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#c
     </div>
   </div>
 
+  <!-- CLIENTS TAB -->
+  <div class="tab-content" id="tab-clients">
+    <div class="section-title">Client Roster</div>
+
+    <!-- Jordan L. -->
+    <div class="client-card">
+      <div class="card-head">
+        <div>
+          <div class="card-name">Jordan L. <span class="badge approved">Active</span></div>
+          <div class="card-time">REA-2026-0041 · Energetic Parasite Removal · Cord Removal</div>
+        </div>
+        <button class="action-btn view" onclick="">View Full Record</button>
+      </div>
+      <div class="client-meta">
+        <div class="client-meta-item">Total Sessions<span>4</span></div>
+        <div class="client-meta-item">First Visit<span>May 2026</span></div>
+        <div class="client-meta-item">Last Visit<span>June 2026</span></div>
+        <div class="client-meta-item">Avg Session Price<span>$195</span></div>
+        <div class="client-meta-item">Lifetime Value<span>$780</span></div>
+        <div class="client-meta-item">Intake Severity<span>8 / 10</span></div>
+      </div>
+      <div class="tags" style="margin-bottom:8px">
+        <span class="tag">Parasite Removal</span><span class="tag">Cord Removal</span><span class="tag">Perceptual</span>
+      </div>
+      <div style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.2em;color:#e8b84b99;text-transform:uppercase;margin-bottom:6px">Outcome Trend</div>
+      <div class="outcome-track">
+        <span style="font-family:'Cinzel',serif;font-size:10px;color:#ee7070">8</span>
+        <div class="outcome-dot high"></div>
+        <div class="outcome-line"></div>
+        <div class="outcome-dot mid"></div>
+        <div class="outcome-dot low"></div>
+        <span style="font-family:'Cinzel',serif;font-size:10px;color:#22c98a">3</span>
+        <span style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.1em;color:#22c98a99;margin-left:6px">Intensity dropped 8→3</span>
+      </div>
+      <div class="client-notes">"The pressure behind my eyes is gone. I don't feel watched anymore. Slept 8 hours straight for the first time in months."</div>
+      <div class="followup-bar">
+        <span style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b88;text-transform:uppercase">Follow-Ups:</span>
+        <span class="fu-badge done">24hr ✓</span>
+        <span class="fu-badge done">72hr ✓</span>
+        <span class="fu-badge pending">30-day pending</span>
+      </div>
+      <div class="actions" style="margin-top:14px">
+        <button class="action-btn view">View Check-Ins</button>
+        <button class="action-btn approve">Log New Session</button>
+      </div>
+    </div>
+
+    <!-- Renee K. -->
+    <div class="client-card">
+      <div class="card-head">
+        <div>
+          <div class="card-name">Renee K. <span class="badge approved">Active</span></div>
+          <div class="card-time">REA-2026-0059 · Distance Session</div>
+        </div>
+        <button class="action-btn view" onclick="">View Full Record</button>
+      </div>
+      <div class="client-meta">
+        <div class="client-meta-item">Total Sessions<span>2</span></div>
+        <div class="client-meta-item">First Visit<span>May 2026</span></div>
+        <div class="client-meta-item">Last Visit<span>June 2026</span></div>
+        <div class="client-meta-item">Avg Session Price<span>$150</span></div>
+        <div class="client-meta-item">Lifetime Value<span>$300</span></div>
+        <div class="client-meta-item">Intake Severity<span>9 / 10</span></div>
+      </div>
+      <div class="tags" style="margin-bottom:8px">
+        <span class="tag">Distance Session</span><span class="tag">Cord to Mother</span>
+      </div>
+      <div style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.2em;color:#e8b84b99;text-transform:uppercase;margin-bottom:6px">Outcome Trend</div>
+      <div class="outcome-track">
+        <span style="font-family:'Cinzel',serif;font-size:10px;color:#ee7070">9</span>
+        <div class="outcome-dot high"></div>
+        <div class="outcome-line"></div>
+        <div class="outcome-dot mid"></div>
+        <span style="font-family:'Cinzel',serif;font-size:10px;color:#e8b84b">6</span>
+        <span style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.1em;color:#e8b84b99;margin-left:6px">Improving — cord still active</span>
+      </div>
+      <div class="client-notes">"Something shifted but I can't name it yet. The cord to my mother still feels present."</div>
+      <div class="followup-bar">
+        <span style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b88;text-transform:uppercase">Follow-Ups:</span>
+        <span class="fu-badge done">24hr ✓</span>
+        <span class="fu-badge missed">72hr missed</span>
+        <span class="fu-badge pending">30-day pending</span>
+      </div>
+      <div class="actions" style="margin-top:14px">
+        <button class="action-btn view">View Check-Ins</button>
+        <button class="action-btn approve">Log New Session</button>
+      </div>
+    </div>
+
+    <!-- Anonymous / Sarah M. -->
+    <div class="client-card" style="border-color:#e8b84b11;opacity:.75">
+      <div class="card-head">
+        <div>
+          <div class="card-name">Sarah M. <span class="badge pending">Inactive</span></div>
+          <div class="card-time">REA-2026-0012 · Energetic Parasite Removal</div>
+        </div>
+      </div>
+      <div class="client-meta">
+        <div class="client-meta-item">Total Sessions<span>1</span></div>
+        <div class="client-meta-item">First Visit<span>Apr 2026</span></div>
+        <div class="client-meta-item">Last Visit<span>Apr 2026</span></div>
+        <div class="client-meta-item">Intake Severity<span>7 / 10</span></div>
+      </div>
+      <div class="followup-bar">
+        <span style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b88;text-transform:uppercase">Follow-Ups:</span>
+        <span class="fu-badge done">24hr ✓</span>
+        <span class="fu-badge missed">72hr missed</span>
+        <span class="fu-badge missed">30-day missed</span>
+      </div>
+      <div class="actions" style="margin-top:14px">
+        <button class="action-btn view">View Check-Ins</button>
+      </div>
+    </div>
+
+    <div style="text-align:center;padding:20px 0">
+      <p style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#e8b84b66;text-transform:uppercase">Client records are assembled from waiver intake, session logs, and check-in responses. Demo data shown.</p>
+    </div>
+  </div>
+
   <!-- ANALYTICS TAB -->
   <div class="tab-content" id="tab-analytics">
 
@@ -346,6 +491,59 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#c
         </div>
       </div>
       <p style="font-size:14px;font-style:italic;color:#c8c4e0;margin-top:14px">Belief Before collected on intake waiver (belief_before field). Belief After collected on 24hr check-in and rating form. Demo values shown.</p>
+    </div>
+
+    <!-- Service Breakdown -->
+    <div class="section-title">Service Breakdown</div>
+    <div class="card" style="margin-bottom:24px">
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.2em;color:#e8b84bcc;text-transform:uppercase">Parasite Removal</span>
+            <span style="font-family:'Cinzel',serif;font-size:12px;color:#e8b84b99">32%</span>
+          </div>
+          <div class="intensity-bar"><div class="intensity-fill" style="width:32%"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.2em;color:#e8b84bcc;text-transform:uppercase">Distance Sessions</span>
+            <span style="font-family:'Cinzel',serif;font-size:12px;color:#e8b84b99">25%</span>
+          </div>
+          <div class="intensity-bar"><div class="intensity-fill" style="width:25%"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.2em;color:#e8b84bcc;text-transform:uppercase">Cord Removal</span>
+            <span style="font-family:'Cinzel',serif;font-size:12px;color:#e8b84b99">18%</span>
+          </div>
+          <div class="intensity-bar"><div class="intensity-fill" style="width:18%"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.2em;color:#e8b84bcc;text-transform:uppercase">Coaching</span>
+            <span style="font-family:'Cinzel',serif;font-size:12px;color:#e8b84b99">15%</span>
+          </div>
+          <div class="intensity-bar"><div class="intensity-fill" style="width:15%"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.2em;color:#e8b84bcc;text-transform:uppercase">House Clearing</span>
+            <span style="font-family:'Cinzel',serif;font-size:12px;color:#e8b84b99">10%</span>
+          </div>
+          <div class="intensity-bar"><div class="intensity-fill" style="width:10%"></div></div>
+        </div>
+      </div>
+      <p style="font-size:14px;font-style:italic;color:#c8c4e0;margin-top:14px">Based on service type logged in Session Log. Demo values shown.</p>
+    </div>
+
+    <!-- Client Health -->
+    <div class="section-title">Client Health</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:1px;background:#e8b84b14;margin-bottom:28px">
+      <div class="stat"><span class="stat-val" id="statAClients2">48</span><span class="stat-label">Active Clients</span><span class="stat-sub">of 250 total</span></div>
+      <div class="stat"><span class="stat-val warn">14%</span><span class="stat-label">Cancellation Rate</span></div>
+      <div class="stat"><span class="stat-val warn">6%</span><span class="stat-label">No-Show Rate</span></div>
+      <div class="stat"><span class="stat-val">42%</span><span class="stat-label">Repeat Client Rate</span></div>
+      <div class="stat"><span class="stat-val good">78%</span><span class="stat-label">Follow-Up Completion</span></div>
     </div>
 
   </div>
