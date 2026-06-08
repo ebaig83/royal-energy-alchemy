@@ -7,60 +7,60 @@
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--gold:#c9a84c;--gold-light:#f0dfa0;--teal:#1d9e75;--red:#ee4444}
-body{background:#060410;color:#e8e4f0;font-family:'EB Garamond',serif;min-height:100vh}
+:root{--gold:#e8b84b;--gold-light:#f8e090;--teal:#22c98a;--red:#ee4444}
+body{background:#04020e;color:#f0ecff;font-family:'EB Garamond',serif;min-height:100vh}
 .wrap{max-width:1000px;margin:0 auto;padding:40px 24px}
-.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:36px;padding-bottom:20px;border-bottom:1px solid rgba(201,168,76,0.15)}
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:36px;padding-bottom:20px;border-bottom:1px solid #e8b84b33}
 .header h1{font-family:'Cinzel',serif;font-size:20px;color:#fff;letter-spacing:.1em}
-.header .sub{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.4em;color:rgba(201,168,76,0.5);text-transform:uppercase;display:block;margin-top:4px}
+.header .sub{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.4em;color:#e8b84b99;text-transform:uppercase;display:block;margin-top:4px}
 .nav-links{display:flex;gap:12px}
-.nav-link{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;color:rgba(201,168,76,0.6);text-transform:uppercase;text-decoration:none;border:1px solid rgba(201,168,76,0.2);padding:7px 14px;transition:all .2s}
-.nav-link:hover,.nav-link.active{border-color:var(--gold);color:var(--gold);background:rgba(201,168,76,0.05)}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;background:rgba(201,168,76,0.08);margin-bottom:28px}
-.stat{background:#0a0810;padding:20px 20px;text-align:center}
+.nav-link{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#e8b84bbb;text-transform:uppercase;text-decoration:none;border:1px solid #e8b84b44;padding:7px 14px;transition:all .2s}
+.nav-link:hover,.nav-link.active{border-color:var(--gold);color:var(--gold);background:#e8b84b0d}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;background:#e8b84b1a;margin-bottom:28px}
+.stat{background:#0a0612;padding:20px 20px;text-align:center}
 .stat-val{font-family:'Cinzel',serif;font-size:32px;font-weight:700;color:var(--gold);display:block;margin-bottom:4px}
-.stat-label{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.3em;color:rgba(201,168,76,0.4);text-transform:uppercase}
-.section-title{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.4em;color:rgba(201,168,76,0.6);text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:10px}
-.section-title::after{content:'';flex:1;height:1px;background:rgba(201,168,76,0.1)}
-.card{background:#0a0810;border:1px solid rgba(201,168,76,0.1);padding:20px;margin-bottom:8px;position:relative}
-.card:hover{border-color:rgba(201,168,76,0.2)}
+.stat-label{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#e8b84b99;text-transform:uppercase}
+.section-title{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.4em;color:#e8b84bcc;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.section-title::after{content:'';flex:1;height:1px;background:#e8b84b22}
+.card{background:#0a0612;border:1px solid #e8b84b22;padding:20px;margin-bottom:8px;position:relative}
+.card:hover{border-color:#e8b84b55}
 .card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
-.card-name{font-family:'Cinzel',serif;font-size:13px;color:#e8e4f0;letter-spacing:.1em}
-.card-time{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.2em;color:rgba(201,168,76,0.4);text-transform:uppercase}
-.card-body{font-size:15px;color:rgba(232,228,240,0.7);line-height:1.7;margin-bottom:14px;font-style:italic}
+.card-name{font-family:'Cinzel',serif;font-size:15px;color:#f0ecff;letter-spacing:.1em}
+.card-time{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.2em;color:#e8b84b99;text-transform:uppercase}
+.card-body{font-size:16px;color:#d8d4f0;line-height:1.75;margin-bottom:14px;font-style:italic}
 .stars{font-size:20px;letter-spacing:2px;margin-bottom:8px}
 .stars.s5{color:var(--gold)}
 .stars.s4{color:var(--gold)}
-.stars.s3{color:rgba(201,168,76,0.6)}
-.stars.s2{color:rgba(201,168,76,0.4)}
-.stars.s1{color:rgba(201,168,76,0.3)}
+.stars.s3{color:#e8b84b99}
+.stars.s2{color:#e8b84b66}
+.stars.s1{color:#e8b84b44}
 .tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
-.tag{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.2em;color:rgba(201,168,76,0.5);text-transform:uppercase;border:1px solid rgba(201,168,76,0.12);padding:3px 8px}
-.tag.session{color:rgba(29,158,117,0.7);border-color:rgba(29,158,117,0.2)}
+.tag{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.2em;color:#e8b84bcc;text-transform:uppercase;border:1px solid #e8b84b33;padding:3px 8px}
+.tag.session{color:#22c98acc;border-color:#22c98a44}
 .actions{display:flex;gap:8px;flex-wrap:wrap}
-.action-btn{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.2em;text-transform:uppercase;padding:7px 14px;cursor:pointer;border:1px solid;transition:all .2s;background:transparent}
-.action-btn.approve{color:var(--teal);border-color:rgba(29,158,117,0.3)}
-.action-btn.approve:hover{background:rgba(29,158,117,0.08);border-color:var(--teal)}
-.action-btn.reject{color:rgba(232,100,100,0.6);border-color:rgba(232,100,100,0.2)}
-.action-btn.reject:hover{background:rgba(232,100,100,0.05);border-color:rgba(232,100,100,0.5)}
-.action-btn.view{color:rgba(201,168,76,0.6);border-color:rgba(201,168,76,0.2)}
-.action-btn.view:hover{background:rgba(201,168,76,0.05);border-color:var(--gold)}
-.badge{display:inline-block;font-family:'Cinzel',serif;font-size:8px;letter-spacing:.2em;text-transform:uppercase;padding:3px 8px;border-radius:0}
-.badge.pending{background:rgba(201,168,76,0.1);color:rgba(201,168,76,0.7);border:1px solid rgba(201,168,76,0.2)}
-.badge.approved{background:rgba(29,158,117,0.1);color:rgba(29,158,117,0.7);border:1px solid rgba(29,158,117,0.2)}
-.badge.checkin{background:rgba(127,119,221,0.1);color:rgba(127,119,221,0.7);border:1px solid rgba(127,119,221,0.2)}
-.empty{text-align:center;padding:40px;font-style:italic;color:rgba(180,170,200,0.4);font-size:15px}
-.tab-bar{display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(201,168,76,0.1)}
-.tab{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.25em;text-transform:uppercase;padding:10px 20px;cursor:pointer;color:rgba(201,168,76,0.4);border-bottom:2px solid transparent;transition:all .2s;background:none;border-top:none;border-left:none;border-right:none}
+.action-btn{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.2em;text-transform:uppercase;padding:7px 14px;cursor:pointer;border:1px solid;transition:all .2s;background:transparent}
+.action-btn.approve{color:#22c98a;border-color:#22c98a66}
+.action-btn.approve:hover{background:#22c98a14;border-color:#22c98a}
+.action-btn.reject{color:#ee7070;border-color:#ee707055}
+.action-btn.reject:hover{background:#ee707010;border-color:#ee7070}
+.action-btn.view{color:#e8b84bcc;border-color:#e8b84b44}
+.action-btn.view:hover{background:#e8b84b0d;border-color:var(--gold)}
+.badge{display:inline-block;font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;text-transform:uppercase;padding:3px 8px;border-radius:0}
+.badge.pending{background:#e8b84b1a;color:#e8b84bee;border:1px solid #e8b84b55}
+.badge.approved{background:#22c98a1a;color:#22c98aee;border:1px solid #22c98a55}
+.badge.checkin{background:#8880ee1a;color:#a09cf8;border:1px solid #8880ee55}
+.empty{text-align:center;padding:40px;font-style:italic;color:#c8c4e0;font-size:16px}
+.tab-bar{display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid #e8b84b22}
+.tab{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.25em;text-transform:uppercase;padding:10px 20px;cursor:pointer;color:#e8b84b88;border-bottom:2px solid transparent;transition:all .2s;background:none;border-top:none;border-left:none;border-right:none}
 .tab.active{color:var(--gold);border-bottom-color:var(--gold)}
 .tab-content{display:none}
 .tab-content.active{display:block}
-.checkin-detail{font-size:14px;color:rgba(180,170,200,0.6);line-height:1.8}
-.checkin-detail strong{color:rgba(201,168,76,0.7);font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;text-transform:uppercase;display:block;margin-top:10px;margin-bottom:3px}
-.intensity-bar{height:6px;background:rgba(201,168,76,0.08);border-radius:3px;margin-top:4px;overflow:hidden}
+.checkin-detail{font-size:16px;color:#c8c4e0;line-height:1.8}
+.checkin-detail strong{color:#e8b84bdd;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.2em;text-transform:uppercase;display:block;margin-top:10px;margin-bottom:3px}
+.intensity-bar{height:6px;background:#e8b84b14;border-radius:3px;margin-top:4px;overflow:hidden}
 .intensity-fill{height:100%;background:linear-gradient(to right,var(--teal),var(--gold));border-radius:3px;transition:width .5s}
-footer{text-align:center;padding:32px;border-top:1px solid rgba(201,168,76,0.06);margin-top:48px}
-footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;color:rgba(180,170,200,0.15);text-transform:uppercase}
+footer{text-align:center;padding:32px;border-top:1px solid #e8b84b11;margin-top:48px}
+footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#c8c4e055;text-transform:uppercase}
 @media(max-width:600px){.wrap{padding:20px 14px}.header{flex-direction:column;gap:14px;align-items:flex-start}.nav-links{flex-wrap:wrap}}
 </style>
 </head>
@@ -235,18 +235,18 @@ footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;color:rgb
 
     <!-- Revenue -->
     <div class="section-title">Revenue</div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;background:rgba(201,168,76,0.08);margin-bottom:28px">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;background:#e8b84b14;margin-bottom:28px">
       <div class="stat"><span class="stat-val">$2,340</span><span class="stat-label">Gross Revenue (Demo)</span></div>
       <div class="stat"><span class="stat-val">12</span><span class="stat-label">Sessions Logged</span></div>
       <div class="stat"><span class="stat-val">$195</span><span class="stat-label">Avg per Session</span></div>
     </div>
     <div class="card" style="margin-bottom:24px">
-      <p style="font-size:13px;font-style:italic;color:rgba(180,170,200,0.4);line-height:1.8">Revenue figures are calculated from session prices entered in the Session Log. As you log sessions with prices, this section will reflect real totals. Currently showing demo values.</p>
+      <p style="font-size:15px;font-style:italic;color:#c8c4e0;line-height:1.8">Revenue figures are calculated from session prices entered in the Session Log. As you log sessions with prices, this section will reflect real totals. Currently showing demo values.</p>
     </div>
 
     <!-- Retention -->
     <div class="section-title">Client Retention</div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;background:rgba(201,168,76,0.08);margin-bottom:28px">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;background:#e8b84b14;margin-bottom:28px">
       <div class="stat"><span class="stat-val">38%</span><span class="stat-label">Repeat Client Rate</span></div>
       <div class="stat"><span class="stat-val">2.4</span><span class="stat-label">Avg Sessions / Client</span></div>
       <div class="stat"><span class="stat-val">$468</span><span class="stat-label">Est. Lifetime Value</span></div>
@@ -258,66 +258,66 @@ footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;color:rgb
       <div style="display:flex;flex-direction:column;gap:12px">
         <div>
           <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-            <span style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:rgba(201,168,76,0.7);text-transform:uppercase">Word of Mouth</span>
-            <span style="font-family:'Cinzel',serif;font-size:10px;color:rgba(201,168,76,0.5)">42%</span>
+            <span style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.2em;color:#e8b84bcc;text-transform:uppercase">Word of Mouth</span>
+            <span style="font-family:'Cinzel',serif;font-size:12px;color:#e8b84b99">42%</span>
           </div>
           <div class="intensity-bar"><div class="intensity-fill" style="width:42%"></div></div>
         </div>
         <div>
           <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-            <span style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:rgba(201,168,76,0.7);text-transform:uppercase">Social Media</span>
-            <span style="font-family:'Cinzel',serif;font-size:10px;color:rgba(201,168,76,0.5)">28%</span>
+            <span style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.2em;color:#e8b84bcc;text-transform:uppercase">Social Media</span>
+            <span style="font-family:'Cinzel',serif;font-size:12px;color:#e8b84b99">28%</span>
           </div>
           <div class="intensity-bar"><div class="intensity-fill" style="width:28%"></div></div>
         </div>
         <div>
           <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-            <span style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:rgba(201,168,76,0.7);text-transform:uppercase">Google Search</span>
-            <span style="font-family:'Cinzel',serif;font-size:10px;color:rgba(201,168,76,0.5)">18%</span>
+            <span style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.2em;color:#e8b84bcc;text-transform:uppercase">Google Search</span>
+            <span style="font-family:'Cinzel',serif;font-size:12px;color:#e8b84b99">18%</span>
           </div>
           <div class="intensity-bar"><div class="intensity-fill" style="width:18%"></div></div>
         </div>
         <div>
           <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-            <span style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:rgba(201,168,76,0.7);text-transform:uppercase">Practitioner Referral</span>
-            <span style="font-family:'Cinzel',serif;font-size:10px;color:rgba(201,168,76,0.5)">12%</span>
+            <span style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.2em;color:#e8b84bcc;text-transform:uppercase">Practitioner Referral</span>
+            <span style="font-family:'Cinzel',serif;font-size:12px;color:#e8b84b99">12%</span>
           </div>
           <div class="intensity-bar"><div class="intensity-fill" style="width:12%"></div></div>
         </div>
       </div>
-      <p style="font-size:12px;font-style:italic;color:rgba(180,170,200,0.35);margin-top:14px">Based on referral_source field from intake waivers. Demo values shown.</p>
+      <p style="font-size:14px;font-style:italic;color:#c8c4e0;margin-top:14px">Based on referral_source field from intake waivers. Demo values shown.</p>
     </div>
 
     <!-- Satisfaction -->
     <div class="section-title">Satisfaction</div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;background:rgba(201,168,76,0.08);margin-bottom:28px">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;background:#e8b84b14;margin-bottom:28px">
       <div class="stat"><span class="stat-val">+72</span><span class="stat-label">NPS Score (Demo)</span></div>
       <div class="stat"><span class="stat-val">4.8 ★</span><span class="stat-label">Avg Star Rating</span></div>
       <div class="stat"><span class="stat-val">89%</span><span class="stat-label">Would Recommend</span></div>
     </div>
     <div class="card" style="margin-bottom:24px">
-      <p style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:rgba(201,168,76,0.5);text-transform:uppercase;margin-bottom:10px">NPS Breakdown</p>
+      <p style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.2em;color:#e8b84b99;text-transform:uppercase;margin-bottom:10px">NPS Breakdown</p>
       <div style="display:flex;flex-direction:column;gap:10px">
         <div>
           <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-            <span style="font-size:14px;color:rgba(29,158,117,0.8)">Promoters (9–10)</span>
-            <span style="font-family:'Cinzel',serif;font-size:10px;color:rgba(29,158,117,0.7)">74%</span>
+            <span style="font-size:16px;color:#22c98acc">Promoters (9–10)</span>
+            <span style="font-family:'Cinzel',serif;font-size:12px;color:#22c98acc">74%</span>
           </div>
-          <div class="intensity-bar"><div class="intensity-fill" style="width:74%;background:rgba(29,158,117,0.6)"></div></div>
+          <div class="intensity-bar"><div class="intensity-fill" style="width:74%;background:#22c98a99"></div></div>
         </div>
         <div>
           <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-            <span style="font-size:14px;color:rgba(232,228,240,0.5)">Passives (7–8)</span>
-            <span style="font-family:'Cinzel',serif;font-size:10px;color:rgba(180,170,200,0.4)">15%</span>
+            <span style="font-size:16px;color:#c8c4e0">Passives (7–8)</span>
+            <span style="font-family:'Cinzel',serif;font-size:12px;color:#c8c4e0">15%</span>
           </div>
-          <div class="intensity-bar"><div class="intensity-fill" style="width:15%;background:rgba(180,170,200,0.3)"></div></div>
+          <div class="intensity-bar"><div class="intensity-fill" style="width:15%;background:#c8c4e066"></div></div>
         </div>
         <div>
           <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-            <span style="font-size:14px;color:rgba(238,68,68,0.7)">Detractors (0–6)</span>
-            <span style="font-family:'Cinzel',serif;font-size:10px;color:rgba(238,68,68,0.5)">11%</span>
+            <span style="font-size:16px;color:#ee7070cc">Detractors (0–6)</span>
+            <span style="font-family:'Cinzel',serif;font-size:12px;color:#ee707099">11%</span>
           </div>
-          <div class="intensity-bar"><div class="intensity-fill" style="width:11%;background:rgba(238,68,68,0.4)"></div></div>
+          <div class="intensity-bar"><div class="intensity-fill" style="width:11%;background:#ee707066"></div></div>
         </div>
       </div>
     </div>
@@ -325,27 +325,27 @@ footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;color:rgb
     <!-- Belief Shift -->
     <div class="section-title">Belief Shift — Before vs After</div>
     <div class="card" style="margin-bottom:24px">
-      <p style="font-size:14px;color:rgba(232,228,240,0.6);line-height:1.8;margin-bottom:18px;font-style:italic">Average client belief in energy work scored on a 1–10 scale at intake (Belief Before) vs. after session (Belief After). A higher post-session score indicates the session moved the needle.</p>
+      <p style="font-size:16px;color:#d8d4f0;line-height:1.8;margin-bottom:18px;font-style:italic">Average client belief in energy work scored on a 1–10 scale at intake (Belief Before) vs. after session (Belief After). A higher post-session score indicates the session moved the needle.</p>
       <div style="display:flex;flex-direction:column;gap:16px">
         <div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-            <span style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:rgba(201,168,76,0.6);text-transform:uppercase">Belief Before (avg)</span>
-            <span style="font-family:'Cinzel',serif;font-size:18px;color:rgba(201,168,76,0.7)">4.2 / 10</span>
+            <span style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.2em;color:#e8b84b99;text-transform:uppercase">Belief Before (avg)</span>
+            <span style="font-family:'Cinzel',serif;font-size:18px;color:#e8b84bcc">4.2 / 10</span>
           </div>
           <div class="intensity-bar" style="height:10px"><div class="intensity-fill" style="width:42%"></div></div>
         </div>
         <div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-            <span style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:rgba(29,158,117,0.8);text-transform:uppercase">Belief After (avg)</span>
-            <span style="font-family:'Cinzel',serif;font-size:18px;color:rgba(29,158,117,0.8)">8.1 / 10</span>
+            <span style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.2em;color:#22c98acc;text-transform:uppercase">Belief After (avg)</span>
+            <span style="font-family:'Cinzel',serif;font-size:18px;color:#22c98acc">8.1 / 10</span>
           </div>
-          <div class="intensity-bar" style="height:10px"><div class="intensity-fill" style="width:81%;background:linear-gradient(to right,rgba(29,158,117,0.6),rgba(201,168,76,0.8))"></div></div>
+          <div class="intensity-bar" style="height:10px"><div class="intensity-fill" style="width:81%;background:linear-gradient(to right,#22c98a99,#e8b84bcc)"></div></div>
         </div>
-        <div style="padding:10px 14px;background:rgba(29,158,117,0.05);border:1px solid rgba(29,158,117,0.15);margin-top:4px">
-          <span style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:rgba(29,158,117,0.7);text-transform:uppercase">Avg shift: +3.9 points</span>
+        <div style="padding:10px 14px;background:#22c98a0d;border:1px solid #22c98a33;margin-top:4px">
+          <span style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.2em;color:#22c98acc;text-transform:uppercase">Avg shift: +3.9 points</span>
         </div>
       </div>
-      <p style="font-size:12px;font-style:italic;color:rgba(180,170,200,0.35);margin-top:14px">Belief Before collected on intake waiver (belief_before field). Belief After collected on 24hr check-in and rating form. Demo values shown.</p>
+      <p style="font-size:14px;font-style:italic;color:#c8c4e0;margin-top:14px">Belief Before collected on intake waiver (belief_before field). Belief After collected on 24hr check-in and rating form. Demo values shown.</p>
     </div>
 
   </div>
@@ -365,14 +365,14 @@ function approveReview(id) {
   const badge = card.querySelector('.badge');
   badge.textContent = 'Published';
   badge.className = 'badge approved';
-  card.querySelector('.actions').innerHTML = '<span style="font-family:Cinzel,serif;font-size:9px;letter-spacing:.2em;color:rgba(29,158,117,0.6);text-transform:uppercase">✓ Published to site</span>';
+  card.querySelector('.actions').innerHTML = '<span style="font-family:Cinzel,serif;font-size:11px;letter-spacing:.2em;color:#22c98acc;text-transform:uppercase">✓ Published to site</span>';
   updateStats();
 }
 
 function rejectReview(id) {
   const card = document.getElementById(id);
   card.style.opacity = '0.4';
-  card.querySelector('.actions').innerHTML = '<span style="font-family:Cinzel,serif;font-size:9px;letter-spacing:.2em;color:rgba(180,80,80,0.5);text-transform:uppercase">Not published</span>';
+  card.querySelector('.actions').innerHTML = '<span style="font-family:Cinzel,serif;font-size:11px;letter-spacing:.2em;color:#ee707099;text-transform:uppercase">Not published</span>';
   updateStats();
 }
 
