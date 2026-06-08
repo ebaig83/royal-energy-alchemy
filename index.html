@@ -1995,8 +1995,16 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&modal.clas
         <div class="contact-field"><label>First Available Window</label><input type="text" placeholder="Day, date, time (EST)"/></div>
         <div class="contact-field"><label>Second Available Window</label><input type="text" placeholder="Day, date, time (EST)"/></div>
       </div>
-      <div style="margin-top:24px;text-align:center">
-        <a href="mailto:droyal168@gmail.com" class="btn-gold">Send to Daron →</a>
+      <!-- Policy checkbox -->
+      <div style="margin-top:20px;display:flex;align-items:flex-start;gap:14px;padding:18px 20px;border:1px solid rgba(201,168,76,.18);background:rgba(201,168,76,.04);">
+        <input type="checkbox" id="policy-agree" style="margin-top:3px;width:17px;height:17px;flex-shrink:0;accent-color:rgb(201,168,76);cursor:pointer;" />
+        <label for="policy-agree" style="font-family:'EB Garamond',serif;font-size:15px;color:rgba(232,228,240,.78);line-height:1.55;cursor:pointer;">
+          I have read and agree to the <a href="#refund-policy" style="color:rgba(201,168,76,.85);text-decoration:underline;text-underline-offset:3px;">Cancellation &amp; Refund Policy</a>.
+        </label>
+      </div>
+      <div id="policy-error" style="display:none;margin-top:8px;font-family:'Cinzel',serif;font-size:9px;letter-spacing:.3em;color:rgba(220,80,80,.9);text-align:center;text-transform:uppercase;">Please agree to the cancellation &amp; refund policy to continue.</div>
+      <div style="margin-top:20px;text-align:center">
+        <a href="mailto:droyal168@gmail.com" class="btn-gold" id="send-btn" onclick="return checkPolicy(event)">Send to Daron →</a>
       </div>
     </div>
 
@@ -2018,6 +2026,59 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&modal.clas
   </div>
 </section>
 
+<!-- ═══ CANCELLATION & REFUND POLICY ═══ -->
+<section id="refund-policy" style="padding:72px 48px;background:radial-gradient(ellipse at 50% 0%,rgba(10,15,40,.85) 0%,var(--deep) 80%);border-top:1px solid rgba(201,168,76,.10);">
+  <div style="max-width:780px;margin:0 auto;">
+    <span class="sec-label" style="text-align:center;display:block;">Policies</span>
+    <h2 class="sec-title" style="text-align:center;font-size:clamp(22px,2.6vw,36px);margin-bottom:40px;">Cancellation &amp; Refund Policy</h2>
+
+    <!-- Booking & Payment -->
+    <div style="margin-bottom:36px;">
+      <h3 style="font-family:'Cinzel',serif;font-size:13px;letter-spacing:.35em;color:rgba(201,168,76,.85);text-transform:uppercase;margin-bottom:12px;">Booking &amp; Payment Policy</h3>
+      <p style="font-family:'EB Garamond',serif;font-size:16px;color:rgba(232,228,240,.72);line-height:1.75;">Full payment is required at the time of scheduling to reserve an appointment. Appointments are not confirmed until payment is received.</p>
+    </div>
+
+    <!-- Cancellation table -->
+    <div style="margin-bottom:36px;">
+      <h3 style="font-family:'Cinzel',serif;font-size:13px;letter-spacing:.35em;color:rgba(201,168,76,.85);text-transform:uppercase;margin-bottom:16px;">Cancellation &amp; Refund Schedule</h3>
+      <div style="border:1px solid rgba(201,168,76,.14);overflow:hidden;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid rgba(201,168,76,.10);background:rgba(201,168,76,.06);padding:10px 20px;">
+          <span style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.35em;color:rgba(201,168,76,.6);text-transform:uppercase;">Notice Given</span>
+          <span style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.35em;color:rgba(201,168,76,.6);text-transform:uppercase;">Outcome</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid rgba(201,168,76,.08);padding:14px 20px;">
+          <span style="font-family:'EB Garamond',serif;font-size:16px;color:rgba(232,228,240,.85);">72+ hours notice</span>
+          <span style="font-family:'EB Garamond',serif;font-size:16px;color:rgba(232,228,240,.7);">50% refund <em>or</em> one-time reschedule</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid rgba(201,168,76,.08);padding:14px 20px;background:rgba(255,255,255,.015);">
+          <span style="font-family:'EB Garamond',serif;font-size:16px;color:rgba(232,228,240,.85);">Within 72 hours</span>
+          <span style="font-family:'EB Garamond',serif;font-size:16px;color:rgba(220,100,100,.75);">Non-refundable</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid rgba(201,168,76,.08);padding:14px 20px;">
+          <span style="font-family:'EB Garamond',serif;font-size:16px;color:rgba(232,228,240,.85);">Same-day cancellation</span>
+          <span style="font-family:'EB Garamond',serif;font-size:16px;color:rgba(220,100,100,.75);">Non-refundable</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;padding:14px 20px;background:rgba(255,255,255,.015);">
+          <span style="font-family:'EB Garamond',serif;font-size:16px;color:rgba(232,228,240,.85);">No-show / no-call</span>
+          <span style="font-family:'EB Garamond',serif;font-size:16px;color:rgba(220,100,100,.75);">Non-refundable</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- No-Show -->
+    <div style="margin-bottom:28px;">
+      <h3 style="font-family:'Cinzel',serif;font-size:13px;letter-spacing:.35em;color:rgba(201,168,76,.85);text-transform:uppercase;margin-bottom:12px;">No-Show Policy</h3>
+      <p style="font-family:'EB Garamond',serif;font-size:16px;color:rgba(232,228,240,.72);line-height:1.75;">Clients who miss an appointment without notice forfeit the session fee. Returning clients with a previous no-show must clear any outstanding balance before being placed back on the schedule.</p>
+    </div>
+
+    <!-- If Daron cancels -->
+    <div>
+      <h3 style="font-family:'Cinzel',serif;font-size:13px;letter-spacing:.35em;color:rgba(201,168,76,.85);text-transform:uppercase;margin-bottom:12px;">If Daron Must Cancel</h3>
+      <p style="font-family:'EB Garamond',serif;font-size:16px;color:rgba(232,228,240,.72);line-height:1.75;">Client may choose a full refund or a rescheduled appointment.</p>
+    </div>
+  </div>
+</section>
+
 <footer>
   <p>Royal Energy Alchemy LLC &nbsp;·&nbsp; Erie / Waterford, Pennsylvania &nbsp;·&nbsp; Distance Sessions Available</p>
   <p>Spiritual and energetic services are complementary wellness offerings and are not medical, legal, psychological, or financial advice.</p>
@@ -2025,6 +2086,18 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&modal.clas
 </footer>
 
 <script>
+// Policy checkbox guard
+function checkPolicy(e){
+  var cb=document.getElementById('policy-agree');
+  var err=document.getElementById('policy-error');
+  if(!cb||cb.checked){if(err)err.style.display='none';return true;}
+  e.preventDefault();
+  if(err){err.style.display='block';}
+  cb.parentElement.style.borderColor='rgba(220,80,80,.45)';
+  setTimeout(function(){if(cb.parentElement)cb.parentElement.style.borderColor='rgba(201,168,76,.18)';},2200);
+  return false;
+}
+
 // Custom cursor
 const cur=document.getElementById('cur'),curR=document.getElementById('curR');
 let mx=0,my=0,rx=0,ry=0;
