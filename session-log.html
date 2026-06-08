@@ -63,6 +63,9 @@ footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;color:rgb
     <div class="sec">
       <div class="sec-head"><span class="sec-title">Client Details</span></div>
       <div class="sec-body">
+        <div class="form-row single">
+          <div class="fg"><label>Client ID <span style="font-family:'EB Garamond',serif;font-size:13px;font-style:italic;color:rgba(180,170,200,0.45);text-transform:none;letter-spacing:0">(from intake waiver — e.g. REA-2026-0047)</span></label><input type="text" id="clientId" name="clientId" placeholder="REA-YYYY-XXXX"/></div>
+        </div>
         <div class="form-row">
           <div class="fg"><label>Client first name</label><input type="text" id="clientName" name="clientName" placeholder="First name only"/></div>
           <div class="fg"><label>Client email or phone</label><input type="text" id="clientContact" name="clientContact" placeholder="For sending check-in links"/></div>
@@ -210,18 +213,21 @@ const BASE = window.location.origin;
 
 function generateLinks() {
   const name = document.getElementById('clientName').value || 'client';
+  const cid = document.getElementById('clientId').value.trim();
   const flags = [...document.querySelectorAll('.flagInput:checked')].map(f => f.value).join(',');
   const encodedName = encodeURIComponent(name);
   const encodedFlags = encodeURIComponent(flags);
+  const encodedCid = encodeURIComponent(cid);
+  const cidParam = cid ? `&cid=${encodedCid}` : '';
 
-  const makeLink = (t) => `${BASE}/aftercare.html?t=${t}&name=${encodedName}&f=${encodedFlags}`;
+  const makeLink = (t) => `${BASE}/aftercare.html?t=${t}&name=${encodedName}&f=${encodedFlags}${cidParam}`;
 
   document.getElementById('link24').textContent = makeLink('24hr');
   document.getElementById('link48').textContent = makeLink('48hr');
   document.getElementById('link72').textContent = makeLink('72hr');
   document.getElementById('link1m').textContent = makeLink('1mo');
   document.getElementById('link3m').textContent = makeLink('3mo');
-  document.getElementById('linkRating').textContent = `${BASE}/rating.html?name=${encodedName}`;
+  document.getElementById('linkRating').textContent = `${BASE}/rating.html?name=${encodedName}${cidParam}`;
 
   const service = document.getElementById('serviceType').value || 'your session';
   document.getElementById('suggestedMsg').textContent = `Hi ${name}, thank you for your session today. I'll be checking in with you over the next few days to track how you're feeling. Here's your 24-hour check-in link — please fill it out tomorrow: [paste 24hr link]. Your feedback helps me track what's shifting and what may still need attention. — Daron`;

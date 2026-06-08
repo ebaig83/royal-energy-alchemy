@@ -142,6 +142,7 @@ footer .pa-disclaimer{font-family:'EB Garamond',serif;font-size:13px;font-style:
   </div>
 
   <form id="waiverForm" novalidate>
+    <input type="hidden" id="client_id" name="client_id" value="">
 
     <!-- SECTION 1 -->
     <div class="sec">
@@ -160,7 +161,22 @@ footer .pa-disclaimer{font-family:'EB Garamond',serif;font-size:13px;font-style:
         </div>
         <div class="form-row">
           <div class="fg"><label>Email address <span class="req">*</span></label><input type="email" id="email" required placeholder="Your email"/></div>
-          <div class="fg"><label>How did you hear about Royal Energy Alchemy?</label><input type="text" id="referral" placeholder="Facebook, referral, search..."/></div>
+        </div>
+
+        <!-- Referral source -->
+        <div style="margin-bottom:16px">
+          <label style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.4em;color:rgba(201,168,76,0.6);text-transform:uppercase;display:block;margin-bottom:10px">How did you hear about Royal Energy Alchemy? <span class="req">*</span></label>
+          <div class="radio-list" id="referralRadios">
+            <label><input type="radio" name="referral_source" value="Social Media" id="ref_social" onchange="toggleReferralOther()"><span>Social Media</span></label>
+            <label><input type="radio" name="referral_source" value="Word of Mouth" id="ref_wom" onchange="toggleReferralOther()"><span>Word of Mouth</span></label>
+            <label><input type="radio" name="referral_source" value="Google Search" id="ref_google" onchange="toggleReferralOther()"><span>Google Search</span></label>
+            <label><input type="radio" name="referral_source" value="Referral from Practitioner" id="ref_prac" onchange="toggleReferralOther()"><span>Referral from Practitioner</span></label>
+            <label><input type="radio" name="referral_source" value="Returning Client" id="ref_return" onchange="toggleReferralOther()"><span>Returning Client</span></label>
+            <label><input type="radio" name="referral_source" value="Other" id="ref_other" onchange="toggleReferralOther()"><span>Other</span></label>
+          </div>
+          <div id="referralOtherWrap" style="display:none;margin-top:10px">
+            <div class="fg"><input type="text" id="referralOtherText" name="referral_source_other" placeholder="Please describe..."/></div>
+          </div>
         </div>
         <div class="form-row">
           <div class="fg"><label>Have you had energy healing before?</label>
@@ -455,7 +471,12 @@ footer .pa-disclaimer{font-family:'EB Garamond',serif;font-size:13px;font-style:
   <div class="success" id="successMsg">
     <h2>✦ Waiver Received</h2>
     <p>Thank you. Your signed waiver has been submitted to Royal Energy Alchemy LLC.<br>A confirmation will be sent to your email. Daron will be in touch to confirm your session details.</p>
-    <p style="margin-top:20px;font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:rgba(201,168,76,0.5);text-transform:uppercase">Royal Energy Alchemy LLC · Erie, Pennsylvania</p>
+    <div style="margin:28px auto;padding:20px 28px;border:1px solid rgba(201,168,76,0.35);background:rgba(201,168,76,0.05);max-width:420px">
+      <p style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.35em;color:rgba(201,168,76,0.6);text-transform:uppercase;margin-bottom:10px">Your Client Reference Number</p>
+      <p id="displayClientId" style="font-family:'Cinzel Decorative',serif;font-size:26px;color:var(--gold);letter-spacing:.08em;font-style:normal;margin-bottom:10px"></p>
+      <p style="font-size:14px;color:rgba(180,170,200,0.6);font-style:italic;margin:0">Save this for your records. You'll use it when returning for future sessions.</p>
+    </div>
+    <p style="margin-top:8px;font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:rgba(201,168,76,0.5);text-transform:uppercase">Royal Energy Alchemy LLC · Erie, Pennsylvania</p>
   </div>
 
 </div>
@@ -514,6 +535,25 @@ function switchSig(mode, e) {
   document.getElementById('sigType').classList.toggle('show', mode === 'type');
 }
 
+// Referral "Other" toggle
+function toggleReferralOther() {
+  const isOther = document.getElementById('ref_other').checked;
+  document.getElementById('referralOtherWrap').style.display = isOther ? 'block' : 'none';
+  document.getElementById('referralOtherText').required = isOther;
+}
+
+// Client ID generation
+function generateClientId(email) {
+  const key = 'rea_client_id_' + email.toLowerCase().trim();
+  const existing = localStorage.getItem(key);
+  if (existing) return existing;
+  const year = new Date().getFullYear();
+  const num = String(Math.floor(1000 + Math.random() * 9000));
+  const id = 'REA-' + year + '-' + num;
+  localStorage.setItem(key, id);
+  return id;
+}
+
 // Form submission
 document.getElementById('waiverForm').addEventListener('submit', function(e) {
   e.preventDefault();
@@ -536,6 +576,21 @@ document.getElementById('waiverForm').addEventListener('submit', function(e) {
     }
   });
 
+  // Referral source validation
+  const referralChosen = document.querySelector('input[name="referral_source"]:checked');
+  if (!referralChosen) {
+    document.getElementById('referralRadios').style.outline = '1px solid rgba(255,80,80,0.4)';
+    valid = false;
+  } else {
+    document.getElementById('referralRadios').style.outline = '';
+    if (referralChosen.value === 'Other' && !document.getElementById('referralOtherText').value.trim()) {
+      document.getElementById('referralOtherText').classList.add('error');
+      valid = false;
+    } else {
+      document.getElementById('referralOtherText').classList.remove('error');
+    }
+  }
+
   // Recording consent specific alert
   if (!document.getElementById('recordConsent').checked) {
     alert('Recording consent is required to receive services from Royal Energy Alchemy LLC. If you do not consent to recording, please do not schedule services.');
@@ -550,6 +605,12 @@ document.getElementById('waiverForm').addEventListener('submit', function(e) {
     return;
   }
   if (!valid) return;
+
+  // Generate and store Client ID
+  const email = document.getElementById('email').value.trim();
+  const clientId = generateClientId(email);
+  document.getElementById('client_id').value = clientId;
+  document.getElementById('displayClientId').textContent = clientId;
 
   document.getElementById('waiverForm').style.display = 'none';
   document.getElementById('successMsg').style.display = 'block';
