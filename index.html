@@ -102,11 +102,6 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:18px 48px;display:fl
 
 /* ASSESS SECTION */
 .assess-wrap{max-width:680px;margin:0 auto}
-.assess-step{background:rgba(8,6,22,.95);border:1px solid rgba(201,168,76,.08);padding:32px;margin-bottom:1px;position:relative;overflow:hidden;transition:border-color .3s;cursor:pointer}
-.assess-step:hover{border-color:rgba(201,168,76,.2)}
-.assess-step-num{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.4em;color:rgba(201,168,76,.4);margin-bottom:10px;display:block}
-.assess-step-title{font-family:'Cinzel',serif;font-size:14px;letter-spacing:.1em;color:#e8e4f0;margin-bottom:8px}
-.assess-step-desc{font-family:'EB Garamond',serif;font-size:15px;color:rgba(180,170,200,.6);line-height:1.6}
 
 /* RITUAL DIVIDER */
 .rit-div{display:flex;align-items:center;gap:24px;padding:0 48px;opacity:.45}
@@ -1907,40 +1902,11 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&modal.clas
     <h2 class="sec-title">What Are You Carrying?</h2>
     <p class="sec-body">Answer honestly. This helps Daron understand what you're carrying before your first session. Your responses feed directly into your treatment plan.</p>
 
-    <!-- Assessment steps overview -->
-    <div style="margin-bottom:40px">
-      <div class="assess-step reveal reveal-d1">
-        <span class="assess-step-num">Step 1 of 6</span>
-        <div class="assess-step-title">Choose Your Concern</div>
-        <p class="assess-step-desc">Energetic parasite, cord & attachment, empath overload, space & home energy, or general intake.</p>
-      </div>
-      <div class="assess-step reveal reveal-d2">
-        <span class="assess-step-num">Step 2 of 6</span>
-        <div class="assess-step-title">About You</div>
-        <p class="assess-step-desc">Name, age, contact, session preference, what you're experiencing, and what triggered it.</p>
-      </div>
-      <div class="assess-step reveal reveal-d3">
-        <span class="assess-step-num">Step 3 of 6</span>
-        <div class="assess-step-title">Work & School Impact</div>
-        <p class="assess-step-desc">Whether this is affecting your ability to work, study, or function in daily life — and how severely.</p>
-      </div>
-      <div class="assess-step reveal">
-        <span class="assess-step-num">Step 4 of 6</span>
-        <div class="assess-step-title">Mental & Emotional Symptoms</div>
-        <p class="assess-step-desc">Depression, anxiety, anger, intrusive thoughts, fear, mood shifts — intensity scored 1 to 10.</p>
-      </div>
-      <div class="assess-step reveal">
-        <span class="assess-step-num">Step 5 of 6</span>
-        <div class="assess-step-title">Physical & Perceptual Symptoms</div>
-        <p class="assess-step-desc">Body pain, weight changes, sleep, what you're seeing and hearing, dreams, and relationship impacts.</p>
-      </div>
-      <div class="assess-step reveal">
-        <span class="assess-step-num">Step 6 of 6</span>
-        <div class="assess-step-title">Review & Submit</div>
-        <p class="assess-step-desc">Your full intake summary with recommended service, treatment plan, and any professional referrals generated automatically.</p>
-      </div>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:20px">
+      <a href="/waiver-esign.html" class="btn-gold">Start Full Assessment →</a>
+      <a href="#faq" class="btn-outline" onclick="document.getElementById('faq').scrollIntoView({behavior:'smooth'});return false;">Learn How It Works</a>
     </div>
-    <a href="#contact" class="btn-gold">Start Full Assessment →</a>
+    <p style="font-family:'EB Garamond',serif;font-size:15px;font-style:italic;color:rgba(180,170,200,.5);line-height:1.7">Complete your intake form and consent before your first session. Takes about 10 minutes.</p>
   </div>
 </section>
 
@@ -2117,7 +2083,7 @@ const cur=document.getElementById('cur'),curR=document.getElementById('curR');
 let mx=0,my=0,rx=0,ry=0;
 document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px'});
 (function animR(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;curR.style.left=rx+'px';curR.style.top=ry+'px';requestAnimationFrame(animR)})();
-document.querySelectorAll('a,button,input,textarea,select,.svc-card,.plan-card,.assess-step,.pay-card').forEach(el=>{
+document.querySelectorAll('a,button,input,textarea,select,.svc-card,.plan-card,.pay-card').forEach(el=>{
   el.addEventListener('mouseenter',()=>{cur.style.width='6px';cur.style.height='6px';curR.style.width='52px';curR.style.height='52px'});
   el.addEventListener('mouseleave',()=>{cur.style.width='12px';cur.style.height='12px';curR.style.width='36px';curR.style.height='36px'});
 });
