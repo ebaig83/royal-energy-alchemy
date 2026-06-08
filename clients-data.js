@@ -238,3 +238,75 @@ const REA_DATA = {
 
 // Auto-compute on load
 REA_DATA.compute();
+
+// ============================================================
+// CLIENT FLAGS — blocked / warned clients
+// Stored in localStorage under key 'rea_client_flags'
+// Each entry: { name, email, status, reasons, notes, date, flaggedBy }
+// status: 'blocked' | 'warned'
+// ============================================================
+
+const REA_FLAGS = {
+
+  _key: 'rea_client_flags',
+
+  // Load all flags from localStorage
+  load() {
+    try { return JSON.parse(localStorage.getItem(this._key) || '{}'); }
+    catch(e) { return {}; }
+  },
+
+  // Save all flags to localStorage
+  _save(data) {
+    localStorage.setItem(this._key, JSON.stringify(data));
+  },
+
+  // Normalise a name or email to a lookup key
+  _normalise(str) {
+    return (str || '').toLowerCase().replace(/\s+/g,' ').trim();
+  },
+
+  // Add or update a flag
+  set(name, email, status, reasons, notes) {
+    const data = this.load();
+    const key  = this._normalise(email || name);
+    data[key] = {
+      name:      name  || '',
+      email:     email || '',
+      status,           // 'blocked' | 'warned'
+      reasons:   reasons || [],
+      notes:     notes   || '',
+      date:      new Date().toISOString().slice(0,10),
+    };
+    this._save(data);
+    return data[key];
+  },
+
+  // Remove a flag (unblock/unwarn)
+  remove(nameOrEmail) {
+    const data = this.load();
+    const key  = this._normalise(nameOrEmail);
+    delete data[key];
+    this._save(data);
+  },
+
+  // Check a name/email — returns flag entry or null
+  check(nameOrEmail) {
+    if (!nameOrEmail) return null;
+    const data = this.load();
+    const key  = this._normalise(nameOrEmail);
+    return data[key] || null;
+  },
+
+  // Check both name AND email (returns first match found)
+  checkBoth(name, email) {
+    return this.check(name) || this.check(email) || null;
+  },
+
+  // Return all flagged entries as array
+  all() {
+    const data = this.load();
+    return Object.values(data);
+  }
+
+};

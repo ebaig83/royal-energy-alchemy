@@ -59,6 +59,29 @@ body{background:#04020e;color:#f0ecff;font-family:'EB Garamond',serif;min-height
 .checkin-detail strong{color:#e8b84bdd;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.2em;text-transform:uppercase;display:block;margin-top:10px;margin-bottom:3px}
 .intensity-bar{height:6px;background:#e8b84b14;border-radius:3px;margin-top:4px;overflow:hidden}
 .intensity-fill{height:100%;background:linear-gradient(to right,var(--teal),var(--gold));border-radius:3px;transition:width .5s}
+/* ── FLAG MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1000;display:none;align-items:center;justify-content:center;padding:24px}
+.modal-overlay.open{display:flex}
+.modal{background:#0a0612;border:1px solid #e8b84b33;padding:32px;max-width:480px;width:100%;position:relative}
+.modal h2{font-family:'Cinzel',serif;font-size:14px;letter-spacing:.35em;color:#f0ecff;text-transform:uppercase;margin-bottom:6px}
+.modal .modal-sub{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#e8b84b88;text-transform:uppercase;margin-bottom:20px}
+.modal-close{position:absolute;top:14px;right:16px;background:none;border:none;color:#c8c4e066;font-size:20px;cursor:pointer;line-height:1}
+.modal-close:hover{color:#f0ecff}
+.flag-options{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+.flag-opt{display:flex;align-items:center;gap:10px;cursor:pointer}
+.flag-opt input[type=checkbox]{accent-color:#e8b84b;width:15px;height:15px;cursor:pointer}
+.flag-opt label{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.2em;color:#c8c4e0;text-transform:uppercase;cursor:pointer}
+.modal-notes{width:100%;background:#04020e;border:1px solid #e8b84b22;color:#f0ecff;font-family:'EB Garamond',serif;font-size:15px;padding:10px 12px;resize:vertical;min-height:64px;margin-bottom:20px}
+.modal-notes:focus{outline:none;border-color:#e8b84b55}
+.modal-actions{display:flex;gap:10px;flex-wrap:wrap}
+.btn-warn{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;text-transform:uppercase;padding:9px 20px;cursor:pointer;border:1px solid #e8b84b55;color:#e8b84bcc;background:transparent;transition:all .2s}
+.btn-warn:hover{background:#e8b84b14;border-color:var(--gold)}
+.btn-block{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;text-transform:uppercase;padding:9px 20px;cursor:pointer;border:1px solid #ee444455;color:#ee7070cc;background:transparent;transition:all .2s}
+.btn-block:hover{background:#ee44440d;border-color:#ee4444}
+.btn-unblock{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;text-transform:uppercase;padding:9px 20px;cursor:pointer;border:1px solid #22c98a55;color:#22c98acc;background:transparent;transition:all .2s}
+.btn-unblock:hover{background:#22c98a0d;border-color:#22c98a}
+.badge.blocked{background:#ee44440d;color:#ee7070ee;border:1px solid #ee444455}
+.badge.warned{background:#e8b84b0d;color:#e8b84bee;border:1px solid #e8b84b55}
 .stat-sub{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b66;text-transform:uppercase;display:block;margin-top:2px}
 .stat-val.warn{color:#ee9944}
 .stat-val.good{color:#22c98a}
@@ -268,7 +291,11 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#c
           <div class="card-name">Jordan L. <span class="badge approved">Active</span></div>
           <div class="card-time">REA-2026-0041 · Energetic Parasite Removal · Cord Removal</div>
         </div>
+        <div style="display:flex;gap:8px">
         <button class="action-btn view" onclick="">View Full Record</button>
+        <button class="action-btn reject" onclick="openModal('Jordan L.','')">⚑ Flag</button>
+        <span id="flag-badge-Jordan L." class="badge" style="display:none"></span>
+      </div>
       </div>
       <div class="client-meta">
         <div class="client-meta-item">Total Sessions<span>4</span></div>
@@ -311,7 +338,11 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#c
           <div class="card-name">Renee K. <span class="badge approved">Active</span></div>
           <div class="card-time">REA-2026-0059 · Distance Session</div>
         </div>
+        <div style="display:flex;gap:8px">
         <button class="action-btn view" onclick="">View Full Record</button>
+        <button class="action-btn reject" onclick="openModal('Renee K.','')">⚑ Flag</button>
+        <span id="flag-badge-Renee K." class="badge" style="display:none"></span>
+      </div>
       </div>
       <div class="client-meta">
         <div class="client-meta-item">Total Sessions<span>2</span></div>
@@ -350,9 +381,10 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#c
     <div class="client-card" style="border-color:#e8b84b11;opacity:.75">
       <div class="card-head">
         <div>
-          <div class="card-name">Sarah M. <span class="badge pending">Inactive</span></div>
+          <div class="card-name">Sarah M. <span class="badge pending">Inactive</span> <span id="flag-badge-Sarah M." class="badge" style="display:none"></span></div>
           <div class="card-time">REA-2026-0012 · Energetic Parasite Removal</div>
         </div>
+        <button class="action-btn reject" onclick="openModal('Sarah M.','')">⚑ Flag</button>
       </div>
       <div class="client-meta">
         <div class="client-meta-item">Total Sessions<span>1</span></div>
@@ -590,6 +622,32 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#c
 
 <footer><p>Royal Energy Alchemy LLC · Practitioner Portal · Private</p></footer>
 
+<!-- ── FLAG / BLOCK MODAL ── -->
+<div class="modal-overlay" id="flagModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h2 id="modalClientName">Client Name</h2>
+    <div class="modal-sub">Flag this client</div>
+
+    <div class="flag-options">
+      <label class="flag-opt"><input type="checkbox" value="Too many cancellations (2+)"><label>Too many cancellations (2+)</label></label>
+      <label class="flag-opt"><input type="checkbox" value="Repeated no-shows"><label>Repeated no-shows</label></label>
+      <label class="flag-opt"><input type="checkbox" value="Chronic lateness"><label>Chronic lateness</label></label>
+      <label class="flag-opt"><input type="checkbox" value="Disrespectful behavior"><label>Disrespectful behavior</label></label>
+      <label class="flag-opt"><input type="checkbox" value="Payment issues"><label>Payment issues</label></label>
+      <label class="flag-opt"><input type="checkbox" value="Other"><label>Other</label></label>
+    </div>
+
+    <textarea class="modal-notes" id="flagNotes" placeholder="Additional notes (optional)..."></textarea>
+
+    <div class="modal-actions">
+      <button class="btn-warn"    onclick="submitFlag('warned')">⚠ Issue Warning</button>
+      <button class="btn-block"   onclick="submitFlag('blocked')">⊘ Block Client</button>
+      <button class="btn-unblock" id="unblockBtn" onclick="submitUnblock()" style="display:none">✓ Remove Flag</button>
+    </div>
+  </div>
+</div>
+
 <script src="clients-data.js"></script>
 <script>
 function showTab(name) {
@@ -652,6 +710,87 @@ function updateStats() {
 }
 
 updateStats();
+
+// ── FLAG / BLOCK SYSTEM ─────────────────────────────────────
+let _modalClient = { name: '', email: '' };
+
+function openModal(name, email) {
+  _modalClient = { name, email };
+  document.getElementById('modalClientName').textContent = name;
+  document.getElementById('flagNotes').value = '';
+  document.querySelectorAll('#flagModal input[type=checkbox]').forEach(cb => cb.checked = false);
+
+  const existing = (typeof REA_FLAGS !== 'undefined') ? REA_FLAGS.checkBoth(name, email) : null;
+  const unblockBtn = document.getElementById('unblockBtn');
+
+  if (existing) {
+    (existing.reasons || []).forEach(r => {
+      document.querySelectorAll('#flagModal input[type=checkbox]').forEach(cb => {
+        if (cb.value === r) cb.checked = true;
+      });
+    });
+    document.getElementById('flagNotes').value = existing.notes || '';
+    unblockBtn.style.display = 'inline-block';
+    unblockBtn.textContent = existing.status === 'blocked' ? '✓ Unblock Client' : '✓ Remove Warning';
+  } else {
+    unblockBtn.style.display = 'none';
+  }
+
+  document.getElementById('flagModal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('flagModal').classList.remove('open');
+}
+
+document.getElementById('flagModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+function submitFlag(status) {
+  const reasons = [];
+  document.querySelectorAll('#flagModal input[type=checkbox]:checked').forEach(cb => reasons.push(cb.value));
+  const notes = document.getElementById('flagNotes').value.trim();
+  const { name, email } = _modalClient;
+  if (typeof REA_FLAGS !== 'undefined') REA_FLAGS.set(name, email, status, reasons, notes);
+  updateFlagBadge(name, status);
+  closeModal();
+}
+
+function submitUnblock() {
+  const { name, email } = _modalClient;
+  if (typeof REA_FLAGS !== 'undefined') {
+    REA_FLAGS.remove(name);
+    if (email) REA_FLAGS.remove(email);
+  }
+  updateFlagBadge(name, null);
+  closeModal();
+}
+
+function updateFlagBadge(name, status) {
+  const badge = document.getElementById('flag-badge-' + name);
+  if (!badge) return;
+  if (!status) {
+    badge.style.display = 'none';
+    badge.textContent = '';
+    badge.className = 'badge';
+    return;
+  }
+  badge.style.display = 'inline-block';
+  if (status === 'blocked') {
+    badge.textContent = '⊘ Blocked';
+    badge.className = 'badge blocked';
+  } else {
+    badge.textContent = '⚠ Warned';
+    badge.className = 'badge warned';
+  }
+}
+
+// Restore badges from localStorage on load
+(function() {
+  if (typeof REA_FLAGS === 'undefined') return;
+  REA_FLAGS.all().forEach(f => updateFlagBadge(f.name, f.status));
+})();
 </script>
 </body>
 </html>
