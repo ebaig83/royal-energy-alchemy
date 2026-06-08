@@ -135,6 +135,49 @@
   </div>
 
   <div class="waiver-section">
+    <h2>Section 5 — Recording Consent (Required)</h2>
+
+    <!-- Notice block -->
+    <div style="border-left:3px solid rgba(201,168,76,.5);background:rgba(201,168,76,.05);padding:18px 22px;margin-bottom:20px;">
+      <p><strong>Royal Energy Alchemy LLC records sessions for documentation, treatment planning, AI-assisted note generation, quality assurance, client support, and service delivery purposes. Recording is a required component of services provided by Royal Energy Alchemy LLC. If you do not consent to recording, please do not schedule services.</strong></p>
+    </div>
+
+    <!-- Required consent checkbox -->
+    <div style="display:flex;align-items:flex-start;gap:14px;padding:16px 18px;border:1px solid rgba(201,168,76,.22);background:rgba(201,168,76,.04);margin-bottom:24px;">
+      <input type="checkbox" id="w-record-consent" name="recording-consent" value="yes" required style="margin-top:3px;width:17px;height:17px;flex-shrink:0;accent-color:rgb(201,168,76);cursor:pointer;"/>
+      <label for="w-record-consent" style="font-size:15px;color:rgba(232,228,240,.8);line-height:1.65;cursor:pointer;">
+        I understand that my session will be recorded and I consent to recording as a condition of receiving services. <strong style="color:rgba(201,168,76,.85);">(Required) *</strong>
+      </label>
+    </div>
+
+    <!-- Optional media release -->
+    <p style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.38em;color:rgba(201,168,76,.6);text-transform:uppercase;margin-bottom:14px;">Optional Media Release — Check all that apply</p>
+
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
+      <div style="display:flex;align-items:flex-start;gap:14px;padding:13px 16px;border:1px solid rgba(201,168,76,.10);background:rgba(4,3,14,.6);">
+        <input type="checkbox" id="w-release-a" name="media-release-a" value="internal-only" style="margin-top:3px;width:15px;height:15px;flex-shrink:0;accent-color:rgb(201,168,76);cursor:pointer;"/>
+        <label for="w-release-a" style="font-size:15px;color:rgba(232,228,240,.72);line-height:1.65;cursor:pointer;">
+          <strong>Option A — Internal use only.</strong> AI-processed session notes, treatment plans, and documentation. Not shared publicly.
+        </label>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:14px;padding:13px 16px;border:1px solid rgba(201,168,76,.10);background:rgba(4,3,14,.6);">
+        <input type="checkbox" id="w-release-b" name="media-release-b" value="educational-protected" style="margin-top:3px;width:15px;height:15px;flex-shrink:0;accent-color:rgb(201,168,76);cursor:pointer;"/>
+        <label for="w-release-b" style="font-size:15px;color:rgba(232,228,240,.72);line-height:1.65;cursor:pointer;">
+          <strong>Option B — Educational content with identity protected.</strong> Face blurred, voice altered if applicable, no identifying information used.
+        </label>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:14px;padding:13px 16px;border:1px solid rgba(201,168,76,.10);background:rgba(4,3,14,.6);">
+        <input type="checkbox" id="w-release-c" name="media-release-c" value="full-release" style="margin-top:3px;width:15px;height:15px;flex-shrink:0;accent-color:rgb(201,168,76);cursor:pointer;"/>
+        <label for="w-release-c" style="font-size:15px;color:rgba(232,228,240,.72);line-height:1.65;cursor:pointer;">
+          <strong>Option C — Full release.</strong> My likeness and voice may appear in published educational or promotional content.
+        </label>
+      </div>
+    </div>
+
+    <p style="font-size:14px;font-style:italic;color:rgba(232,228,240,.45);line-height:1.7;">If no option is selected, your recording will be used for internal documentation purposes only (Option A applies by default).</p>
+  </div>
+
+  <div class="waiver-section">
     <h2>Release of Liability</h2>
     <p>By signing this waiver, I release Daron Royal and Royal Energy Alchemy LLC from any and all liability, claims, demands, or causes of action arising from my participation in any session. I understand that energetic and spiritual healing is not a medically recognized treatment and results may vary.</p>
     <p>I affirm that I am <strong>18 years of age or older</strong>, or that I am the parent or legal guardian signing on behalf of a minor client.</p>
@@ -202,7 +245,10 @@
 <footer>
   <p>Royal Energy Alchemy LLC &nbsp;·&nbsp; Erie / Waterford, Pennsylvania</p>
   <p>© 2026 Royal Energy Alchemy LLC &nbsp;·&nbsp; royalenergyalchemy@gmail.com &nbsp;·&nbsp; 814-392-2095</p>
-  <p style="margin-top:6px"><a href="/" style="color:rgba(201,168,76,.35);text-decoration:none;font-family:'Cinzel',serif;font-size:9px;letter-spacing:.3em;">← Return to site</a></p>
+  <p style="margin-top:14px;max-width:680px;margin-left:auto;margin-right:auto;font-family:'EB Garamond',serif;font-size:13px;font-style:italic;color:rgba(180,170,200,.28);line-height:1.75;letter-spacing:0;">
+    Pennsylvania is a two-party consent state (18 Pa. C.S. § 5703). Daron Royal recommends consulting a Pennsylvania attorney to confirm this recording policy aligns with applicable law before going live.
+  </p>
+  <p style="margin-top:10px"><a href="/" style="color:rgba(201,168,76,.3);text-decoration:none;font-family:'Cinzel',serif;font-size:9px;letter-spacing:.3em;">← Return to site</a></p>
 </footer>
 
 <script>
@@ -261,10 +307,16 @@
   /* ── Form validation ── */
   document.getElementById('waiver-form').addEventListener('submit', function(e){
     var agreed = document.getElementById('w-agree').checked;
+    var recordConsent = document.getElementById('w-record-consent').checked;
     var err = document.getElementById('w-error');
-    if(!hasSig || !agreed){
+    if(!hasSig || !agreed || !recordConsent){
       e.preventDefault();
       err.style.display = 'block';
+      err.textContent = !hasSig
+        ? 'Please provide your signature before submitting.'
+        : !recordConsent
+          ? 'Recording consent is required to receive services. Please check the recording consent box.'
+          : 'Please check the agreement box before submitting.';
       return false;
     }
     // capture signature as data URL
