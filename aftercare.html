@@ -92,6 +92,7 @@ footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;color:rgb
   <form id="aftercareForm" novalidate>
     <input type="hidden" id="timepoint" name="timepoint" value="24hr">
     <input type="hidden" id="clientFlags" name="flags" value="">
+    <input type="hidden" id="clientCid" name="cid" value="">
     <input type="hidden" name="form-name" value="aftercare">
 
     <!-- STANDARD Q1 — Intensity -->
@@ -185,6 +186,31 @@ footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;color:rgb
       <span class="ai-name" style="margin-top:12px">✦ Royal Energy Alchemy AI</span>
     </div>
 
+    <!-- BELIEF AFTER (24hr only — injected by JS) -->
+    <div id="beliefAfterBlock" style="display:none">
+      <div class="q-block">
+        <div class="q-head"><span class="q-tag">Belief Shift · 24-Hour Only</span></div>
+        <div class="q-body">
+          <div class="q-text">Now that you've experienced a session, how do you rate your belief in energy work? <span style="font-style:italic;font-size:15px;color:rgba(180,170,200,0.5)">(1 = still skeptical, 10 = fully convinced)</span></div>
+          <div class="scale-wrap">
+            <div class="scale">
+              <div class="scale-opt"><input type="radio" name="belief_after" id="ba1" value="1"><label for="ba1">1</label></div>
+              <div class="scale-opt"><input type="radio" name="belief_after" id="ba2" value="2"><label for="ba2">2</label></div>
+              <div class="scale-opt"><input type="radio" name="belief_after" id="ba3" value="3"><label for="ba3">3</label></div>
+              <div class="scale-opt"><input type="radio" name="belief_after" id="ba4" value="4"><label for="ba4">4</label></div>
+              <div class="scale-opt"><input type="radio" name="belief_after" id="ba5" value="5"><label for="ba5">5</label></div>
+              <div class="scale-opt"><input type="radio" name="belief_after" id="ba6" value="6"><label for="ba6">6</label></div>
+              <div class="scale-opt"><input type="radio" name="belief_after" id="ba7" value="7"><label for="ba7">7</label></div>
+              <div class="scale-opt"><input type="radio" name="belief_after" id="ba8" value="8"><label for="ba8">8</label></div>
+              <div class="scale-opt"><input type="radio" name="belief_after" id="ba9" value="9"><label for="ba9">9</label></div>
+              <div class="scale-opt"><input type="radio" name="belief_after" id="ba10" value="10"><label for="ba10">10</label></div>
+            </div>
+            <div class="scale-labels"><span>Still skeptical</span><span>Fully convinced</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- OPEN NOTE -->
     <div class="q-block" style="margin-top:20px">
       <div class="q-head"><span class="q-tag">Anything Else</span></div>
@@ -214,9 +240,13 @@ const params = new URLSearchParams(window.location.search);
 const timepoint = params.get('t') || '24hr';
 const flags = (params.get('f') || '').split(',').filter(Boolean);
 const clientName = params.get('name') || 'there';
+const clientCid = params.get('cid') || '';
 
 document.getElementById('timepoint').value = timepoint;
 document.getElementById('clientFlags').value = flags.join(',');
+if (clientCid) document.getElementById('clientCid').value = clientCid;
+// Belief After scale only appears on the 24hr check-in
+if (timepoint === '24hr') document.getElementById('beliefAfterBlock').style.display = 'block';
 
 const tpConfig = {
   '24hr': { badge: '24-Hour Check-In', sub: 'Your session was yesterday. Daron\'s AI is checking in on your behalf.', active: 'pd24' },

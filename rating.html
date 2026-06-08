@@ -17,6 +17,24 @@ body{background:#0a0810;color:#e8e4f0;font-family:'EB Garamond',serif;min-height
 .sec-head{padding:12px 20px;background:rgba(201,168,76,0.04);border-bottom:1px solid rgba(201,168,76,0.08)}
 .sec-title{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.25em;color:rgba(201,168,76,0.7);text-transform:uppercase}
 .sec-body{padding:24px 20px}
+/* NPS scale */
+.nps-wrap{display:flex;gap:4px;flex-wrap:wrap;justify-content:center;margin-bottom:10px}
+.nps-opt{text-align:center}
+.nps-opt input{display:none}
+.nps-opt label{display:block;width:52px;padding:12px 4px;border:1px solid rgba(201,168,76,0.15);font-family:'Cinzel',serif;font-size:13px;color:rgba(201,168,76,0.5);cursor:pointer;transition:all .2s;font-weight:600}
+.nps-opt input:checked + label{border-color:var(--gold);color:var(--gold);background:rgba(201,168,76,0.08)}
+.nps-opt label:hover{border-color:rgba(201,168,76,0.4);color:rgba(201,168,76,0.8)}
+.nps-labels{display:flex;justify-content:space-between;margin-top:6px;padding:0 2px}
+.nps-labels span{font-size:11px;color:rgba(180,170,200,0.4);font-style:italic}
+/* Belief After scale */
+.scale{display:flex;gap:8px;flex-wrap:wrap}
+.scale-opt{flex:1;min-width:44px;text-align:center}
+.scale-opt input{display:none}
+.scale-opt label{display:block;padding:10px 4px;border:1px solid rgba(201,168,76,0.15);font-family:'Cinzel',serif;font-size:12px;color:rgba(201,168,76,0.5);cursor:pointer;transition:all .2s;font-weight:600}
+.scale-opt input:checked + label{border-color:var(--gold);color:var(--gold);background:rgba(201,168,76,0.08)}
+.scale-opt label:hover{border-color:rgba(201,168,76,0.4);color:rgba(201,168,76,0.8)}
+.scale-sub-labels{display:flex;justify-content:space-between;margin-top:6px}
+.scale-sub-labels span{font-size:11px;color:rgba(180,170,200,0.4);font-style:italic}
 /* Stars */
 .stars-wrap{display:flex;justify-content:center;gap:12px;margin-bottom:12px}
 .star-btn{background:none;border:none;font-size:44px;cursor:pointer;color:rgba(201,168,76,0.2);transition:all .2s;line-height:1;padding:4px}
@@ -53,6 +71,7 @@ footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;color:rgb
   <form id="ratingForm" novalidate>
     <input type="hidden" name="form-name" value="session-rating">
     <input type="hidden" id="ratingVal" name="rating" value="">
+    <input type="hidden" id="cidField" name="cid" value="">
 
     <!-- STAR RATING -->
     <div class="sec">
@@ -118,6 +137,49 @@ footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;color:rgb
       </div>
     </div>
 
+    <!-- NPS -->
+    <div class="sec">
+      <div class="sec-head"><span class="sec-title">Likelihood to Recommend</span></div>
+      <div class="sec-body">
+        <p style="font-size:15px;color:rgba(232,228,240,0.65);margin-bottom:16px;line-height:1.7">How likely are you to recommend Royal Energy Alchemy to a friend or someone you care about?</p>
+        <div class="nps-wrap" id="npsWrap">
+          <div class="nps-opt"><input type="radio" name="nps" id="nps0" value="0"><label for="nps0">0</label></div>
+          <div class="nps-opt"><input type="radio" name="nps" id="nps1" value="1"><label for="nps1">1</label></div>
+          <div class="nps-opt"><input type="radio" name="nps" id="nps2" value="2"><label for="nps2">2</label></div>
+          <div class="nps-opt"><input type="radio" name="nps" id="nps3" value="3"><label for="nps3">3</label></div>
+          <div class="nps-opt"><input type="radio" name="nps" id="nps4" value="4"><label for="nps4">4</label></div>
+          <div class="nps-opt"><input type="radio" name="nps" id="nps5" value="5"><label for="nps5">5</label></div>
+          <div class="nps-opt"><input type="radio" name="nps" id="nps6" value="6"><label for="nps6">6</label></div>
+          <div class="nps-opt"><input type="radio" name="nps" id="nps7" value="7"><label for="nps7">7</label></div>
+          <div class="nps-opt"><input type="radio" name="nps" id="nps8" value="8"><label for="nps8">8</label></div>
+          <div class="nps-opt"><input type="radio" name="nps" id="nps9" value="9"><label for="nps9">9</label></div>
+          <div class="nps-opt"><input type="radio" name="nps" id="nps10" value="10"><label for="nps10">10</label></div>
+        </div>
+        <div class="nps-labels"><span>Not at all likely</span><span>Extremely likely</span></div>
+      </div>
+    </div>
+
+    <!-- BELIEF AFTER -->
+    <div class="sec">
+      <div class="sec-head"><span class="sec-title">Belief Shift</span></div>
+      <div class="sec-body">
+        <p style="font-size:15px;color:rgba(232,228,240,0.65);margin-bottom:16px;line-height:1.7">After your session, how do you rate your belief in energy work? <span style="font-style:italic;color:rgba(180,170,200,0.5)">(1 = still a skeptic, 10 = fully convinced)</span></p>
+        <div class="scale">
+          <div class="scale-opt"><input type="radio" name="belief_after" id="ba1" value="1"><label for="ba1">1</label></div>
+          <div class="scale-opt"><input type="radio" name="belief_after" id="ba2" value="2"><label for="ba2">2</label></div>
+          <div class="scale-opt"><input type="radio" name="belief_after" id="ba3" value="3"><label for="ba3">3</label></div>
+          <div class="scale-opt"><input type="radio" name="belief_after" id="ba4" value="4"><label for="ba4">4</label></div>
+          <div class="scale-opt"><input type="radio" name="belief_after" id="ba5" value="5"><label for="ba5">5</label></div>
+          <div class="scale-opt"><input type="radio" name="belief_after" id="ba6" value="6"><label for="ba6">6</label></div>
+          <div class="scale-opt"><input type="radio" name="belief_after" id="ba7" value="7"><label for="ba7">7</label></div>
+          <div class="scale-opt"><input type="radio" name="belief_after" id="ba8" value="8"><label for="ba8">8</label></div>
+          <div class="scale-opt"><input type="radio" name="belief_after" id="ba9" value="9"><label for="ba9">9</label></div>
+          <div class="scale-opt"><input type="radio" name="belief_after" id="ba10" value="10"><label for="ba10">10</label></div>
+        </div>
+        <div class="scale-sub-labels"><span>Still skeptical</span><span>Fully convinced</span></div>
+      </div>
+    </div>
+
     <!-- TESTIMONIAL PERMISSION -->
     <div class="sec">
       <div class="sec-head"><span class="sec-title">Permission to Share</span></div>
@@ -144,6 +206,11 @@ footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;color:rgb
 </footer>
 
 <script>
+// Read URL params
+const ratingParams = new URLSearchParams(window.location.search);
+const ratingCid = ratingParams.get('cid') || '';
+if (ratingCid) document.getElementById('cidField').value = ratingCid;
+
 const starLabels = ['','Not what I expected','It was okay','Good experience','Really helped me','Life-changing'];
 let currentRating = 0;
 const stars = document.querySelectorAll('.star-btn');

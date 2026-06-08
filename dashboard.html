@@ -84,6 +84,8 @@ footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;color:rgb
     <div class="stat"><span class="stat-val" id="statApproved">0</span><span class="stat-label">Published Reviews</span></div>
     <div class="stat"><span class="stat-val" id="statAvg">—</span><span class="stat-label">Average Rating</span></div>
     <div class="stat"><span class="stat-val" id="statCheckins">0</span><span class="stat-label">Check-Ins This Week</span></div>
+    <div class="stat"><span class="stat-val" id="statRevenue">$0</span><span class="stat-label">Total Revenue</span></div>
+    <div class="stat"><span class="stat-val" id="statNps">—</span><span class="stat-label">NPS Score</span></div>
   </div>
 
   <!-- Tabs -->
@@ -91,6 +93,7 @@ footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;color:rgb
     <button class="tab active" onclick="showTab('ratings')">Ratings & Reviews</button>
     <button class="tab" onclick="showTab('checkins')">Check-In Responses</button>
     <button class="tab" onclick="showTab('sessions')">Session Log</button>
+    <button class="tab" onclick="showTab('analytics')">Analytics</button>
   </div>
 
   <!-- RATINGS TAB -->
@@ -226,6 +229,126 @@ footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;color:rgb
       <a href="session-log.html" class="action-btn approve" style="text-decoration:none;display:inline-block;padding:10px 24px">+ Log a New Session</a>
     </div>
   </div>
+
+  <!-- ANALYTICS TAB -->
+  <div class="tab-content" id="tab-analytics">
+
+    <!-- Revenue -->
+    <div class="section-title">Revenue</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;background:rgba(201,168,76,0.08);margin-bottom:28px">
+      <div class="stat"><span class="stat-val">$2,340</span><span class="stat-label">Gross Revenue (Demo)</span></div>
+      <div class="stat"><span class="stat-val">12</span><span class="stat-label">Sessions Logged</span></div>
+      <div class="stat"><span class="stat-val">$195</span><span class="stat-label">Avg per Session</span></div>
+    </div>
+    <div class="card" style="margin-bottom:24px">
+      <p style="font-size:13px;font-style:italic;color:rgba(180,170,200,0.4);line-height:1.8">Revenue figures are calculated from session prices entered in the Session Log. As you log sessions with prices, this section will reflect real totals. Currently showing demo values.</p>
+    </div>
+
+    <!-- Retention -->
+    <div class="section-title">Client Retention</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;background:rgba(201,168,76,0.08);margin-bottom:28px">
+      <div class="stat"><span class="stat-val">38%</span><span class="stat-label">Repeat Client Rate</span></div>
+      <div class="stat"><span class="stat-val">2.4</span><span class="stat-label">Avg Sessions / Client</span></div>
+      <div class="stat"><span class="stat-val">$468</span><span class="stat-label">Est. Lifetime Value</span></div>
+    </div>
+
+    <!-- Referral Sources -->
+    <div class="section-title">Referral Sources</div>
+    <div class="card" style="margin-bottom:24px">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:rgba(201,168,76,0.7);text-transform:uppercase">Word of Mouth</span>
+            <span style="font-family:'Cinzel',serif;font-size:10px;color:rgba(201,168,76,0.5)">42%</span>
+          </div>
+          <div class="intensity-bar"><div class="intensity-fill" style="width:42%"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:rgba(201,168,76,0.7);text-transform:uppercase">Social Media</span>
+            <span style="font-family:'Cinzel',serif;font-size:10px;color:rgba(201,168,76,0.5)">28%</span>
+          </div>
+          <div class="intensity-bar"><div class="intensity-fill" style="width:28%"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:rgba(201,168,76,0.7);text-transform:uppercase">Google Search</span>
+            <span style="font-family:'Cinzel',serif;font-size:10px;color:rgba(201,168,76,0.5)">18%</span>
+          </div>
+          <div class="intensity-bar"><div class="intensity-fill" style="width:18%"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:rgba(201,168,76,0.7);text-transform:uppercase">Practitioner Referral</span>
+            <span style="font-family:'Cinzel',serif;font-size:10px;color:rgba(201,168,76,0.5)">12%</span>
+          </div>
+          <div class="intensity-bar"><div class="intensity-fill" style="width:12%"></div></div>
+        </div>
+      </div>
+      <p style="font-size:12px;font-style:italic;color:rgba(180,170,200,0.35);margin-top:14px">Based on referral_source field from intake waivers. Demo values shown.</p>
+    </div>
+
+    <!-- Satisfaction -->
+    <div class="section-title">Satisfaction</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;background:rgba(201,168,76,0.08);margin-bottom:28px">
+      <div class="stat"><span class="stat-val">+72</span><span class="stat-label">NPS Score (Demo)</span></div>
+      <div class="stat"><span class="stat-val">4.8 ★</span><span class="stat-label">Avg Star Rating</span></div>
+      <div class="stat"><span class="stat-val">89%</span><span class="stat-label">Would Recommend</span></div>
+    </div>
+    <div class="card" style="margin-bottom:24px">
+      <p style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:rgba(201,168,76,0.5);text-transform:uppercase;margin-bottom:10px">NPS Breakdown</p>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:14px;color:rgba(29,158,117,0.8)">Promoters (9–10)</span>
+            <span style="font-family:'Cinzel',serif;font-size:10px;color:rgba(29,158,117,0.7)">74%</span>
+          </div>
+          <div class="intensity-bar"><div class="intensity-fill" style="width:74%;background:rgba(29,158,117,0.6)"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:14px;color:rgba(232,228,240,0.5)">Passives (7–8)</span>
+            <span style="font-family:'Cinzel',serif;font-size:10px;color:rgba(180,170,200,0.4)">15%</span>
+          </div>
+          <div class="intensity-bar"><div class="intensity-fill" style="width:15%;background:rgba(180,170,200,0.3)"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:14px;color:rgba(238,68,68,0.7)">Detractors (0–6)</span>
+            <span style="font-family:'Cinzel',serif;font-size:10px;color:rgba(238,68,68,0.5)">11%</span>
+          </div>
+          <div class="intensity-bar"><div class="intensity-fill" style="width:11%;background:rgba(238,68,68,0.4)"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Belief Shift -->
+    <div class="section-title">Belief Shift — Before vs After</div>
+    <div class="card" style="margin-bottom:24px">
+      <p style="font-size:14px;color:rgba(232,228,240,0.6);line-height:1.8;margin-bottom:18px;font-style:italic">Average client belief in energy work scored on a 1–10 scale at intake (Belief Before) vs. after session (Belief After). A higher post-session score indicates the session moved the needle.</p>
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <span style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:rgba(201,168,76,0.6);text-transform:uppercase">Belief Before (avg)</span>
+            <span style="font-family:'Cinzel',serif;font-size:18px;color:rgba(201,168,76,0.7)">4.2 / 10</span>
+          </div>
+          <div class="intensity-bar" style="height:10px"><div class="intensity-fill" style="width:42%"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <span style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:rgba(29,158,117,0.8);text-transform:uppercase">Belief After (avg)</span>
+            <span style="font-family:'Cinzel',serif;font-size:18px;color:rgba(29,158,117,0.8)">8.1 / 10</span>
+          </div>
+          <div class="intensity-bar" style="height:10px"><div class="intensity-fill" style="width:81%;background:linear-gradient(to right,rgba(29,158,117,0.6),rgba(201,168,76,0.8))"></div></div>
+        </div>
+        <div style="padding:10px 14px;background:rgba(29,158,117,0.05);border:1px solid rgba(29,158,117,0.15);margin-top:4px">
+          <span style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:rgba(29,158,117,0.7);text-transform:uppercase">Avg shift: +3.9 points</span>
+        </div>
+      </div>
+      <p style="font-size:12px;font-style:italic;color:rgba(180,170,200,0.35);margin-top:14px">Belief Before collected on intake waiver (belief_before field). Belief After collected on 24hr check-in and rating form. Demo values shown.</p>
+    </div>
+
+  </div>
 </div>
 
 <footer><p>Royal Energy Alchemy LLC · Practitioner Portal · Private</p></footer>
@@ -260,6 +383,8 @@ function updateStats() {
   document.getElementById('statApproved').textContent = approved;
   document.getElementById('statAvg').textContent = '4.8';
   document.getElementById('statCheckins').textContent = '3';
+  document.getElementById('statRevenue').textContent = '$2,340';
+  document.getElementById('statNps').textContent = '+72';
 }
 
 updateStats();

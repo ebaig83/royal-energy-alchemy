@@ -119,6 +119,17 @@ footer .pa-disclaimer{font-family:'EB Garamond',serif;font-size:13px;font-style:
 .check-grid input[type=checkbox]:checked + span{color:#e8e4f0}
 .vol-note{font-size:12px;font-family:'Cinzel',serif;letter-spacing:.2em;color:rgba(201,168,76,0.35);text-transform:uppercase;margin-left:6px}
 
+/* Intake scales */
+.scale-wrap{margin-top:4px}
+.scale{display:flex;gap:8px;flex-wrap:wrap}
+.scale-opt{flex:1;min-width:44px;text-align:center}
+.scale-opt input{display:none}
+.scale-opt label{display:block;padding:10px 4px;border:1px solid rgba(201,168,76,0.15);font-family:'Cinzel',serif;font-size:12px;color:rgba(201,168,76,0.5);cursor:pointer;transition:all .2s;font-weight:600}
+.scale-opt input:checked + label{border-color:var(--gold);color:var(--gold);background:rgba(201,168,76,0.08)}
+.scale-opt label:hover{border-color:rgba(201,168,76,0.4);color:rgba(201,168,76,0.8)}
+.scale-labels{display:flex;justify-content:space-between;margin-top:6px}
+.scale-labels span{font-size:11px;color:rgba(180,170,200,0.4);font-style:italic}
+
 @media(max-width:600px){
   nav{padding:14px 20px}
   .form-row{grid-template-columns:1fr}
@@ -178,12 +189,61 @@ footer .pa-disclaimer{font-family:'EB Garamond',serif;font-size:13px;font-style:
             <div class="fg"><input type="text" id="referralOtherText" name="referral_source_other" placeholder="Please describe..."/></div>
           </div>
         </div>
+        <!-- Expectations (required) -->
+        <div class="form-row single" style="margin-bottom:16px">
+          <div class="fg">
+            <label>What are you hoping to experience or shift in this session? <span class="req">*</span></label>
+            <textarea id="expectations" name="expectations" placeholder="Describe your intention, goal, or what brought you here in your own words..."></textarea>
+          </div>
+        </div>
+
         <div class="form-row">
           <div class="fg"><label>Have you had energy healing before?</label>
             <select id="priorSession"><option value="">Choose one</option><option value="yes">Yes</option><option value="no">No</option></select>
           </div>
           <div class="fg"><label>If yes, when was your last session?</label><input type="text" id="lastSession" placeholder="Approximate date or timeframe"/></div>
         </div>
+
+        <!-- Belief Before scale -->
+        <div style="margin-bottom:20px">
+          <label style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.4em;color:rgba(201,168,76,0.6);text-transform:uppercase;display:block;margin-bottom:10px">How familiar are you with energy work? <span style="font-size:11px;font-style:italic;color:rgba(180,170,200,0.45);text-transform:none;letter-spacing:0;font-family:'EB Garamond',serif">(1 = never heard of it, 10 = practiced it for years)</span></label>
+          <div class="scale-wrap">
+            <div class="scale">
+              <div class="scale-opt"><input type="radio" name="belief_before" id="bb1" value="1"><label for="bb1">1</label></div>
+              <div class="scale-opt"><input type="radio" name="belief_before" id="bb2" value="2"><label for="bb2">2</label></div>
+              <div class="scale-opt"><input type="radio" name="belief_before" id="bb3" value="3"><label for="bb3">3</label></div>
+              <div class="scale-opt"><input type="radio" name="belief_before" id="bb4" value="4"><label for="bb4">4</label></div>
+              <div class="scale-opt"><input type="radio" name="belief_before" id="bb5" value="5"><label for="bb5">5</label></div>
+              <div class="scale-opt"><input type="radio" name="belief_before" id="bb6" value="6"><label for="bb6">6</label></div>
+              <div class="scale-opt"><input type="radio" name="belief_before" id="bb7" value="7"><label for="bb7">7</label></div>
+              <div class="scale-opt"><input type="radio" name="belief_before" id="bb8" value="8"><label for="bb8">8</label></div>
+              <div class="scale-opt"><input type="radio" name="belief_before" id="bb9" value="9"><label for="bb9">9</label></div>
+              <div class="scale-opt"><input type="radio" name="belief_before" id="bb10" value="10"><label for="bb10">10</label></div>
+            </div>
+            <div class="scale-labels"><span>Complete skeptic</span><span>True believer</span></div>
+          </div>
+        </div>
+
+        <!-- Intake Severity scale -->
+        <div style="margin-bottom:16px">
+          <label style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.4em;color:rgba(201,168,76,0.6);text-transform:uppercase;display:block;margin-bottom:10px">How intense is the concern bringing you in right now? <span style="font-size:11px;font-style:italic;color:rgba(180,170,200,0.45);text-transform:none;letter-spacing:0;font-family:'EB Garamond',serif">(1 = mild curiosity, 10 = crisis / unbearable)</span></label>
+          <div class="scale-wrap">
+            <div class="scale">
+              <div class="scale-opt"><input type="radio" name="intake_severity" id="is1" value="1"><label for="is1">1</label></div>
+              <div class="scale-opt"><input type="radio" name="intake_severity" id="is2" value="2"><label for="is2">2</label></div>
+              <div class="scale-opt"><input type="radio" name="intake_severity" id="is3" value="3"><label for="is3">3</label></div>
+              <div class="scale-opt"><input type="radio" name="intake_severity" id="is4" value="4"><label for="is4">4</label></div>
+              <div class="scale-opt"><input type="radio" name="intake_severity" id="is5" value="5"><label for="is5">5</label></div>
+              <div class="scale-opt"><input type="radio" name="intake_severity" id="is6" value="6"><label for="is6">6</label></div>
+              <div class="scale-opt"><input type="radio" name="intake_severity" id="is7" value="7"><label for="is7">7</label></div>
+              <div class="scale-opt"><input type="radio" name="intake_severity" id="is8" value="8"><label for="is8">8</label></div>
+              <div class="scale-opt"><input type="radio" name="intake_severity" id="is9" value="9"><label for="is9">9</label></div>
+              <div class="scale-opt"><input type="radio" name="intake_severity" id="is10" value="10"><label for="is10">10</label></div>
+            </div>
+            <div class="scale-labels"><span>Mild</span><span>Crisis</span></div>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -542,23 +602,33 @@ function toggleReferralOther() {
   document.getElementById('referralOtherText').required = isOther;
 }
 
-// Client ID generation
-function generateClientId(email) {
-  const key = 'rea_client_id_' + email.toLowerCase().trim();
-  const existing = localStorage.getItem(key);
-  if (existing) return existing;
+// Client ID — generate on page load, finalize to email key on submit
+function getOrCreateClientId(email) {
+  if (email) {
+    const emailKey = 'rea_client_id_' + email.toLowerCase().trim();
+    const byEmail = localStorage.getItem(emailKey);
+    if (byEmail) return byEmail;
+  }
+  // Check for an already-provisioned ID this session
+  const provKey = 'rea_pending_client_id';
+  const prov = sessionStorage.getItem(provKey);
+  if (prov) return prov;
+  // Generate new
   const year = new Date().getFullYear();
   const num = String(Math.floor(1000 + Math.random() * 9000));
   const id = 'REA-' + year + '-' + num;
-  localStorage.setItem(key, id);
+  sessionStorage.setItem(provKey, id);
   return id;
 }
+// Seed on load
+const provisionalClientId = getOrCreateClientId(null);
+document.getElementById('client_id').value = provisionalClientId;
 
 // Form submission
 document.getElementById('waiverForm').addEventListener('submit', function(e) {
   e.preventDefault();
 
-  const required = ['fullName','dob','phone','email','c1','c2','c3','c4','c5','c6','c7','fc1','fc2','fc3','fc4','printedName','recordConsent'];
+  const required = ['fullName','dob','phone','email','expectations','c1','c2','c3','c4','c5','c6','c7','fc1','fc2','fc3','fc4','printedName','recordConsent'];
   let valid = true;
 
   required.forEach(id => {
@@ -606,9 +676,11 @@ document.getElementById('waiverForm').addEventListener('submit', function(e) {
   }
   if (!valid) return;
 
-  // Generate and store Client ID
+  // Finalize Client ID — bind to email and persist
   const email = document.getElementById('email').value.trim();
-  const clientId = generateClientId(email);
+  const clientId = getOrCreateClientId(email);
+  localStorage.setItem('rea_client_id_' + email.toLowerCase().trim(), clientId);
+  sessionStorage.removeItem('rea_pending_client_id');
   document.getElementById('client_id').value = clientId;
   document.getElementById('displayClientId').textContent = clientId;
 
