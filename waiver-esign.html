@@ -103,6 +103,22 @@ footer .pa-disclaimer{font-family:'EB Garamond',serif;font-size:13px;font-style:
 .req{color:rgba(201,168,76,0.6);margin-left:2px}
 .error{border-color:rgba(255,80,80,0.5) !important}
 
+/* Section 2 expanded subsections */
+.subsec{margin-top:24px;padding-top:20px;border-top:1px solid rgba(201,168,76,0.08)}
+.subsec-title{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.38em;color:rgba(201,168,76,0.65);text-transform:uppercase;margin-bottom:14px;display:block}
+.subsec-note{font-size:13px;font-style:italic;color:rgba(180,170,200,0.5);margin-bottom:12px;line-height:1.6}
+.radio-list{display:flex;flex-direction:column;gap:6px}
+.radio-list label{display:flex;align-items:center;gap:10px;font-size:15px;color:rgba(232,228,240,0.8);cursor:pointer;padding:6px 10px;border:1px solid rgba(201,168,76,0.06);transition:border-color .2s}
+.radio-list label:hover{border-color:rgba(201,168,76,0.2)}
+.radio-list input[type=radio]{accent-color:var(--gold);width:16px;height:16px;flex-shrink:0}
+.radio-list input[type=radio]:checked + span{color:#e8e4f0}
+.check-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px}
+.check-grid label{display:flex;align-items:center;gap:10px;font-size:15px;color:rgba(232,228,240,0.8);cursor:pointer;padding:6px 10px;border:1px solid rgba(201,168,76,0.06);transition:border-color .2s}
+.check-grid label:hover{border-color:rgba(201,168,76,0.2)}
+.check-grid input[type=checkbox]{accent-color:var(--gold);width:16px;height:16px;flex-shrink:0}
+.check-grid input[type=checkbox]:checked + span{color:#e8e4f0}
+.vol-note{font-size:12px;font-family:'Cinzel',serif;letter-spacing:.2em;color:rgba(201,168,76,0.35);text-transform:uppercase;margin-left:6px}
+
 @media(max-width:600px){
   nav{padding:14px 20px}
   .form-row{grid-template-columns:1fr}
@@ -159,7 +175,15 @@ footer .pa-disclaimer{font-family:'EB Garamond',serif;font-size:13px;font-style:
     <div class="sec">
       <div class="sec-head"><span class="sec-num">Section 2</span><span class="sec-title">Health & Safety Disclosure</span></div>
       <div class="sec-body">
+
+        <!-- Privacy note -->
+        <div class="notice" style="margin-bottom:20px">
+          <p style="font-size:14px">This information is voluntary where indicated. It helps Daron provide the most effective session and may be used in de-identified aggregate form for research and service improvement as described in our <a href="privacy-policy.html" style="color:rgba(201,168,76,0.7)">Privacy Policy</a>.</p>
+        </div>
+
         <p style="font-size:15px;color:rgba(232,228,240,0.7);margin-bottom:20px">Please answer honestly so Daron can provide the safest and most effective session possible.</p>
+
+        <!-- Basic health table -->
         <table class="health-table">
           <thead><tr><th>Question</th><th>Yes</th><th>No</th></tr></thead>
           <tbody>
@@ -174,6 +198,101 @@ footer .pa-disclaimer{font-family:'EB Garamond',serif;font-size:13px;font-style:
         <div class="form-row single" style="margin-top:16px">
           <div class="fg"><label>If yes to any above, please describe</label><textarea id="healthNotes" placeholder="Optional but helpful."></textarea></div>
         </div>
+
+        <!-- Current Care Status (required) -->
+        <div class="subsec">
+          <span class="subsec-title">Current Care Status <span class="req">*</span></span>
+          <p class="subsec-note">Choose one that best describes your current professional care situation.</p>
+          <div class="radio-list">
+            <label><input type="radio" name="careStatus" value="none"><span>Not currently receiving any professional care</span></label>
+            <label><input type="radio" name="careStatus" value="therapist_only"><span>Seeing a therapist or counselor only</span></label>
+            <label><input type="radio" name="careStatus" value="psychiatrist_only"><span>Seeing a psychiatrist only</span></label>
+            <label><input type="radio" name="careStatus" value="pcp_only"><span>Seeing a primary care physician only</span></label>
+            <label><input type="radio" name="careStatus" value="therapist_psychiatrist"><span>Seeing therapist + psychiatrist</span></label>
+            <label><input type="radio" name="careStatus" value="therapist_medical"><span>Seeing therapist + medical provider</span></label>
+            <label><input type="radio" name="careStatus" value="multiple"><span>Multiple providers (therapist, psychiatrist, and/or medical)</span></label>
+            <label><input type="radio" name="careStatus" value="spiritual_advisor"><span>Seeing a spiritual or religious advisor only</span></label>
+            <label><input type="radio" name="careStatus" value="combination"><span>Combination of conventional and alternative care</span></label>
+          </div>
+        </div>
+
+        <!-- Providers Currently Seen -->
+        <div class="subsec">
+          <span class="subsec-title">Providers Currently Seen <span class="vol-note">(check all that apply)</span></span>
+          <div class="check-grid">
+            <label><input type="checkbox" name="providers" value="pcp"><span>Primary care physician</span></label>
+            <label><input type="checkbox" name="providers" value="therapist"><span>Therapist / counselor</span></label>
+            <label><input type="checkbox" name="providers" value="psychiatrist"><span>Psychiatrist</span></label>
+            <label><input type="checkbox" name="providers" value="psychologist"><span>Psychologist</span></label>
+            <label><input type="checkbox" name="providers" value="social_worker"><span>Social worker</span></label>
+            <label><input type="checkbox" name="providers" value="spiritual_advisor"><span>Religious or spiritual advisor</span></label>
+            <label><input type="checkbox" name="providers" value="reiki"><span>Reiki or energy practitioner</span></label>
+            <label><input type="checkbox" name="providers" value="acupuncturist"><span>Acupuncturist</span></label>
+            <label><input type="checkbox" name="providers" value="chiropractor"><span>Chiropractor</span></label>
+            <label><input type="checkbox" name="providers" value="other_alt"><span>Other alternative practitioner</span></label>
+          </div>
+        </div>
+
+        <!-- Prior Services Used -->
+        <div class="subsec">
+          <span class="subsec-title">Prior Services Used for This Concern <span class="vol-note">(check all that apply)</span></span>
+          <div class="check-grid">
+            <label><input type="checkbox" name="priorServices" value="psychotherapy"><span>Psychotherapy</span></label>
+            <label><input type="checkbox" name="priorServices" value="psychiatry"><span>Psychiatry / medication</span></label>
+            <label><input type="checkbox" name="priorServices" value="coaching"><span>Coaching</span></label>
+            <label><input type="checkbox" name="priorServices" value="support_groups"><span>Support groups</span></label>
+            <label><input type="checkbox" name="priorServices" value="religious_counseling"><span>Religious counseling</span></label>
+            <label><input type="checkbox" name="priorServices" value="meditation"><span>Meditation or mindfulness</span></label>
+            <label><input type="checkbox" name="priorServices" value="reiki"><span>Reiki or energy healing</span></label>
+            <label><input type="checkbox" name="priorServices" value="acupuncture"><span>Acupuncture</span></label>
+            <label><input type="checkbox" name="priorServices" value="chiropractic"><span>Chiropractic</span></label>
+            <label><input type="checkbox" name="priorServices" value="yoga"><span>Yoga</span></label>
+            <label><input type="checkbox" name="priorServices" value="none"><span>None</span></label>
+            <label><input type="checkbox" name="priorServices" value="other"><span>Other</span></label>
+          </div>
+        </div>
+
+        <!-- Physical Health Concerns (voluntary) -->
+        <div class="subsec">
+          <span class="subsec-title">Physical Health Concerns <span class="vol-note">(voluntary — check all that apply)</span></span>
+          <div class="check-grid">
+            <label><input type="checkbox" name="physicalConcerns" value="chronic_pain"><span>Chronic pain</span></label>
+            <label><input type="checkbox" name="physicalConcerns" value="fibromyalgia"><span>Fibromyalgia</span></label>
+            <label><input type="checkbox" name="physicalConcerns" value="autoimmune"><span>Autoimmune disorder</span></label>
+            <label><input type="checkbox" name="physicalConcerns" value="neurological"><span>Neurological condition</span></label>
+            <label><input type="checkbox" name="physicalConcerns" value="sleep_disorder"><span>Sleep disorder</span></label>
+            <label><input type="checkbox" name="physicalConcerns" value="cardiovascular"><span>Cardiovascular condition</span></label>
+            <label><input type="checkbox" name="physicalConcerns" value="prefer_not"><span>Prefer not to answer</span></label>
+            <label><input type="checkbox" name="physicalConcerns" value="none"><span>None</span></label>
+          </div>
+        </div>
+
+        <!-- Mental Health Concerns (voluntary) -->
+        <div class="subsec">
+          <span class="subsec-title">Mental Health Concerns <span class="vol-note">(voluntary — check all that apply)</span></span>
+          <div class="check-grid">
+            <label><input type="checkbox" name="mentalConcerns" value="anxiety"><span>Anxiety disorder</span></label>
+            <label><input type="checkbox" name="mentalConcerns" value="depression"><span>Depression</span></label>
+            <label><input type="checkbox" name="mentalConcerns" value="ptsd"><span>PTSD</span></label>
+            <label><input type="checkbox" name="mentalConcerns" value="adhd"><span>ADHD</span></label>
+            <label><input type="checkbox" name="mentalConcerns" value="autism"><span>Autism spectrum disorder</span></label>
+            <label><input type="checkbox" name="mentalConcerns" value="bipolar"><span>Bipolar disorder</span></label>
+            <label><input type="checkbox" name="mentalConcerns" value="prefer_not"><span>Prefer not to answer</span></label>
+            <label><input type="checkbox" name="mentalConcerns" value="none"><span>None</span></label>
+          </div>
+        </div>
+
+        <!-- Medication -->
+        <div class="subsec">
+          <span class="subsec-title">Medication</span>
+          <p class="subsec-note">Are you currently taking prescribed medication related to your concerns?</p>
+          <div class="radio-list">
+            <label><input type="radio" name="medication" value="yes"><span>Yes</span></label>
+            <label><input type="radio" name="medication" value="no"><span>No</span></label>
+            <label><input type="radio" name="medication" value="prefer_not"><span>Prefer not to answer</span></label>
+          </div>
+        </div>
+
       </div>
     </div>
 
