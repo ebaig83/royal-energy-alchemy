@@ -1094,7 +1094,7 @@ document.querySelectorAll('.faq2-trigger').forEach(function(btn){
         <div class="svc2-num">02</div>
         <div class="svc2-name">Cord Removal &amp; Transmutation</div>
         <div class="svc2-price">from $40</div>
-        <p class="svc2-desc">Targeted removal of cords, hooks, and emotional charges tied to people, places, or patterns that keep returning.</p>
+        <p class="svc2-desc">15-minute session for regular cleansing and energy boost. A focused tune-up for maintaining your field.</p>
         <div class="svc2-play"><svg width="18" height="18" viewBox="0 0 18 18"><polygon points="4,2 16,9 4,16" fill="currentColor"/></svg> Preview</div>
       </div>
 
@@ -1778,7 +1778,7 @@ var DURATION=3800;
 var SVC_DATA=[
   null,
   {name:'Energetic Parasite Removal',price:'$80',desc:'Daron scans your full energetic field, locates what is attached, removes and transmutes it, then seals your field with a shield of light.'},
-  {name:'Cord Removal & Transmutation',price:'from $40',desc:'Targeted removal of energetic cords and hooks connected to people, places, or patterns. Each cord is cut and transmuted into neutral energy.'},
+  {name:'Cord Removal & Transmutation',price:'from $40',desc:'Cord removal begins in the Parasite Removal session and longer distance sessions. Targeted release of cords, hooks, and emotional charges tied to people, places, or patterns that keep returning.'},
   {name:'Energy Alchemy Exorcism',price:'$100',desc:'Deep clearing for intense spiritual disturbances. Sacred geometry is deployed and the field is sealed with a gold sigil when the work is complete.'},
   {name:'Distance Energy Session',price:'$70',desc:'The subject does not need to be present. Daron and his Galactic Team locate and work on the energetic field directly across any distance.'},
   {name:'House Cleansing & Blessing',price:'$60',desc:'Gold light is sent through every room. Dark energy is expelled through windows and roof. A protective dome is placed over the structure when complete.'},
@@ -1954,8 +1954,8 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&modal.clas
   </div>
   <div class="pay-grid reveal reveal-d1">
     <div class="pay-card"><span class="pay-method">Cash App</span><div class="pay-handle">$DaronRoyal</div></div>
-    <div class="pay-card"><span class="pay-method">PayPal</span><div class="pay-handle">droyal168@gmail.com</div></div>
-    <div class="pay-card"><span class="pay-method">Venmo</span><div class="pay-handle">@Daron-Royal</div></div>
+    <div class="pay-card"><span class="pay-method">PayPal</span><div class="pay-handle">droyal168@gmail.com</div><div style="font-family:'Cinzel',serif;font-size:8px;letter-spacing:.2em;color:rgba(201,168,76,.4);text-transform:uppercase;margin-top:8px;line-height:1.5;">Personal account<br>Business coming soon</div></div>
+    <div class="pay-card"><span class="pay-method">Venmo</span><div class="pay-handle">@Daron-Royal</div><div style="font-family:'Cinzel',serif;font-size:8px;letter-spacing:.2em;color:rgba(201,168,76,.4);text-transform:uppercase;margin-top:8px;line-height:1.5;">Personal account<br>Business coming soon</div></div>
     <div class="pay-card"><span class="pay-method">Zelle</span><div class="pay-handle">droyal168@gmail.com</div></div>
     <div class="pay-card"><span class="pay-method">Cash</span><div class="pay-handle">Local sessions</div></div>
   </div>
@@ -1971,13 +1971,15 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&modal.clas
       <h2 class="sec-title">Book a Session</h2>
       <p class="sec-body">Send your concern, preferred service, and two appointment windows. You will receive the right session match and payment link.</p>
     </div>
-    <div class="reveal reveal-d1">
+    <form class="reveal reveal-d1" name="booking" method="POST" netlify data-netlify="true" netlify-honeypot="bot-field" action="/thank-you" onsubmit="return checkPolicy(event)">
+      <input type="hidden" name="form-name" value="booking"/>
+      <p style="display:none"><label>Don't fill this out: <input name="bot-field"/></label></p>
       <div class="contact-grid-2">
-        <div class="contact-field"><label>Your Name</label><input type="text" placeholder="Full name"/></div>
-        <div class="contact-field"><label>Email or Phone</label><input type="text" placeholder="Best way to reach you"/></div>
+        <div class="contact-field"><label for="cf-name">Your Name</label><input id="cf-name" type="text" name="name" placeholder="Full name" required/></div>
+        <div class="contact-field"><label for="cf-contact">Email or Phone</label><input id="cf-contact" type="text" name="contact" placeholder="Best way to reach you" required/></div>
       </div>
-      <div class="contact-field"><label>Service</label>
-        <select>
+      <div class="contact-field"><label for="cf-service">Service</label>
+        <select id="cf-service" name="service">
           <option value="">Choose a service</option>
           <option>Energetic Parasite Removal — $80</option>
           <option>Cord Removal & Transmutation — from $40</option>
@@ -1990,23 +1992,23 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&modal.clas
           <option>Not sure — need assessment first</option>
         </select>
       </div>
-      <div class="contact-field"><label>What Are You Experiencing?</label><textarea placeholder="Share as much or as little as you want. There is no wrong answer."></textarea></div>
+      <div class="contact-field"><label for="cf-message">What Are You Experiencing?</label><textarea id="cf-message" name="message" placeholder="Share as much or as little as you want. There is no wrong answer."></textarea></div>
       <div class="contact-grid-2">
-        <div class="contact-field"><label>First Available Window</label><input type="text" placeholder="Day, date, time (EST)"/></div>
-        <div class="contact-field"><label>Second Available Window</label><input type="text" placeholder="Day, date, time (EST)"/></div>
+        <div class="contact-field"><label for="cf-window1">First Available Window</label><input id="cf-window1" type="text" name="window-1" placeholder="Day, date, time (EST)"/></div>
+        <div class="contact-field"><label for="cf-window2">Second Available Window</label><input id="cf-window2" type="text" name="window-2" placeholder="Day, date, time (EST)"/></div>
       </div>
       <!-- Policy checkbox -->
       <div style="margin-top:20px;display:flex;align-items:flex-start;gap:14px;padding:18px 20px;border:1px solid rgba(201,168,76,.18);background:rgba(201,168,76,.04);">
-        <input type="checkbox" id="policy-agree" style="margin-top:3px;width:17px;height:17px;flex-shrink:0;accent-color:rgb(201,168,76);cursor:pointer;" />
+        <input type="checkbox" id="policy-agree" name="policy-agreed" style="margin-top:3px;width:17px;height:17px;flex-shrink:0;accent-color:rgb(201,168,76);cursor:pointer;" />
         <label for="policy-agree" style="font-family:'EB Garamond',serif;font-size:15px;color:rgba(232,228,240,.78);line-height:1.55;cursor:pointer;">
           I have read and agree to the <a href="#refund-policy" style="color:rgba(201,168,76,.85);text-decoration:underline;text-underline-offset:3px;">Cancellation &amp; Refund Policy</a>.
         </label>
       </div>
       <div id="policy-error" style="display:none;margin-top:8px;font-family:'Cinzel',serif;font-size:9px;letter-spacing:.3em;color:rgba(220,80,80,.9);text-align:center;text-transform:uppercase;">Please agree to the cancellation &amp; refund policy to continue.</div>
       <div style="margin-top:20px;text-align:center">
-        <a href="mailto:droyal168@gmail.com" class="btn-gold" id="send-btn" onclick="return checkPolicy(event)">Send to Daron →</a>
+        <button type="submit" class="btn-gold" id="send-btn" style="border:none;cursor:pointer;">Send to Daron →</button>
       </div>
-    </div>
+    </form>
 
     <!-- Direct contact -->
     <div style="margin-top:56px;display:flex;gap:0;border:1px solid rgba(201,168,76,.1);flex-wrap:wrap" class="reveal reveal-d2">
@@ -2014,7 +2016,7 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&modal.clas
         <span class="pay-method">Phone</span><div class="pay-handle">814-392-2095</div>
       </div>
       <div style="flex:1;min-width:150px;padding:24px 28px;text-align:center;border-right:1px solid rgba(201,168,76,.08)">
-        <span class="pay-method">Email</span><div class="pay-handle">droyal168@gmail.com</div>
+        <span class="pay-method">Email</span><div class="pay-handle">royalenergyalchemy@gmail.com</div>
       </div>
       <div style="flex:1;min-width:150px;padding:24px 28px;text-align:center;border-right:1px solid rgba(201,168,76,.08)">
         <span class="pay-method">Messenger</span><div class="pay-handle">Daron Royal</div>
@@ -2082,7 +2084,7 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&modal.clas
 <footer>
   <p>Royal Energy Alchemy LLC &nbsp;·&nbsp; Erie / Waterford, Pennsylvania &nbsp;·&nbsp; Distance Sessions Available</p>
   <p>Spiritual and energetic services are complementary wellness offerings and are not medical, legal, psychological, or financial advice.</p>
-  <p style="margin-top:8px">© 2026 Royal Energy Alchemy LLC · droyal168@gmail.com · 814-392-2095</p>
+  <p style="margin-top:8px">© 2026 Royal Energy Alchemy LLC · royalenergyalchemy@gmail.com · 814-392-2095</p>
 </footer>
 
 <script>
@@ -2091,10 +2093,10 @@ function checkPolicy(e){
   var cb=document.getElementById('policy-agree');
   var err=document.getElementById('policy-error');
   if(!cb||cb.checked){if(err)err.style.display='none';return true;}
-  e.preventDefault();
-  if(err){err.style.display='block';}
-  cb.parentElement.style.borderColor='rgba(220,80,80,.45)';
-  setTimeout(function(){if(cb.parentElement)cb.parentElement.style.borderColor='rgba(201,168,76,.18)';},2200);
+  if(e&&e.preventDefault)e.preventDefault();
+  if(err)err.style.display='block';
+  var wrap=cb.closest('div');
+  if(wrap){wrap.style.borderColor='rgba(220,80,80,.45)';setTimeout(function(){wrap.style.borderColor='rgba(201,168,76,.18)';},2200);}
   return false;
 }
 
