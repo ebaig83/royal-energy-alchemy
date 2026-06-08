@@ -1,81 +1,113 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Informed Consent & Waiver — Royal Energy Alchemy</title>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Royal Energy Alchemy — Client Waiver & Consent</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
 <style>
-  *{margin:0;padding:0;box-sizing:border-box}
-  :root{--gold:rgb(201,168,76);--deep:#00040a;--text:#e8e4f0}
-  body{background:var(--deep);color:var(--text);font-family:'EB Garamond',serif;min-height:100vh}
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--gold:#c9a84c;--gold-light:#f0dfa0;--deep:#000408;--text:#e8e4f0}
+body{background:#0a0810;color:#e8e4f0;font-family:'EB Garamond',serif;line-height:1.7}
 
-  /* ── NAV ── */
-  nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:20px 48px;background:rgba(0,4,10,.85);backdrop-filter:blur(14px);border-bottom:1px solid rgba(201,168,76,.07)}
-  .nav-brand{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;color:rgba(201,168,76,.75);text-transform:uppercase;text-decoration:none}
-  .nav-back{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:rgba(232,228,240,.5);text-transform:uppercase;text-decoration:none;transition:color .25s}
-  .nav-back:hover{color:var(--gold)}
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:18px 48px;background:rgba(0,4,10,.88);backdrop-filter:blur(14px);border-bottom:1px solid rgba(201,168,76,.07)}
+.nav-brand{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;color:rgba(201,168,76,.7);text-transform:uppercase;text-decoration:none}
+.nav-back{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:rgba(232,228,240,.45);text-transform:uppercase;text-decoration:none;transition:color .25s}
+.nav-back:hover{color:var(--gold)}
 
-  /* ── HERO BAND ── */
-  .page-hero{padding:130px 48px 60px;text-align:center;border-bottom:1px solid rgba(201,168,76,.08);background:radial-gradient(ellipse at 50% 0%,rgba(10,15,40,.9) 0%,var(--deep) 75%)}
-  .sec-label{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.5em;color:var(--gold);text-transform:uppercase;display:block;margin-bottom:14px}
-  h1{font-family:'Cinzel Decorative',serif;font-size:clamp(22px,3.5vw,40px);font-weight:400;color:var(--text);margin-bottom:16px;line-height:1.15}
-  .subtitle{font-family:'EB Garamond',serif;font-size:17px;font-style:italic;color:rgba(232,228,240,.55);line-height:1.8;max-width:580px;margin:0 auto}
+.wrap{max-width:820px;margin:0 auto;padding:100px 24px 48px}
 
-  /* ── WAIVER BODY ── */
-  .waiver-wrap{max-width:760px;margin:0 auto;padding:64px 48px 80px}
-  .waiver-section{margin-bottom:36px}
-  .waiver-section h2{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.38em;color:rgba(201,168,76,.8);text-transform:uppercase;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid rgba(201,168,76,.12)}
-  .waiver-section p,.waiver-section li{font-size:16px;line-height:1.85;color:rgba(232,228,240,.72);margin-bottom:10px}
-  .waiver-section ul{padding-left:20px}
-  .waiver-section li{margin-bottom:6px}
-  strong{color:rgba(232,228,240,.9);font-weight:500;font-style:normal}
+.header{text-align:center;margin-bottom:48px;padding-bottom:32px;border-bottom:1px solid rgba(201,168,76,0.2)}
+.header h1{font-family:'Cinzel',serif;font-size:clamp(20px,3vw,32px);font-weight:700;color:#fff;letter-spacing:.06em;margin-bottom:8px}
+.header p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.4em;color:rgba(201,168,76,0.7);text-transform:uppercase}
 
-  /* ── FORM ── */
-  .esign-form{background:rgba(6,4,18,.85);border:1px solid rgba(201,168,76,.18);padding:40px;margin-top:48px}
-  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:1px;margin-bottom:1px}
-  .form-field{margin-bottom:1px}
-  .form-field label{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.35em;color:rgba(201,168,76,.55);text-transform:uppercase;display:block;margin-bottom:8px}
-  .form-field input,.form-field select{width:100%;background:rgba(8,6,22,.95);border:1px solid rgba(201,168,76,.10);padding:13px 16px;font-family:'EB Garamond',serif;font-size:16px;color:var(--text);outline:none;transition:border-color .3s;-webkit-appearance:none}
-  .form-field input:focus,.form-field select:focus{border-color:rgba(201,168,76,.35)}
-  .form-field select option{background:#080620}
+.sec{margin-bottom:36px;border:1px solid rgba(201,168,76,0.1);background:rgba(8,6,22,0.8)}
+.sec-head{background:#1a1410;padding:14px 20px;display:flex;align-items:center;gap:12px}
+.sec-num{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:rgba(201,168,76,0.5);text-transform:uppercase;min-width:60px}
+.sec-title{font-family:'Cinzel',serif;font-size:14px;font-weight:600;color:#e8e4f0;letter-spacing:.08em}
+.sec-body{padding:24px 20px}
 
-  /* signature pad */
-  .sig-label{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.35em;color:rgba(201,168,76,.55);text-transform:uppercase;display:block;margin-bottom:10px;margin-top:24px}
-  .sig-area{position:relative;border:1px solid rgba(201,168,76,.18);background:rgba(2,4,14,.9)}
-  #sig-canvas{display:block;width:100%;cursor:crosshair;touch-action:none}
-  .sig-baseline{position:absolute;bottom:30px;left:24px;right:24px;height:1px;background:rgba(201,168,76,.18);pointer-events:none}
-  .sig-hint{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);font-family:'Cinzel',serif;font-size:8px;letter-spacing:.3em;color:rgba(201,168,76,.28);text-transform:uppercase;white-space:nowrap;pointer-events:none}
-  .sig-clear{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.3em;color:rgba(201,168,76,.4);text-transform:uppercase;background:none;border:none;cursor:pointer;margin-top:8px;display:block;padding:4px 0;transition:color .2s}
-  .sig-clear:hover{color:rgba(201,168,76,.8)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.form-row.single{grid-template-columns:1fr}
+.fg{display:flex;flex-direction:column;gap:6px}
+.fg label{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.4em;color:rgba(201,168,76,0.6);text-transform:uppercase}
+.fg input,.fg select,.fg textarea{background:rgba(0,4,8,0.8);border:1px solid rgba(201,168,76,0.15);padding:10px 14px;font-family:'EB Garamond',serif;font-size:16px;color:#e8e4f0;outline:none;transition:border-color .3s;width:100%}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:rgba(201,168,76,0.4)}
+.fg textarea{min-height:80px;resize:vertical}
+.fg select option{background:#080620}
 
-  /* checkbox */
-  .agree-row{display:flex;align-items:flex-start;gap:14px;padding:18px 0;margin-top:20px;border-top:1px solid rgba(201,168,76,.08)}
-  .agree-row input[type=checkbox]{margin-top:3px;width:17px;height:17px;flex-shrink:0;accent-color:var(--gold);cursor:pointer}
-  .agree-row label{font-size:15px;color:rgba(232,228,240,.75);line-height:1.6;cursor:pointer}
+.health-table{width:100%;border-collapse:collapse}
+.health-table th{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:rgba(201,168,76,0.6);text-transform:uppercase;padding:10px 12px;text-align:left;border-bottom:1px solid rgba(201,168,76,0.15)}
+.health-table th:last-child,.health-table th:nth-last-child(2){text-align:center;width:80px}
+.health-table td{padding:10px 12px;border-bottom:1px solid rgba(201,168,76,0.06);font-size:15px;color:rgba(232,228,240,0.8)}
+.health-table td:last-child,.health-table td:nth-last-child(2){text-align:center}
+.health-table tr:last-child td{border-bottom:none}
+.radio-group{display:flex;gap:20px;align-items:center}
+.radio-group input{width:auto;accent-color:var(--gold)}
+.radio-group label{font-size:13px;color:rgba(201,168,76,0.6);font-family:'Cinzel',serif;letter-spacing:.15em;cursor:pointer}
 
-  /* submit */
-  .submit-wrap{margin-top:28px;text-align:center}
-  .btn-gold{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;color:#000;text-transform:uppercase;text-decoration:none;background:linear-gradient(135deg,#f0dfa0,var(--gold));padding:15px 44px;border:none;cursor:pointer;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);display:inline-block;transition:filter .25s,transform .25s}
-  .btn-gold:hover{transform:translateY(-2px);filter:brightness(1.1)}
-  .form-note{font-family:'Cinzel',serif;font-size:8.5px;letter-spacing:.25em;color:rgba(201,168,76,.3);text-transform:uppercase;margin-top:14px;line-height:1.8;text-align:center}
+.notice{background:rgba(201,168,76,0.04);border-left:2px solid rgba(201,168,76,0.3);padding:16px 20px;margin-bottom:16px}
+.notice p{font-size:15px;color:rgba(232,228,240,0.75);line-height:1.8}
+.notice.dark{background:rgba(0,0,0,0.3);border:1px solid rgba(201,168,76,0.1);border-left:2px solid rgba(201,168,76,0.4)}
+.notice.required-notice{background:rgba(201,168,76,0.06);border:1px solid rgba(201,168,76,0.25);border-left:3px solid rgba(201,168,76,0.6);margin-bottom:20px}
+.notice.required-notice p{color:rgba(232,228,240,0.85)}
 
-  /* error / success */
-  .msg{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.3em;text-transform:uppercase;text-align:center;margin-top:12px;display:none}
-  .msg.error{color:rgba(220,80,80,.9)}
-  .msg.success{color:rgba(100,210,160,.9)}
+.check-item{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid rgba(201,168,76,0.06)}
+.check-item:last-child{border-bottom:none}
+.check-item input[type=checkbox]{width:18px;height:18px;accent-color:var(--gold);flex-shrink:0;margin-top:3px;cursor:pointer}
+.check-item .check-label{font-size:15px;color:rgba(232,228,240,0.8);line-height:1.6}
+.check-item .check-sub{font-size:13px;color:rgba(180,170,200,0.55);font-style:italic;margin-top:3px}
 
-  /* footer */
-  footer{padding:32px 48px;border-top:1px solid rgba(201,168,76,.07);text-align:center}
-  footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.28em;color:rgba(180,170,200,.2);text-transform:uppercase;line-height:2.2}
+/* Required recording consent checkbox */
+.check-item.record-required{padding:14px 16px;border:1px solid rgba(201,168,76,0.25);background:rgba(201,168,76,0.04);margin-bottom:20px}
+.check-item.record-required .check-label{font-size:15px;color:rgba(232,228,240,0.88)}
 
-  @media(max-width:640px){
-    nav{padding:16px 20px}
-    .page-hero{padding:110px 20px 50px}
-    .waiver-wrap{padding:48px 20px 64px}
-    .esign-form{padding:28px 20px}
-    .form-row{grid-template-columns:1fr}
-  }
+/* Optional release section */
+.optional-release-header{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.38em;color:rgba(201,168,76,0.6);text-transform:uppercase;margin-bottom:12px;padding-top:16px;border-top:1px solid rgba(201,168,76,0.1)}
+.optional-note{font-size:13px;font-style:italic;color:rgba(232,228,240,0.4);line-height:1.7;margin-top:12px}
+
+.sig-section{margin-top:8px}
+.sig-label{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.4em;color:rgba(201,168,76,0.6);text-transform:uppercase;margin-bottom:8px;display:block}
+.sig-pad{border:1px solid rgba(201,168,76,0.2);background:rgba(0,4,8,0.6);position:relative;cursor:crosshair}
+.sig-pad canvas{display:block;width:100%;height:160px;touch-action:none}
+.sig-controls{display:flex;gap:8px;margin-top:8px}
+.sig-btn{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;text-transform:uppercase;padding:6px 16px;cursor:pointer;border:1px solid rgba(201,168,76,0.3);color:rgba(201,168,76,0.7);background:transparent;transition:all .3s}
+.sig-btn:hover{border-color:var(--gold);color:var(--gold)}
+.sig-type{display:flex;gap:8px;margin-bottom:12px}
+.sig-tab{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;text-transform:uppercase;padding:6px 16px;cursor:pointer;border:1px solid rgba(201,168,76,0.15);color:rgba(201,168,76,0.4);background:transparent;transition:all .3s}
+.sig-tab.active{border-color:rgba(201,168,76,0.5);color:var(--gold);background:rgba(201,168,76,0.05)}
+.sig-type-input{display:none}
+.sig-type-input.show{display:block}
+.sig-type-draw{display:none}
+.sig-type-draw.show{display:block}
+
+.timestamp{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.2em;color:rgba(201,168,76,0.4);text-align:center;margin-top:8px}
+
+.final-checks{margin-bottom:24px}
+
+.submit-btn{width:100%;font-family:'Cinzel',serif;font-size:12px;letter-spacing:.4em;color:#000;text-transform:uppercase;background:linear-gradient(135deg,var(--gold-light),var(--gold));padding:16px;cursor:pointer;border:none;transition:all .3s;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%)}
+.submit-btn:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.submit-btn:disabled{opacity:0.4;cursor:not-allowed;transform:none}
+
+.success{display:none;text-align:center;padding:48px 24px;border:1px solid rgba(201,168,76,0.2);background:rgba(8,6,22,0.8)}
+.success h2{font-family:'Cinzel',serif;font-size:24px;color:var(--gold);margin-bottom:16px}
+.success p{font-size:17px;color:rgba(232,228,240,0.7);line-height:1.8}
+
+.legal-note{font-size:13px;color:rgba(180,170,200,0.5);font-style:italic;text-align:center;margin-top:16px;line-height:1.6}
+
+footer{text-align:center;padding:32px 24px;border-top:1px solid rgba(201,168,76,0.08);margin-top:48px}
+footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.28em;color:rgba(180,170,200,0.25);text-transform:uppercase;line-height:2}
+footer .pa-disclaimer{font-family:'EB Garamond',serif;font-size:13px;font-style:italic;letter-spacing:0;color:rgba(180,170,200,0.3);text-transform:none;max-width:640px;margin:16px auto 0;line-height:1.75}
+
+.req{color:rgba(201,168,76,0.6);margin-left:2px}
+.error{border-color:rgba(255,80,80,0.5) !important}
+
+@media(max-width:600px){
+  nav{padding:14px 20px}
+  .form-row{grid-template-columns:1fr}
+  .wrap{padding:80px 16px 48px}
+}
 </style>
 </head>
 <body>
@@ -86,245 +118,324 @@
   <a href="/" class="nav-back">← Back to Site</a>
 </nav>
 
-<!-- HERO -->
-<div class="page-hero">
-  <span class="sec-label">Before Your Session</span>
-  <h1>Informed Consent<br>&amp; Session Waiver</h1>
-  <p class="subtitle">Please read the full disclosure below and sign before your first session. This takes about two minutes.</p>
-</div>
+<div class="wrap">
 
-<!-- WAIVER CONTENT + FORM -->
-<div class="waiver-wrap">
-
-  <div class="waiver-section">
-    <h2>Nature of Services</h2>
-    <p>Royal Energy Alchemy offers energetic and spiritual healing services including, but not limited to: energetic parasite removal, cord removal and transmutation, energy alchemy exorcism, distance energy sessions, house cleansing and blessing, spiritual coaching, and youth energy sessions.</p>
-    <p>These services are <strong>complementary wellness offerings</strong> and are not a substitute for medical, psychiatric, psychological, legal, or financial advice. Daron Royal is not a licensed medical provider, therapist, or counselor.</p>
+  <div class="header">
+    <h1>Royal Energy Alchemy LLC</h1>
+    <p>Client Intake · Consent · Waiver Agreement</p>
   </div>
 
-  <div class="waiver-section">
-    <h2>Voluntary Participation</h2>
-    <p>I understand that my participation in any session is entirely <strong>voluntary</strong>. I may stop or discontinue a session at any time without penalty. I acknowledge that no guarantees or specific outcomes have been promised to me.</p>
-  </div>
+  <form id="waiverForm" novalidate>
 
-  <div class="waiver-section">
-    <h2>Distance Sessions</h2>
-    <p>For distance healing sessions, I understand that:</p>
-    <ul>
-      <li>The subject does not need to be physically present.</li>
-      <li>When booking on behalf of another person, I hold the intention and my consent is sufficient to open the session.</li>
-      <li>Energy work occurs regardless of physical location or the subject's awareness of the session.</li>
-    </ul>
-  </div>
-
-  <div class="waiver-section">
-    <h2>Aftercare Responsibility</h2>
-    <p>I agree to follow the aftercare guidance provided by Daron Royal, including hydration, rest, and reporting any concerns within the 24, 48, and 72-hour check-in windows. I understand that energetic clearing may produce temporary physical, emotional, or spiritual responses that are a normal part of the process.</p>
-    <p>If I experience acute distress following a session, I agree to seek support from a licensed healthcare provider. A referral to a therapist or medical professional may be provided at the 72-hour mark as part of standard aftercare.</p>
-  </div>
-
-  <div class="waiver-section">
-    <h2>Booking, Payment &amp; Cancellation</h2>
-    <p>I have read and agree to the Cancellation &amp; Refund Policy, including:</p>
-    <ul>
-      <li><strong>72+ hours notice:</strong> 50% refund or one-time reschedule.</li>
-      <li><strong>Within 72 hours:</strong> Non-refundable.</li>
-      <li><strong>Same-day cancellations and no-shows:</strong> Non-refundable.</li>
-      <li>Full payment is required at the time of scheduling. My appointment is not confirmed until payment is received.</li>
-    </ul>
-  </div>
-
-  <div class="waiver-section">
-    <h2>Section 5 — Recording Consent (Required)</h2>
-
-    <!-- Notice block -->
-    <div style="border-left:3px solid rgba(201,168,76,.5);background:rgba(201,168,76,.05);padding:18px 22px;margin-bottom:20px;">
-      <p><strong>Royal Energy Alchemy LLC records sessions for documentation, treatment planning, AI-assisted note generation, quality assurance, client support, and service delivery purposes. Recording is a required component of services provided by Royal Energy Alchemy LLC. If you do not consent to recording, please do not schedule services.</strong></p>
-    </div>
-
-    <!-- Required consent checkbox -->
-    <div style="display:flex;align-items:flex-start;gap:14px;padding:16px 18px;border:1px solid rgba(201,168,76,.22);background:rgba(201,168,76,.04);margin-bottom:24px;">
-      <input type="checkbox" id="w-record-consent" name="recording-consent" value="yes" required style="margin-top:3px;width:17px;height:17px;flex-shrink:0;accent-color:rgb(201,168,76);cursor:pointer;"/>
-      <label for="w-record-consent" style="font-size:15px;color:rgba(232,228,240,.8);line-height:1.65;cursor:pointer;">
-        I understand that my session will be recorded and I consent to recording as a condition of receiving services. <strong style="color:rgba(201,168,76,.85);">(Required) *</strong>
-      </label>
-    </div>
-
-    <!-- Optional media release -->
-    <p style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.38em;color:rgba(201,168,76,.6);text-transform:uppercase;margin-bottom:14px;">Optional Media Release — Check all that apply</p>
-
-    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
-      <div style="display:flex;align-items:flex-start;gap:14px;padding:13px 16px;border:1px solid rgba(201,168,76,.10);background:rgba(4,3,14,.6);">
-        <input type="checkbox" id="w-release-a" name="media-release-a" value="internal-only" style="margin-top:3px;width:15px;height:15px;flex-shrink:0;accent-color:rgb(201,168,76);cursor:pointer;"/>
-        <label for="w-release-a" style="font-size:15px;color:rgba(232,228,240,.72);line-height:1.65;cursor:pointer;">
-          <strong>Option A — Internal use only.</strong> AI-processed session notes, treatment plans, and documentation. Not shared publicly.
-        </label>
-      </div>
-      <div style="display:flex;align-items:flex-start;gap:14px;padding:13px 16px;border:1px solid rgba(201,168,76,.10);background:rgba(4,3,14,.6);">
-        <input type="checkbox" id="w-release-b" name="media-release-b" value="educational-protected" style="margin-top:3px;width:15px;height:15px;flex-shrink:0;accent-color:rgb(201,168,76);cursor:pointer;"/>
-        <label for="w-release-b" style="font-size:15px;color:rgba(232,228,240,.72);line-height:1.65;cursor:pointer;">
-          <strong>Option B — Educational content with identity protected.</strong> Face blurred, voice altered if applicable, no identifying information used.
-        </label>
-      </div>
-      <div style="display:flex;align-items:flex-start;gap:14px;padding:13px 16px;border:1px solid rgba(201,168,76,.10);background:rgba(4,3,14,.6);">
-        <input type="checkbox" id="w-release-c" name="media-release-c" value="full-release" style="margin-top:3px;width:15px;height:15px;flex-shrink:0;accent-color:rgb(201,168,76);cursor:pointer;"/>
-        <label for="w-release-c" style="font-size:15px;color:rgba(232,228,240,.72);line-height:1.65;cursor:pointer;">
-          <strong>Option C — Full release.</strong> My likeness and voice may appear in published educational or promotional content.
-        </label>
-      </div>
-    </div>
-
-    <p style="font-size:14px;font-style:italic;color:rgba(232,228,240,.45);line-height:1.7;">If no option is selected, your recording will be used for internal documentation purposes only (Option A applies by default).</p>
-  </div>
-
-  <div class="waiver-section">
-    <h2>Release of Liability</h2>
-    <p>By signing this waiver, I release Daron Royal and Royal Energy Alchemy LLC from any and all liability, claims, demands, or causes of action arising from my participation in any session. I understand that energetic and spiritual healing is not a medically recognized treatment and results may vary.</p>
-    <p>I affirm that I am <strong>18 years of age or older</strong>, or that I am the parent or legal guardian signing on behalf of a minor client.</p>
-  </div>
-
-  <!-- E-SIGN FORM -->
-  <div class="esign-form">
-    <span class="sec-label" style="margin-bottom:24px;">Complete &amp; Sign Below</span>
-
-    <form id="waiver-form" name="waiver" method="POST" netlify data-netlify="true" netlify-honeypot="bot-field-w" action="/waiver-confirmed.html">
-      <input type="hidden" name="form-name" value="waiver"/>
-      <p style="display:none"><label>Leave blank: <input name="bot-field-w"/></label></p>
-
-      <div class="form-row">
-        <div class="form-field"><label for="w-name">Full Legal Name</label><input id="w-name" type="text" name="full-name" placeholder="As it appears on your ID" required/></div>
-        <div class="form-field"><label for="w-email">Email Address</label><input id="w-email" type="email" name="email" placeholder="your@email.com" required/></div>
-      </div>
-      <div class="form-row">
-        <div class="form-field"><label for="w-phone">Phone Number</label><input id="w-phone" type="tel" name="phone" placeholder="(814) 000-0000"/></div>
-        <div class="form-field"><label for="w-service">Session Type</label>
-          <select id="w-service" name="session-type">
-            <option value="">Select your session</option>
-            <option>Energetic Parasite Removal — $80</option>
-            <option>Cord Removal &amp; Transmutation — from $40</option>
-            <option>Energy Alchemy Exorcism — $100</option>
-            <option>Distance Energy Session — $70</option>
-            <option>House Cleansing &amp; Blessing — $60</option>
-            <option>Emergency Removal Session — $120</option>
-            <option>Removal + Tarot Bundle — $100</option>
-            <option>Spiritual Coaching — $50</option>
-            <option>Youth Session (Ages 9–14)</option>
-            <option>Not yet scheduled</option>
-          </select>
+    <!-- SECTION 1 -->
+    <div class="sec">
+      <div class="sec-head"><span class="sec-num">Section 1</span><span class="sec-title">Client Information</span></div>
+      <div class="sec-body">
+        <div class="form-row">
+          <div class="fg"><label>Full legal name <span class="req">*</span></label><input type="text" id="fullName" required placeholder="Your full name"/></div>
+          <div class="fg"><label>Date of birth <span class="req">*</span></label><input type="date" id="dob" required/></div>
+        </div>
+        <div class="form-row single">
+          <div class="fg"><label>Address</label><input type="text" id="address" placeholder="Street address"/></div>
+        </div>
+        <div class="form-row">
+          <div class="fg"><label>City, State, Zip</label><input type="text" id="cityStateZip" placeholder="City, State ZIP"/></div>
+          <div class="fg"><label>Phone number <span class="req">*</span></label><input type="tel" id="phone" required placeholder="Best number to reach you"/></div>
+        </div>
+        <div class="form-row">
+          <div class="fg"><label>Email address <span class="req">*</span></label><input type="email" id="email" required placeholder="Your email"/></div>
+          <div class="fg"><label>How did you hear about Royal Energy Alchemy?</label><input type="text" id="referral" placeholder="Facebook, referral, search..."/></div>
+        </div>
+        <div class="form-row">
+          <div class="fg"><label>Have you had energy healing before?</label>
+            <select id="priorSession"><option value="">Choose one</option><option value="yes">Yes</option><option value="no">No</option></select>
+          </div>
+          <div class="fg"><label>If yes, when was your last session?</label><input type="text" id="lastSession" placeholder="Approximate date or timeframe"/></div>
         </div>
       </div>
+    </div>
 
-      <!-- Signature pad -->
-      <span class="sig-label">Your Signature</span>
-      <div class="sig-area">
-        <canvas id="sig-canvas" height="130"></canvas>
-        <div class="sig-baseline"></div>
-        <div class="sig-hint">Sign above</div>
+    <!-- SECTION 2 -->
+    <div class="sec">
+      <div class="sec-head"><span class="sec-num">Section 2</span><span class="sec-title">Health & Safety Disclosure</span></div>
+      <div class="sec-body">
+        <p style="font-size:15px;color:rgba(232,228,240,0.7);margin-bottom:20px">Please answer honestly so Daron can provide the safest and most effective session possible.</p>
+        <table class="health-table">
+          <thead><tr><th>Question</th><th>Yes</th><th>No</th></tr></thead>
+          <tbody>
+            <tr><td>Are you currently under the care of a physician or mental health professional?</td><td><div class="radio-group"><input type="radio" name="h1" value="yes" id="h1y"><label for="h1y">Yes</label></div></td><td><div class="radio-group"><input type="radio" name="h1" value="no" id="h1n"><label for="h1n">No</label></div></td></tr>
+            <tr><td>Do you have any diagnosed medical or psychiatric conditions?</td><td><div class="radio-group"><input type="radio" name="h2" value="yes" id="h2y"><label for="h2y">Yes</label></div></td><td><div class="radio-group"><input type="radio" name="h2" value="no" id="h2n"><label for="h2n">No</label></div></td></tr>
+            <tr><td>Are you currently taking prescription medications?</td><td><div class="radio-group"><input type="radio" name="h3" value="yes" id="h3y"><label for="h3y">Yes</label></div></td><td><div class="radio-group"><input type="radio" name="h3" value="no" id="h3n"><label for="h3n">No</label></div></td></tr>
+            <tr><td>Are you pregnant or believe you may be pregnant?</td><td><div class="radio-group"><input type="radio" name="h4" value="yes" id="h4y"><label for="h4y">Yes</label></div></td><td><div class="radio-group"><input type="radio" name="h4" value="no" id="h4n"><label for="h4n">No</label></div></td></tr>
+            <tr><td>Have you experienced a major loss, trauma, or life change in the past 6 months?</td><td><div class="radio-group"><input type="radio" name="h5" value="yes" id="h5y"><label for="h5y">Yes</label></div></td><td><div class="radio-group"><input type="radio" name="h5" value="no" id="h5n"><label for="h5n">No</label></div></td></tr>
+            <tr><td>Do you have any areas of physical pain or concern?</td><td><div class="radio-group"><input type="radio" name="h6" value="yes" id="h6y"><label for="h6y">Yes</label></div></td><td><div class="radio-group"><input type="radio" name="h6" value="no" id="h6n"><label for="h6n">No</label></div></td></tr>
+          </tbody>
+        </table>
+        <div class="form-row single" style="margin-top:16px">
+          <div class="fg"><label>If yes to any above, please describe</label><textarea id="healthNotes" placeholder="Optional but helpful."></textarea></div>
+        </div>
       </div>
-      <button type="button" class="sig-clear" id="sig-clear-btn">Clear signature</button>
-      <!-- hidden field to store sig data -->
-      <input type="hidden" name="signature-data" id="sig-data-input"/>
+    </div>
 
-      <!-- Consent checkbox -->
-      <div class="agree-row">
-        <input type="checkbox" id="w-agree" name="agreed-to-waiver" value="yes"/>
-        <label for="w-agree">I have read and fully understand this Informed Consent &amp; Waiver. I agree to its terms voluntarily and without coercion. I understand this constitutes a legal electronic signature.</label>
+    <!-- SECTION 3 -->
+    <div class="sec">
+      <div class="sec-head"><span class="sec-num">Section 3</span><span class="sec-title">Nature of Services & Informed Consent</span></div>
+      <div class="sec-body">
+        <div class="notice dark">
+          <p><strong style="color:#e8e4f0">What Royal Energy Alchemy Is:</strong> Energy Alchemy is a complementary wellness practice. Sessions may include energetic scanning, chakra balancing, parasite and cord removal, transmutation, distance healing, pain relief support, stress reduction, and spiritual coaching.</p>
+        </div>
+        <div class="notice dark" style="margin-top:12px">
+          <p><strong style="color:#e8e4f0">What It Is Not:</strong> Royal Energy Alchemy LLC services are not medical treatment, psychological therapy, psychiatric care, legal advice, or a substitute for licensed professional care. Daron Royal is not a licensed physician, therapist, psychologist, or counselor.</p>
+        </div>
+        <div class="notice dark" style="margin-top:12px">
+          <p><strong style="color:#e8e4f0">Pennsylvania Law Notice:</strong> Under Pennsylvania law, energy healing and spiritual wellness practices are not regulated as licensed healthcare professions. Nothing in this agreement creates a healthcare provider-patient relationship. If you are experiencing a medical or psychiatric emergency, contact 911 or your licensed healthcare provider immediately.</p>
+        </div>
+        <div style="margin-top:20px">
+          <p style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:rgba(201,168,76,0.6);text-transform:uppercase;margin-bottom:12px">I Acknowledge That:</p>
+          <div class="check-item"><input type="checkbox" id="c1" required><div><div class="check-label">I am participating voluntarily and may withdraw consent at any time.</div></div></div>
+          <div class="check-item"><input type="checkbox" id="c2" required><div><div class="check-label">Results are not guaranteed. Energy work affects each person differently.</div></div></div>
+          <div class="check-item"><input type="checkbox" id="c3" required><div><div class="check-label">I will stay hydrated before and after my session to support the body's natural release process.</div></div></div>
+          <div class="check-item"><input type="checkbox" id="c4" required><div><div class="check-label">If I am experiencing a medical or psychiatric emergency, I will contact 911 or a licensed professional.</div></div></div>
+          <div class="check-item"><input type="checkbox" id="c5" required><div><div class="check-label">Any referrals to therapists or other professionals are recommendations only and do not constitute a diagnosis.</div></div></div>
+        </div>
       </div>
+    </div>
 
-      <div id="w-error" class="msg error">Please sign and check the agreement box before submitting.</div>
-
-      <div class="submit-wrap">
-        <button type="submit" class="btn-gold">Submit Signed Waiver →</button>
-        <p class="form-note">Submissions are delivered to royalenergyalchemy@gmail.com &nbsp;·&nbsp; Your information is never sold or shared.</p>
+    <!-- SECTION 4 -->
+    <div class="sec">
+      <div class="sec-head"><span class="sec-num">Section 4</span><span class="sec-title">Release of Liability & Waiver</span></div>
+      <div class="sec-body">
+        <div class="notice">
+          <p>In consideration of receiving services from Royal Energy Alchemy LLC, I hereby release, waive, and hold harmless Daron Royal and Royal Energy Alchemy LLC from any and all claims, demands, damages, losses, costs, and expenses arising from or related to the services provided, except in cases of gross negligence or willful misconduct.</p>
+        </div>
+        <div class="notice" style="margin-top:12px">
+          <p>I understand that energy work is complementary in nature and I am choosing to receive these services of my own free will. This waiver is binding on me, my heirs, legal representatives, and assigns. This agreement is governed by the laws of the Commonwealth of Pennsylvania.</p>
+        </div>
+        <div style="margin-top:16px">
+          <div class="check-item"><input type="checkbox" id="c6" required><div><div class="check-label">I have read, understood, and agree to the Release of Liability above. <span class="req">*</span></div></div></div>
+        </div>
       </div>
-    </form>
+    </div>
+
+    <!-- SECTION 5 — RECORDING CONSENT (REQUIRED) -->
+    <div class="sec">
+      <div class="sec-head"><span class="sec-num">Section 5</span><span class="sec-title">Recording Consent (Required)</span></div>
+      <div class="sec-body">
+
+        <!-- Required notice block -->
+        <div class="notice required-notice">
+          <p>Royal Energy Alchemy LLC records sessions for documentation, treatment planning, AI-assisted note generation, quality assurance, client support, and service delivery purposes. <strong style="color:#e8e4f0">Recording is a required component of services provided by Royal Energy Alchemy LLC. If you do not consent to recording, please do not schedule services.</strong></p>
+        </div>
+
+        <!-- Single required consent checkbox -->
+        <div class="check-item record-required">
+          <input type="checkbox" id="recordConsent" required>
+          <div>
+            <div class="check-label">I understand that my session will be recorded and I consent to recording as a condition of receiving services. <span class="req">* (Required)</span></div>
+          </div>
+        </div>
+
+        <!-- Optional media release — always visible -->
+        <p class="optional-release-header">Optional Media Release — Check all that apply</p>
+        <div class="check-item">
+          <input type="checkbox" id="relA">
+          <div>
+            <div class="check-label">Option A — Internal use only</div>
+            <div class="check-sub">AI-processed session notes, treatment plans, and documentation. Not shared publicly.</div>
+          </div>
+        </div>
+        <div class="check-item">
+          <input type="checkbox" id="relB">
+          <div>
+            <div class="check-label">Option B — Educational content with identity protected</div>
+            <div class="check-sub">Face blurred, voice altered if applicable, no identifying information used.</div>
+          </div>
+        </div>
+        <div class="check-item">
+          <input type="checkbox" id="relC">
+          <div>
+            <div class="check-label">Option C — Full release</div>
+            <div class="check-sub">My likeness and voice may appear in published educational or promotional content on Facebook, Instagram, YouTube, and TikTok.</div>
+          </div>
+        </div>
+
+        <p class="optional-note">If no option is selected, your recording will be used for internal documentation purposes only (Option A applies by default).</p>
+
+      </div>
+    </div>
+
+    <!-- SECTION 6 -->
+    <div class="sec">
+      <div class="sec-head"><span class="sec-num">Section 6</span><span class="sec-title">Cancellation & Payment Policy</span></div>
+      <div class="sec-body">
+        <div class="notice dark">
+          <p><strong style="color:#e8e4f0">Booking:</strong> Full payment is required at the time of scheduling to confirm your appointment. Appointments are not confirmed until payment is received.</p>
+        </div>
+        <div class="notice dark" style="margin-top:12px">
+          <p><strong style="color:#e8e4f0">Refund Policy:</strong><br>
+          · Cancellation 72+ hours before: 50% refund or one-time reschedule<br>
+          · Cancellation within 72 hours: non-refundable<br>
+          · Same-day cancellation: non-refundable<br>
+          · No-show / no-call: non-refundable. Rebooking requires payment in full<br>
+          · If Daron must cancel: full refund or reschedule, your choice</p>
+        </div>
+        <div style="margin-top:16px">
+          <div class="check-item"><input type="checkbox" id="c7" required><div><div class="check-label">I have read and agree to the Cancellation & Payment Policy above. <span class="req">*</span></div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 7 — SIGNATURE -->
+    <div class="sec">
+      <div class="sec-head"><span class="sec-num">Section 7</span><span class="sec-title">Electronic Signature & Final Acknowledgment</span></div>
+      <div class="sec-body">
+        <div class="notice" style="margin-bottom:20px">
+          <p style="font-size:14px">Your electronic signature is legally binding under the E-SIGN Act (15 U.S.C. § 7001) and the Pennsylvania Electronic Transactions Act (73 P.S. § 2260.101). It carries the same legal weight as a handwritten signature.</p>
+        </div>
+
+        <div class="final-checks">
+          <p style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:rgba(201,168,76,0.6);text-transform:uppercase;margin-bottom:12px">By signing, I confirm that:</p>
+          <div class="check-item"><input type="checkbox" id="fc1" required><div><div class="check-label">I have read this entire document and understand its contents. <span class="req">*</span></div></div></div>
+          <div class="check-item"><input type="checkbox" id="fc2" required><div><div class="check-label">I am 18 years of age or older, or a parent/guardian signing on behalf of a minor. <span class="req">*</span></div></div></div>
+          <div class="check-item"><input type="checkbox" id="fc3" required><div><div class="check-label">I am signing freely and voluntarily, without pressure or coercion. <span class="req">*</span></div></div></div>
+          <div class="check-item"><input type="checkbox" id="fc4" required><div><div class="check-label">I understand energy work is not a substitute for medical or mental health care. <span class="req">*</span></div></div></div>
+        </div>
+
+        <div class="sig-section">
+          <span class="sig-label">Your Signature <span class="req">*</span></span>
+          <div class="sig-type">
+            <button type="button" class="sig-tab active" onclick="switchSig('draw', event)">Draw</button>
+            <button type="button" class="sig-tab" onclick="switchSig('type', event)">Type</button>
+          </div>
+          <div class="sig-type-draw show" id="sigDraw">
+            <div class="sig-pad"><canvas id="sigCanvas" width="760" height="160"></canvas></div>
+            <div class="sig-controls">
+              <button type="button" class="sig-btn" onclick="clearSig()">Clear</button>
+              <span style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.2em;color:rgba(201,168,76,0.35);align-self:center">Draw your signature above</span>
+            </div>
+          </div>
+          <div class="sig-type-input" id="sigType">
+            <div class="fg"><input type="text" id="sigTypeInput" placeholder="Type your full legal name as your signature" style="font-family:Georgia,serif;font-size:22px;font-style:italic;letter-spacing:.05em"/></div>
+            <p style="font-size:13px;color:rgba(180,170,200,0.5);font-style:italic;margin-top:8px">Typing your name constitutes a legally binding electronic signature.</p>
+          </div>
+          <div class="timestamp" id="sigTimestamp"></div>
+        </div>
+
+        <div style="margin-top:24px" class="form-row">
+          <div class="fg"><label>Printed name <span class="req">*</span></label><input type="text" id="printedName" required placeholder="Your full legal name"/></div>
+          <div class="fg"><label>Today's date</label><input type="date" id="signDate" readonly/></div>
+        </div>
+      </div>
+    </div>
+
+    <button type="submit" class="submit-btn" id="submitBtn">Submit Signed Waiver →</button>
+    <p class="legal-note">This form is submitted securely. A copy will be sent to royalenergyalchemy@gmail.com and to your email address.</p>
+
+  </form>
+
+  <div class="success" id="successMsg">
+    <h2>✦ Waiver Received</h2>
+    <p>Thank you. Your signed waiver has been submitted to Royal Energy Alchemy LLC.<br>A confirmation will be sent to your email. Daron will be in touch to confirm your session details.</p>
+    <p style="margin-top:20px;font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:rgba(201,168,76,0.5);text-transform:uppercase">Royal Energy Alchemy LLC · Erie, Pennsylvania</p>
   </div>
 
 </div>
 
 <footer>
-  <p>Royal Energy Alchemy LLC &nbsp;·&nbsp; Erie / Waterford, Pennsylvania</p>
-  <p>© 2026 Royal Energy Alchemy LLC &nbsp;·&nbsp; royalenergyalchemy@gmail.com &nbsp;·&nbsp; 814-392-2095</p>
-  <p style="margin-top:14px;max-width:680px;margin-left:auto;margin-right:auto;font-family:'EB Garamond',serif;font-size:13px;font-style:italic;color:rgba(180,170,200,.28);line-height:1.75;letter-spacing:0;">
-    Pennsylvania is a two-party consent state (18 Pa. C.S. § 5703). Daron Royal recommends consulting a Pennsylvania attorney to confirm this recording policy aligns with applicable law before going live.
-  </p>
-  <p style="margin-top:10px"><a href="/" style="color:rgba(201,168,76,.3);text-decoration:none;font-family:'Cinzel',serif;font-size:9px;letter-spacing:.3em;">← Return to site</a></p>
+  <p>Royal Energy Alchemy LLC · Erie / Waterford, Pennsylvania · royalenergyalchemy@gmail.com · 814-392-2095</p>
+  <p>Spiritual and energetic services are complementary wellness offerings and are not medical, legal, psychological, or financial advice.</p>
+  <p class="pa-disclaimer">Pennsylvania is a two-party consent state (18 Pa. C.S. § 5703). Daron Royal recommends consulting a Pennsylvania attorney to confirm this recording policy aligns with applicable law before going live.</p>
+  <p style="margin-top:12px"><a href="/" style="color:rgba(201,168,76,.3);text-decoration:none;font-family:'Cinzel',serif;font-size:9px;letter-spacing:.3em;">← Return to site</a></p>
 </footer>
 
 <script>
-/* ── Signature Pad ── */
-(function(){
-  var canvas = document.getElementById('sig-canvas');
-  var ctx = canvas.getContext('2d');
-  var dpr = Math.min(window.devicePixelRatio||1, 2);
-  var H = 130;
+// Set today's date
+const today = new Date().toISOString().split('T')[0];
+document.getElementById('signDate').value = today;
+document.getElementById('sigTimestamp').textContent = 'Signed: ' + new Date().toLocaleString();
 
-  function resize(){
-    var W = canvas.offsetWidth;
-    canvas.width = W * dpr;
-    canvas.height = H * dpr;
-    ctx.scale(dpr, dpr);
-    ctx.strokeStyle = 'rgba(201,168,76,0.9)';
-    ctx.lineWidth = 2.2;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-  }
-  resize();
-  window.addEventListener('resize', resize);
+// Signature canvas
+const canvas = document.getElementById('sigCanvas');
+const ctx = canvas.getContext('2d');
+let drawing = false, hasSig = false;
 
-  var drawing = false, lx = 0, ly = 0, hasSig = false;
+const dpr = Math.min(window.devicePixelRatio || 1, 3);
+canvas.width = 760 * dpr;
+canvas.height = 160 * dpr;
+ctx.scale(dpr, dpr);
+canvas.style.width = '100%';
+canvas.style.height = '160px';
 
-  function getPos(e){
-    var r = canvas.getBoundingClientRect();
-    var src = e.touches ? e.touches[0] : e;
-    return { x: src.clientX - r.left, y: src.clientY - r.top };
-  }
+ctx.strokeStyle = '#c9a84c';
+ctx.lineWidth = 2;
+ctx.lineCap = 'round';
+ctx.lineJoin = 'round';
 
-  function start(e){ e.preventDefault(); drawing = true; var p = getPos(e); lx = p.x; ly = p.y; }
-  function move(e){
-    e.preventDefault();
-    if(!drawing) return;
-    var p = getPos(e);
-    ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(p.x, p.y); ctx.stroke();
-    lx = p.x; ly = p.y; hasSig = true;
-  }
-  function end(){ drawing = false; }
+function getPos(e) {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = 760 / rect.width;
+  const t = e.touches ? e.touches[0] : e;
+  return { x: (t.clientX - rect.left) * scaleX, y: (t.clientY - rect.top) * (160 / rect.height) };
+}
 
-  canvas.addEventListener('mousedown', start);
-  canvas.addEventListener('mousemove', move);
-  canvas.addEventListener('mouseup', end);
-  canvas.addEventListener('mouseleave', end);
-  canvas.addEventListener('touchstart', start, {passive:false});
-  canvas.addEventListener('touchmove', move, {passive:false});
-  canvas.addEventListener('touchend', end);
+canvas.addEventListener('mousedown', e => { drawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); });
+canvas.addEventListener('mousemove', e => { if (!drawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); hasSig = true; });
+canvas.addEventListener('mouseup', () => drawing = false);
+canvas.addEventListener('mouseleave', () => drawing = false);
+canvas.addEventListener('touchstart', e => { e.preventDefault(); drawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); }, { passive: false });
+canvas.addEventListener('touchmove', e => { e.preventDefault(); if (!drawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); hasSig = true; }, { passive: false });
+canvas.addEventListener('touchend', () => drawing = false);
 
-  document.getElementById('sig-clear-btn').addEventListener('click', function(){
-    ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
-    hasSig = false;
-    document.getElementById('sig-data-input').value = '';
-  });
+function clearSig() { ctx.clearRect(0, 0, 760, 160); hasSig = false; }
 
-  /* ── Form validation ── */
-  document.getElementById('waiver-form').addEventListener('submit', function(e){
-    var agreed = document.getElementById('w-agree').checked;
-    var recordConsent = document.getElementById('w-record-consent').checked;
-    var err = document.getElementById('w-error');
-    if(!hasSig || !agreed || !recordConsent){
-      e.preventDefault();
-      err.style.display = 'block';
-      err.textContent = !hasSig
-        ? 'Please provide your signature before submitting.'
-        : !recordConsent
-          ? 'Recording consent is required to receive services. Please check the recording consent box.'
-          : 'Please check the agreement box before submitting.';
-      return false;
+function switchSig(mode, e) {
+  document.querySelectorAll('.sig-tab').forEach(t => t.classList.remove('active'));
+  if (e && e.target) e.target.classList.add('active');
+  document.getElementById('sigDraw').classList.toggle('show', mode === 'draw');
+  document.getElementById('sigType').classList.toggle('show', mode === 'type');
+}
+
+// Form submission
+document.getElementById('waiverForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  const required = ['fullName','dob','phone','email','c1','c2','c3','c4','c5','c6','c7','fc1','fc2','fc3','fc4','printedName','recordConsent'];
+  let valid = true;
+
+  required.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (el.type === 'checkbox' && !el.checked) {
+      el.closest('.check-item').style.outline = '1px solid rgba(255,80,80,0.4)';
+      valid = false;
+    } else if (el.type !== 'checkbox' && !el.value.trim()) {
+      el.classList.add('error');
+      valid = false;
+    } else {
+      el.classList.remove('error');
+      if (el.closest('.check-item')) el.closest('.check-item').style.outline = '';
     }
-    // capture signature as data URL
-    document.getElementById('sig-data-input').value = canvas.toDataURL('image/png');
-    err.style.display = 'none';
   });
-})();
-</script>
 
+  // Recording consent specific alert
+  if (!document.getElementById('recordConsent').checked) {
+    alert('Recording consent is required to receive services from Royal Energy Alchemy LLC. If you do not consent to recording, please do not schedule services.');
+    valid = false;
+  }
+
+  const sigMode = document.querySelector('.sig-tab.active').textContent.trim().toLowerCase();
+  if (sigMode === 'draw' && !hasSig) { alert('Please provide your signature.'); valid = false; }
+  if (sigMode === 'type' && !document.getElementById('sigTypeInput').value.trim()) { alert('Please type your name as your signature.'); valid = false; }
+  if (!valid && document.getElementById('recordConsent').checked) {
+    alert('Please complete all required fields marked with *');
+    return;
+  }
+  if (!valid) return;
+
+  document.getElementById('waiverForm').style.display = 'none';
+  document.getElementById('successMsg').style.display = 'block';
+  window.scrollTo(0, 0);
+});
+</script>
 </body>
 </html>
