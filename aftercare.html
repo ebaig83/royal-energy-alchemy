@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Royal Energy Alchemy — Session Check-In</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--gold:#c9a84c;--gold-light:#f0dfa0;--deep:#000408;--text:#e8e4f0}
+body{background:#0a0810;color:#e8e4f0;font-family:'EB Garamond',serif;min-height:100vh}
+.wrap{max-width:720px;margin:0 auto;padding:48px 24px}
+.header{text-align:center;margin-bottom:40px;padding-bottom:28px;border-bottom:1px solid rgba(201,168,76,0.2)}
+.header .badge{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.5em;color:rgba(201,168,76,0.6);text-transform:uppercase;display:inline-block;border:1px solid rgba(201,168,76,0.2);padding:5px 16px;margin-bottom:14px}
+.header h1{font-family:'Cinzel',serif;font-size:clamp(18px,3vw,28px);color:#fff;margin-bottom:8px;letter-spacing:.06em}
+.header p{font-size:16px;font-style:italic;color:rgba(232,228,240,0.6);max-width:480px;margin:0 auto}
+.ai-intro{background:rgba(201,168,76,0.04);border:1px solid rgba(201,168,76,0.12);padding:20px 24px;margin-bottom:32px;position:relative}
+.ai-intro::before{content:'✦';position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:#0a0810;padding:0 8px;color:var(--gold);font-size:14px}
+.ai-intro p{font-size:15px;color:rgba(232,228,240,0.75);line-height:1.8;font-style:italic}
+.ai-name{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:rgba(201,168,76,0.5);text-transform:uppercase;margin-top:10px;display:block}
+.q-block{margin-bottom:28px;border:1px solid rgba(201,168,76,0.08);background:rgba(8,6,22,0.8)}
+.q-head{padding:12px 18px;background:rgba(201,168,76,0.04);border-bottom:1px solid rgba(201,168,76,0.08)}
+.q-tag{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.35em;color:rgba(201,168,76,0.5);text-transform:uppercase}
+.q-body{padding:18px}
+.q-text{font-size:17px;color:#e8e4f0;margin-bottom:14px;line-height:1.7}
+.fg{display:flex;flex-direction:column;gap:6px}
+.fg label{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.35em;color:rgba(201,168,76,0.5);text-transform:uppercase}
+.fg input,.fg textarea,.fg select{background:rgba(0,4,8,0.8);border:1px solid rgba(201,168,76,0.15);padding:10px 14px;font-family:'EB Garamond',serif;font-size:16px;color:#e8e4f0;outline:none;transition:border-color .3s;width:100%}
+.fg input:focus,.fg textarea:focus,.fg select:focus{border-color:rgba(201,168,76,0.4)}
+.fg textarea{min-height:90px;resize:vertical}
+.fg select option{background:#080620}
+.scale-wrap{margin-top:4px}
+.scale{display:flex;gap:8px;flex-wrap:wrap}
+.scale-opt{flex:1;min-width:44px;text-align:center}
+.scale-opt input{display:none}
+.scale-opt label{display:block;padding:10px 4px;border:1px solid rgba(201,168,76,0.15);font-family:'Cinzel',serif;font-size:12px;color:rgba(201,168,76,0.5);cursor:pointer;transition:all .2s;font-weight:600}
+.scale-opt input:checked + label{border-color:var(--gold);color:var(--gold);background:rgba(201,168,76,0.08)}
+.scale-opt label:hover{border-color:rgba(201,168,76,0.4);color:rgba(201,168,76,0.8)}
+.scale-labels{display:flex;justify-content:space-between;margin-top:6px}
+.scale-labels span{font-size:11px;color:rgba(180,170,200,0.4);font-style:italic}
+.check-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.check-chip{display:flex;align-items:center;gap:6px;padding:7px 12px;border:1px solid rgba(201,168,76,0.12);cursor:pointer;font-size:14px;color:rgba(232,228,240,0.7);background:rgba(0,4,8,0.5);transition:all .2s}
+.check-chip input{width:14px;height:14px;accent-color:var(--gold);cursor:pointer}
+.check-chip:has(input:checked){border-color:rgba(201,168,76,0.4);background:rgba(201,168,76,0.06);color:#e8e4f0}
+.ai-thinking{display:none;text-align:center;padding:32px;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:rgba(201,168,76,0.5);text-transform:uppercase}
+.ai-thinking.show{display:block}
+.dot{display:inline-block;animation:blink 1.4s infinite both}
+.dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:0}40%{opacity:1}}
+.ai-response{display:none;background:rgba(201,168,76,0.04);border:1px solid rgba(201,168,76,0.15);padding:20px 24px;margin:20px 0}
+.ai-response.show{display:block}
+.ai-response p{font-size:16px;color:rgba(232,228,240,0.8);line-height:1.8;font-style:italic}
+.submit-btn{width:100%;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.4em;color:#000;text-transform:uppercase;background:linear-gradient(135deg,var(--gold-light),var(--gold));padding:15px;cursor:pointer;border:none;transition:all .3s;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);margin-top:8px}
+.submit-btn:hover{filter:brightness(1.1)}
+.success{display:none;text-align:center;padding:48px 24px;border:1px solid rgba(201,168,76,0.2);background:rgba(8,6,22,0.8)}
+.success h2{font-family:'Cinzel',serif;font-size:22px;color:var(--gold);margin-bottom:14px}
+.success p{font-size:16px;color:rgba(232,228,240,0.7);line-height:1.8}
+.progress{display:flex;gap:4px;margin-bottom:32px;justify-content:center}
+.prog-step{flex:1;max-width:80px;text-align:center}
+.prog-dot{width:32px;height:32px;border-radius:50%;border:1px solid rgba(201,168,76,0.2);display:flex;align-items:center;justify-content:center;margin:0 auto 6px;font-family:'Cinzel',serif;font-size:10px;color:rgba(201,168,76,0.4)}
+.prog-dot.active{border-color:var(--gold);color:var(--gold);background:rgba(201,168,76,0.08)}
+.prog-dot.done{background:rgba(201,168,76,0.15);border-color:var(--gold);color:var(--gold)}
+.prog-label{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.2em;color:rgba(201,168,76,0.3);text-transform:uppercase}
+.prog-label.active{color:rgba(201,168,76,0.7)}
+footer{text-align:center;padding:32px 24px;border-top:1px solid rgba(201,168,76,0.08);margin-top:48px}
+footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;color:rgba(180,170,200,0.2);text-transform:uppercase;line-height:2}
+@media(max-width:600px){.wrap{padding:24px 16px}.scale{gap:4px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div class="badge" id="timepointBadge">24-Hour Check-In</div>
+    <h1>How Are You Feeling?</h1>
+    <p id="headerSub">Your session was yesterday. Daron's AI assistant is checking in on your behalf.</p>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress">
+    <div class="prog-step"><div class="prog-dot active" id="pd24">24H</div><div class="prog-label active">Now</div></div>
+    <div class="prog-step"><div class="prog-dot" id="pd48">48H</div><div class="prog-label">Tomorrow</div></div>
+    <div class="prog-step"><div class="prog-dot" id="pd72">72H</div><div class="prog-label">Day 3</div></div>
+    <div class="prog-step"><div class="prog-dot" id="pd1m">1MO</div><div class="prog-label">Month 1</div></div>
+    <div class="prog-step"><div class="prog-dot" id="pd3m">3MO</div><div class="prog-label">Month 3</div></div>
+  </div>
+
+  <div class="ai-intro">
+    <p id="aiIntroText">"Thank you for completing your session with Daron. I'm checking in to see how your body, mind, and energy are responding. Your answers help Daron track what's shifting and what may still need attention. There are no wrong answers — just be honest."</p>
+    <span class="ai-name">✦ Royal Energy Alchemy AI — on behalf of Daron Royal</span>
+  </div>
+
+  <form id="aftercareForm" novalidate>
+    <input type="hidden" id="timepoint" name="timepoint" value="24hr">
+    <input type="hidden" id="clientFlags" name="flags" value="">
+    <input type="hidden" name="form-name" value="aftercare">
+
+    <!-- STANDARD Q1 — Intensity -->
+    <div class="q-block">
+      <div class="q-head"><span class="q-tag">Standard · All Clients</span></div>
+      <div class="q-body">
+        <div class="q-text">On a scale of 1–10, how heavy or intense does the concern you came in with feel right now compared to before your session?</div>
+        <div class="scale-wrap">
+          <div class="scale">
+            <div class="scale-opt"><input type="radio" name="intensity" id="i1" value="1"><label for="i1">1</label></div>
+            <div class="scale-opt"><input type="radio" name="intensity" id="i2" value="2"><label for="i2">2</label></div>
+            <div class="scale-opt"><input type="radio" name="intensity" id="i3" value="3"><label for="i3">3</label></div>
+            <div class="scale-opt"><input type="radio" name="intensity" id="i4" value="4"><label for="i4">4</label></div>
+            <div class="scale-opt"><input type="radio" name="intensity" id="i5" value="5"><label for="i5">5</label></div>
+            <div class="scale-opt"><input type="radio" name="intensity" id="i6" value="6"><label for="i6">6</label></div>
+            <div class="scale-opt"><input type="radio" name="intensity" id="i7" value="7"><label for="i7">7</label></div>
+            <div class="scale-opt"><input type="radio" name="intensity" id="i8" value="8"><label for="i8">8</label></div>
+            <div class="scale-opt"><input type="radio" name="intensity" id="i9" value="9"><label for="i9">9</label></div>
+            <div class="scale-opt"><input type="radio" name="intensity" id="i10" value="10"><label for="i10">10</label></div>
+          </div>
+          <div class="scale-labels"><span>Much lighter</span><span>Same or heavier</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STANDARD Q2 — Sleep -->
+    <div class="q-block">
+      <div class="q-head"><span class="q-tag">Standard · All Clients</span></div>
+      <div class="q-body">
+        <div class="q-text">How has your sleep been since your session?</div>
+        <div class="fg">
+          <select name="sleep">
+            <option value="">Choose one</option>
+            <option>Much better — deeper and more restful</option>
+            <option>Somewhat better</option>
+            <option>About the same</option>
+            <option>More disrupted than usual</option>
+            <option>Couldn't sleep at all</option>
+            <option>Had vivid or unusual dreams</option>
+            <option>Had disturbing dreams or nightmares</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- STANDARD Q3 — What feels lighter -->
+    <div class="q-block">
+      <div class="q-head"><span class="q-tag">Standard · All Clients</span></div>
+      <div class="q-body">
+        <div class="q-text">What feels lighter, clearer, or different since your session? Describe anything — even small shifts count.</div>
+        <div class="fg"><textarea name="lighter" placeholder="What has changed, even slightly..."></textarea></div>
+      </div>
+    </div>
+
+    <!-- ADAPTIVE QUESTIONS — rendered by JS based on flags -->
+    <div id="adaptiveQuestions"></div>
+
+    <!-- STANDARD Q — Still active -->
+    <div class="q-block">
+      <div class="q-head"><span class="q-tag">Standard · All Clients</span></div>
+      <div class="q-body">
+        <div class="q-text">What still feels active, present, or unresolved?</div>
+        <div class="fg"><textarea name="stillActive" placeholder="Be as specific as you want..."></textarea></div>
+      </div>
+    </div>
+
+    <!-- STANDARD Q — Aftercare -->
+    <div class="q-block">
+      <div class="q-head"><span class="q-tag">Standard · All Clients</span></div>
+      <div class="q-body">
+        <div class="q-text">Which aftercare practices have you completed since your session?</div>
+        <div class="check-row">
+          <label class="check-chip"><input type="checkbox" name="aftercare" value="Drank water / stayed hydrated"> Drank water</label>
+          <label class="check-chip"><input type="checkbox" name="aftercare" value="Rested"> Rested</label>
+          <label class="check-chip"><input type="checkbox" name="aftercare" value="Journaled"> Journaled</label>
+          <label class="check-chip"><input type="checkbox" name="aftercare" value="Salt bath or shower"> Salt bath / shower</label>
+          <label class="check-chip"><input type="checkbox" name="aftercare" value="Visualized protection"> Visualized protection</label>
+          <label class="check-chip"><input type="checkbox" name="aftercare" value="Grounding (outside, barefoot)"> Grounding</label>
+          <label class="check-chip"><input type="checkbox" name="aftercare" value="Smoke cleansing"> Smoke cleansing</label>
+          <label class="check-chip"><input type="checkbox" name="aftercare" value="None yet"> None yet</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI ANALYSIS -->
+    <div class="ai-thinking" id="aiThinking">
+      Daron's AI is reviewing your responses<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>
+    </div>
+    <div class="ai-response" id="aiResponseBox">
+      <p id="aiResponseText"></p>
+      <span class="ai-name" style="margin-top:12px">✦ Royal Energy Alchemy AI</span>
+    </div>
+
+    <!-- OPEN NOTE -->
+    <div class="q-block" style="margin-top:20px">
+      <div class="q-head"><span class="q-tag">Anything Else</span></div>
+      <div class="q-body">
+        <div class="q-text">Is there anything else you want Daron to know about how you're feeling?</div>
+        <div class="fg"><textarea name="openNote" placeholder="Anything at all..."></textarea></div>
+      </div>
+    </div>
+
+    <button type="submit" class="submit-btn">Submit Check-In →</button>
+  </form>
+
+  <div class="success" id="successMsg">
+    <h2>✦ Check-In Received</h2>
+    <p>Daron has your update. He reviews every check-in personally and will follow up if anything needs attention.<br><br>Keep tracking how you feel. Your next check-in will arrive on schedule.</p>
+    <p style="margin-top:20px;font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:rgba(201,168,76,0.4);text-transform:uppercase">Royal Energy Alchemy LLC</p>
+  </div>
+</div>
+
+<footer>
+  <p>Royal Energy Alchemy LLC · Erie, Pennsylvania · royalenergyalchemy@gmail.com</p>
+  <p>Spiritual and energetic services are complementary wellness offerings and are not medical, legal, psychological, or financial advice.</p>
+</footer>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const timepoint = params.get('t') || '24hr';
+const flags = (params.get('f') || '').split(',').filter(Boolean);
+const clientName = params.get('name') || 'there';
+
+document.getElementById('timepoint').value = timepoint;
+document.getElementById('clientFlags').value = flags.join(',');
+
+const tpConfig = {
+  '24hr': { badge: '24-Hour Check-In', sub: 'Your session was yesterday. Daron\'s AI is checking in on your behalf.', active: 'pd24' },
+  '48hr': { badge: '48-Hour Check-In', sub: 'It\'s been two days since your session. How is the shift continuing?', active: 'pd48' },
+  '72hr': { badge: '72-Hour Check-In', sub: 'Three days post-session. This is often when the deepest shifts become clear.', active: 'pd72' },
+  '1mo': { badge: '1-Month Check-In', sub: 'One month since your session. Daron wants to see how the work has held.', active: 'pd1m' },
+  '3mo': { badge: '3-Month Check-In', sub: 'Three months out. This is your long-term progress review with Daron.', active: 'pd3m' }
+};
+
+const tp = tpConfig[timepoint] || tpConfig['24hr'];
+document.getElementById('timepointBadge').textContent = tp.badge;
+document.getElementById('headerSub').textContent = tp.sub;
+['pd24','pd48','pd72','pd1m','pd3m'].forEach(id => {
+  document.getElementById(id).classList.remove('active','done');
+});
+const order = ['pd24','pd48','pd72','pd1m','pd3m'];
+const activeIdx = order.indexOf(tp.active);
+order.forEach((id,i) => {
+  if(i < activeIdx) document.getElementById(id).classList.add('done');
+  else if(i === activeIdx) document.getElementById(id).classList.add('active');
+});
+
+const intros = {
+  '24hr': '"Thank you for completing your session with Daron. I\'m checking in to see how your body, mind, and energy are responding in the first 24 hours. Your answers help Daron track what\'s shifting. There are no wrong answers — just be honest."',
+  '48hr': '"Two days have passed. Some shifts take a little time to surface. I\'m checking in to see what has continued to change and what may still feel active. Daron reviews every response personally."',
+  '72hr': '"By day three, most people notice the deepest changes from their session. I\'m also following up on your aftercare and will recommend next steps based on what you share. Daron may reach out after reviewing this."',
+  '1mo': '"One month out. Daron wants to know how the work has held over time. Has the shift been lasting? Have new things surfaced? This check-in feeds into your long-term treatment plan."',
+  '3mo': '"Three months is a milestone. This is your long-term progress review. Your responses today will be compared against your original intake and all previous check-ins to show the full arc of your healing."'
+};
+document.getElementById('aiIntroText').textContent = intros[timepoint] || intros['24hr'];
+
+const adaptiveBank = {
+  depression: [
+    { tag: 'Depression Follow-Up', q: 'How has your mood been since the session? Has the persistent low feeling shifted at all?', type: 'scale', name: 'moodShift' },
+    { tag: 'Depression Follow-Up', q: 'Have you found yourself wanting to engage with people or activities more than before the session?', type: 'select', name: 'engagement', opts: ['Much more','Somewhat more','About the same','Less than before'] },
+    { tag: 'Depression Follow-Up', q: 'Describe any moments since the session where you felt a spark of motivation, joy, or lightness — even briefly.', type: 'textarea', name: 'joyMoments' }
+  ],
+  anxiety: [
+    { tag: 'Anxiety Follow-Up', q: 'On a scale of 1–10, how would you rate your anxiety level right now compared to before the session?', type: 'scale', name: 'anxietyLevel' },
+    { tag: 'Anxiety Follow-Up', q: 'Have you experienced any panic, intrusive thoughts, or sudden fear since the session?', type: 'select', name: 'panicPost', opts: ['No — much calmer','Mild — reduced','Same as before','Yes — still happening','Worse than before'] },
+    { tag: 'Anxiety Follow-Up', q: 'What situations or thoughts are still triggering anxious feelings for you?', type: 'textarea', name: 'anxiousTriggers' }
+  ],
+  parasites: [
+    { tag: 'Parasite Removal Follow-Up', q: 'Do you still feel any sense of something attached, feeding, or not belonging to you?', type: 'select', name: 'attachmentSense', opts: ['No — completely clear','Mostly clear with minor residue','Somewhat — reduced','Still present','Feels stronger'] },
+    { tag: 'Parasite Removal Follow-Up', q: 'Have you noticed any physical sensations since the session — tingling, pressure shifts, sudden energy changes?', type: 'textarea', name: 'physicalPost' },
+    { tag: 'Parasite Removal Follow-Up', q: 'Have you been around anyone or any place that felt immediately draining or re-triggering since your session?', type: 'textarea', name: 'drainTriggers' }
+  ],
+  perceptual: [
+    { tag: 'Perceptual Symptoms Follow-Up', q: 'Are you still seeing shadows, figures, or movement in your peripheral vision?', type: 'select', name: 'shadowsPost', opts: ['No — completely stopped','Reduced significantly','Same frequency','More than before'] },
+    { tag: 'Perceptual Symptoms Follow-Up', q: 'Are you still hearing your name, whispers, or unexplained sounds?', type: 'select', name: 'soundsPost', opts: ['No — silent now','Reduced','Same','More frequent'] },
+    { tag: 'Perceptual Symptoms Follow-Up', q: 'Describe any perceptual experiences since the session — what you saw, heard, felt, or sensed.', type: 'textarea', name: 'perceptualPost' }
+  ],
+  pain: [
+    { tag: 'Physical Pain Follow-Up', q: 'How is the physical pain or discomfort you reported during intake?', type: 'select', name: 'painPost', opts: ['Resolved completely','Significantly reduced','Somewhat reduced','Same','Worse'] },
+    { tag: 'Physical Pain Follow-Up', q: 'Where in your body do you still feel discomfort, if any? Be specific.', type: 'textarea', name: 'painLocation' },
+    { tag: 'Physical Pain Follow-Up', q: 'Have you followed up with a medical provider about this pain since the session?', type: 'select', name: 'medFollowUp', opts: ['Yes — appointment scheduled','Yes — already seen someone','No — planning to','No'] }
+  ],
+  cords: [
+    { tag: 'Cord Removal Follow-Up', q: 'Do you still feel energetically connected to the person, place, or pattern you came in about?', type: 'select', name: 'cordSense', opts: ['No — completely released','Mostly released','Partially — lighter but still there','Still strongly connected'] },
+    { tag: 'Cord Removal Follow-Up', q: 'Have you had contact with or thoughts about the person or situation since the session?', type: 'textarea', name: 'cordContact' },
+    { tag: 'Cord Removal Follow-Up', q: 'Do you feel the emotional charge around this connection has changed? Describe.', type: 'textarea', name: 'cordEmotional' }
+  ],
+  space: [
+    { tag: 'Space / Home Energy Follow-Up', q: 'How does your home or the space feel now compared to before the session?', type: 'select', name: 'spacePost', opts: ['Much lighter and cleaner','Somewhat better','About the same','Still feels heavy or off'] },
+    { tag: 'Space / Home Energy Follow-Up', q: 'Have you noticed any continued disturbances — sounds, temperature drops, objects moving, uneasy feelings?', type: 'textarea', name: 'spaceDisturbances' }
+  ],
+  empath: [
+    { tag: 'Empath Overload Follow-Up', q: 'How is your ability to be around other people feeling since the session?', type: 'select', name: 'empathPost', opts: ['Much better — boundaries feel solid','Improved but still sensitive','Same as before','More overwhelmed than usual'] },
+    { tag: 'Empath Overload Follow-Up', q: 'Are you still absorbing or carrying other people\'s energy, emotions, or pain?', type: 'select', name: 'absorbPost', opts: ['No — much clearer','Less than before','Same amount','More than before'] },
+    { tag: 'Empath Overload Follow-Up', q: 'Which environments or people feel the most draining to you right now?', type: 'textarea', name: 'empathDrain' }
+  ],
+  dreams: [
+    { tag: 'Dreams Follow-Up', q: 'How have your dreams been since the session?', type: 'select', name: 'dreamsPost', opts: ['Calm and peaceful','Vivid but positive','Neutral','Still disturbing or dark','Sleep paralysis continued','Visitation dreams'] },
+    { tag: 'Dreams Follow-Up', q: 'Describe any significant dreams since your session.', type: 'textarea', name: 'dreamDesc' }
+  ]
+};
+
+const aq = document.getElementById('adaptiveQuestions');
+let qCount = 0;
+const flagMap = {
+  'depression': 'depression', 'dep': 'depression',
+  'anxiety': 'anxiety', 'anx': 'anxiety',
+  'parasite': 'parasites', 'parasites': 'parasites',
+  'perceptual': 'perceptual', 'perc': 'perceptual',
+  'pain': 'pain',
+  'cord': 'cords', 'cords': 'cords',
+  'space': 'space',
+  'empath': 'empath',
+  'dreams': 'dreams', 'dream': 'dreams'
+};
+
+const rendered = new Set();
+flags.forEach(f => {
+  const bank = adaptiveBank[flagMap[f.toLowerCase()]];
+  if (!bank || rendered.has(flagMap[f.toLowerCase()])) return;
+  rendered.add(flagMap[f.toLowerCase()]);
+  bank.forEach(q => {
+    if (qCount >= 10) return;
+    qCount++;
+    const block = document.createElement('div');
+    block.className = 'q-block';
+    let inputHTML = '';
+    if (q.type === 'scale') {
+      inputHTML = `<div class="scale-wrap"><div class="scale">${[1,2,3,4,5,6,7,8,9,10].map(n=>`<div class="scale-opt"><input type="radio" name="${q.name}" id="${q.name}${n}" value="${n}"><label for="${q.name}${n}">${n}</label></div>`).join('')}</div><div class="scale-labels"><span>Much better</span><span>Same or worse</span></div></div>`;
+    } else if (q.type === 'select') {
+      inputHTML = `<div class="fg"><select name="${q.name}"><option value="">Choose one</option>${q.opts.map(o=>`<option>${o}</option>`).join('')}</select></div>`;
+    } else {
+      inputHTML = `<div class="fg"><textarea name="${q.name}" placeholder="Be as specific as you want..."></textarea></div>`;
+    }
+    block.innerHTML = `<div class="q-head"><span class="q-tag">Adaptive · ${q.tag}</span></div><div class="q-body"><div class="q-text">${q.q}</div>${inputHTML}</div>`;
+    aq.appendChild(block);
+  });
+});
+
+if (qCount === 0) {
+  const block = document.createElement('div');
+  block.className = 'q-block';
+  block.innerHTML = `<div class="q-head"><span class="q-tag">Follow-Up</span></div><div class="q-body"><div class="q-text">What specific symptom, feeling, or concern brought you in — and has that shifted since your session?</div><div class="fg"><textarea name="specificShift" placeholder="Be as specific as you want..."></textarea></div></div>`;
+  aq.appendChild(block);
+}
+
+function generateAIResponse(formData) {
+  const intensity = formData.get('intensity');
+  const sleep = formData.get('sleep') || '';
+  const lighter = formData.get('lighter') || '';
+  const stillActive = formData.get('stillActive') || '';
+  let response = '';
+  const intVal = parseInt(intensity) || 5;
+  if (intVal <= 3) {
+    response = `What you're describing points to real movement. An intensity of ${intVal} out of 10 is a meaningful shift. `;
+  } else if (intVal <= 6) {
+    response = `You're in the middle of the shift. An intensity of ${intVal} suggests the work is still processing. This is normal — especially in the first ${timepoint === '24hr' ? '24 hours' : timepoint === '48hr' ? '48 hours' : '72 hours'}. `;
+  } else {
+    response = `An intensity of ${intVal} tells me there may be more to address. Daron will review this carefully. `;
+  }
+  if (sleep.includes('better') || sleep.includes('deeper')) {
+    response += 'Improved sleep is one of the clearest signs the energetic field is settling. ';
+  } else if (sleep.includes('disturbing') || sleep.includes('nightmare')) {
+    response += 'The dream activity you\'re experiencing can be part of the release process — dark or vivid dreams sometimes surface as the field clears. Daron will want to know more about this. ';
+  }
+  if (lighter.length > 10) { response += 'The shifts you described are exactly what Daron tracks across check-ins. '; }
+  if (stillActive.length > 10) { response += 'What still feels active will inform whether a follow-up session or a different approach is recommended. '; }
+  response += 'Daron reviews every check-in personally. If anything here needs immediate attention, he will reach out directly.';
+  return response;
+}
+
+document.getElementById('aftercareForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const formData = new FormData(this);
+  document.getElementById('aiThinking').classList.add('show');
+  setTimeout(() => {
+    document.getElementById('aiThinking').classList.remove('show');
+    const response = generateAIResponse(formData);
+    document.getElementById('aiResponseText').textContent = response;
+    document.getElementById('aiResponseBox').classList.add('show');
+    setTimeout(() => {
+      document.getElementById('aftercareForm').style.display = 'none';
+      document.getElementById('successMsg').style.display = 'block';
+      window.scrollTo(0, 0);
+    }, 3000);
+  }, 2500);
+});
+</script>
+</body>
+</html>

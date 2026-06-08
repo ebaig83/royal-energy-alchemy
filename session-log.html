@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Royal Energy Alchemy — Session Log</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--gold:#c9a84c;--gold-light:#f0dfa0;--teal:#1d9e75}
+body{background:#0a0810;color:#e8e4f0;font-family:'EB Garamond',serif;min-height:100vh}
+.wrap{max-width:760px;margin:0 auto;padding:48px 24px}
+.header{text-align:center;margin-bottom:40px;padding-bottom:28px;border-bottom:1px solid rgba(201,168,76,0.2)}
+.header .badge{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.5em;color:rgba(201,168,76,0.6);text-transform:uppercase;display:inline-block;border:1px solid rgba(201,168,76,0.2);padding:5px 16px;margin-bottom:14px}
+.header h1{font-family:'Cinzel',serif;font-size:clamp(18px,3vw,26px);color:#fff;margin-bottom:8px}
+.header p{font-size:15px;font-style:italic;color:rgba(232,228,240,0.55)}
+.sec{border:1px solid rgba(201,168,76,0.1);background:rgba(8,6,22,0.8);margin-bottom:20px}
+.sec-head{padding:12px 20px;background:rgba(201,168,76,0.04);border-bottom:1px solid rgba(201,168,76,0.08);display:flex;align-items:center;gap:10px}
+.sec-title{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.25em;color:rgba(201,168,76,0.7);text-transform:uppercase}
+.sec-body{padding:20px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.form-row.single{grid-template-columns:1fr}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg label{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.35em;color:rgba(201,168,76,0.5);text-transform:uppercase}
+.fg input,.fg textarea,.fg select{background:rgba(0,4,8,0.8);border:1px solid rgba(201,168,76,0.15);padding:10px 14px;font-family:'EB Garamond',serif;font-size:16px;color:#e8e4f0;outline:none;transition:border-color .3s;width:100%}
+.fg input:focus,.fg textarea:focus,.fg select:focus{border-color:rgba(201,168,76,0.4)}
+.fg textarea{min-height:80px;resize:vertical}
+.fg select option{background:#080620}
+.flag-grid{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.flag-chip{display:flex;align-items:center;gap:5px;padding:5px 10px;border:1px solid rgba(201,168,76,0.12);cursor:pointer;font-size:13px;color:rgba(232,228,240,0.65);background:rgba(0,4,8,0.5);transition:all .2s}
+.flag-chip input{width:13px;height:13px;accent-color:var(--gold);cursor:pointer}
+.flag-chip:has(input:checked){border-color:rgba(201,168,76,0.4);background:rgba(201,168,76,0.06);color:#e8e4f0}
+.links-section{background:rgba(201,168,76,0.03);border:1px solid rgba(201,168,76,0.1);padding:20px;margin-top:20px}
+.links-title{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.35em;color:rgba(201,168,76,0.6);text-transform:uppercase;margin-bottom:16px;display:block}
+.link-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(201,168,76,0.06);flex-wrap:wrap;gap:8px}
+.link-row:last-child{border-bottom:none}
+.link-label{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.2em;color:rgba(201,168,76,0.6);text-transform:uppercase}
+.link-url{font-size:13px;color:rgba(180,170,200,0.6);word-break:break-all}
+.copy-btn{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.2em;color:var(--gold);border:1px solid rgba(201,168,76,0.3);padding:5px 12px;cursor:pointer;background:transparent;text-transform:uppercase;transition:all .2s;white-space:nowrap}
+.copy-btn:hover{background:rgba(201,168,76,0.08);border-color:var(--gold)}
+.copy-btn.copied{color:var(--teal);border-color:var(--teal)}
+.submit-btn{width:100%;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.4em;color:#000;text-transform:uppercase;background:linear-gradient(135deg,var(--gold-light),var(--gold));padding:15px;cursor:pointer;border:none;transition:all .3s;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);margin-top:8px}
+.submit-btn:hover{filter:brightness(1.1)}
+.success{display:none;border:1px solid rgba(201,168,76,0.2);background:rgba(8,6,22,0.8);padding:32px}
+.success h2{font-family:'Cinzel',serif;font-size:20px;color:var(--gold);margin-bottom:16px}
+footer{text-align:center;padding:32px;border-top:1px solid rgba(201,168,76,0.08);margin-top:48px}
+footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;color:rgba(180,170,200,0.2);text-transform:uppercase;line-height:2}
+@media(max-width:600px){.form-row{grid-template-columns:1fr}.wrap{padding:24px 16px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div class="badge">Daron Royal · Practitioner Portal</div>
+    <h1>Session Log</h1>
+    <p>Log what happened in the session. This generates the aftercare links to send to your client.</p>
+  </div>
+
+  <form id="sessionForm" novalidate>
+    <input type="hidden" name="form-name" value="session-log">
+
+    <!-- CLIENT INFO -->
+    <div class="sec">
+      <div class="sec-head"><span class="sec-title">Client Details</span></div>
+      <div class="sec-body">
+        <div class="form-row">
+          <div class="fg"><label>Client first name</label><input type="text" id="clientName" name="clientName" placeholder="First name only"/></div>
+          <div class="fg"><label>Client email or phone</label><input type="text" id="clientContact" name="clientContact" placeholder="For sending check-in links"/></div>
+        </div>
+        <div class="form-row">
+          <div class="fg"><label>Session date</label><input type="date" id="sessionDate" name="sessionDate"/></div>
+          <div class="fg"><label>Service delivered</label>
+            <select id="serviceType" name="serviceType">
+              <option value="">Choose one</option>
+              <option>Energetic Parasite Removal</option>
+              <option>Cord Removal & Transmutation</option>
+              <option>Energy Alchemy Exorcism</option>
+              <option>Distance Energy Session</option>
+              <option>House Cleansing & Blessing</option>
+              <option>Emergency Removal Session</option>
+              <option>Removal + Tarot Bundle</option>
+              <option>Spiritual Coaching</option>
+              <option>Youth Session</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WHAT WAS FOUND -->
+    <div class="sec">
+      <div class="sec-head"><span class="sec-title">What Was Found</span></div>
+      <div class="sec-body">
+        <div class="form-row single">
+          <div class="fg"><label>What did you find during the session?</label><textarea id="whatFound" name="whatFound" placeholder="Describe what you found — attachments, cords, blocked energy, entities, patterns..."></textarea></div>
+        </div>
+        <div class="form-row single">
+          <div class="fg"><label>What did you remove or transmute?</label><textarea name="whatDone" placeholder="What was cleared, removed, sealed..."></textarea></div>
+        </div>
+        <div class="form-row single">
+          <div class="fg"><label>Client response during session</label><textarea name="clientResponse" placeholder="How did the client respond — physically, emotionally, energetically..."></textarea></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FLAGS FOR ADAPTIVE AFTERCARE -->
+    <div class="sec">
+      <div class="sec-head"><span class="sec-title">Aftercare Flags</span></div>
+      <div class="sec-body">
+        <p style="font-size:14px;color:rgba(232,228,240,0.6);margin-bottom:14px;font-style:italic">Check everything that was present in this session. These flags drive the adaptive questions in the client's check-ins.</p>
+        <div class="flag-grid">
+          <label class="flag-chip"><input type="checkbox" class="flagInput" value="depression"> Depression / low mood</label>
+          <label class="flag-chip"><input type="checkbox" class="flagInput" value="anxiety"> Anxiety / fear</label>
+          <label class="flag-chip"><input type="checkbox" class="flagInput" value="parasites"> Energetic parasites</label>
+          <label class="flag-chip"><input type="checkbox" class="flagInput" value="cords"> Cords / attachments</label>
+          <label class="flag-chip"><input type="checkbox" class="flagInput" value="perceptual"> Perceptual symptoms</label>
+          <label class="flag-chip"><input type="checkbox" class="flagInput" value="pain"> Physical pain</label>
+          <label class="flag-chip"><input type="checkbox" class="flagInput" value="space"> Space / home energy</label>
+          <label class="flag-chip"><input type="checkbox" class="flagInput" value="empath"> Empath overload</label>
+          <label class="flag-chip"><input type="checkbox" class="flagInput" value="dreams"> Dream disturbances</label>
+          <label class="flag-chip"><input type="checkbox" class="flagInput" value="trauma"> Trauma / grief</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- DARON'S NOTES -->
+    <div class="sec">
+      <div class="sec-head"><span class="sec-title">Your Notes</span></div>
+      <div class="sec-body">
+        <div class="form-row single">
+          <div class="fg"><label>Private session notes (not shared with client)</label><textarea name="privateNotes" placeholder="Anything you want to remember for next session..."></textarea></div>
+        </div>
+        <div class="form-row single">
+          <div class="fg"><label>Recommended next step for client</label>
+            <select name="nextStep">
+              <option value="">Choose one</option>
+              <option>No immediate action — monitor via check-ins</option>
+              <option>Schedule follow-up session in 2 weeks</option>
+              <option>Schedule follow-up session in 1 month</option>
+              <option>Begin 4-week Stabilize & Clear plan</option>
+              <option>Begin 8-week Pattern Release plan</option>
+              <option>Refer to therapist via ZocDoc</option>
+              <option>Refer to medical provider via ZocDoc</option>
+              <option>Emergency follow-up needed</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row single">
+          <div class="fg"><label>Recording available?</label>
+            <select name="recordingAvailable">
+              <option value="">Choose one</option>
+              <option>Yes — full session recorded</option>
+              <option>Yes — partial recording</option>
+              <option>No — client did not consent</option>
+              <option>No — technical issue</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button type="submit" class="submit-btn" onclick="generateLinks(); return false;">Generate Aftercare Links →</button>
+  </form>
+
+  <!-- GENERATED LINKS -->
+  <div class="success" id="linksSection">
+    <h2>✦ Aftercare Links Generated</h2>
+    <p style="font-size:15px;color:rgba(232,228,240,0.7);margin-bottom:20px;line-height:1.8">Copy and send these links to your client at the right time. Each link is pre-loaded with their flags so the AI asks the right questions.</p>
+    <div class="links-section">
+      <span class="links-title">Client Check-In Links — Send at These Times</span>
+      <div class="link-row">
+        <div><div class="link-label">24-Hour Check-In</div><div class="link-url" id="link24"></div></div>
+        <button class="copy-btn" onclick="copyLink('link24', this)">Copy</button>
+      </div>
+      <div class="link-row">
+        <div><div class="link-label">48-Hour Check-In</div><div class="link-url" id="link48"></div></div>
+        <button class="copy-btn" onclick="copyLink('link48', this)">Copy</button>
+      </div>
+      <div class="link-row">
+        <div><div class="link-label">72-Hour Check-In</div><div class="link-url" id="link72"></div></div>
+        <button class="copy-btn" onclick="copyLink('link72', this)">Copy</button>
+      </div>
+      <div class="link-row">
+        <div><div class="link-label">1-Month Check-In</div><div class="link-url" id="link1m"></div></div>
+        <button class="copy-btn" onclick="copyLink('link1m', this)">Copy</button>
+      </div>
+      <div class="link-row">
+        <div><div class="link-label">3-Month Check-In</div><div class="link-url" id="link3m"></div></div>
+        <button class="copy-btn" onclick="copyLink('link3m', this)">Copy</button>
+      </div>
+      <div class="link-row">
+        <div><div class="link-label">Rating & Review</div><div class="link-url" id="linkRating"></div></div>
+        <button class="copy-btn" onclick="copyLink('linkRating', this)">Copy</button>
+      </div>
+    </div>
+    <div style="margin-top:20px;padding:16px;background:rgba(201,168,76,0.04);border:1px solid rgba(201,168,76,0.1)">
+      <p style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.3em;color:rgba(201,168,76,0.5);text-transform:uppercase;margin-bottom:8px">Suggested Message to Client</p>
+      <p id="suggestedMsg" style="font-size:15px;color:rgba(232,228,240,0.75);line-height:1.8;font-style:italic"></p>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p>Royal Energy Alchemy LLC · Practitioner Portal · Not for client distribution</p>
+</footer>
+
+<script>
+document.getElementById('sessionDate').value = new Date().toISOString().split('T')[0];
+const BASE = window.location.origin;
+
+function generateLinks() {
+  const name = document.getElementById('clientName').value || 'client';
+  const flags = [...document.querySelectorAll('.flagInput:checked')].map(f => f.value).join(',');
+  const encodedName = encodeURIComponent(name);
+  const encodedFlags = encodeURIComponent(flags);
+
+  const makeLink = (t) => `${BASE}/aftercare.html?t=${t}&name=${encodedName}&f=${encodedFlags}`;
+
+  document.getElementById('link24').textContent = makeLink('24hr');
+  document.getElementById('link48').textContent = makeLink('48hr');
+  document.getElementById('link72').textContent = makeLink('72hr');
+  document.getElementById('link1m').textContent = makeLink('1mo');
+  document.getElementById('link3m').textContent = makeLink('3mo');
+  document.getElementById('linkRating').textContent = `${BASE}/rating.html?name=${encodedName}`;
+
+  const service = document.getElementById('serviceType').value || 'your session';
+  document.getElementById('suggestedMsg').textContent = `Hi ${name}, thank you for your session today. I'll be checking in with you over the next few days to track how you're feeling. Here's your 24-hour check-in link — please fill it out tomorrow: [paste 24hr link]. Your feedback helps me track what's shifting and what may still need attention. — Daron`;
+
+  document.getElementById('linksSection').style.display = 'block';
+  document.getElementById('linksSection').scrollIntoView({ behavior: 'smooth' });
+}
+
+function copyLink(id, btn) {
+  const url = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(url).then(() => {
+    btn.textContent = 'Copied ✓';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+</script>
+</body>
+</html>

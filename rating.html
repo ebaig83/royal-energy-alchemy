@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Royal Energy Alchemy — Rate Your Session</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--gold:#c9a84c;--gold-light:#f0dfa0}
+body{background:#0a0810;color:#e8e4f0;font-family:'EB Garamond',serif;min-height:100vh}
+.wrap{max-width:640px;margin:0 auto;padding:48px 24px}
+.header{text-align:center;margin-bottom:40px;padding-bottom:28px;border-bottom:1px solid rgba(201,168,76,0.2)}
+.header h1{font-family:'Cinzel',serif;font-size:clamp(18px,3vw,26px);color:#fff;margin-bottom:8px;letter-spacing:.06em}
+.header p{font-size:16px;font-style:italic;color:rgba(232,228,240,0.6)}
+.sec{border:1px solid rgba(201,168,76,0.1);background:rgba(8,6,22,0.8);margin-bottom:20px}
+.sec-head{padding:12px 20px;background:rgba(201,168,76,0.04);border-bottom:1px solid rgba(201,168,76,0.08)}
+.sec-title{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.25em;color:rgba(201,168,76,0.7);text-transform:uppercase}
+.sec-body{padding:24px 20px}
+/* Stars */
+.stars-wrap{display:flex;justify-content:center;gap:12px;margin-bottom:12px}
+.star-btn{background:none;border:none;font-size:44px;cursor:pointer;color:rgba(201,168,76,0.2);transition:all .2s;line-height:1;padding:4px}
+.star-btn.active,.star-btn.hover{color:var(--gold);text-shadow:0 0 20px rgba(201,168,76,0.5)}
+.star-label{text-align:center;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:rgba(201,168,76,0.5);text-transform:uppercase;min-height:20px;transition:all .3s}
+.fg{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+.fg label{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.35em;color:rgba(201,168,76,0.5);text-transform:uppercase}
+.fg input,.fg textarea,.fg select{background:rgba(0,4,8,0.8);border:1px solid rgba(201,168,76,0.15);padding:10px 14px;font-family:'EB Garamond',serif;font-size:16px;color:#e8e4f0;outline:none;transition:border-color .3s;width:100%}
+.fg input:focus,.fg textarea:focus{border-color:rgba(201,168,76,0.4)}
+.fg textarea{min-height:120px;resize:vertical}
+.check-item{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid rgba(201,168,76,0.06)}
+.check-item:last-child{border-bottom:none}
+.check-item input{width:18px;height:18px;accent-color:var(--gold);flex-shrink:0;margin-top:3px;cursor:pointer}
+.check-item span{font-size:15px;color:rgba(232,228,240,0.8);line-height:1.6}
+.check-item small{display:block;font-size:13px;color:rgba(180,170,200,0.5);font-style:italic;margin-top:2px}
+.submit-btn{width:100%;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.4em;color:#000;text-transform:uppercase;background:linear-gradient(135deg,var(--gold-light),var(--gold));padding:15px;cursor:pointer;border:none;transition:all .3s;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);margin-top:8px}
+.submit-btn:hover{filter:brightness(1.1)}
+.success{display:none;text-align:center;padding:56px 24px;border:1px solid rgba(201,168,76,0.2);background:rgba(8,6,22,0.8)}
+.success .stars-big{font-size:40px;margin-bottom:16px;letter-spacing:4px}
+.success h2{font-family:'Cinzel',serif;font-size:22px;color:var(--gold);margin-bottom:14px}
+.success p{font-size:16px;color:rgba(232,228,240,0.7);line-height:1.8}
+footer{text-align:center;padding:32px;border-top:1px solid rgba(201,168,76,0.08);margin-top:48px}
+footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;color:rgba(180,170,200,0.2);text-transform:uppercase;line-height:2}
+@media(max-width:480px){.star-btn{font-size:36px;gap:8px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <h1>How Was Your Session?</h1>
+    <p>Your feedback helps Daron understand the impact of the work and improve every session.</p>
+  </div>
+
+  <form id="ratingForm" novalidate>
+    <input type="hidden" name="form-name" value="session-rating">
+    <input type="hidden" id="ratingVal" name="rating" value="">
+
+    <!-- STAR RATING -->
+    <div class="sec">
+      <div class="sec-head"><span class="sec-title">Overall Rating</span></div>
+      <div class="sec-body">
+        <div class="stars-wrap" id="starsWrap">
+          <button type="button" class="star-btn" data-val="1" onclick="setRating(1)">★</button>
+          <button type="button" class="star-btn" data-val="2" onclick="setRating(2)">★</button>
+          <button type="button" class="star-btn" data-val="3" onclick="setRating(3)">★</button>
+          <button type="button" class="star-btn" data-val="4" onclick="setRating(4)">★</button>
+          <button type="button" class="star-btn" data-val="5" onclick="setRating(5)">★</button>
+        </div>
+        <div class="star-label" id="starLabel">Tap to rate your session</div>
+      </div>
+    </div>
+
+    <!-- CLIENT INFO -->
+    <div class="sec">
+      <div class="sec-head"><span class="sec-title">About You</span></div>
+      <div class="sec-body">
+        <div class="fg"><label>First name only</label><input type="text" name="firstName" placeholder="How you'd like to appear if your review is shared"/></div>
+        <div class="fg"><label>Session type</label>
+          <select name="sessionType">
+            <option value="">Choose one</option>
+            <option>Energetic Parasite Removal</option>
+            <option>Cord Removal & Transmutation</option>
+            <option>Energy Alchemy Exorcism</option>
+            <option>Distance Energy Session</option>
+            <option>House Cleansing & Blessing</option>
+            <option>Emergency Removal Session</option>
+            <option>Removal + Tarot Bundle</option>
+            <option>Spiritual Coaching</option>
+            <option>Youth Session</option>
+            <option>Prefer not to say</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- REVIEW -->
+    <div class="sec">
+      <div class="sec-head"><span class="sec-title">Your Experience</span></div>
+      <div class="sec-body">
+        <div class="fg"><label>What did you experience during and after your session?</label><textarea name="review" placeholder="Describe what shifted, what you felt, what changed. Your words may help someone else decide to book..."></textarea></div>
+        <div class="fg"><label>What would you tell someone who is on the fence about booking?</label><textarea name="recommendation" placeholder="Optional but powerful..." style="min-height:80px"></textarea></div>
+      </div>
+    </div>
+
+    <!-- SPECIFIC IMPACTS -->
+    <div class="sec">
+      <div class="sec-head"><span class="sec-title">What Changed For You</span></div>
+      <div class="sec-body">
+        <p style="font-size:14px;color:rgba(232,228,240,0.6);margin-bottom:14px;font-style:italic">Check everything that applies after your session:</p>
+        <div class="check-item"><input type="checkbox" name="impact" value="Sleep improved"><span>My sleep improved</span></div>
+        <div class="check-item"><input type="checkbox" name="impact" value="Less anxious or fearful"><span>I feel less anxious or fearful</span></div>
+        <div class="check-item"><input type="checkbox" name="impact" value="Physical pain reduced"><span>Physical pain or heaviness reduced</span></div>
+        <div class="check-item"><input type="checkbox" name="impact" value="Energy levels increased"><span>My energy levels increased</span></div>
+        <div class="check-item"><input type="checkbox" name="impact" value="Mood lifted"><span>My mood lifted</span></div>
+        <div class="check-item"><input type="checkbox" name="impact" value="Felt release or clearing"><span>I felt a genuine release or clearing</span></div>
+        <div class="check-item"><input type="checkbox" name="impact" value="Relationship improved"><span>A relationship situation improved</span></div>
+        <div class="check-item"><input type="checkbox" name="impact" value="Spiritual shift"><span>I experienced a spiritual or energetic shift</span></div>
+        <div class="check-item"><input type="checkbox" name="impact" value="Still processing"><span>I'm still processing — it's ongoing</span></div>
+      </div>
+    </div>
+
+    <!-- TESTIMONIAL PERMISSION -->
+    <div class="sec">
+      <div class="sec-head"><span class="sec-title">Permission to Share</span></div>
+      <div class="sec-body">
+        <div class="check-item"><input type="checkbox" name="testimonialPermission" id="tperm" value="yes"><span>Daron may use my review as a testimonial on the Royal Energy Alchemy website and social media.<small>Your first name and session type only. No last name, photo, or identifying details without separate consent.</small></span></div>
+        <div class="check-item"><input type="checkbox" name="anonymous" value="yes"><span>I prefer my testimonial to be shared anonymously<small>No name displayed — just the review and star rating.</small></span></div>
+      </div>
+    </div>
+
+    <button type="submit" class="submit-btn">Submit Rating →</button>
+    <p style="font-size:13px;color:rgba(180,170,200,0.4);text-align:center;margin-top:12px;font-style:italic">Daron reviews every submission before anything is posted publicly.</p>
+  </form>
+
+  <div class="success" id="successMsg">
+    <div class="stars-big" id="successStars">★★★★★</div>
+    <h2>Thank You</h2>
+    <p>Daron has received your rating and review. He reads every one personally.<br><br>If you gave permission to share, your testimonial will appear on the site after Daron reviews and approves it.</p>
+    <p style="margin-top:20px;font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:rgba(201,168,76,0.4);text-transform:uppercase">Royal Energy Alchemy LLC</p>
+  </div>
+</div>
+
+<footer>
+  <p>Royal Energy Alchemy LLC · Erie, Pennsylvania · royalenergyalchemy@gmail.com</p>
+</footer>
+
+<script>
+const starLabels = ['','Not what I expected','It was okay','Good experience','Really helped me','Life-changing'];
+let currentRating = 0;
+const stars = document.querySelectorAll('.star-btn');
+
+stars.forEach(s => {
+  s.addEventListener('mouseenter', () => {
+    const v = parseInt(s.dataset.val);
+    stars.forEach((st,i) => { st.classList.toggle('hover', i < v); });
+    document.getElementById('starLabel').textContent = starLabels[v];
+  });
+  s.addEventListener('mouseleave', () => {
+    stars.forEach(st => st.classList.remove('hover'));
+    document.getElementById('starLabel').textContent = currentRating ? starLabels[currentRating] : 'Tap to rate your session';
+  });
+});
+
+function setRating(val) {
+  currentRating = val;
+  document.getElementById('ratingVal').value = val;
+  stars.forEach((s,i) => s.classList.toggle('active', i < val));
+  document.getElementById('starLabel').textContent = starLabels[val];
+}
+
+document.getElementById('ratingForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  if (!currentRating) { alert('Please select a star rating.'); return; }
+  const stars = '★'.repeat(currentRating) + '☆'.repeat(5 - currentRating);
+  document.getElementById('successStars').textContent = stars;
+  document.getElementById('ratingForm').style.display = 'none';
+  document.getElementById('successMsg').style.display = 'block';
+  window.scrollTo(0, 0);
+});
+</script>
+</body>
+</html>
