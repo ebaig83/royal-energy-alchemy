@@ -7,57 +7,57 @@
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--gold:#c9a84c;--gold-light:#f0dfa0}
-body{background:#0a0810;color:#e8e4f0;font-family:'EB Garamond',serif;min-height:100vh}
+:root{--gold:#e8b84b;--gold-light:#f8e090}
+body{background:#0a0612;color:#f0ecff;font-family:'EB Garamond',serif;min-height:100vh}
 .wrap{max-width:640px;margin:0 auto;padding:48px 24px}
-.header{text-align:center;margin-bottom:40px;padding-bottom:28px;border-bottom:1px solid rgba(201,168,76,0.2)}
+.header{text-align:center;margin-bottom:40px;padding-bottom:28px;border-bottom:1px solid #e8b84b33}
 .header h1{font-family:'Cinzel',serif;font-size:clamp(18px,3vw,26px);color:#fff;margin-bottom:8px;letter-spacing:.06em}
-.header p{font-size:16px;font-style:italic;color:rgba(232,228,240,0.6)}
-.sec{border:1px solid rgba(201,168,76,0.1);background:rgba(8,6,22,0.8);margin-bottom:20px}
-.sec-head{padding:12px 20px;background:rgba(201,168,76,0.04);border-bottom:1px solid rgba(201,168,76,0.08)}
-.sec-title{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.25em;color:rgba(201,168,76,0.7);text-transform:uppercase}
+.header p{font-size:16px;font-style:italic;color:#d8d4f099}
+.sec{border:1px solid #e8b84b1a;background:rgba(8,6,22,0.8);margin-bottom:20px}
+.sec-head{padding:12px 20px;background:#e8b84b0a;border-bottom:1px solid #e8b84b14}
+.sec-title{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.25em;color:#e8b84bb3;text-transform:uppercase}
 .sec-body{padding:24px 20px}
 /* NPS scale */
 .nps-wrap{display:flex;gap:4px;flex-wrap:wrap;justify-content:center;margin-bottom:10px}
 .nps-opt{text-align:center}
 .nps-opt input{display:none}
-.nps-opt label{display:block;width:52px;padding:12px 4px;border:1px solid rgba(201,168,76,0.15);font-family:'Cinzel',serif;font-size:13px;color:rgba(201,168,76,0.5);cursor:pointer;transition:all .2s;font-weight:600}
-.nps-opt input:checked + label{border-color:var(--gold);color:var(--gold);background:rgba(201,168,76,0.08)}
-.nps-opt label:hover{border-color:rgba(201,168,76,0.4);color:rgba(201,168,76,0.8)}
+.nps-opt label{display:block;width:52px;padding:12px 4px;border:1px solid #e8b84b26;font-family:'Cinzel',serif;font-size:15px;color:#e8b84b80;cursor:pointer;transition:all .2s;font-weight:600}
+.nps-opt input:checked + label{border-color:var(--gold);color:var(--gold);background:#e8b84b14}
+.nps-opt label:hover{border-color:#e8b84b66;color:#e8b84bcc}
 .nps-labels{display:flex;justify-content:space-between;margin-top:6px;padding:0 2px}
-.nps-labels span{font-size:11px;color:rgba(180,170,200,0.4);font-style:italic}
+.nps-labels span{font-size:11px;color:#c8c4e066;font-style:italic}
 /* Belief After scale */
 .scale{display:flex;gap:8px;flex-wrap:wrap}
 .scale-opt{flex:1;min-width:44px;text-align:center}
 .scale-opt input{display:none}
-.scale-opt label{display:block;padding:10px 4px;border:1px solid rgba(201,168,76,0.15);font-family:'Cinzel',serif;font-size:12px;color:rgba(201,168,76,0.5);cursor:pointer;transition:all .2s;font-weight:600}
-.scale-opt input:checked + label{border-color:var(--gold);color:var(--gold);background:rgba(201,168,76,0.08)}
-.scale-opt label:hover{border-color:rgba(201,168,76,0.4);color:rgba(201,168,76,0.8)}
+.scale-opt label{display:block;padding:10px 4px;border:1px solid #e8b84b26;font-family:'Cinzel',serif;font-size:12px;color:#e8b84b80;cursor:pointer;transition:all .2s;font-weight:600}
+.scale-opt input:checked + label{border-color:var(--gold);color:var(--gold);background:#e8b84b14}
+.scale-opt label:hover{border-color:#e8b84b66;color:#e8b84bcc}
 .scale-sub-labels{display:flex;justify-content:space-between;margin-top:6px}
-.scale-sub-labels span{font-size:11px;color:rgba(180,170,200,0.4);font-style:italic}
+.scale-sub-labels span{font-size:11px;color:#c8c4e066;font-style:italic}
 /* Stars */
 .stars-wrap{display:flex;justify-content:center;gap:12px;margin-bottom:12px}
-.star-btn{background:none;border:none;font-size:44px;cursor:pointer;color:rgba(201,168,76,0.2);transition:all .2s;line-height:1;padding:4px}
-.star-btn.active,.star-btn.hover{color:var(--gold);text-shadow:0 0 20px rgba(201,168,76,0.5)}
-.star-label{text-align:center;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:rgba(201,168,76,0.5);text-transform:uppercase;min-height:20px;transition:all .3s}
+.star-btn{background:none;border:none;font-size:44px;cursor:pointer;color:#e8b84b33;transition:all .2s;line-height:1;padding:4px}
+.star-btn.active,.star-btn.hover{color:var(--gold);text-shadow:0 0 20px #e8b84b80}
+.star-label{text-align:center;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#e8b84b80;text-transform:uppercase;min-height:20px;transition:all .3s}
 .fg{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
-.fg label{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.35em;color:rgba(201,168,76,0.5);text-transform:uppercase}
-.fg input,.fg textarea,.fg select{background:rgba(0,4,8,0.8);border:1px solid rgba(201,168,76,0.15);padding:10px 14px;font-family:'EB Garamond',serif;font-size:16px;color:#e8e4f0;outline:none;transition:border-color .3s;width:100%}
-.fg input:focus,.fg textarea:focus{border-color:rgba(201,168,76,0.4)}
+.fg label{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;color:#e8b84b80;text-transform:uppercase}
+.fg input,.fg textarea,.fg select{background:rgba(0,4,8,0.8);border:1px solid #e8b84b26;padding:10px 14px;font-family:'EB Garamond',serif;font-size:16px;color:#f0ecff;outline:none;transition:border-color .3s;width:100%}
+.fg input:focus,.fg textarea:focus{border-color:#e8b84b66}
 .fg textarea{min-height:120px;resize:vertical}
-.check-item{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid rgba(201,168,76,0.06)}
+.check-item{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid #e8b84b0f}
 .check-item:last-child{border-bottom:none}
 .check-item input{width:18px;height:18px;accent-color:var(--gold);flex-shrink:0;margin-top:3px;cursor:pointer}
-.check-item span{font-size:15px;color:rgba(232,228,240,0.8);line-height:1.6}
-.check-item small{display:block;font-size:13px;color:rgba(180,170,200,0.5);font-style:italic;margin-top:2px}
+.check-item span{font-size:15px;color:#d8d4f0cc;line-height:1.6}
+.check-item small{display:block;font-size:15px;color:#c8c4e080;font-style:italic;margin-top:2px}
 .submit-btn{width:100%;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.4em;color:#000;text-transform:uppercase;background:linear-gradient(135deg,var(--gold-light),var(--gold));padding:15px;cursor:pointer;border:none;transition:all .3s;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);margin-top:8px}
 .submit-btn:hover{filter:brightness(1.1)}
-.success{display:none;text-align:center;padding:56px 24px;border:1px solid rgba(201,168,76,0.2);background:rgba(8,6,22,0.8)}
+.success{display:none;text-align:center;padding:56px 24px;border:1px solid #e8b84b33;background:rgba(8,6,22,0.8)}
 .success .stars-big{font-size:40px;margin-bottom:16px;letter-spacing:4px}
 .success h2{font-family:'Cinzel',serif;font-size:22px;color:var(--gold);margin-bottom:14px}
-.success p{font-size:16px;color:rgba(232,228,240,0.7);line-height:1.8}
-footer{text-align:center;padding:32px;border-top:1px solid rgba(201,168,76,0.08);margin-top:48px}
-footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;color:rgba(180,170,200,0.2);text-transform:uppercase;line-height:2}
+.success p{font-size:16px;color:#d8d4f0b3;line-height:1.8}
+footer{text-align:center;padding:32px;border-top:1px solid #e8b84b14;margin-top:48px}
+footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#c8c4e033;text-transform:uppercase;line-height:2}
 @media(max-width:480px){.star-btn{font-size:36px;gap:8px}}
 </style>
 </head>
@@ -124,7 +124,7 @@ footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;color:rgb
     <div class="sec">
       <div class="sec-head"><span class="sec-title">What Changed For You</span></div>
       <div class="sec-body">
-        <p style="font-size:14px;color:rgba(232,228,240,0.6);margin-bottom:14px;font-style:italic">Check everything that applies after your session:</p>
+        <p style="font-size:16px;color:#d8d4f099;margin-bottom:14px;font-style:italic">Check everything that applies after your session:</p>
         <div class="check-item"><input type="checkbox" name="impact" value="Sleep improved"><span>My sleep improved</span></div>
         <div class="check-item"><input type="checkbox" name="impact" value="Less anxious or fearful"><span>I feel less anxious or fearful</span></div>
         <div class="check-item"><input type="checkbox" name="impact" value="Physical pain reduced"><span>Physical pain or heaviness reduced</span></div>
@@ -141,7 +141,7 @@ footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;color:rgb
     <div class="sec">
       <div class="sec-head"><span class="sec-title">Likelihood to Recommend</span></div>
       <div class="sec-body">
-        <p style="font-size:15px;color:rgba(232,228,240,0.65);margin-bottom:16px;line-height:1.7">How likely are you to recommend Royal Energy Alchemy to a friend or someone you care about?</p>
+        <p style="font-size:15px;color:#d8d4f0a6;margin-bottom:16px;line-height:1.7">How likely are you to recommend Royal Energy Alchemy to a friend or someone you care about?</p>
         <div class="nps-wrap" id="npsWrap">
           <div class="nps-opt"><input type="radio" name="nps" id="nps0" value="0"><label for="nps0">0</label></div>
           <div class="nps-opt"><input type="radio" name="nps" id="nps1" value="1"><label for="nps1">1</label></div>
@@ -163,7 +163,7 @@ footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;color:rgb
     <div class="sec">
       <div class="sec-head"><span class="sec-title">Belief Shift</span></div>
       <div class="sec-body">
-        <p style="font-size:15px;color:rgba(232,228,240,0.65);margin-bottom:16px;line-height:1.7">After your session, how do you rate your belief in energy work? <span style="font-style:italic;color:rgba(180,170,200,0.5)">(1 = still a skeptic, 10 = fully convinced)</span></p>
+        <p style="font-size:15px;color:#d8d4f0a6;margin-bottom:16px;line-height:1.7">After your session, how do you rate your belief in energy work? <span style="font-style:italic;color:#c8c4e080">(1 = still a skeptic, 10 = fully convinced)</span></p>
         <div class="scale">
           <div class="scale-opt"><input type="radio" name="belief_after" id="ba1" value="1"><label for="ba1">1</label></div>
           <div class="scale-opt"><input type="radio" name="belief_after" id="ba2" value="2"><label for="ba2">2</label></div>
@@ -190,14 +190,14 @@ footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;color:rgb
     </div>
 
     <button type="submit" class="submit-btn">Submit Rating →</button>
-    <p style="font-size:13px;color:rgba(180,170,200,0.4);text-align:center;margin-top:12px;font-style:italic">Daron reviews every submission before anything is posted publicly.</p>
+    <p style="font-size:15px;color:#c8c4e066;text-align:center;margin-top:12px;font-style:italic">Daron reviews every submission before anything is posted publicly.</p>
   </form>
 
   <div class="success" id="successMsg">
     <div class="stars-big" id="successStars">★★★★★</div>
     <h2>Thank You</h2>
     <p>Daron has received your rating and review. He reads every one personally.<br><br>If you gave permission to share, your testimonial will appear on the site after Daron reviews and approves it.</p>
-    <p style="margin-top:20px;font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:rgba(201,168,76,0.4);text-transform:uppercase">Royal Energy Alchemy LLC</p>
+    <p style="margin-top:20px;font-family:'Cinzel',serif;font-size:12px;letter-spacing:.3em;color:#e8b84b66;text-transform:uppercase">Royal Energy Alchemy LLC</p>
   </div>
 </div>
 

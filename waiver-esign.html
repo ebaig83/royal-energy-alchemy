@@ -7,82 +7,82 @@
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--gold:#c9a84c;--gold-light:#f0dfa0;--deep:#000408;--text:#e8e4f0}
-body{background:#0a0810;color:#e8e4f0;font-family:'EB Garamond',serif;line-height:1.7}
+:root{--gold:#e8b84b;--gold-light:#f8e090;--deep:#04020e;--text:#f0ecff}
+body{background:#0a0612;color:#f0ecff;font-family:'EB Garamond',serif;line-height:1.7}
 
 /* ── NAV ── */
-nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:18px 48px;background:rgba(0,4,10,.88);backdrop-filter:blur(14px);border-bottom:1px solid rgba(201,168,76,.07)}
-.nav-brand{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;color:rgba(201,168,76,.7);text-transform:uppercase;text-decoration:none}
-.nav-back{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:rgba(232,228,240,.45);text-transform:uppercase;text-decoration:none;transition:color .25s}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:18px 48px;background:rgba(0,4,10,.88);backdrop-filter:blur(14px);border-bottom:1px solid #e8b84b12}
+.nav-brand{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;color:#e8b84bb3;text-transform:uppercase;text-decoration:none}
+.nav-back{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.3em;color:#d8d4f073;text-transform:uppercase;text-decoration:none;transition:color .25s}
 .nav-back:hover{color:var(--gold)}
 
 .wrap{max-width:820px;margin:0 auto;padding:100px 24px 48px}
 
-.header{text-align:center;margin-bottom:48px;padding-bottom:32px;border-bottom:1px solid rgba(201,168,76,0.2)}
+.header{text-align:center;margin-bottom:48px;padding-bottom:32px;border-bottom:1px solid #e8b84b33}
 .header h1{font-family:'Cinzel',serif;font-size:clamp(20px,3vw,32px);font-weight:700;color:#fff;letter-spacing:.06em;margin-bottom:8px}
-.header p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.4em;color:rgba(201,168,76,0.7);text-transform:uppercase}
+.header p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.4em;color:#e8b84bb3;text-transform:uppercase}
 
-.sec{margin-bottom:36px;border:1px solid rgba(201,168,76,0.1);background:rgba(8,6,22,0.8)}
+.sec{margin-bottom:36px;border:1px solid #e8b84b1a;background:rgba(8,6,22,0.8)}
 .sec-head{background:#1a1410;padding:14px 20px;display:flex;align-items:center;gap:12px}
-.sec-num{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:rgba(201,168,76,0.5);text-transform:uppercase;min-width:60px}
-.sec-title{font-family:'Cinzel',serif;font-size:14px;font-weight:600;color:#e8e4f0;letter-spacing:.08em}
+.sec-num{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.3em;color:#e8b84b80;text-transform:uppercase;min-width:60px}
+.sec-title{font-family:'Cinzel',serif;font-size:16px;font-weight:600;color:#f0ecff;letter-spacing:.08em}
 .sec-body{padding:24px 20px}
 
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
 .form-row.single{grid-template-columns:1fr}
 .fg{display:flex;flex-direction:column;gap:6px}
-.fg label{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.4em;color:rgba(201,168,76,0.6);text-transform:uppercase}
-.fg input,.fg select,.fg textarea{background:rgba(0,4,8,0.8);border:1px solid rgba(201,168,76,0.15);padding:10px 14px;font-family:'EB Garamond',serif;font-size:16px;color:#e8e4f0;outline:none;transition:border-color .3s;width:100%}
-.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:rgba(201,168,76,0.4)}
+.fg label{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.4em;color:#e8b84b99;text-transform:uppercase}
+.fg input,.fg select,.fg textarea{background:rgba(0,4,8,0.8);border:1px solid #e8b84b26;padding:10px 14px;font-family:'EB Garamond',serif;font-size:16px;color:#f0ecff;outline:none;transition:border-color .3s;width:100%}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:#e8b84b66}
 .fg textarea{min-height:80px;resize:vertical}
-.fg select option{background:#080620}
+.fg select option{background:#060418}
 
 .health-table{width:100%;border-collapse:collapse}
-.health-table th{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:rgba(201,168,76,0.6);text-transform:uppercase;padding:10px 12px;text-align:left;border-bottom:1px solid rgba(201,168,76,0.15)}
+.health-table th{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.3em;color:#e8b84b99;text-transform:uppercase;padding:10px 12px;text-align:left;border-bottom:1px solid #e8b84b26}
 .health-table th:last-child,.health-table th:nth-last-child(2){text-align:center;width:80px}
-.health-table td{padding:10px 12px;border-bottom:1px solid rgba(201,168,76,0.06);font-size:15px;color:rgba(232,228,240,0.8)}
+.health-table td{padding:10px 12px;border-bottom:1px solid #e8b84b0f;font-size:15px;color:#d8d4f0cc}
 .health-table td:last-child,.health-table td:nth-last-child(2){text-align:center}
 .health-table tr:last-child td{border-bottom:none}
 .radio-group{display:flex;gap:20px;align-items:center}
 .radio-group input{width:auto;accent-color:var(--gold)}
-.radio-group label{font-size:13px;color:rgba(201,168,76,0.6);font-family:'Cinzel',serif;letter-spacing:.15em;cursor:pointer}
+.radio-group label{font-size:15px;color:#e8b84b99;font-family:'Cinzel',serif;letter-spacing:.15em;cursor:pointer}
 
-.notice{background:rgba(201,168,76,0.04);border-left:2px solid rgba(201,168,76,0.3);padding:16px 20px;margin-bottom:16px}
-.notice p{font-size:15px;color:rgba(232,228,240,0.75);line-height:1.8}
-.notice.dark{background:rgba(0,0,0,0.3);border:1px solid rgba(201,168,76,0.1);border-left:2px solid rgba(201,168,76,0.4)}
-.notice.required-notice{background:rgba(201,168,76,0.06);border:1px solid rgba(201,168,76,0.25);border-left:3px solid rgba(201,168,76,0.6);margin-bottom:20px}
-.notice.required-notice p{color:rgba(232,228,240,0.85)}
+.notice{background:#e8b84b0a;border-left:2px solid #e8b84b4d;padding:16px 20px;margin-bottom:16px}
+.notice p{font-size:15px;color:#d8d4f0bf;line-height:1.8}
+.notice.dark{background:rgba(0,0,0,0.3);border:1px solid #e8b84b1a;border-left:2px solid #e8b84b66}
+.notice.required-notice{background:#e8b84b0f;border:1px solid #e8b84b40;border-left:3px solid #e8b84b99;margin-bottom:20px}
+.notice.required-notice p{color:#d8d4f0d9}
 
-.check-item{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid rgba(201,168,76,0.06)}
+.check-item{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid #e8b84b0f}
 .check-item:last-child{border-bottom:none}
 .check-item input[type=checkbox]{width:18px;height:18px;accent-color:var(--gold);flex-shrink:0;margin-top:3px;cursor:pointer}
-.check-item .check-label{font-size:15px;color:rgba(232,228,240,0.8);line-height:1.6}
-.check-item .check-sub{font-size:13px;color:rgba(180,170,200,0.55);font-style:italic;margin-top:3px}
+.check-item .check-label{font-size:15px;color:#d8d4f0cc;line-height:1.6}
+.check-item .check-sub{font-size:15px;color:#c8c4e08c;font-style:italic;margin-top:3px}
 
 /* Required recording consent checkbox */
-.check-item.record-required{padding:14px 16px;border:1px solid rgba(201,168,76,0.25);background:rgba(201,168,76,0.04);margin-bottom:20px}
-.check-item.record-required .check-label{font-size:15px;color:rgba(232,228,240,0.88)}
+.check-item.record-required{padding:14px 16px;border:1px solid #e8b84b40;background:#e8b84b0a;margin-bottom:20px}
+.check-item.record-required .check-label{font-size:15px;color:#d8d4f0e0}
 
 /* Optional release section */
-.optional-release-header{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.38em;color:rgba(201,168,76,0.6);text-transform:uppercase;margin-bottom:12px;padding-top:16px;border-top:1px solid rgba(201,168,76,0.1)}
-.optional-note{font-size:13px;font-style:italic;color:rgba(232,228,240,0.4);line-height:1.7;margin-top:12px}
+.optional-release-header{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.38em;color:#e8b84b99;text-transform:uppercase;margin-bottom:12px;padding-top:16px;border-top:1px solid #e8b84b1a}
+.optional-note{font-size:15px;font-style:italic;color:#d8d4f066;line-height:1.7;margin-top:12px}
 
 .sig-section{margin-top:8px}
-.sig-label{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.4em;color:rgba(201,168,76,0.6);text-transform:uppercase;margin-bottom:8px;display:block}
-.sig-pad{border:1px solid rgba(201,168,76,0.2);background:rgba(0,4,8,0.6);position:relative;cursor:crosshair}
+.sig-label{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.4em;color:#e8b84b99;text-transform:uppercase;margin-bottom:8px;display:block}
+.sig-pad{border:1px solid #e8b84b33;background:rgba(0,4,8,0.6);position:relative;cursor:crosshair}
 .sig-pad canvas{display:block;width:100%;height:160px;touch-action:none}
 .sig-controls{display:flex;gap:8px;margin-top:8px}
-.sig-btn{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;text-transform:uppercase;padding:6px 16px;cursor:pointer;border:1px solid rgba(201,168,76,0.3);color:rgba(201,168,76,0.7);background:transparent;transition:all .3s}
+.sig-btn{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;text-transform:uppercase;padding:6px 16px;cursor:pointer;border:1px solid #e8b84b4d;color:#e8b84bb3;background:transparent;transition:all .3s}
 .sig-btn:hover{border-color:var(--gold);color:var(--gold)}
 .sig-type{display:flex;gap:8px;margin-bottom:12px}
-.sig-tab{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;text-transform:uppercase;padding:6px 16px;cursor:pointer;border:1px solid rgba(201,168,76,0.15);color:rgba(201,168,76,0.4);background:transparent;transition:all .3s}
-.sig-tab.active{border-color:rgba(201,168,76,0.5);color:var(--gold);background:rgba(201,168,76,0.05)}
+.sig-tab{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;text-transform:uppercase;padding:6px 16px;cursor:pointer;border:1px solid #e8b84b26;color:#e8b84b66;background:transparent;transition:all .3s}
+.sig-tab.active{border-color:#e8b84b80;color:var(--gold);background:#e8b84b0d}
 .sig-type-input{display:none}
 .sig-type-input.show{display:block}
 .sig-type-draw{display:none}
 .sig-type-draw.show{display:block}
 
-.timestamp{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.2em;color:rgba(201,168,76,0.4);text-align:center;margin-top:8px}
+.timestamp{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.2em;color:#e8b84b66;text-align:center;margin-top:8px}
 
 .final-checks{margin-bottom:24px}
 
@@ -90,45 +90,45 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
 .submit-btn:hover{filter:brightness(1.1);transform:translateY(-1px)}
 .submit-btn:disabled{opacity:0.4;cursor:not-allowed;transform:none}
 
-.success{display:none;text-align:center;padding:48px 24px;border:1px solid rgba(201,168,76,0.2);background:rgba(8,6,22,0.8)}
+.success{display:none;text-align:center;padding:48px 24px;border:1px solid #e8b84b33;background:rgba(8,6,22,0.8)}
 .success h2{font-family:'Cinzel',serif;font-size:24px;color:var(--gold);margin-bottom:16px}
-.success p{font-size:17px;color:rgba(232,228,240,0.7);line-height:1.8}
+.success p{font-size:17px;color:#d8d4f0b3;line-height:1.8}
 
-.legal-note{font-size:13px;color:rgba(180,170,200,0.5);font-style:italic;text-align:center;margin-top:16px;line-height:1.6}
+.legal-note{font-size:15px;color:#c8c4e080;font-style:italic;text-align:center;margin-top:16px;line-height:1.6}
 
-footer{text-align:center;padding:32px 24px;border-top:1px solid rgba(201,168,76,0.08);margin-top:48px}
-footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.28em;color:rgba(180,170,200,0.25);text-transform:uppercase;line-height:2}
-footer .pa-disclaimer{font-family:'EB Garamond',serif;font-size:13px;font-style:italic;letter-spacing:0;color:rgba(180,170,200,0.3);text-transform:none;max-width:640px;margin:16px auto 0;line-height:1.75}
+footer{text-align:center;padding:32px 24px;border-top:1px solid #e8b84b14;margin-top:48px}
+footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.28em;color:#c8c4e040;text-transform:uppercase;line-height:2}
+footer .pa-disclaimer{font-family:'EB Garamond',serif;font-size:15px;font-style:italic;letter-spacing:0;color:#c8c4e04d;text-transform:none;max-width:640px;margin:16px auto 0;line-height:1.75}
 
-.req{color:rgba(201,168,76,0.6);margin-left:2px}
+.req{color:#e8b84b99;margin-left:2px}
 .error{border-color:rgba(255,80,80,0.5) !important}
 
 /* Section 2 expanded subsections */
-.subsec{margin-top:24px;padding-top:20px;border-top:1px solid rgba(201,168,76,0.08)}
-.subsec-title{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.38em;color:rgba(201,168,76,0.65);text-transform:uppercase;margin-bottom:14px;display:block}
-.subsec-note{font-size:13px;font-style:italic;color:rgba(180,170,200,0.5);margin-bottom:12px;line-height:1.6}
+.subsec{margin-top:24px;padding-top:20px;border-top:1px solid #e8b84b14}
+.subsec-title{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.38em;color:#e8b84ba6;text-transform:uppercase;margin-bottom:14px;display:block}
+.subsec-note{font-size:15px;font-style:italic;color:#c8c4e080;margin-bottom:12px;line-height:1.6}
 .radio-list{display:flex;flex-direction:column;gap:6px}
-.radio-list label{display:flex;align-items:center;gap:10px;font-size:15px;color:rgba(232,228,240,0.8);cursor:pointer;padding:6px 10px;border:1px solid rgba(201,168,76,0.06);transition:border-color .2s}
-.radio-list label:hover{border-color:rgba(201,168,76,0.2)}
+.radio-list label{display:flex;align-items:center;gap:10px;font-size:15px;color:#d8d4f0cc;cursor:pointer;padding:6px 10px;border:1px solid #e8b84b0f;transition:border-color .2s}
+.radio-list label:hover{border-color:#e8b84b33}
 .radio-list input[type=radio]{accent-color:var(--gold);width:16px;height:16px;flex-shrink:0}
-.radio-list input[type=radio]:checked + span{color:#e8e4f0}
+.radio-list input[type=radio]:checked + span{color:#f0ecff}
 .check-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px}
-.check-grid label{display:flex;align-items:center;gap:10px;font-size:15px;color:rgba(232,228,240,0.8);cursor:pointer;padding:6px 10px;border:1px solid rgba(201,168,76,0.06);transition:border-color .2s}
-.check-grid label:hover{border-color:rgba(201,168,76,0.2)}
+.check-grid label{display:flex;align-items:center;gap:10px;font-size:15px;color:#d8d4f0cc;cursor:pointer;padding:6px 10px;border:1px solid #e8b84b0f;transition:border-color .2s}
+.check-grid label:hover{border-color:#e8b84b33}
 .check-grid input[type=checkbox]{accent-color:var(--gold);width:16px;height:16px;flex-shrink:0}
-.check-grid input[type=checkbox]:checked + span{color:#e8e4f0}
-.vol-note{font-size:12px;font-family:'Cinzel',serif;letter-spacing:.2em;color:rgba(201,168,76,0.35);text-transform:uppercase;margin-left:6px}
+.check-grid input[type=checkbox]:checked + span{color:#f0ecff}
+.vol-note{font-size:12px;font-family:'Cinzel',serif;letter-spacing:.2em;color:#e8b84b59;text-transform:uppercase;margin-left:6px}
 
 /* Intake scales */
 .scale-wrap{margin-top:4px}
 .scale{display:flex;gap:8px;flex-wrap:wrap}
 .scale-opt{flex:1;min-width:44px;text-align:center}
 .scale-opt input{display:none}
-.scale-opt label{display:block;padding:10px 4px;border:1px solid rgba(201,168,76,0.15);font-family:'Cinzel',serif;font-size:12px;color:rgba(201,168,76,0.5);cursor:pointer;transition:all .2s;font-weight:600}
-.scale-opt input:checked + label{border-color:var(--gold);color:var(--gold);background:rgba(201,168,76,0.08)}
-.scale-opt label:hover{border-color:rgba(201,168,76,0.4);color:rgba(201,168,76,0.8)}
+.scale-opt label{display:block;padding:10px 4px;border:1px solid #e8b84b26;font-family:'Cinzel',serif;font-size:12px;color:#e8b84b80;cursor:pointer;transition:all .2s;font-weight:600}
+.scale-opt input:checked + label{border-color:var(--gold);color:var(--gold);background:#e8b84b14}
+.scale-opt label:hover{border-color:#e8b84b66;color:#e8b84bcc}
 .scale-labels{display:flex;justify-content:space-between;margin-top:6px}
-.scale-labels span{font-size:11px;color:rgba(180,170,200,0.4);font-style:italic}
+.scale-labels span{font-size:11px;color:#c8c4e066;font-style:italic}
 
 @media(max-width:600px){
   nav{padding:14px 20px}
@@ -176,7 +176,7 @@ footer .pa-disclaimer{font-family:'EB Garamond',serif;font-size:13px;font-style:
 
         <!-- Referral source -->
         <div style="margin-bottom:16px">
-          <label style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.4em;color:rgba(201,168,76,0.6);text-transform:uppercase;display:block;margin-bottom:10px">How did you hear about Royal Energy Alchemy? <span class="req">*</span></label>
+          <label style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.4em;color:#e8b84b99;text-transform:uppercase;display:block;margin-bottom:10px">How did you hear about Royal Energy Alchemy? <span class="req">*</span></label>
           <div class="radio-list" id="referralRadios">
             <label><input type="radio" name="referral_source" value="Social Media" id="ref_social" onchange="toggleReferralOther()"><span>Social Media</span></label>
             <label><input type="radio" name="referral_source" value="Word of Mouth" id="ref_wom" onchange="toggleReferralOther()"><span>Word of Mouth</span></label>
@@ -206,7 +206,7 @@ footer .pa-disclaimer{font-family:'EB Garamond',serif;font-size:13px;font-style:
 
         <!-- Belief Before scale -->
         <div style="margin-bottom:20px">
-          <label style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.4em;color:rgba(201,168,76,0.6);text-transform:uppercase;display:block;margin-bottom:10px">How familiar are you with energy work? <span style="font-size:11px;font-style:italic;color:rgba(180,170,200,0.45);text-transform:none;letter-spacing:0;font-family:'EB Garamond',serif">(1 = never heard of it, 10 = practiced it for years)</span></label>
+          <label style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.4em;color:#e8b84b99;text-transform:uppercase;display:block;margin-bottom:10px">How familiar are you with energy work? <span style="font-size:11px;font-style:italic;color:#c8c4e073;text-transform:none;letter-spacing:0;font-family:'EB Garamond',serif">(1 = never heard of it, 10 = practiced it for years)</span></label>
           <div class="scale-wrap">
             <div class="scale">
               <div class="scale-opt"><input type="radio" name="belief_before" id="bb1" value="1"><label for="bb1">1</label></div>
@@ -226,7 +226,7 @@ footer .pa-disclaimer{font-family:'EB Garamond',serif;font-size:13px;font-style:
 
         <!-- Intake Severity scale -->
         <div style="margin-bottom:16px">
-          <label style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.4em;color:rgba(201,168,76,0.6);text-transform:uppercase;display:block;margin-bottom:10px">How intense is the concern bringing you in right now? <span style="font-size:11px;font-style:italic;color:rgba(180,170,200,0.45);text-transform:none;letter-spacing:0;font-family:'EB Garamond',serif">(1 = mild curiosity, 10 = crisis / unbearable)</span></label>
+          <label style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.4em;color:#e8b84b99;text-transform:uppercase;display:block;margin-bottom:10px">How intense is the concern bringing you in right now? <span style="font-size:11px;font-style:italic;color:#c8c4e073;text-transform:none;letter-spacing:0;font-family:'EB Garamond',serif">(1 = mild curiosity, 10 = crisis / unbearable)</span></label>
           <div class="scale-wrap">
             <div class="scale">
               <div class="scale-opt"><input type="radio" name="intake_severity" id="is1" value="1"><label for="is1">1</label></div>
@@ -254,10 +254,10 @@ footer .pa-disclaimer{font-family:'EB Garamond',serif;font-size:13px;font-style:
 
         <!-- Privacy note -->
         <div class="notice" style="margin-bottom:20px">
-          <p style="font-size:14px">This information is voluntary where indicated. It helps Daron provide the most effective session and may be used in de-identified aggregate form for research and service improvement as described in our <a href="privacy-policy.html" style="color:rgba(201,168,76,0.7)">Privacy Policy</a>.</p>
+          <p style="font-size:16px">This information is voluntary where indicated. It helps Daron provide the most effective session and may be used in de-identified aggregate form for research and service improvement as described in our <a href="privacy-policy.html" style="color:#e8b84bb3">Privacy Policy</a>.</p>
         </div>
 
-        <p style="font-size:15px;color:rgba(232,228,240,0.7);margin-bottom:20px">Please answer honestly so Daron can provide the safest and most effective session possible.</p>
+        <p style="font-size:15px;color:#d8d4f0b3;margin-bottom:20px">Please answer honestly so Daron can provide the safest and most effective session possible.</p>
 
         <!-- Basic health table -->
         <table class="health-table">
@@ -377,16 +377,16 @@ footer .pa-disclaimer{font-family:'EB Garamond',serif;font-size:13px;font-style:
       <div class="sec-head"><span class="sec-num">Section 3</span><span class="sec-title">Nature of Services & Informed Consent</span></div>
       <div class="sec-body">
         <div class="notice dark">
-          <p><strong style="color:#e8e4f0">What Royal Energy Alchemy Is:</strong> Energy Alchemy is a complementary wellness practice. Sessions may include energetic scanning, chakra balancing, parasite and cord removal, transmutation, distance healing, pain relief support, stress reduction, and spiritual coaching.</p>
+          <p><strong style="color:#f0ecff">What Royal Energy Alchemy Is:</strong> Energy Alchemy is a complementary wellness practice. Sessions may include energetic scanning, chakra balancing, parasite and cord removal, transmutation, distance healing, pain relief support, stress reduction, and spiritual coaching.</p>
         </div>
         <div class="notice dark" style="margin-top:12px">
-          <p><strong style="color:#e8e4f0">What It Is Not:</strong> Royal Energy Alchemy LLC services are not medical treatment, psychological therapy, psychiatric care, legal advice, or a substitute for licensed professional care. Daron Royal is not a licensed physician, therapist, psychologist, or counselor.</p>
+          <p><strong style="color:#f0ecff">What It Is Not:</strong> Royal Energy Alchemy LLC services are not medical treatment, psychological therapy, psychiatric care, legal advice, or a substitute for licensed professional care. Daron Royal is not a licensed physician, therapist, psychologist, or counselor.</p>
         </div>
         <div class="notice dark" style="margin-top:12px">
-          <p><strong style="color:#e8e4f0">Pennsylvania Law Notice:</strong> Under Pennsylvania law, energy healing and spiritual wellness practices are not regulated as licensed healthcare professions. Nothing in this agreement creates a healthcare provider-patient relationship. If you are experiencing a medical or psychiatric emergency, contact 911 or your licensed healthcare provider immediately.</p>
+          <p><strong style="color:#f0ecff">Pennsylvania Law Notice:</strong> Under Pennsylvania law, energy healing and spiritual wellness practices are not regulated as licensed healthcare professions. Nothing in this agreement creates a healthcare provider-patient relationship. If you are experiencing a medical or psychiatric emergency, contact 911 or your licensed healthcare provider immediately.</p>
         </div>
         <div style="margin-top:20px">
-          <p style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:rgba(201,168,76,0.6);text-transform:uppercase;margin-bottom:12px">I Acknowledge That:</p>
+          <p style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.3em;color:#e8b84b99;text-transform:uppercase;margin-bottom:12px">I Acknowledge That:</p>
           <div class="check-item"><input type="checkbox" id="c1" required><div><div class="check-label">I am participating voluntarily and may withdraw consent at any time.</div></div></div>
           <div class="check-item"><input type="checkbox" id="c2" required><div><div class="check-label">Results are not guaranteed. Energy work affects each person differently.</div></div></div>
           <div class="check-item"><input type="checkbox" id="c3" required><div><div class="check-label">I will stay hydrated before and after my session to support the body's natural release process.</div></div></div>
@@ -419,7 +419,7 @@ footer .pa-disclaimer{font-family:'EB Garamond',serif;font-size:13px;font-style:
 
         <!-- Required notice block -->
         <div class="notice required-notice">
-          <p>Royal Energy Alchemy LLC records sessions for documentation, treatment planning, AI-assisted note generation, quality assurance, client support, and service delivery purposes. <strong style="color:#e8e4f0">Recording is a required component of services provided by Royal Energy Alchemy LLC. If you do not consent to recording, please do not schedule services.</strong></p>
+          <p>Royal Energy Alchemy LLC records sessions for documentation, treatment planning, AI-assisted note generation, quality assurance, client support, and service delivery purposes. <strong style="color:#f0ecff">Recording is a required component of services provided by Royal Energy Alchemy LLC. If you do not consent to recording, please do not schedule services.</strong></p>
         </div>
 
         <!-- Single required consent checkbox -->
@@ -464,10 +464,10 @@ footer .pa-disclaimer{font-family:'EB Garamond',serif;font-size:13px;font-style:
       <div class="sec-head"><span class="sec-num">Section 6</span><span class="sec-title">Cancellation & Payment Policy</span></div>
       <div class="sec-body">
         <div class="notice dark">
-          <p><strong style="color:#e8e4f0">Booking:</strong> Full payment is required at the time of scheduling to confirm your appointment. Appointments are not confirmed until payment is received.</p>
+          <p><strong style="color:#f0ecff">Booking:</strong> Full payment is required at the time of scheduling to confirm your appointment. Appointments are not confirmed until payment is received.</p>
         </div>
         <div class="notice dark" style="margin-top:12px">
-          <p><strong style="color:#e8e4f0">Refund Policy:</strong><br>
+          <p><strong style="color:#f0ecff">Refund Policy:</strong><br>
           · Cancellation 72+ hours before: 50% refund or one-time reschedule<br>
           · Cancellation within 72 hours: non-refundable<br>
           · Same-day cancellation: non-refundable<br>
@@ -485,11 +485,11 @@ footer .pa-disclaimer{font-family:'EB Garamond',serif;font-size:13px;font-style:
       <div class="sec-head"><span class="sec-num">Section 7</span><span class="sec-title">Electronic Signature & Final Acknowledgment</span></div>
       <div class="sec-body">
         <div class="notice" style="margin-bottom:20px">
-          <p style="font-size:14px">Your electronic signature is legally binding under the E-SIGN Act (15 U.S.C. § 7001) and the Pennsylvania Electronic Transactions Act (73 P.S. § 2260.101). It carries the same legal weight as a handwritten signature.</p>
+          <p style="font-size:16px">Your electronic signature is legally binding under the E-SIGN Act (15 U.S.C. § 7001) and the Pennsylvania Electronic Transactions Act (73 P.S. § 2260.101). It carries the same legal weight as a handwritten signature.</p>
         </div>
 
         <div class="final-checks">
-          <p style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:rgba(201,168,76,0.6);text-transform:uppercase;margin-bottom:12px">By signing, I confirm that:</p>
+          <p style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.3em;color:#e8b84b99;text-transform:uppercase;margin-bottom:12px">By signing, I confirm that:</p>
           <div class="check-item"><input type="checkbox" id="fc1" required><div><div class="check-label">I have read this entire document and understand its contents. <span class="req">*</span></div></div></div>
           <div class="check-item"><input type="checkbox" id="fc2" required><div><div class="check-label">I am 18 years of age or older, or a parent/guardian signing on behalf of a minor. <span class="req">*</span></div></div></div>
           <div class="check-item"><input type="checkbox" id="fc3" required><div><div class="check-label">I am signing freely and voluntarily, without pressure or coercion. <span class="req">*</span></div></div></div>
@@ -506,12 +506,12 @@ footer .pa-disclaimer{font-family:'EB Garamond',serif;font-size:13px;font-style:
             <div class="sig-pad"><canvas id="sigCanvas" width="760" height="160"></canvas></div>
             <div class="sig-controls">
               <button type="button" class="sig-btn" onclick="clearSig()">Clear</button>
-              <span style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.2em;color:rgba(201,168,76,0.35);align-self:center">Draw your signature above</span>
+              <span style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.2em;color:#e8b84b59;align-self:center">Draw your signature above</span>
             </div>
           </div>
           <div class="sig-type-input" id="sigType">
             <div class="fg"><input type="text" id="sigTypeInput" placeholder="Type your full legal name as your signature" style="font-family:Georgia,serif;font-size:22px;font-style:italic;letter-spacing:.05em"/></div>
-            <p style="font-size:13px;color:rgba(180,170,200,0.5);font-style:italic;margin-top:8px">Typing your name constitutes a legally binding electronic signature.</p>
+            <p style="font-size:15px;color:#c8c4e080;font-style:italic;margin-top:8px">Typing your name constitutes a legally binding electronic signature.</p>
           </div>
           <div class="timestamp" id="sigTimestamp"></div>
         </div>
@@ -531,12 +531,12 @@ footer .pa-disclaimer{font-family:'EB Garamond',serif;font-size:13px;font-style:
   <div class="success" id="successMsg">
     <h2>✦ Waiver Received</h2>
     <p>Thank you. Your signed waiver has been submitted to Royal Energy Alchemy LLC.<br>A confirmation will be sent to your email. Daron will be in touch to confirm your session details.</p>
-    <div style="margin:28px auto;padding:20px 28px;border:1px solid rgba(201,168,76,0.35);background:rgba(201,168,76,0.05);max-width:420px">
-      <p style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.35em;color:rgba(201,168,76,0.6);text-transform:uppercase;margin-bottom:10px">Your Client Reference Number</p>
+    <div style="margin:28px auto;padding:20px 28px;border:1px solid #e8b84b59;background:#e8b84b0d;max-width:420px">
+      <p style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.35em;color:#e8b84b99;text-transform:uppercase;margin-bottom:10px">Your Client Reference Number</p>
       <p id="displayClientId" style="font-family:'Cinzel Decorative',serif;font-size:26px;color:var(--gold);letter-spacing:.08em;font-style:normal;margin-bottom:10px"></p>
-      <p style="font-size:14px;color:rgba(180,170,200,0.6);font-style:italic;margin:0">Save this for your records. You'll use it when returning for future sessions.</p>
+      <p style="font-size:16px;color:#c8c4e099;font-style:italic;margin:0">Save this for your records. You'll use it when returning for future sessions.</p>
     </div>
-    <p style="margin-top:8px;font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:rgba(201,168,76,0.5);text-transform:uppercase">Royal Energy Alchemy LLC · Erie, Pennsylvania</p>
+    <p style="margin-top:8px;font-family:'Cinzel',serif;font-size:12px;letter-spacing:.3em;color:#e8b84b80;text-transform:uppercase">Royal Energy Alchemy LLC · Erie, Pennsylvania</p>
   </div>
 
 </div>
@@ -545,7 +545,7 @@ footer .pa-disclaimer{font-family:'EB Garamond',serif;font-size:13px;font-style:
   <p>Royal Energy Alchemy LLC · Erie / Waterford, Pennsylvania · royalenergyalchemy@gmail.com · 814-392-2095</p>
   <p>Spiritual and energetic services are complementary wellness offerings and are not medical, legal, psychological, or financial advice.</p>
   <p class="pa-disclaimer">Pennsylvania is a two-party consent state (18 Pa. C.S. § 5703). Daron Royal recommends consulting a Pennsylvania attorney to confirm this recording policy aligns with applicable law before going live.</p>
-  <p style="margin-top:12px"><a href="/" style="color:rgba(201,168,76,.3);text-decoration:none;font-family:'Cinzel',serif;font-size:9px;letter-spacing:.3em;">← Return to site</a></p>
+  <p style="margin-top:12px"><a href="/" style="color:#e8b84b4d;text-decoration:none;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;">← Return to site</a></p>
 </footer>
 
 <script>
@@ -566,7 +566,7 @@ ctx.scale(dpr, dpr);
 canvas.style.width = '100%';
 canvas.style.height = '160px';
 
-ctx.strokeStyle = '#c9a84c';
+ctx.strokeStyle = '#e8b84b';
 ctx.lineWidth = 2;
 ctx.lineCap = 'round';
 ctx.lineJoin = 'round';

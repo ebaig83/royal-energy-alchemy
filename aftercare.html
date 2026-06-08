@@ -7,63 +7,63 @@
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--gold:#c9a84c;--gold-light:#f0dfa0;--deep:#000408;--text:#e8e4f0}
-body{background:#0a0810;color:#e8e4f0;font-family:'EB Garamond',serif;min-height:100vh}
+:root{--gold:#e8b84b;--gold-light:#f8e090;--deep:#04020e;--text:#f0ecff}
+body{background:#0a0612;color:#f0ecff;font-family:'EB Garamond',serif;min-height:100vh}
 .wrap{max-width:720px;margin:0 auto;padding:48px 24px}
-.header{text-align:center;margin-bottom:40px;padding-bottom:28px;border-bottom:1px solid rgba(201,168,76,0.2)}
-.header .badge{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.5em;color:rgba(201,168,76,0.6);text-transform:uppercase;display:inline-block;border:1px solid rgba(201,168,76,0.2);padding:5px 16px;margin-bottom:14px}
+.header{text-align:center;margin-bottom:40px;padding-bottom:28px;border-bottom:1px solid #e8b84b33}
+.header .badge{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.5em;color:#e8b84b99;text-transform:uppercase;display:inline-block;border:1px solid #e8b84b33;padding:5px 16px;margin-bottom:14px}
 .header h1{font-family:'Cinzel',serif;font-size:clamp(18px,3vw,28px);color:#fff;margin-bottom:8px;letter-spacing:.06em}
-.header p{font-size:16px;font-style:italic;color:rgba(232,228,240,0.6);max-width:480px;margin:0 auto}
-.ai-intro{background:rgba(201,168,76,0.04);border:1px solid rgba(201,168,76,0.12);padding:20px 24px;margin-bottom:32px;position:relative}
-.ai-intro::before{content:'✦';position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:#0a0810;padding:0 8px;color:var(--gold);font-size:14px}
-.ai-intro p{font-size:15px;color:rgba(232,228,240,0.75);line-height:1.8;font-style:italic}
-.ai-name{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:rgba(201,168,76,0.5);text-transform:uppercase;margin-top:10px;display:block}
-.q-block{margin-bottom:28px;border:1px solid rgba(201,168,76,0.08);background:rgba(8,6,22,0.8)}
-.q-head{padding:12px 18px;background:rgba(201,168,76,0.04);border-bottom:1px solid rgba(201,168,76,0.08)}
-.q-tag{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.35em;color:rgba(201,168,76,0.5);text-transform:uppercase}
+.header p{font-size:16px;font-style:italic;color:#d8d4f099;max-width:480px;margin:0 auto}
+.ai-intro{background:#e8b84b0a;border:1px solid #e8b84b1f;padding:20px 24px;margin-bottom:32px;position:relative}
+.ai-intro::before{content:'✦';position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:#0a0612;padding:0 8px;color:var(--gold);font-size:16px}
+.ai-intro p{font-size:15px;color:#d8d4f0bf;line-height:1.8;font-style:italic}
+.ai-name{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.3em;color:#e8b84b80;text-transform:uppercase;margin-top:10px;display:block}
+.q-block{margin-bottom:28px;border:1px solid #e8b84b14;background:rgba(8,6,22,0.8)}
+.q-head{padding:12px 18px;background:#e8b84b0a;border-bottom:1px solid #e8b84b14}
+.q-tag{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;color:#e8b84b80;text-transform:uppercase}
 .q-body{padding:18px}
-.q-text{font-size:17px;color:#e8e4f0;margin-bottom:14px;line-height:1.7}
+.q-text{font-size:17px;color:#f0ecff;margin-bottom:14px;line-height:1.7}
 .fg{display:flex;flex-direction:column;gap:6px}
-.fg label{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.35em;color:rgba(201,168,76,0.5);text-transform:uppercase}
-.fg input,.fg textarea,.fg select{background:rgba(0,4,8,0.8);border:1px solid rgba(201,168,76,0.15);padding:10px 14px;font-family:'EB Garamond',serif;font-size:16px;color:#e8e4f0;outline:none;transition:border-color .3s;width:100%}
-.fg input:focus,.fg textarea:focus,.fg select:focus{border-color:rgba(201,168,76,0.4)}
+.fg label{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;color:#e8b84b80;text-transform:uppercase}
+.fg input,.fg textarea,.fg select{background:rgba(0,4,8,0.8);border:1px solid #e8b84b26;padding:10px 14px;font-family:'EB Garamond',serif;font-size:16px;color:#f0ecff;outline:none;transition:border-color .3s;width:100%}
+.fg input:focus,.fg textarea:focus,.fg select:focus{border-color:#e8b84b66}
 .fg textarea{min-height:90px;resize:vertical}
-.fg select option{background:#080620}
+.fg select option{background:#060418}
 .scale-wrap{margin-top:4px}
 .scale{display:flex;gap:8px;flex-wrap:wrap}
 .scale-opt{flex:1;min-width:44px;text-align:center}
 .scale-opt input{display:none}
-.scale-opt label{display:block;padding:10px 4px;border:1px solid rgba(201,168,76,0.15);font-family:'Cinzel',serif;font-size:12px;color:rgba(201,168,76,0.5);cursor:pointer;transition:all .2s;font-weight:600}
-.scale-opt input:checked + label{border-color:var(--gold);color:var(--gold);background:rgba(201,168,76,0.08)}
-.scale-opt label:hover{border-color:rgba(201,168,76,0.4);color:rgba(201,168,76,0.8)}
+.scale-opt label{display:block;padding:10px 4px;border:1px solid #e8b84b26;font-family:'Cinzel',serif;font-size:12px;color:#e8b84b80;cursor:pointer;transition:all .2s;font-weight:600}
+.scale-opt input:checked + label{border-color:var(--gold);color:var(--gold);background:#e8b84b14}
+.scale-opt label:hover{border-color:#e8b84b66;color:#e8b84bcc}
 .scale-labels{display:flex;justify-content:space-between;margin-top:6px}
-.scale-labels span{font-size:11px;color:rgba(180,170,200,0.4);font-style:italic}
+.scale-labels span{font-size:11px;color:#c8c4e066;font-style:italic}
 .check-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
-.check-chip{display:flex;align-items:center;gap:6px;padding:7px 12px;border:1px solid rgba(201,168,76,0.12);cursor:pointer;font-size:14px;color:rgba(232,228,240,0.7);background:rgba(0,4,8,0.5);transition:all .2s}
+.check-chip{display:flex;align-items:center;gap:6px;padding:7px 12px;border:1px solid #e8b84b1f;cursor:pointer;font-size:16px;color:#d8d4f0b3;background:rgba(0,4,8,0.5);transition:all .2s}
 .check-chip input{width:14px;height:14px;accent-color:var(--gold);cursor:pointer}
-.check-chip:has(input:checked){border-color:rgba(201,168,76,0.4);background:rgba(201,168,76,0.06);color:#e8e4f0}
-.ai-thinking{display:none;text-align:center;padding:32px;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:rgba(201,168,76,0.5);text-transform:uppercase}
+.check-chip:has(input:checked){border-color:#e8b84b66;background:#e8b84b0f;color:#f0ecff}
+.ai-thinking{display:none;text-align:center;padding:32px;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#e8b84b80;text-transform:uppercase}
 .ai-thinking.show{display:block}
 .dot{display:inline-block;animation:blink 1.4s infinite both}
 .dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
 @keyframes blink{0%,80%,100%{opacity:0}40%{opacity:1}}
-.ai-response{display:none;background:rgba(201,168,76,0.04);border:1px solid rgba(201,168,76,0.15);padding:20px 24px;margin:20px 0}
+.ai-response{display:none;background:#e8b84b0a;border:1px solid #e8b84b26;padding:20px 24px;margin:20px 0}
 .ai-response.show{display:block}
-.ai-response p{font-size:16px;color:rgba(232,228,240,0.8);line-height:1.8;font-style:italic}
+.ai-response p{font-size:16px;color:#d8d4f0cc;line-height:1.8;font-style:italic}
 .submit-btn{width:100%;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.4em;color:#000;text-transform:uppercase;background:linear-gradient(135deg,var(--gold-light),var(--gold));padding:15px;cursor:pointer;border:none;transition:all .3s;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);margin-top:8px}
 .submit-btn:hover{filter:brightness(1.1)}
-.success{display:none;text-align:center;padding:48px 24px;border:1px solid rgba(201,168,76,0.2);background:rgba(8,6,22,0.8)}
+.success{display:none;text-align:center;padding:48px 24px;border:1px solid #e8b84b33;background:rgba(8,6,22,0.8)}
 .success h2{font-family:'Cinzel',serif;font-size:22px;color:var(--gold);margin-bottom:14px}
-.success p{font-size:16px;color:rgba(232,228,240,0.7);line-height:1.8}
+.success p{font-size:16px;color:#d8d4f0b3;line-height:1.8}
 .progress{display:flex;gap:4px;margin-bottom:32px;justify-content:center}
 .prog-step{flex:1;max-width:80px;text-align:center}
-.prog-dot{width:32px;height:32px;border-radius:50%;border:1px solid rgba(201,168,76,0.2);display:flex;align-items:center;justify-content:center;margin:0 auto 6px;font-family:'Cinzel',serif;font-size:10px;color:rgba(201,168,76,0.4)}
-.prog-dot.active{border-color:var(--gold);color:var(--gold);background:rgba(201,168,76,0.08)}
-.prog-dot.done{background:rgba(201,168,76,0.15);border-color:var(--gold);color:var(--gold)}
-.prog-label{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.2em;color:rgba(201,168,76,0.3);text-transform:uppercase}
-.prog-label.active{color:rgba(201,168,76,0.7)}
-footer{text-align:center;padding:32px 24px;border-top:1px solid rgba(201,168,76,0.08);margin-top:48px}
-footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;color:rgba(180,170,200,0.2);text-transform:uppercase;line-height:2}
+.prog-dot{width:32px;height:32px;border-radius:50%;border:1px solid #e8b84b33;display:flex;align-items:center;justify-content:center;margin:0 auto 6px;font-family:'Cinzel',serif;font-size:12px;color:#e8b84b66}
+.prog-dot.active{border-color:var(--gold);color:var(--gold);background:#e8b84b14}
+.prog-dot.done{background:#e8b84b26;border-color:var(--gold);color:var(--gold)}
+.prog-label{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.2em;color:#e8b84b4d;text-transform:uppercase}
+.prog-label.active{color:#e8b84bb3}
+footer{text-align:center;padding:32px 24px;border-top:1px solid #e8b84b14;margin-top:48px}
+footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#c8c4e033;text-transform:uppercase;line-height:2}
 @media(max-width:600px){.wrap{padding:24px 16px}.scale{gap:4px}}
 </style>
 </head>
@@ -191,7 +191,7 @@ footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;color:rgb
       <div class="q-block">
         <div class="q-head"><span class="q-tag">Belief Shift · 24-Hour Only</span></div>
         <div class="q-body">
-          <div class="q-text">Now that you've experienced a session, how do you rate your belief in energy work? <span style="font-style:italic;font-size:15px;color:rgba(180,170,200,0.5)">(1 = still skeptical, 10 = fully convinced)</span></div>
+          <div class="q-text">Now that you've experienced a session, how do you rate your belief in energy work? <span style="font-style:italic;font-size:15px;color:#c8c4e080">(1 = still skeptical, 10 = fully convinced)</span></div>
           <div class="scale-wrap">
             <div class="scale">
               <div class="scale-opt"><input type="radio" name="belief_after" id="ba1" value="1"><label for="ba1">1</label></div>
@@ -226,7 +226,7 @@ footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;color:rgb
   <div class="success" id="successMsg">
     <h2>✦ Check-In Received</h2>
     <p>Daron has your update. He reviews every check-in personally and will follow up if anything needs attention.<br><br>Keep tracking how you feel. Your next check-in will arrive on schedule.</p>
-    <p style="margin-top:20px;font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:rgba(201,168,76,0.4);text-transform:uppercase">Royal Energy Alchemy LLC</p>
+    <p style="margin-top:20px;font-family:'Cinzel',serif;font-size:12px;letter-spacing:.3em;color:#e8b84b66;text-transform:uppercase">Royal Energy Alchemy LLC</p>
   </div>
 </div>
 

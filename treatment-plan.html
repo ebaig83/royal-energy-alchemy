@@ -7,110 +7,110 @@
 <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet"/>
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
-  :root{--gold:rgb(201,168,76);--gold-dim:rgba(201,168,76,0.4);--deep:#00040a;--text:#e8e4f0;--blue:rgba(68,136,255,0.85)}
+  :root{--gold:rgb(232,184,75);--gold-dim:#e8b84b66;--deep:#04020e;--text:#f0ecff;--blue:rgba(68,136,255,0.85)}
   body{background:var(--deep);color:var(--text);font-family:'EB Garamond',serif;min-height:100vh;-webkit-font-smoothing:antialiased}
 
   /* ── NAV ── */
-  nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:20px 48px;background:rgba(0,4,10,.88);backdrop-filter:blur(14px);border-bottom:1px solid rgba(201,168,76,.07)}
-  .nav-brand{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;color:rgba(201,168,76,.7);text-transform:uppercase;text-decoration:none}
-  .nav-back{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:rgba(232,228,240,.45);text-transform:uppercase;text-decoration:none;transition:color .25s}
+  nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:20px 48px;background:rgba(0,4,10,.88);backdrop-filter:blur(14px);border-bottom:1px solid #e8b84b12}
+  .nav-brand{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;color:#e8b84bb3;text-transform:uppercase;text-decoration:none}
+  .nav-back{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.3em;color:#d8d4f073;text-transform:uppercase;text-decoration:none;transition:color .25s}
   .nav-back:hover{color:var(--gold)}
 
   /* ── HERO BAND ── */
-  .page-hero{padding:130px 48px 64px;text-align:center;border-bottom:1px solid rgba(201,168,76,.08);background:radial-gradient(ellipse at 50% 0%,rgba(10,15,45,.95) 0%,var(--deep) 75%);position:relative;overflow:hidden}
+  .page-hero{padding:130px 48px 64px;text-align:center;border-bottom:1px solid #e8b84b14;background:radial-gradient(ellipse at 50% 0%,rgba(10,15,45,.95) 0%,var(--deep) 75%);position:relative;overflow:hidden}
   .page-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 40% at 50% 70%,rgba(68,136,255,.04) 0%,transparent 70%);pointer-events:none}
-  .sec-label{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.5em;color:var(--gold);text-transform:uppercase;display:block;margin-bottom:14px}
+  .sec-label{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.5em;color:var(--gold);text-transform:uppercase;display:block;margin-bottom:14px}
   h1{font-family:'Cinzel Decorative',serif;font-size:clamp(22px,3.5vw,42px);font-weight:400;color:var(--text);margin-bottom:18px;line-height:1.15}
-  .hero-sub{font-family:'EB Garamond',serif;font-size:17px;font-style:italic;color:rgba(232,228,240,.5);line-height:1.8;max-width:580px;margin:0 auto}
+  .hero-sub{font-family:'EB Garamond',serif;font-size:17px;font-style:italic;color:#d8d4f080;line-height:1.8;max-width:580px;margin:0 auto}
 
   /* ── LAYOUT ── */
   .plan-wrap{max-width:820px;margin:0 auto;padding:64px 48px 100px}
 
   /* ── CLIENT INFO BLOCK ── */
-  .client-block{border:1px solid rgba(201,168,76,.14);background:rgba(6,4,18,.7);padding:32px 36px;margin-bottom:48px}
+  .client-block{border:1px solid #e8b84b24;background:rgba(6,4,18,.7);padding:32px 36px;margin-bottom:48px}
   .client-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:20px}
-  .client-field label{font-family:'Cinzel',serif;font-size:8.5px;letter-spacing:.38em;color:rgba(201,168,76,.5);text-transform:uppercase;display:block;margin-bottom:6px}
-  .client-field p{font-size:17px;color:rgba(232,228,240,.85);line-height:1.4}
-  .client-field p.blank{border-bottom:1px solid rgba(201,168,76,.14);min-height:26px}
+  .client-field label{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.38em;color:#e8b84b80;text-transform:uppercase;display:block;margin-bottom:6px}
+  .client-field p{font-size:17px;color:#d8d4f0d9;line-height:1.4}
+  .client-field p.blank{border-bottom:1px solid #e8b84b24;min-height:26px}
 
   /* ── SECTION HEADERS ── */
   .plan-section{margin-bottom:52px}
   .plan-section-header{display:flex;align-items:center;gap:18px;margin-bottom:24px}
-  .plan-section-num{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.4em;color:rgba(201,168,76,.4);text-transform:uppercase;flex-shrink:0}
-  .plan-section-title{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.38em;color:rgba(201,168,76,.85);text-transform:uppercase}
-  .plan-section-line{flex:1;height:1px;background:linear-gradient(to right,rgba(201,168,76,.18),transparent)}
+  .plan-section-num{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.4em;color:#e8b84b66;text-transform:uppercase;flex-shrink:0}
+  .plan-section-title{font-family:'Cinzel',serif;font-size:15px;letter-spacing:.38em;color:#e8b84bd9;text-transform:uppercase}
+  .plan-section-line{flex:1;height:1px;background:linear-gradient(to right,#e8b84b2e,transparent)}
 
   /* ── BODY TEXT ── */
   .plan-body{font-size:16px;line-height:1.88;color:rgba(232,228,240,.70);margin-bottom:14px}
-  .plan-body strong{color:rgba(232,228,240,.9);font-weight:500;font-style:normal}
+  .plan-body strong{color:#d8d4f0e6;font-weight:500;font-style:normal}
 
   /* ── SERVICE CARD (recommended) ── */
-  .rec-card{border:1px solid rgba(201,168,76,.22);background:rgba(201,168,76,.04);padding:24px 28px;margin-bottom:20px;display:flex;align-items:flex-start;gap:20px}
-  .rec-card-badge{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.35em;color:rgba(201,168,76,.55);text-transform:uppercase;border:1px solid rgba(201,168,76,.22);padding:4px 10px;white-space:nowrap;flex-shrink:0;margin-top:3px}
-  .rec-card-name{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.2em;color:rgba(232,228,240,.9);margin-bottom:6px}
-  .rec-card-desc{font-size:15px;line-height:1.75;color:rgba(232,228,240,.6)}
+  .rec-card{border:1px solid #e8b84b38;background:#e8b84b0a;padding:24px 28px;margin-bottom:20px;display:flex;align-items:flex-start;gap:20px}
+  .rec-card-badge{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.35em;color:#e8b84b8c;text-transform:uppercase;border:1px solid #e8b84b38;padding:4px 10px;white-space:nowrap;flex-shrink:0;margin-top:3px}
+  .rec-card-name{font-family:'Cinzel',serif;font-size:15px;letter-spacing:.2em;color:#d8d4f0e6;margin-bottom:6px}
+  .rec-card-desc{font-size:15px;line-height:1.75;color:#d8d4f099}
   .rec-card-price{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:var(--gold);margin-top:10px}
 
   /* ── TIMELINE ── */
   .timeline{position:relative;padding-left:0}
   .tl-row{display:flex;gap:24px;margin-bottom:24px;align-items:flex-start}
-  .tl-dot{width:44px;height:44px;border-radius:50%;border:1px solid rgba(201,168,76,.28);background:rgba(0,4,8,.95);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-  .tl-dot span{font-family:'Cinzel',serif;font-size:7.5px;letter-spacing:.1em;color:var(--gold)}
+  .tl-dot{width:44px;height:44px;border-radius:50%;border:1px solid #e8b84b47;background:rgba(0,4,8,.95);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .tl-dot span{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.1em;color:var(--gold)}
   .tl-content{padding-top:10px}
-  .tl-title{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.28em;color:rgba(232,228,240,.85);text-transform:uppercase;margin-bottom:6px}
-  .tl-body{font-size:15px;line-height:1.78;color:rgba(232,228,240,.6)}
+  .tl-title{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.28em;color:#d8d4f0d9;text-transform:uppercase;margin-bottom:6px}
+  .tl-body{font-size:15px;line-height:1.78;color:#d8d4f099}
 
   /* ── HOME AFTERCARE PROTOCOL ── */
-  .aftercare-intro{font-size:16px;font-style:italic;line-height:1.85;color:rgba(232,228,240,.6);margin-bottom:32px}
+  .aftercare-intro{font-size:16px;font-style:italic;line-height:1.85;color:#d8d4f099;margin-bottom:32px}
 
   .hap-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 
-  .hap-card{border:1px solid rgba(201,168,76,.14);background:rgba(4,3,14,.75);padding:28px 26px;position:relative;overflow:hidden;transition:border-color .3s}
-  .hap-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(to right,rgba(201,168,76,.5),rgba(68,136,255,.3),transparent)}
-  .hap-card:hover{border-color:rgba(201,168,76,.28)}
+  .hap-card{border:1px solid #e8b84b24;background:rgba(4,3,14,.75);padding:28px 26px;position:relative;overflow:hidden;transition:border-color .3s}
+  .hap-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(to right,#e8b84b80,rgba(68,136,255,.3),transparent)}
+  .hap-card:hover{border-color:#e8b84b47}
 
   .hap-icon{font-size:22px;margin-bottom:12px;display:block}
-  .hap-area{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.45em;color:rgba(201,168,76,.45);text-transform:uppercase;margin-bottom:4px;display:block}
-  .hap-name{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.22em;color:rgba(232,228,240,.9);text-transform:uppercase;margin-bottom:14px;display:block}
-  .hap-body{font-size:15px;line-height:1.82;color:rgba(232,228,240,.62)}
+  .hap-area{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.45em;color:#e8b84b73;text-transform:uppercase;margin-bottom:4px;display:block}
+  .hap-name{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.22em;color:#d8d4f0e6;text-transform:uppercase;margin-bottom:14px;display:block}
+  .hap-body{font-size:15px;line-height:1.82;color:#d8d4f09e}
   .hap-body ul{padding-left:18px;margin-top:8px}
-  .hap-body li{margin-bottom:6px;color:rgba(232,228,240,.62)}
-  .hap-body strong{color:rgba(232,228,240,.85);font-weight:500;font-style:normal}
+  .hap-body li{margin-bottom:6px;color:#d8d4f09e}
+  .hap-body strong{color:#d8d4f0d9;font-weight:500;font-style:normal}
 
-  .affirmation-block{margin-top:12px;padding:12px 16px;border-left:2px solid rgba(201,168,76,.3);background:rgba(201,168,76,.03)}
-  .affirmation-block p{font-style:italic;font-size:15px;color:rgba(201,168,76,.75);line-height:1.7}
+  .affirmation-block{margin-top:12px;padding:12px 16px;border-left:2px solid #e8b84b4d;background:rgba(201,168,76,.03)}
+  .affirmation-block p{font-style:italic;font-size:15px;color:#e8b84bbf;line-height:1.7}
 
   /* ── CRYSTALS LIST ── */
   .crystal-list{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
-  .crystal-item{display:flex;align-items:center;gap:10px;font-size:14px;color:rgba(232,228,240,.65)}
-  .crystal-dot{width:6px;height:6px;border-radius:50%;background:rgba(201,168,76,.5);flex-shrink:0}
+  .crystal-item{display:flex;align-items:center;gap:10px;font-size:16px;color:#d8d4f0a6}
+  .crystal-dot{width:6px;height:6px;border-radius:50%;background:#e8b84b80;flex-shrink:0}
 
   /* ── THERAPY REFERRAL ── */
   .referral-box{border:1px solid rgba(68,136,255,.18);background:rgba(68,136,255,.03);padding:28px 32px;margin-top:0}
   .referral-box h3{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;color:rgba(68,136,255,.7);text-transform:uppercase;margin-bottom:12px}
-  .referral-box p{font-size:15px;line-height:1.8;color:rgba(232,228,240,.6);margin-bottom:10px}
+  .referral-box p{font-size:15px;line-height:1.8;color:#d8d4f099;margin-bottom:10px}
   .referral-box p:last-child{margin-bottom:0}
   .referral-link{color:rgba(68,136,255,.75);text-decoration:underline;text-underline-offset:3px}
 
   /* ── NOTES AREA ── */
   .notes-area{border:1px solid rgba(201,168,76,.10);background:rgba(6,4,18,.5);padding:24px 28px;min-height:140px}
-  .notes-area p{font-size:15px;color:rgba(232,228,240,.3);font-style:italic}
+  .notes-area p{font-size:15px;color:#d8d4f04d;font-style:italic}
 
   /* ── PRINT BUTTON ── */
   .actions{display:flex;gap:16px;margin-top:48px;justify-content:center;flex-wrap:wrap}
-  .btn-gold{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.35em;color:#000;text-transform:uppercase;text-decoration:none;background:linear-gradient(135deg,#f0dfa0,var(--gold));padding:14px 36px;border:none;cursor:pointer;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);display:inline-block;transition:filter .25s,transform .25s}
+  .btn-gold{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.35em;color:#000;text-transform:uppercase;text-decoration:none;background:linear-gradient(135deg,#f8e090,var(--gold));padding:14px 36px;border:none;cursor:pointer;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);display:inline-block;transition:filter .25s,transform .25s}
   .btn-gold:hover{filter:brightness(1.1);transform:translateY(-2px)}
-  .btn-outline{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.35em;color:rgba(201,168,76,.7);text-transform:uppercase;text-decoration:none;border:1px solid rgba(201,168,76,.35);padding:13px 36px;display:inline-block;transition:background .25s,border-color .25s;background:transparent}
-  .btn-outline:hover{background:rgba(201,168,76,.07);border-color:rgba(201,168,76,.65)}
+  .btn-outline{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.35em;color:#e8b84bb3;text-transform:uppercase;text-decoration:none;border:1px solid #e8b84b59;padding:13px 36px;display:inline-block;transition:background .25s,border-color .25s;background:transparent}
+  .btn-outline:hover{background:#e8b84b12;border-color:#e8b84ba6}
 
   /* ── DIVIDER ── */
   .rit{display:flex;align-items:center;gap:20px;padding:0;opacity:.4;margin-bottom:36px}
-  .rit::before,.rit::after{content:'';flex:1;height:1px;background:linear-gradient(to right,transparent,rgba(201,168,76,.3),transparent)}
-  .rit span{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.45em;color:var(--gold);white-space:nowrap}
+  .rit::before,.rit::after{content:'';flex:1;height:1px;background:linear-gradient(to right,transparent,#e8b84b4d,transparent)}
+  .rit span{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.45em;color:var(--gold);white-space:nowrap}
 
   /* ── FOOTER ── */
-  footer{padding:32px 48px;border-top:1px solid rgba(201,168,76,.07);text-align:center}
-  footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.28em;color:rgba(180,170,200,.2);text-transform:uppercase;line-height:2.2}
+  footer{padding:32px 48px;border-top:1px solid #e8b84b12;text-align:center}
+  footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.28em;color:rgba(180,170,200,.2);text-transform:uppercase;line-height:2.2}
 
   /* ── PRINT STYLES ── */
   @media print{
@@ -224,16 +224,16 @@
 
     <div class="rec-card" style="display:grid;grid-template-columns:repeat(3,1fr);gap:0;padding:0;overflow:hidden">
       <div style="padding:20px 22px;border-right:1px solid rgba(201,168,76,.10)">
-        <label style="font-family:'Cinzel',serif;font-size:8px;letter-spacing:.4em;color:rgba(201,168,76,.45);text-transform:uppercase;display:block;margin-bottom:8px">Plan Length</label>
-        <p style="font-size:17px;color:rgba(232,228,240,.85)">[ Duration ]</p>
+        <label style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.4em;color:#e8b84b73;text-transform:uppercase;display:block;margin-bottom:8px">Plan Length</label>
+        <p style="font-size:17px;color:#d8d4f0d9">[ Duration ]</p>
       </div>
       <div style="padding:20px 22px;border-right:1px solid rgba(201,168,76,.10)">
-        <label style="font-family:'Cinzel',serif;font-size:8px;letter-spacing:.4em;color:rgba(201,168,76,.45);text-transform:uppercase;display:block;margin-bottom:8px">Sessions</label>
-        <p style="font-size:17px;color:rgba(232,228,240,.85)">[ Count ]</p>
+        <label style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.4em;color:#e8b84b73;text-transform:uppercase;display:block;margin-bottom:8px">Sessions</label>
+        <p style="font-size:17px;color:#d8d4f0d9">[ Count ]</p>
       </div>
       <div style="padding:20px 22px">
-        <label style="font-family:'Cinzel',serif;font-size:8px;letter-spacing:.4em;color:rgba(201,168,76,.45);text-transform:uppercase;display:block;margin-bottom:8px">Frequency</label>
-        <p style="font-size:17px;color:rgba(232,228,240,.85)">[ Cadence ]</p>
+        <label style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.4em;color:#e8b84b73;text-transform:uppercase;display:block;margin-bottom:8px">Frequency</label>
+        <p style="font-size:17px;color:#d8d4f0d9">[ Cadence ]</p>
       </div>
     </div>
   </div>
@@ -348,7 +348,7 @@
           <div class="crystal-list">
             <div class="crystal-item"><div class="crystal-dot"></div><span><strong>Black Tourmaline</strong> — protection</span></div>
             <div class="crystal-item"><div class="crystal-dot" style="background:rgba(220,220,255,.6)"></div><span><strong>Selenite</strong> — clearing</span></div>
-            <div class="crystal-item"><div class="crystal-dot" style="background:rgba(30,30,30,.9);border:1px solid rgba(201,168,76,.3)"></div><span><strong>Obsidian</strong> — shielding</span></div>
+            <div class="crystal-item"><div class="crystal-dot" style="background:rgba(30,30,30,.9);border:1px solid #e8b84b4d"></div><span><strong>Obsidian</strong> — shielding</span></div>
             <div class="crystal-item"><div class="crystal-dot" style="background:rgba(160,100,220,.7)"></div><span><strong>Amethyst</strong> — spiritual protection</span></div>
           </div>
           <p style="margin-top:12px">Place at <strong>bedroom corners</strong> or carry on your person. Cleanse crystals <strong>weekly</strong> with salt water or moonlight.</p>
@@ -390,7 +390,7 @@
 
   <!-- CONTACT REMINDER -->
   <div style="text-align:center;margin-bottom:40px">
-    <p style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.35em;color:rgba(201,168,76,.45);text-transform:uppercase;line-height:2.4">Questions between sessions<br><span style="color:rgba(201,168,76,.65)">royalenergyalchemy@gmail.com &nbsp;·&nbsp; 814-392-2095</span></p>
+    <p style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;color:#e8b84b73;text-transform:uppercase;line-height:2.4">Questions between sessions<br><span style="color:#e8b84ba6">royalenergyalchemy@gmail.com &nbsp;·&nbsp; 814-392-2095</span></p>
   </div>
 
   <!-- ACTIONS -->
@@ -405,7 +405,7 @@
 <footer>
   <p>Royal Energy Alchemy LLC &nbsp;·&nbsp; Erie / Waterford, Pennsylvania &nbsp;·&nbsp; Distance Sessions Available</p>
   <p>Spiritual and energetic services are complementary wellness offerings and are not medical, legal, psychological, or financial advice.</p>
-  <p style="margin-top:6px"><a href="/" style="color:rgba(201,168,76,.3);text-decoration:none;font-family:'Cinzel',serif;font-size:9px;letter-spacing:.3em;">← Return to Site</a></p>
+  <p style="margin-top:6px"><a href="/" style="color:#e8b84b4d;text-decoration:none;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;">← Return to Site</a></p>
 </footer>
 
 </body>
