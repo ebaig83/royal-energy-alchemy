@@ -120,6 +120,7 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#c
     <button class="tab" onclick="showTab('sessions')">Session Log</button>
     <button class="tab" onclick="showTab('clients')">Clients</button>
     <button class="tab" onclick="showTab('analytics')">Analytics</button>
+    <button class="tab" onclick="showTab('booking')">Booking</button>
   </div>
 
   <!-- RATINGS TAB -->
@@ -547,10 +548,49 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#c
     </div>
 
   </div>
+
+  <!-- BOOKING TAB -->
+  <div class="tab-content" id="tab-booking">
+
+    <!-- Calendar recommendation -->
+    <div class="section-title">Booking Calendar — Choose One</div>
+    <div class="card" style="margin-bottom:16px">
+      <p style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#22c98acc;text-transform:uppercase;margin-bottom:12px">★ Recommended · TidyCal</p>
+      <p style="font-size:16px;color:#d8d4f0;line-height:1.8"><strong style="color:#f0ecff">TidyCal</strong> — $29 one-time (lifetime). Clean embed iframe, Stripe + PayPal built in, custom session types, 1-click booking. Best value for a solo practitioner. No monthly fees ever. <a href="https://tidycal.com" target="_blank" style="color:#e8b84bcc">tidycal.com</a></p>
+    </div>
+    <div class="card" style="margin-bottom:16px;opacity:.8">
+      <p style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#e8b84b99;text-transform:uppercase;margin-bottom:10px">Option 2 · Calendly</p>
+      <p style="font-size:16px;color:#d8d4f0;line-height:1.8"><strong style="color:#f0ecff">Calendly Free</strong> — $0 forever, 1 event type. Or $10/month for multiple types + payments. Great brand recognition, very easy to embed. No payment on free tier. <a href="https://calendly.com" target="_blank" style="color:#e8b84bcc">calendly.com</a></p>
+    </div>
+    <div class="card" style="margin-bottom:16px;opacity:.8">
+      <p style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#e8b84b99;text-transform:uppercase;margin-bottom:10px">Option 3 · Square Appointments</p>
+      <p style="font-size:16px;color:#d8d4f0;line-height:1.8"><strong style="color:#f0ecff">Square Appointments</strong> — Free for individuals, Square payment processing built in. Best if Daron already uses Square. Embed available but less customizable. <a href="https://squareup.com/us/en/appointments" target="_blank" style="color:#e8b84bcc">squareup.com</a></p>
+    </div>
+    <div class="card" style="margin-bottom:28px;opacity:.8">
+      <p style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#e8b84b99;text-transform:uppercase;margin-bottom:10px">Option 4 · Acuity Scheduling</p>
+      <p style="font-size:16px;color:#d8d4f0;line-height:1.8"><strong style="color:#f0ecff">Acuity</strong> — $16/month entry. Most powerful: intake forms, packages, subscriptions. Overkill for now but worth it if the practice scales. <a href="https://acuityscheduling.com" target="_blank" style="color:#e8b84bcc">acuityscheduling.com</a></p>
+    </div>
+
+    <!-- Calendar embed placeholder -->
+    <div class="section-title">Live Booking Widget</div>
+    <div class="card" id="calendarEmbedCard" style="margin-bottom:24px;text-align:center;padding:48px 24px">
+      <p style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.4em;color:#e8b84b55;text-transform:uppercase;margin-bottom:16px">Awaiting Calendar Selection</p>
+      <p style="font-size:16px;color:#c8c4e0;font-style:italic;line-height:1.8">Once Daron picks a calendar tool, paste the embed <code style="font-family:monospace;font-size:13px;background:#e8b84b0d;padding:2px 6px;color:#e8b84bcc">&lt;iframe&gt;</code> code here and it will appear on both this dashboard and the public site.</p>
+      <!-- PASTE CALENDAR EMBED BELOW THIS LINE -->
+      <!-- <iframe src="https://tidycal.com/daron/..." ...></iframe> -->
+    </div>
+
+    <div class="card" style="margin-bottom:0;background:#22c98a08;border-color:#22c98a22">
+      <p style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#22c98a99;text-transform:uppercase;margin-bottom:10px">Next Steps</p>
+      <p style="font-size:16px;color:#c8c4e0;line-height:1.9">1. Pick TidyCal or Calendly above &nbsp;·&nbsp; 2. Set up your session types + prices &nbsp;·&nbsp; 3. Copy the embed code &nbsp;·&nbsp; 4. Paste it in this file above the comment line &nbsp;·&nbsp; 5. The widget will appear here and on index.html automatically.</p>
+    </div>
+
+  </div>
 </div>
 
 <footer><p>Royal Energy Alchemy LLC · Practitioner Portal · Private</p></footer>
 
+<script src="clients-data.js"></script>
 <script>
 function showTab(name) {
   document.querySelectorAll('.tab,.tab-content').forEach(el => el.classList.remove('active'));
@@ -575,14 +615,40 @@ function rejectReview(id) {
 }
 
 function updateStats() {
-  const pending = document.querySelectorAll('.badge.pending').length;
+  const pending  = document.querySelectorAll('.badge.pending').length;
   const approved = document.querySelectorAll('.badge.approved').length;
-  document.getElementById('statPending').textContent = pending;
+  document.getElementById('statPending').textContent  = pending;
   document.getElementById('statApproved').textContent = approved;
-  document.getElementById('statAvg').textContent = '4.8';
+  document.getElementById('statAvg').textContent      = '4.8';
   document.getElementById('statCheckins').textContent = '3';
-  document.getElementById('statRevenue').textContent = '$2,340';
-  document.getElementById('statNps').textContent = '+72';
+
+  // Pull live figures from clients-data.js if available
+  if (typeof REA_DATA !== 'undefined' && REA_DATA.computed) {
+    const c = REA_DATA.computed;
+    document.getElementById('statRevenue').textContent      = '$' + c.revenue.toLocaleString();
+    document.getElementById('statActiveClients').textContent= c.totalClients;
+    document.getElementById('statTotalClients').textContent = c.sessCount + ' total sessions';
+    document.getElementById('statRepeatRate').textContent   = c.repeatRate + '%';
+    // NPS, cancel, no-show, follow-up remain demo until forms feed real data
+    document.getElementById('statNps').textContent          = '+72';
+    document.getElementById('statCancelRate').textContent   = '14%';
+    document.getElementById('statNoShow').textContent       = '6%';
+    document.getElementById('statFollowUp').textContent     = '78%';
+
+    // Update Analytics revenue block with real numbers
+    const revEls = document.querySelectorAll('#tab-analytics .stat-val');
+    // Only patch the first analytics grid (Revenue section)
+    const analyticsRevGrid = document.querySelector('#tab-analytics');
+    if (analyticsRevGrid) {
+      const statVals = analyticsRevGrid.querySelectorAll('.stat .stat-val');
+      if (statVals[0]) statVals[0].textContent = '$' + c.revenue.toLocaleString();
+      if (statVals[1]) statVals[1].textContent = c.sessCount;
+      if (statVals[2]) statVals[2].textContent = '$' + c.avgPerSession;
+    }
+  } else {
+    document.getElementById('statRevenue').textContent = '$2,340';
+    document.getElementById('statNps').textContent     = '+72';
+  }
 }
 
 updateStats();
