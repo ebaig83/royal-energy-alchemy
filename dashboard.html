@@ -637,8 +637,12 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#d
     <!-- UPCOMING APPOINTMENTS -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px">
       <div class="section-title" style="margin:0">Upcoming Appointments</div>
-      <button class="action-btn approve" onclick="toggleApptForm()">+ Add Appointment</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="action-btn view" id="gcalBtn" onclick="gcalConnect()" style="font-size:10px">🗓 Connect Google Calendar</button>
+        <button class="action-btn approve" onclick="toggleApptForm()">+ Add Appointment</button>
+      </div>
     </div>
+    <div id="gcalStatus" style="margin-bottom:12px;font-family:'Cinzel',serif;font-size:10px;letter-spacing:.25em;color:#22c98a88;text-transform:uppercase"></div>
 
     <div id="apptFormWrap" style="display:none" class="appt-form-wrap">
       <div class="appt-form-grid">
@@ -666,7 +670,24 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#d
       </div>
     </div>
 
-    <div id="upcomingList" style="margin-bottom:24px"></div>
+    <div id="upcomingList" style="margin-bottom:16px"></div>
+
+    <div id="gcalPushAllWrap" style="margin-bottom:24px">
+      <button class="action-btn view" onclick="gcalPushAll()" style="font-size:10px">📅 Push All Upcoming to Google Calendar</button>
+    </div>
+
+    <!-- Google Calendar Setup Instructions -->
+    <div id="gcalSetupNote" style="display:none;margin-bottom:24px" class="card">
+      <p style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#e8b84b99;text-transform:uppercase;margin-bottom:12px">Google Calendar Setup — One-Time</p>
+      <ol style="font-size:15px;color:#dddaeecc;line-height:2.2;padding-left:20px">
+        <li>Go to <a href="https://console.cloud.google.com/" target="_blank" style="color:#e8b84bcc">console.cloud.google.com</a> and create a project</li>
+        <li>Enable the <strong style="color:#f0ecff">Google Calendar API</strong></li>
+        <li>Create an <strong style="color:#f0ecff">OAuth 2.0 Client ID</strong> (Web Application type)</li>
+        <li>Add <code style="color:#e8b84b;background:#e8b84b11;padding:1px 6px">https://royal-energy-alchemy.netlify.app</code> as an Authorized JavaScript Origin</li>
+        <li>Copy the Client ID and paste it into <code style="color:#e8b84b;background:#e8b84b11;padding:1px 6px">GCAL_CLIENT_ID</code> in dashboard.html</li>
+      </ol>
+      <p style="font-size:14px;color:#dddaee88;margin-top:12px;font-style:italic">This only needs to be done once. After that, the Connect button will work every time.</p>
+    </div>
 
     <div class="section-title">Booking System</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;background:#e8b84b14;margin-bottom:20px">
@@ -1263,20 +1284,73 @@ function saveAppt() {
 }
 function deleteAppt(id) {
   saveAppts(getAppts().filter(a => a.id !== id));
-  renderUpcoming();
-  updateCapacityStats();
+  renderUpcoming(); updateCapacityStats();
 }
+
+function openEditAppt(id) {
+  const appts = getAppts();
+  const a = appts.find(x => x.id === id);
+  if (!a) return;
+  const el = document.getElementById('edit_'+id);
+  if (!el) return;
+  el.innerHTML = `
+    <div class="appt-form-wrap" style="margin-top:10px;padding:14px">
+      <div class="appt-form-grid">
+        <div><label style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b99;text-transform:uppercase;display:block;margin-bottom:6px">Client</label>
+          <input class="appt-input" id="ed_client_${id}" value="${a.client||''}"></div>
+        <div><label style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b99;text-transform:uppercase;display:block;margin-bottom:6px">Date</label>
+          <input class="appt-input" type="date" id="ed_date_${id}" value="${a.date||''}"></div>
+        <div><label style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b99;text-transform:uppercase;display:block;margin-bottom:6px">Time</label>
+          <input class="appt-input" type="time" id="ed_time_${id}" value="${a.time||''}"></div>
+        <div><label style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b99;text-transform:uppercase;display:block;margin-bottom:6px">Duration</label>
+          <select class="appt-input" id="ed_dur_${id}">
+            <option value="30" ${a.dur==30?'selected':''}>30 min</option>
+            <option value="60" ${a.dur==60?'selected':''}>60 min</option>
+            <option value="90" ${a.dur==90?'selected':''}>90 min</option>
+            <option value="120" ${a.dur==120?'selected':''}>2 hrs</option>
+          </select></div>
+        <div><label style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b99;text-transform:uppercase;display:block;margin-bottom:6px">Service</label>
+          <input class="appt-input" id="ed_service_${id}" value="${a.service||''}"></div>
+        <div><label style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b99;text-transform:uppercase;display:block;margin-bottom:6px">Notes</label>
+          <input class="appt-input" id="ed_notes_${id}" value="${a.notes||''}"></div>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
+        <button class="action-btn approve" onclick="saveEditAppt(${id})">Save Changes</button>
+        <button class="action-btn view" onclick="gcalPushOne(${id})">📅 Push to Google Calendar</button>
+        <button class="action-btn reject" onclick="document.getElementById('edit_${id}').innerHTML=''">Cancel</button>
+      </div>
+    </div>`;
+}
+
+function saveEditAppt(id) {
+  const appts = getAppts();
+  const idx = appts.findIndex(x => x.id === id);
+  if (idx < 0) return;
+  appts[idx].client  = document.getElementById('ed_client_'+id).value.trim();
+  appts[idx].date    = document.getElementById('ed_date_'+id).value;
+  appts[idx].time    = document.getElementById('ed_time_'+id).value;
+  appts[idx].dur     = parseInt(document.getElementById('ed_dur_'+id).value)||60;
+  appts[idx].service = document.getElementById('ed_service_'+id).value.trim();
+  appts[idx].notes   = document.getElementById('ed_notes_'+id).value.trim();
+  saveAppts(appts);
+  renderUpcoming(); updateCapacityStats();
+}
+
 function renderUpcoming() {
   const el = document.getElementById('upcomingList');
   if (!el) return;
   const appts = getAppts().sort((a,b) => (a.date+a.time).localeCompare(b.date+b.time));
   if (!appts.length) {
-    el.innerHTML = '<p style="color:#dddaeecc;font-style:italic;padding:12px 0 20px">No upcoming appointments logged. Use "+ Add Appointment" to track sessions. Appointment data from Square can be seen on the <a href="https://squareup.com/dashboard/appointments" target="_blank" style="color:#e8b84bcc">Square Dashboard ↗</a></p>';
+    el.innerHTML = '<p style="color:#dddaeecc;font-style:italic;padding:12px 0 20px">No upcoming appointments logged. Use "+ Add Appointment" to track sessions.</p>';
     return;
   }
   const today = new Date().toISOString().slice(0,10);
-  // Detect conflicts: same date, overlapping time windows
   const conflictSet = new Set();
+  function addMins(t, m) {
+    const [h,min] = (t||'00:00').split(':').map(Number);
+    const total = h*60+min+m;
+    return String(Math.floor(total/60)).padStart(2,'0')+':'+String(total%60).padStart(2,'0');
+  }
   for (let i = 0; i < appts.length; i++) {
     for (let j = i+1; j < appts.length; j++) {
       if (appts[i].date !== appts[j].date) continue;
@@ -1285,37 +1359,158 @@ function renderUpcoming() {
       if (aStart < bEnd && bStart < aEnd) { conflictSet.add(appts[i].id); conflictSet.add(appts[j].id); }
     }
   }
-  function addMins(t, m) {
-    const [h,min] = t.split(':').map(Number);
-    const total = h*60+min+m;
-    return String(Math.floor(total/60)).padStart(2,'0')+':'+String(total%60).padStart(2,'0');
-  }
   const upcomingSection = appts.filter(a => a.date >= today);
   const pastSection     = appts.filter(a => a.date <  today);
 
   function card(a) {
-    const isToday = a.date === today;
-    const isPast  = a.date < today;
+    const isToday   = a.date === today;
+    const isPast    = a.date < today;
     const isConflict = conflictSet.has(a.id);
     const cls = isConflict ? 'conflict' : isToday ? 'today' : isPast ? 'past' : '';
     const timeLabel = a.time ? ` · ${a.time}` : '';
     const durLabel  = a.dur  ? ` · ${a.dur} min` : '';
-    return `<div class="appt-card ${cls}">
-      <div>
-        <div class="appt-date">${a.date}${timeLabel}${durLabel}${isToday?' · <span style="color:#22c98acc">Today</span>':''}</div>
+    const gcalSynced = a.gcalId ? '<span style="color:#22c98a77;font-size:11px;margin-left:8px">✓ Google Cal</span>' : '';
+    return `<div class="appt-card ${cls}" id="apptcard_${a.id}">
+      <div style="flex:1">
+        <div class="appt-date">${a.date}${timeLabel}${durLabel}${isToday?' · <span style="color:#22c98acc">Today</span>':''}${gcalSynced}</div>
         <div class="appt-client">${a.client}</div>
         <div class="appt-meta">${a.service||''}</div>
         ${a.notes ? `<div style="font-size:14px;color:#dddaeecc;font-style:italic;margin-top:4px">${a.notes}</div>` : ''}
         ${isConflict ? '<div class="conflict-tag">⚠ Time Conflict</div>' : ''}
+        <div id="edit_${a.id}"></div>
       </div>
-      <button class="action-btn reject" style="padding:4px 10px;font-size:11px;white-space:nowrap" onclick="deleteAppt(${a.id})">✕</button>
+      <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+        <button class="action-btn view" style="padding:4px 10px;font-size:10px;white-space:nowrap" onclick="openEditAppt(${a.id})">✎ Edit</button>
+        <button class="action-btn reject" style="padding:4px 10px;font-size:11px;white-space:nowrap" onclick="deleteAppt(${a.id})">✕</button>
+      </div>
     </div>`;
   }
 
   let html = '';
   if (upcomingSection.length) html += upcomingSection.map(card).join('');
-  if (pastSection.length) html += `<div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:#e8b84b55;text-transform:uppercase;margin:16px 0 8px">Past</div>`+pastSection.reverse().map(card).join('');
+  if (pastSection.length) html += `<div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:#e8b84b55;text-transform:uppercase;margin:16px 0 8px">Past</div>`+pastSection.slice().reverse().map(card).join('');
   el.innerHTML = html || '<p style="color:#dddaeecc;font-style:italic">No appointments logged.</p>';
+}
+
+// ── GOOGLE CALENDAR ──────────────────────────────────────────────────────────
+// Uses Google Identity Services + Calendar API (no backend needed)
+// Daron needs to authorize once; token stored in sessionStorage
+
+const GCAL_CLIENT_ID = ''; // ← Daron's Google OAuth Client ID goes here
+const GCAL_SCOPES    = 'https://www.googleapis.com/auth/calendar.events';
+let gcalToken = null;
+
+function gcalConnect() {
+  if (!GCAL_CLIENT_ID) {
+    gcalSetStatus('⚠ Google Client ID not configured — see setup instructions below', false);
+    document.getElementById('gcalSetupNote').style.display = 'block';
+    return;
+  }
+  // Load Google Identity Services
+  if (typeof google === 'undefined') {
+    var s = document.createElement('script');
+    s.src = 'https://accounts.google.com/gsi/client';
+    s.onload = function() { gcalDoAuth(); };
+    document.head.appendChild(s);
+  } else {
+    gcalDoAuth();
+  }
+}
+
+function gcalDoAuth() {
+  const client = google.accounts.oauth2.initTokenClient({
+    client_id: GCAL_CLIENT_ID,
+    scope: GCAL_SCOPES,
+    callback: function(resp) {
+      if (resp.error) { gcalSetStatus('⚠ Authorization failed: ' + resp.error, false); return; }
+      gcalToken = resp.access_token;
+      gcalSetStatus('✓ Google Calendar connected — you can now push appointments', true);
+      document.getElementById('gcalBtn').textContent = '✓ Google Calendar Connected';
+      document.getElementById('gcalBtn').classList.add('approve');
+      document.getElementById('gcalBtn').classList.remove('view');
+      renderUpcoming();
+    }
+  });
+  client.requestAccessToken();
+}
+
+function gcalSetStatus(msg, ok) {
+  const el = document.getElementById('gcalStatus');
+  if (el) { el.textContent = msg; el.style.color = ok ? '#22c98a88' : '#ee707099'; }
+}
+
+function gcalPushOne(id) {
+  const a = getAppts().find(x => x.id === id);
+  if (!a) return;
+  if (!gcalToken) {
+    gcalSetStatus('Connect Google Calendar first using the button above.', false);
+    return;
+  }
+  if (!a.date || !a.time) { alert('This appointment needs a date and time before pushing to Google Calendar.'); return; }
+
+  const [h, m] = a.time.split(':').map(Number);
+  const durMins = a.dur || 60;
+  const start = new Date(a.date + 'T' + a.time + ':00');
+  const end   = new Date(start.getTime() + durMins * 60000);
+
+  const event = {
+    summary: (a.service || 'Energy Session') + ' — ' + a.client,
+    description: [
+      'Client: ' + a.client,
+      a.service ? 'Service: ' + a.service : '',
+      a.notes   ? 'Notes: '   + a.notes   : '',
+    ].filter(Boolean).join('\n'),
+    start: { dateTime: start.toISOString(), timeZone: 'America/New_York' },
+    end:   { dateTime: end.toISOString(),   timeZone: 'America/New_York' },
+    reminders: { useDefault: false, overrides: [
+      { method: 'popup',  minutes: 60 },
+      { method: 'popup',  minutes: 15 }
+    ]}
+  };
+
+  // If it already has a gcalId, update; otherwise insert
+  const method = a.gcalId ? 'PUT' : 'POST';
+  const url    = a.gcalId
+    ? 'https://www.googleapis.com/calendar/v3/calendars/primary/events/' + a.gcalId
+    : 'https://www.googleapis.com/calendar/v3/calendars/primary/events';
+
+  fetch(url, {
+    method,
+    headers: { 'Authorization': 'Bearer ' + gcalToken, 'Content-Type': 'application/json' },
+    body: JSON.stringify(event)
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.id) {
+      // Save the gcalId back to the appointment
+      const appts = getAppts();
+      const idx   = appts.findIndex(x => x.id === id);
+      if (idx >= 0) { appts[idx].gcalId = data.id; saveAppts(appts); }
+      gcalSetStatus('✓ Pushed to Google Calendar: ' + a.client + ' on ' + a.date, true);
+      renderUpcoming();
+    } else {
+      gcalSetStatus('⚠ Calendar API error: ' + (data.error && data.error.message || JSON.stringify(data)), false);
+    }
+  })
+  .catch(function(err) {
+    gcalSetStatus('⚠ Network error: ' + err.message, false);
+  });
+}
+
+function gcalPushAll() {
+  const upcoming = getAppts().filter(function(a) {
+    return a.date >= new Date().toISOString().slice(0,10);
+  });
+  if (!upcoming.length) { gcalSetStatus('No upcoming appointments to push.', false); return; }
+  if (!gcalToken) { gcalSetStatus('Connect Google Calendar first.', false); return; }
+  var i = 0;
+  function next() {
+    if (i >= upcoming.length) { gcalSetStatus('✓ All ' + upcoming.length + ' upcoming appointments pushed to Google Calendar', true); renderUpcoming(); return; }
+    gcalPushOne(upcoming[i].id);
+    i++;
+    setTimeout(next, 350); // slight delay to avoid rate limit
+  }
+  next();
 }
 
 // ── AUTO ENV FETCH ───────────────────────────────────────────
