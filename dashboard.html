@@ -189,13 +189,35 @@ body{background:#04020e;color:#f0ecff;font-family:'EB Garamond',serif;min-height
 .bi-glance .val-red{color:#ee7070;font-family:'Cinzel',serif;font-size:18px}
 .bi-glance .val-amber{color:#f8a84b;font-family:'Cinzel',serif;font-size:18px}
 /* Issue cards */
-.bi-issues-grid{display:flex;flex-direction:column;gap:6px}
-.bi-issue{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-left:3px solid #f8a84b77;background:#f8a84b08;border-radius:0 3px 3px 0}
-.bi-issue.red{border-left-color:#ee707077;background:#ee707008}
-.bi-issue.gold{border-left-color:#e8b84b77;background:#e8b84b08}
-.bi-issue-icon{font-size:16px;flex-shrink:0;margin-top:1px}
-.bi-issue-text{font-family:'EB Garamond',serif;font-size:16px;color:#f0ecff;line-height:1.5}
-.bi-issue-sub{font-family:'EB Garamond',serif;font-size:14px;color:#dddaee77;margin-top:2px}
+.bi-issues-grid{display:flex;flex-direction:column;gap:8px}
+.bi-issue-group{border:1px solid #e8b84b1a;border-radius:3px;overflow:hidden}
+.bi-issue-group.red{border-color:#ee707022}
+.bi-issue-group.amber{border-color:#f8a84b22}
+.bi-issue-group.gold{border-color:#e8b84b22}
+.bi-issue-group-header{display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;background:#0a0618;user-select:none;transition:background .15s}
+.bi-issue-group-header:hover{background:#0d0a20}
+.bi-issue-group-header.red{background:#ee707008}
+.bi-issue-group-header.amber{background:#f8a84b08}
+.bi-issue-group-header.gold{background:#e8b84b08}
+.bi-issue-group-icon{font-size:16px;flex-shrink:0}
+.bi-issue-group-title{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.2em;color:#f0ecff;text-transform:uppercase;flex:1}
+.bi-issue-group-count{font-family:'Cinzel',serif;font-size:11px;color:#dddaee66;background:#dddaee0d;border:1px solid #dddaee1a;padding:2px 10px;border-radius:2px}
+.bi-issue-group-chevron{font-size:11px;color:#e8b84b55;transition:transform .2s;margin-left:4px}
+.bi-issue-group-body{display:none;border-top:1px solid #e8b84b0f}
+.bi-issue-group-body.open{display:block}
+.bi-issue{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:11px 16px;border-bottom:1px solid #e8b84b08;background:#04020e}
+.bi-issue:last-child{border-bottom:none}
+.bi-issue-left{display:flex;align-items:flex-start;gap:10px;flex:1;min-width:0}
+.bi-issue-icon{font-size:14px;flex-shrink:0;margin-top:2px;width:18px;text-align:center}
+.bi-issue-text{font-family:'EB Garamond',serif;font-size:15px;color:#f0ecff;line-height:1.4}
+.bi-issue-sub{font-family:'EB Garamond',serif;font-size:13px;color:#dddaee66;margin-top:2px}
+.bi-issue-actions{display:flex;gap:6px;flex-shrink:0;align-items:flex-start;flex-wrap:wrap}
+.bi-act-resolve{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;text-transform:uppercase;padding:5px 10px;border:1px solid #22c98a44;color:#22c98acc;background:transparent;cursor:pointer;border-radius:2px;white-space:nowrap;transition:all .15s}
+.bi-act-resolve:hover{background:#22c98a18;border-color:#22c98a}
+.bi-act-dismiss{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;text-transform:uppercase;padding:5px 10px;border:1px solid #dddaee22;color:#dddaee66;background:transparent;cursor:pointer;border-radius:2px;white-space:nowrap;transition:all .15s}
+.bi-act-dismiss:hover{background:#dddaee0d;border-color:#dddaee44}
+.bi-act-payment{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.2em;text-transform:uppercase;padding:5px 10px;border:1px solid #e8b84b44;color:#e8b84bcc;background:transparent;cursor:pointer;border-radius:2px;white-space:nowrap;transition:all .15s;text-decoration:none;display:inline-block}
+.bi-act-payment:hover{background:#e8b84b14;border-color:#e8b84b}
 .bi-no-issues{font-family:'EB Garamond',serif;font-size:16px;color:#22c98a88;font-style:italic;padding:8px 0}
 /* Day cards */
 .bi-day-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
@@ -1182,6 +1204,48 @@ function renderAnalytics() {
   `;
 }
 
+// ── ISSUE RESOLUTION ─────────────────────────────────────────
+const ISSUE_KEY = 'rea_resolved_issues';
+function getResolvedIssues() {
+  try { return JSON.parse(localStorage.getItem(ISSUE_KEY) || '{}'); } catch(e) { return {}; }
+}
+function saveResolvedIssues(data) {
+  try { localStorage.setItem(ISSUE_KEY, JSON.stringify(data)); } catch(e) {}
+}
+function resolveIssue(key, resolution) {
+  const data = getResolvedIssues();
+  data[key] = { resolvedAt: new Date().toISOString().slice(0,10), resolution: resolution || 'resolved' };
+  saveResolvedIssues(data);
+  renderBooking();
+}
+function dismissIssue(key) {
+  resolveIssue(key, 'dismissed');
+}
+function isIssueResolved(key) {
+  return !!getResolvedIssues()[key];
+}
+function toggleIssueGroup(groupId) {
+  const body = document.getElementById('ig_body_' + groupId);
+  const chev = document.getElementById('ig_chev_' + groupId);
+  if (!body) return;
+  const isOpen = body.classList.toggle('open');
+  if (chev) chev.style.transform = isOpen ? 'rotate(180deg)' : '';
+}
+function paymentNotice(clientName, email, date, amount) {
+  const subject = encodeURIComponent('Payment for Your Energy Session — ' + date);
+  const body = encodeURIComponent(
+    'Hi ' + clientName + ',\n\n' +
+    'Thank you for your energy session on ' + date + '.\n\n' +
+    'If you haven\'t already, please submit your payment' +
+    (amount ? ' of $' + amount : '') + ' at your earliest convenience.\n\n' +
+    'You can pay via:\n' +
+    '• Square: https://book.squareup.com/appointments/gcevwnjduxlw9u\n' +
+    '• Or reply to this email to arrange payment.\n\n' +
+    'Thank you,\nDaron Royal\nRoyal Energy Alchemy'
+  );
+  window.open('mailto:' + email + '?subject=' + subject + '&body=' + body, '_blank');
+}
+
 // ── BOOKING INTELLIGENCE ─────────────────────────────────────
 function getWeekStart(dateStr) {
   const d = new Date(dateStr + 'T12:00:00');
@@ -1275,73 +1339,197 @@ function renderBooking() {
   // ─── SECTION 2: Upcoming Issues ─────────────────────────────
   const issuesEl = document.getElementById('bk-issues');
   if (issuesEl) {
-    const issues = [];
+    const resolved = getResolvedIssues();
+    const dayMs = 1000 * 60 * 60 * 24;
+    const todayMs = new Date(today + 'T12:00:00').getTime();
 
-    // Repeated reschedulers (3+)
+    // Helper: check if issue key is resolved
+    function notResolved(key) { return !resolved[key]; }
+
+    // Build grouped issue lists
+    const groups = {
+      reschedule: { icon: '↺', label: 'Repeat Reschedules', sev: 'red',   items: [] },
+      cancel:     { icon: '⚠', label: 'Repeat Cancellations', sev: 'red', items: [] },
+      noshow:     { icon: '!', label: 'No-Show Clients',     sev: 'red',   items: [] },
+      payment:    { icon: '$', label: 'Payment Unclear',     sev: 'amber', items: [] },
+      followup:   { icon: '→', label: 'Follow-Up Due',       sev: 'amber', items: [] },
+      waiver:     { icon: '📋', label: 'Waiver / Intake Missing', sev: 'gold', items: [] },
+      contact:    { icon: '👤', label: 'No Contact Info',    sev: 'gold',  items: [] },
+    };
+
+    // ── Repeated reschedulers (3+) ──
     allAppts.forEach(a => {
       if ((a.rescheduleHistory || []).length >= 3) {
-        issues.push({ icon: '↺', text: `${a.client} has rescheduled ${a.rescheduleHistory.length}×`, sub: `Next: ${a.date}`, sev: 'red' });
+        const k = 'reschedule_' + a.id;
+        if (notResolved(k)) groups.reschedule.items.push({
+          key: k, client: a.client,
+          text: `${a.client} has rescheduled ${a.rescheduleHistory.length}×`,
+          sub: `Next appointment: ${a.date}`,
+          actions: ['resolve','dismiss']
+        });
       }
     });
 
-    // Clients with 2+ cancellations
+    // ── Repeat cancellations (2+) ──
     Object.values(crm).forEach(c => {
       const cancelCount = (c.timeline || []).filter(t => t.type === 'cancellation').length;
       if (cancelCount >= 2) {
-        issues.push({ icon: '⚠', text: `${c.clientName} — repeat cancellation pattern`, sub: `${cancelCount} cancellations on record`, sev: 'red' });
+        const k = 'cancel_' + crmKey(c.clientName);
+        if (notResolved(k)) groups.cancel.items.push({
+          key: k, client: c.clientName,
+          text: `${c.clientName} — repeat cancellation pattern`,
+          sub: `${cancelCount} cancellations on record`,
+          actions: ['resolve','dismiss']
+        });
       }
     });
 
-    // No-shows
+    // ── No-shows ──
     Object.values(crm).filter(c => c.status === 'no_show').forEach(c => {
-      issues.push({ icon: '⚠', text: `${c.clientName} — no-show on record`, sub: '', sev: 'red' });
+      const k = 'noshow_' + crmKey(c.clientName);
+      if (notResolved(k)) groups.noshow.items.push({
+        key: k, client: c.clientName,
+        text: `${c.clientName} — marked no-show`,
+        sub: '',
+        actions: ['resolve','dismiss']
+      });
     });
 
-    // Missing waiver (check localStorage for intake data)
-    weekSessions.forEach(s => {
-      const key = 'rea_intake_name_' + s.client.toLowerCase().trim().replace(/\s+/g,'_');
-      if (!localStorage.getItem(key)) {
-        issues.push({ icon: '📋', text: `${s.client} — waiver / intake missing`, sub: `Session: ${s.date}`, sev: 'gold' });
-      }
-    });
-
-    // Payment pending (session price=0, not marked exchange, recent)
-    const recentSessions = allSessions.filter(s => s.date >= weekDays[0]);
-    recentSessions.forEach(s => {
+    // ── Payment unclear — only sessions in last 30 days ──
+    allSessions.forEach(s => {
+      const sessMs = new Date(s.date + 'T12:00:00').getTime();
+      const ageDays = Math.floor((todayMs - sessMs) / dayMs);
+      if (ageDays > 30) return; // only recent
       if (s.price === 0 && !(s.tags || []).includes('exchange') && !(s.tags || []).includes('paid')) {
-        issues.push({ icon: '$', text: `${s.client} — payment status unclear`, sub: `Session: ${s.date} · Not marked paid or exchange`, sev: 'amber' });
+        const k = 'payment_' + crmKey(s.client) + '_' + s.date;
+        if (notResolved(k)) {
+          const crec = getCRMClient(s.client);
+          const email = crec && crec.contactInfo ? crec.contactInfo.email : '';
+          groups.payment.items.push({
+            key: k, client: s.client, date: s.date, email,
+            text: `${s.client} — payment status unclear`,
+            sub: `Session: ${s.date}`,
+            actions: email ? ['resolve','dismiss','payment'] : ['resolve','dismiss']
+          });
+        }
       }
     });
 
-    // Unverified CRM records for this week's clients
-    weekSessions.forEach(s => {
+    // ── Follow-ups overdue (last 72 hrs, Round 1–2) ──
+    allSessions.forEach(s => {
+      const sessMs = new Date(s.date + 'T12:00:00').getTime();
+      const ageDays = Math.floor((todayMs - sessMs) / dayMs);
+      if (ageDays >= 1 && ageDays <= 3 && (s.round || 1) <= 2) {
+        const k = 'followup_' + crmKey(s.client) + '_' + s.date;
+        if (notResolved(k)) groups.followup.items.push({
+          key: k, client: s.client, date: s.date,
+          text: `${s.client} — follow-up due`,
+          sub: `Session: ${s.date} · Round ${s.round || 1}`,
+          actions: ['resolve','dismiss']
+        });
+      }
+    });
+
+    // ── Waiver missing — only sessions in last 60 days, auto-resolve older ──
+    allSessions.forEach(s => {
+      const sessMs = new Date(s.date + 'T12:00:00').getTime();
+      const ageDays = Math.floor((todayMs - sessMs) / dayMs);
+      const k = 'waiver_' + crmKey(s.client) + '_' + s.date;
+      // Auto-resolve if >60 days old
+      if (ageDays > 60) {
+        if (!resolved[k]) resolveIssue(k, 'auto-expired'); // silent auto-resolve
+        return;
+      }
+      const intakeKey = 'rea_intake_name_' + s.client.toLowerCase().trim().replace(/\s+/g,'_');
+      if (!localStorage.getItem(intakeKey) && notResolved(k)) {
+        groups.waiver.items.push({
+          key: k, client: s.client, date: s.date,
+          text: `${s.client} — waiver / intake missing`,
+          sub: `Session: ${s.date}`,
+          actions: ['resolve','dismiss']
+        });
+      }
+    });
+
+    // ── No contact info — only sessions in last 60 days, auto-resolve older ──
+    allSessions.forEach(s => {
+      const sessMs = new Date(s.date + 'T12:00:00').getTime();
+      const ageDays = Math.floor((todayMs - sessMs) / dayMs);
+      const k = 'contact_' + crmKey(s.client) + '_' + s.date;
+      // Auto-resolve if >60 days old
+      if (ageDays > 60) {
+        if (!resolved[k]) resolveIssue(k, 'auto-expired');
+        return;
+      }
       const crec = getCRMClient(s.client);
-      if (crec && !crec.contactInfo.email && !crec.contactInfo.confirmedByDaron) {
-        issues.push({ icon: '👤', text: `${s.client} — no contact info on file`, sub: 'Add email/phone in Client Info', sev: 'gold' });
+      if (crec && !crec.contactInfo.email && !crec.contactInfo.confirmedByDaron && notResolved(k)) {
+        // Deduplicate — only show each client once (use client key, not per-session)
+        const clientK = 'contact_' + crmKey(s.client);
+        if (notResolved(clientK) && !groups.contact.items.some(i => i.client === s.client)) {
+          groups.contact.items.push({
+            key: clientK, client: s.client, date: s.date,
+            text: `${s.client} — no contact info on file`,
+            sub: 'Open Client Info to add email / phone',
+            actions: ['resolve','dismiss']
+          });
+        }
       }
     });
 
-    // Follow-ups overdue
-    if (followUpDue > 0) {
-      issues.push({ icon: '→', text: `${followUpDue} client${followUpDue > 1 ? 's' : ''} need follow-up contact`, sub: 'Sessions within last 72 hours, Round 1–2', sev: 'amber' });
+    // ── Render groups ──
+    function renderGroup(gKey, group) {
+      if (!group.items.length) return '';
+      const gId = 'ig_' + gKey;
+      const sevClass = group.sev;
+      const SEV_COLORS = { red: '#ee7070', amber: '#f8a84b', gold: '#e8b84b' };
+      const col = SEV_COLORS[sevClass] || '#dddaee';
+      const itemsHtml = group.items.map(item => {
+        const actionBtns = (item.actions || []).map(act => {
+          if (act === 'resolve')  return `<button class="bi-act-resolve"  onclick="resolveIssue('${item.key}','resolved')">✓ Resolved</button>`;
+          if (act === 'dismiss')  return `<button class="bi-act-dismiss"  onclick="dismissIssue('${item.key}')">Leave for Now</button>`;
+          if (act === 'payment')  return `<a class="bi-act-payment" href="mailto:${item.email}?subject=${encodeURIComponent('Payment for Your Energy Session — '+item.date)}&body=${encodeURIComponent('Hi '+item.client+',\n\nThank you for your energy session on '+item.date+'.\n\nPlease submit your payment at your earliest convenience.\n\nYou can pay via:\n• Square: https://book.squareup.com/appointments/gcevwnjduxlw9u\n• Or reply to this email.\n\nThank you,\nDaron Royal\nRoyal Energy Alchemy')}" target="_blank">✉ Send Notice</a>`;
+          return '';
+        }).join('');
+        return `<div class="bi-issue">
+          <div class="bi-issue-left">
+            <span class="bi-issue-icon" style="color:${col}">${group.icon}</span>
+            <div>
+              <div class="bi-issue-text">${item.text}</div>
+              ${item.sub ? `<div class="bi-issue-sub">${item.sub}</div>` : ''}
+            </div>
+          </div>
+          <div class="bi-issue-actions">${actionBtns}</div>
+        </div>`;
+      }).join('');
+
+      // Groups with >5 items collapse by default; others open
+      const defaultOpen = group.items.length <= 5;
+      return `<div class="bi-issue-group ${sevClass}">
+        <div class="bi-issue-group-header ${sevClass}" onclick="toggleIssueGroup('${gId}')">
+          <span class="bi-issue-group-icon" style="color:${col}">${group.icon}</span>
+          <span class="bi-issue-group-title" style="color:${col}">${group.label}</span>
+          <span class="bi-issue-group-count">${group.items.length}</span>
+          <span class="bi-issue-group-chevron" id="ig_chev_${gId}" style="color:${col};transform:${defaultOpen?'rotate(180deg)':''}"}>▼</span>
+        </div>
+        <div class="bi-issue-group-body ${defaultOpen ? 'open' : ''}" id="ig_body_${gId}">
+          ${itemsHtml}
+        </div>
+      </div>`;
     }
 
-    const SV = { red: 0, amber: 1, gold: 2 };
-    issues.sort((a, b) => (SV[a.sev] || 9) - (SV[b.sev] || 9));
+    const ORDER = ['reschedule','cancel','noshow','payment','followup','waiver','contact'];
+    const groupsHtml = ORDER.map(k => renderGroup(k, groups[k])).join('');
+    const totalActive = ORDER.reduce((s, k) => s + groups[k].items.length, 0);
+    const resolvedCount = Object.keys(resolved).length;
 
     issuesEl.innerHTML = `
       <div class="bi-section">
-        <div class="bi-section-title">Upcoming Issues</div>
+        <div class="bi-section-title">
+          Upcoming Issues
+          ${resolvedCount ? `<span style="font-family:'EB Garamond',serif;font-size:13px;color:#22c98a88;letter-spacing:0;font-style:italic;text-transform:none">${resolvedCount} resolved</span>` : ''}
+        </div>
         <div class="bi-issues-grid">
-          ${issues.length ? issues.map(i => `
-            <div class="bi-issue ${i.sev === 'red' ? 'red' : i.sev === 'gold' ? 'gold' : ''}">
-              <span class="bi-issue-icon">${i.icon}</span>
-              <div>
-                <div class="bi-issue-text">${i.text}</div>
-                ${i.sub ? `<div class="bi-issue-sub">${i.sub}</div>` : ''}
-              </div>
-            </div>`).join('')
-          : '<div class="bi-no-issues">✓ No issues flagged this week.</div>'}
+          ${totalActive ? groupsHtml : '<div class="bi-no-issues">✓ No active issues. All clear.</div>'}
         </div>
       </div>`;
   }
