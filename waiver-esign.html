@@ -100,9 +100,11 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
 
 .legal-note{font-size:15px;color:#c8c4e080;font-style:italic;text-align:center;margin-top:16px;line-height:1.6}
 
-footer{text-align:center;padding:32px 24px;border-top:1px solid #e8b84b14;margin-top:48px}
-footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.28em;color:#c8c4e040;text-transform:uppercase;line-height:2}
-footer .pa-disclaimer{font-family:'EB Garamond',serif;font-size:15px;font-style:italic;letter-spacing:0;color:#c8c4e04d;text-transform:none;max-width:640px;margin:16px auto 0;line-height:1.75}
+footer{text-align:center;padding:42px 24px;border-top:1px solid rgba(232,184,75,.28);margin-top:56px;background:linear-gradient(180deg,rgba(4,2,14,.45),rgba(4,2,14,.96))}
+footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.24em;color:rgba(232,228,240,.78);text-transform:uppercase;line-height:2.25;text-shadow:0 0 18px rgba(232,184,75,.14)}
+footer a{color:#ffd977!important;text-decoration:none!important;border-bottom:1px solid rgba(255,217,119,.42);text-shadow:0 0 18px rgba(232,184,75,.3);transition:color .25s,border-color .25s}
+footer a:hover,footer a:focus-visible{color:#fff0b8!important;border-bottom-color:rgba(255,240,184,.72);outline:none}
+footer .pa-disclaimer{font-family:'EB Garamond',serif;font-size:16px;font-style:italic;letter-spacing:0;color:rgba(246,241,255,.76);text-transform:none;max-width:680px;margin:16px auto 0;line-height:1.75}
 
 .req{color:#e8b84b99;margin-left:2px}
 .error{border-color:rgba(255,80,80,0.5) !important}
@@ -138,6 +140,8 @@ footer .pa-disclaimer{font-family:'EB Garamond',serif;font-size:15px;font-style:
   nav{padding:14px 20px}
   .form-row{grid-template-columns:1fr}
   .wrap{padding:80px 16px 48px}
+  footer{padding:38px 18px}
+  footer p{font-size:10px;letter-spacing:.16em;line-height:2.35}
 }
 @media print{
   nav,footer,#waiverForm,.submit-btn,.legal-note{display:none!important}
@@ -559,7 +563,7 @@ footer .pa-disclaimer{font-family:'EB Garamond',serif;font-size:15px;font-style:
   <p>Royal Energy Alchemy LLC · Erie / Waterford, Pennsylvania · royalenergyalchemy@gmail.com · 814-392-2095</p>
   <p>Spiritual and energetic services are complementary wellness offerings and are not medical, legal, psychological, or financial advice.</p>
 
-  <p style="margin-top:12px"><a href="/" style="color:#e8b84b4d;text-decoration:none;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;">← Return to site</a></p>
+  <p style="margin-top:12px"><a href="/" style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;">← Return to site</a></p>
 </footer>
 
 <script>
