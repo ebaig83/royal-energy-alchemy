@@ -276,73 +276,298 @@ footer a:hover,footer a:focus-visible{color:#fff0b8 !important;border-bottom-col
 </style>
 
 <style>
-.bridge{background:var(--bg,#04020e);text-align:center;padding:100px 24px 100px;position:relative;overflow:hidden}
-.bridge::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 100%,rgba(232,184,75,0.05) 0%,transparent 70%);pointer-events:none}
-.bridge-eyebrow{font-family:'Cinzel',serif;font-size:clamp(13px,2vw,17px);letter-spacing:.5em;color:var(--gold,#e8b84b);text-transform:uppercase;margin-bottom:28px;display:block}
-.bridge-body{font-family:'EB Garamond',serif;font-size:clamp(18px,2.5vw,24px);color:rgba(240,236,255,0.75);line-height:1.9;max-width:620px;margin:0 auto 48px;font-style:italic}
-.bridge-paths{display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap}
-.bridge-path{font-family:'Cinzel',serif;font-size:clamp(10px,1.3vw,13px);letter-spacing:.35em;text-transform:uppercase;text-decoration:none;color:#fff;padding:14px 28px;border:1px solid rgba(232,184,75,0.25);transition:all .25s;background:transparent;position:relative}
-.bridge-path:hover{border-color:var(--gold,#e8b84b);color:var(--gold,#e8b84b);background:rgba(232,184,75,0.04)}
-.bridge-path.primary{background:linear-gradient(135deg,#f5d98a,#e8b84b);color:#000;border-color:transparent;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%)}
-.bridge-path.primary:hover{filter:brightness(1.1);color:#000;background:linear-gradient(135deg,#f5d98a,#e8b84b)}
-.bridge-sep{font-family:'Cinzel',serif;font-size:11px;color:rgba(232,184,75,0.25);padding:0 4px;letter-spacing:.1em}
-@media(max-width:540px){.bridge-paths{flex-direction:column;gap:10px}.bridge-sep{display:none}.bridge-path{width:100%;max-width:280px;text-align:center}}
+.bridge{
+  background:var(--bg,#04020e);
+  text-align:center;
+  padding:100px 24px 100px;
+  position:relative;
+  overflow:hidden;
+}
+.bridge::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:radial-gradient(ellipse at 50% 100%,rgba(232,184,75,0.05) 0%,transparent 70%);
+  pointer-events:none;
+}
+.bridge-eyebrow{
+  font-family:'Cinzel',serif;
+  font-size:clamp(13px,2vw,17px);
+  letter-spacing:.5em;
+  color:var(--gold,#e8b84b);
+  text-transform:uppercase;
+  margin-bottom:28px;
+  display:block;
+}
+.bridge-body{
+  font-family:'EB Garamond',serif;
+  font-size:clamp(18px,2.5vw,24px);
+  color:rgba(240,236,255,0.75);
+  line-height:1.9;
+  max-width:620px;
+  margin:0 auto 48px;
+  font-style:italic;
+}
+.bridge-paths{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:0;
+  flex-wrap:wrap;
+}
+.bridge-path{
+  font-family:'Cinzel',serif;
+  font-size:clamp(10px,1.3vw,13px);
+  letter-spacing:.35em;
+  text-transform:uppercase;
+  text-decoration:none;
+  color:#fff;
+  padding:14px 28px;
+  border:1px solid rgba(232,184,75,0.25);
+  transition:all .25s;
+  background:transparent;
+  position:relative;
+}
+.bridge-path:hover{
+  border-color:var(--gold,#e8b84b);
+  color:var(--gold,#e8b84b);
+  background:rgba(232,184,75,0.04);
+}
+.bridge-path.primary{
+  background:linear-gradient(135deg,#f5d98a,#e8b84b);
+  color:#000;
+  border-color:transparent;
+  clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);
+}
+.bridge-path.primary:hover{
+  filter:brightness(1.1);
+  color:#000;
+  background:linear-gradient(135deg,#f5d98a,#e8b84b);
+}
+.bridge-sep{
+  font-family:'Cinzel',serif;
+  font-size:11px;
+  color:rgba(232,184,75,0.25);
+  padding:0 4px;
+  letter-spacing:.1em;
+}
+@media(max-width:540px){
+  .bridge-paths{flex-direction:column;gap:10px}
+  .bridge-sep{display:none}
+  .bridge-path{width:100%;max-width:280px;text-align:center}
+}
 </style>
 
 <style>
-.closing{position:relative;width:100%;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;text-align:center}
-.closing-bg{position:absolute;inset:0;z-index:0;overflow:hidden}
-.closing-bg video{width:100%;height:100%;object-fit:cover;object-position:center top;filter:brightness(0.88);display:block}
-.closing-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(4,2,14,0.25) 0%,rgba(4,2,14,0.0) 30%,rgba(4,2,14,0.0) 60%,rgba(4,2,14,0.55) 100%);z-index:1}
-.closing-content{position:relative;z-index:2;max-width:700px;padding:80px 32px 100px;display:flex;flex-direction:column;align-items:center;gap:0}
-.closing-top{font-family:'Cinzel',serif;font-size:clamp(13px,2.2vw,18px);letter-spacing:.45em;color:#ffffff;text-transform:uppercase;line-height:1.7;margin-bottom:10px;text-shadow:0 2px 20px rgba(0,0,0,0.8)}
-.closing-rule{width:1px;height:40px;background:linear-gradient(to bottom,transparent,rgba(232,184,75,0.7),transparent);margin:12px auto}
-.closing-thanks{font-family:'Cinzel',serif;font-size:clamp(9px,1.2vw,11px);letter-spacing:.55em;color:rgba(232,184,75,0.8);text-transform:uppercase;margin-bottom:4px;text-shadow:0 1px 12px rgba(0,0,0,0.9)}
-.closing-tagline{font-family:'Cinzel',serif;font-size:clamp(9px,1.2vw,11px);letter-spacing:.4em;color:rgba(255,255,255,0.55);text-transform:uppercase;margin-bottom:0;text-shadow:0 1px 12px rgba(0,0,0,0.9)}
-.closing-spacer{height:clamp(280px,38vw,460px)}
-.closing-llc{font-family:'Cinzel',serif;font-size:clamp(9px,1vw,11px);letter-spacing:.55em;color:rgba(232,184,75,0.55);text-transform:uppercase;margin-bottom:10px;text-shadow:0 1px 12px rgba(0,0,0,0.9)}
-.closing-headline{font-family:'Cinzel',serif;font-size:clamp(26px,4.5vw,52px);font-weight:700;color:var(--gold,#e8b84b);letter-spacing:.08em;line-height:1.15;text-transform:uppercase;margin-bottom:16px;text-shadow:0 2px 30px rgba(0,0,0,0.9),0 0 60px rgba(232,184,75,0.15)}
-.closing-sub{font-family:'Cinzel',serif;font-size:clamp(9px,1.2vw,12px);letter-spacing:.5em;color:rgba(255,255,255,0.6);text-transform:uppercase;margin-bottom:32px;text-shadow:0 1px 16px rgba(0,0,0,0.9)}
-.closing-pillars{display:flex;gap:clamp(16px,3vw,40px);align-items:flex-start;justify-content:center;margin-bottom:40px;flex-wrap:wrap}
-.pillar{display:flex;flex-direction:column;align-items:center;gap:8px}
-.pillar-icon{width:clamp(36px,5vw,52px);height:clamp(36px,5vw,52px);border:1px solid rgba(232,184,75,0.3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:clamp(16px,2.2vw,22px);color:rgba(232,184,75,0.8);background:rgba(0,0,0,0.4)}
-.pillar-label{font-family:'Cinzel',serif;font-size:clamp(7px,0.9vw,9px);letter-spacing:.4em;color:rgba(255,255,255,0.5);text-transform:uppercase;text-shadow:0 1px 8px rgba(0,0,0,0.9)}
-.closing-cta-box{border:1px solid rgba(232,184,75,0.35);padding:clamp(18px,3vw,28px) clamp(24px,5vw,56px);background:rgba(4,2,14,0.55);backdrop-filter:blur(4px);display:flex;flex-direction:column;align-items:center;gap:16px;max-width:520px;width:100%}
-.closing-cta-top{font-family:'Cinzel',serif;font-size:clamp(9px,1.1vw,11px);letter-spacing:.45em;color:rgba(255,255,255,0.55);text-transform:uppercase;line-height:1.8}
-.closing-cta-top em{font-style:normal;color:#ffffff;font-weight:600}
-.closing-cta-btn{font-family:'Cinzel',serif;font-size:clamp(10px,1.2vw,12px);letter-spacing:.4em;color:#000;text-transform:uppercase;background:linear-gradient(135deg,#f5d98a,#e8b84b);padding:clamp(12px,1.5vw,16px) clamp(28px,4vw,48px);border:none;cursor:pointer;text-decoration:none;display:inline-block;transition:filter .25s,transform .2s;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%)}
-.closing-cta-btn:hover{filter:brightness(1.12);transform:translateY(-1px)}
-@media(max-width:600px){.closing-content{padding:60px 20px 80px}.closing-spacer{height:220px}.closing-pillars{gap:14px}}
+.closing{
+  position:relative;
+  width:100%;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  text-align:center;
+}
+.closing-bg{
+  position:absolute;
+  inset:0;
+  background-image:url('assets/closing-hero.png');
+  background-size:cover;
+  background-position:center top;
+  background-repeat:no-repeat;
+  /* darken slightly so text pops — remove filter if image is dark enough */
+  filter:brightness(0.88);
+  z-index:0;
+}
+.closing-overlay{
+  position:absolute;
+  inset:0;
+  background:linear-gradient(
+    to bottom,
+    rgba(4,2,14,0.25) 0%,
+    rgba(4,2,14,0.0) 30%,
+    rgba(4,2,14,0.0) 60%,
+    rgba(4,2,14,0.55) 100%
+  );
+  z-index:1;
+}
+.closing-content{
+  position:relative;
+  z-index:2;
+  max-width:700px;
+  padding:80px 32px 100px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:0;
+}
 
-/* ── COMMUNITY MODAL ── */
-.comm-overlay{position:fixed;inset:0;background:rgba(4,2,14,.88);z-index:1100;display:none;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(4px)}
-.comm-overlay.open{display:flex}
-.comm-modal{background:#07040f;border:1px solid rgba(232,184,75,.35);max-width:560px;width:100%;max-height:90vh;overflow-y:auto;position:relative;padding:48px 40px 40px}
-.comm-close{position:absolute;top:16px;right:20px;background:none;border:none;color:rgba(232,184,75,.4);font-size:22px;cursor:pointer;line-height:1;transition:color .2s}
-.comm-close:hover{color:var(--gold,#e8b84b)}
-.comm-eyebrow{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.55em;color:rgba(232,184,75,.7);text-transform:uppercase;margin-bottom:14px}
-.comm-headline{font-family:'Cinzel',serif;font-size:clamp(18px,3vw,26px);letter-spacing:.08em;color:#fff;text-transform:uppercase;line-height:1.25;margin-bottom:10px}
-.comm-sub{font-family:'EB Garamond',serif;font-size:16px;color:rgba(240,236,255,.6);font-style:italic;line-height:1.7;margin-bottom:32px}
-.comm-rule{width:40px;height:1px;background:rgba(232,184,75,.4);margin:0 0 32px}
-.comm-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.comm-field{display:flex;flex-direction:column;gap:6px}
-.comm-field.full{grid-column:1/-1}
-.comm-label{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.4em;color:rgba(232,184,75,.65);text-transform:uppercase}
-.comm-input,.comm-select,.comm-textarea{background:#04020e;border:1px solid rgba(232,184,75,.2);color:#f0ecff;font-family:'EB Garamond',serif;font-size:15px;padding:10px 14px;width:100%;transition:border-color .2s}
-.comm-input:focus,.comm-select:focus,.comm-textarea:focus{outline:none;border-color:rgba(232,184,75,.55)}
-.comm-select{appearance:none;cursor:pointer}
-.comm-textarea{resize:vertical;min-height:80px}
-.comm-checkgroup{display:flex;flex-direction:column;gap:8px;margin-top:4px}
-.comm-check{display:flex;align-items:center;gap:10px;cursor:pointer}
-.comm-check input{accent-color:#e8b84b;width:14px;height:14px;cursor:pointer;flex:0 0 auto}
-.comm-check label{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:rgba(240,236,255,.75);text-transform:uppercase;cursor:pointer;line-height:1.4}
-.comm-submit{margin-top:28px;width:100%;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.4em;text-transform:uppercase;color:#000;background:linear-gradient(135deg,#f5d98a,#e8b84b);border:none;padding:16px;cursor:pointer;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);transition:filter .25s,transform .2s}
-.comm-submit:hover{filter:brightness(1.1);transform:translateY(-1px)}
-.comm-success{text-align:center;padding:20px 0}
-.comm-success-icon{font-size:40px;margin-bottom:16px}
-.comm-success-title{font-family:'Cinzel',serif;font-size:16px;letter-spacing:.2em;color:#e8b84b;text-transform:uppercase;margin-bottom:12px}
-.comm-success-body{font-family:'EB Garamond',serif;font-size:17px;color:rgba(240,236,255,.75);font-style:italic;line-height:1.8}
-@media(max-width:520px){.comm-modal{padding:36px 20px 28px}.comm-grid{grid-template-columns:1fr}}
+/* Top line */
+.closing-top{
+  font-family:'Cinzel',serif;
+  font-size:clamp(13px,2.2vw,18px);
+  letter-spacing:.45em;
+  color:#ffffff;
+  text-transform:uppercase;
+  line-height:1.7;
+  margin-bottom:10px;
+  text-shadow:0 2px 20px rgba(0,0,0,0.8);
+}
+
+/* Thin gold rule */
+.closing-rule{
+  width:1px;
+  height:40px;
+  background:linear-gradient(to bottom,transparent,rgba(232,184,75,0.7),transparent);
+  margin:12px auto;
+}
+
+/* Thank you line */
+.closing-thanks{
+  font-family:'Cinzel',serif;
+  font-size:clamp(9px,1.2vw,11px);
+  letter-spacing:.55em;
+  color:rgba(232,184,75,0.8);
+  text-transform:uppercase;
+  margin-bottom:4px;
+  text-shadow:0 1px 12px rgba(0,0,0,0.9);
+}
+.closing-tagline{
+  font-family:'Cinzel',serif;
+  font-size:clamp(9px,1.2vw,11px);
+  letter-spacing:.4em;
+  color:rgba(255,255,255,0.55);
+  text-transform:uppercase;
+  margin-bottom:0;
+  text-shadow:0 1px 12px rgba(0,0,0,0.9);
+}
+
+/* Large spacer to let the image breathe — the figure takes center stage */
+.closing-spacer{ height:clamp(280px,38vw,460px); }
+
+/* LLC label */
+.closing-llc{
+  font-family:'Cinzel',serif;
+  font-size:clamp(9px,1vw,11px);
+  letter-spacing:.55em;
+  color:rgba(232,184,75,0.55);
+  text-transform:uppercase;
+  margin-bottom:10px;
+  text-shadow:0 1px 12px rgba(0,0,0,0.9);
+}
+
+/* Main headline */
+.closing-headline{
+  font-family:'Cinzel',serif;
+  font-size:clamp(26px,4.5vw,52px);
+  font-weight:700;
+  color:var(--gold,#e8b84b);
+  letter-spacing:.08em;
+  line-height:1.15;
+  text-transform:uppercase;
+  margin-bottom:16px;
+  text-shadow:0 2px 30px rgba(0,0,0,0.9),0 0 60px rgba(232,184,75,0.15);
+}
+
+/* Subhead */
+.closing-sub{
+  font-family:'Cinzel',serif;
+  font-size:clamp(9px,1.2vw,12px);
+  letter-spacing:.5em;
+  color:rgba(255,255,255,0.6);
+  text-transform:uppercase;
+  margin-bottom:32px;
+  text-shadow:0 1px 16px rgba(0,0,0,0.9);
+}
+
+/* Pillar icons row */
+.closing-pillars{
+  display:flex;
+  gap:clamp(16px,3vw,40px);
+  align-items:flex-start;
+  justify-content:center;
+  margin-bottom:40px;
+  flex-wrap:wrap;
+}
+.pillar{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+}
+.pillar-icon{
+  width:clamp(36px,5vw,52px);
+  height:clamp(36px,5vw,52px);
+  border:1px solid rgba(232,184,75,0.3);
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:clamp(16px,2.2vw,22px);
+  color:rgba(232,184,75,0.8);
+  background:rgba(0,0,0,0.4);
+}
+.pillar-label{
+  font-family:'Cinzel',serif;
+  font-size:clamp(7px,0.9vw,9px);
+  letter-spacing:.4em;
+  color:rgba(255,255,255,0.5);
+  text-transform:uppercase;
+  text-shadow:0 1px 8px rgba(0,0,0,0.9);
+}
+
+/* CTA box */
+.closing-cta-box{
+  border:1px solid rgba(232,184,75,0.35);
+  padding:clamp(18px,3vw,28px) clamp(24px,5vw,56px);
+  background:rgba(4,2,14,0.55);
+  backdrop-filter:blur(4px);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:16px;
+  max-width:520px;
+  width:100%;
+}
+.closing-cta-top{
+  font-family:'Cinzel',serif;
+  font-size:clamp(9px,1.1vw,11px);
+  letter-spacing:.45em;
+  color:rgba(255,255,255,0.55);
+  text-transform:uppercase;
+  line-height:1.8;
+}
+.closing-cta-top em{
+  font-style:normal;
+  color:#ffffff;
+  font-weight:600;
+}
+.closing-cta-btn{
+  font-family:'Cinzel',serif;
+  font-size:clamp(10px,1.2vw,12px);
+  letter-spacing:.4em;
+  color:#000;
+  text-transform:uppercase;
+  background:linear-gradient(135deg,#f5d98a,#e8b84b);
+  padding:clamp(12px,1.5vw,16px) clamp(28px,4vw,48px);
+  border:none;
+  cursor:pointer;
+  text-decoration:none;
+  display:inline-block;
+  transition:filter .25s,transform .2s;
+  clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);
+}
+.closing-cta-btn:hover{
+  filter:brightness(1.12);
+  transform:translateY(-1px);
+}
+
+@media(max-width:600px){
+  .closing-content{padding:60px 20px 80px}
+  .closing-spacer{height:220px}
+  .closing-pillars{gap:14px}
+}
 </style>
 </head>
 <body>
@@ -2795,9 +3020,9 @@ document.querySelectorAll('.faq2-trigger').forEach(function(btn){
   </p>
   <div class="bridge-paths">
     <a href="#assess" class="bridge-path primary">Book a Session</a>
-    <span class="bridge-sep">&middot;</span>
+    <span class="bridge-sep">·</span>
     <a href="training.html" class="bridge-path">Explore Training</a>
-    <span class="bridge-sep">&middot;</span>
+    <span class="bridge-sep">·</span>
     <a href="#" class="bridge-path" onclick="openCommunityModal();return false;">Join the Community</a>
   </div>
 </section>
@@ -2809,26 +3034,62 @@ document.querySelectorAll('.faq2-trigger').forEach(function(btn){
     </video>
   </div>
   <div class="closing-overlay"></div>
+
   <div class="closing-content">
-    <div class="closing-top">The Work Continues.<br>The Mission Remains.</div>
+
+    <!-- Top text over the sky -->
+    <div class="closing-top">
+      The Work Continues.<br>The Mission Remains.
+    </div>
     <div class="closing-rule"></div>
     <div class="closing-thanks">Thank you for being part of the evolution.</div>
-    <div class="closing-tagline">&middot; Protect. &nbsp;Transform. &nbsp;Elevate. &middot;</div>
+    <div class="closing-tagline">· Protect. &nbsp;Transform. &nbsp;Elevate. ·</div>
+
+    <!-- Space for the figure to breathe -->
     <div class="closing-spacer"></div>
-    <div class="closing-llc">&#8212; Royal Energy Alchemy LLC &#8212;</div>
-    <div class="closing-headline">Raising the Standard<br>of Energetic Healing</div>
+
+    <!-- Bottom content over the city lights -->
+    <div class="closing-llc">— Royal Energy Alchemy LLC —</div>
+
+    <div class="closing-headline">
+      Raising the Standard<br>of Energetic Healing
+    </div>
+
     <div class="closing-sub">One Soul. &nbsp;One Session. &nbsp;One Shift at a Time.</div>
+
+    <!-- Five pillars -->
     <div class="closing-pillars">
-      <div class="pillar"><div class="pillar-icon">&#128737;</div><span class="pillar-label">Protection</span></div>
-      <div class="pillar"><div class="pillar-icon">&#10022;</div><span class="pillar-label">Transformation</span></div>
-      <div class="pillar"><div class="pillar-icon">&#10038;</div><span class="pillar-label">Elevation</span></div>
-      <div class="pillar"><div class="pillar-icon">&#11042;</div><span class="pillar-label">Evolution</span></div>
-      <div class="pillar"><div class="pillar-icon">&#9819;</div><span class="pillar-label">Legacy</span></div>
+      <div class="pillar">
+        <div class="pillar-icon">🛡</div>
+        <span class="pillar-label">Protection</span>
+      </div>
+      <div class="pillar">
+        <div class="pillar-icon">✦</div>
+        <span class="pillar-label">Transformation</span>
+      </div>
+      <div class="pillar">
+        <div class="pillar-icon">✶</div>
+        <span class="pillar-label">Elevation</span>
+      </div>
+      <div class="pillar">
+        <div class="pillar-icon">⬡</div>
+        <span class="pillar-label">Evolution</span>
+      </div>
+      <div class="pillar">
+        <div class="pillar-icon">♛</div>
+        <span class="pillar-label">Legacy</span>
+      </div>
     </div>
+
+    <!-- CTA box -->
     <div class="closing-cta-box">
-      <div class="closing-cta-top">The Journey Is Infinite.<br>Are <em>You</em> Ready For What&#39;s Next?</div>
-      <a href="#assess" class="closing-cta-btn">Begin Your Assessment &#8594;</a>
+      <div class="closing-cta-top">
+        The Journey Is Infinite.<br>
+        Are <em>You</em> Ready For What's Next?
+      </div>
+      <a href="#assess" class="closing-cta-btn">Begin Your Assessment →</a>
     </div>
+
   </div>
 </section>
 
