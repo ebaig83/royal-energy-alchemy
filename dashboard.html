@@ -159,19 +159,30 @@ body{background:#04020e;color:#f0ecff;font-family:'EB Garamond',serif;min-height
 .cal-panel-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px;padding-top:16px;border-top:1px solid #e8b84b0f}
 .cal-no-sessions{font-family:'EB Garamond',serif;font-size:16px;color:#dddaee44;font-style:italic;padding:10px 0 2px;letter-spacing:.02em}
 /* ── APPOINTMENT CARDS ── */
-.appt-card{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:14px 16px;border-left:3px solid #e8b84b44;background:#e8b84b06;margin-bottom:8px}
+.appt-card{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:16px 20px;border-left:4px solid #e8b84b55;background:#e8b84b08;margin-bottom:6px;border-radius:0 3px 3px 0}
 .appt-card.today{border-left-color:#22c98aaa;background:#22c98a08}
-.appt-card.past{border-left-color:#e8b84b22;opacity:.6}
+.appt-card.past{border-left-color:#e8b84b22;opacity:.55}
 .appt-card.conflict{border-left-color:#ee707099;background:#ee707008}
-.appt-date{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.25em;color:#e8b84bcc;text-transform:uppercase}
-.appt-client{font-family:'Cinzel',serif;font-size:14px;color:#f0ecff;margin:3px 0}
-.appt-meta{font-size:14px;color:#dddaeecc}
-.conflict-tag{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#ee7070;text-transform:uppercase;background:#ee707018;border:1px solid #ee707033;padding:2px 8px;display:inline-block;margin-top:4px}
-.appt-form-wrap{background:#e8b84b08;border:1px solid #e8b84b22;padding:20px;margin-bottom:16px}
-.appt-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.appt-date{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.28em;color:#e8b84bbb;text-transform:uppercase;margin-bottom:2px}
+.appt-client{font-family:'Cinzel',serif;font-size:16px;color:#f0ecff;margin:4px 0 3px;letter-spacing:.03em}
+.appt-meta{font-family:'EB Garamond',serif;font-size:15px;color:#dddaee99;line-height:1.5}
+.conflict-tag{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#ee7070;text-transform:uppercase;background:#ee707018;border:1px solid #ee707033;padding:3px 10px;display:inline-block;margin-top:5px}
+/* ── BOOKING FORMS ── */
+.appt-form-wrap{background:#0a0612;border:1px solid #e8b84b1a;padding:24px;margin-bottom:20px}
+.appt-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 @media(max-width:600px){.appt-form-grid{grid-template-columns:1fr}}
-.appt-input{width:100%;background:#04020e;border:1px solid #e8b84b22;color:#f0ecff;font-family:'EB Garamond',serif;font-size:15px;padding:8px 12px;box-sizing:border-box}
-.appt-input:focus{outline:none;border-color:#e8b84b66}
+.appt-form-wrap label,.form-lbl{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.38em;color:#e8b84b88;text-transform:uppercase;display:block;margin-bottom:7px}
+.appt-input{width:100%;background:#04020e;border:1px solid #e8b84b1a;color:#f0ecff;font-family:'EB Garamond',serif;font-size:16px;padding:11px 14px;box-sizing:border-box;border-radius:2px;transition:border-color .2s}
+.appt-input:focus{outline:none;border-color:#e8b84b77;background:#0d0820}
+/* ── BOOKING SECTION SPACING ── */
+.booking-section{margin-bottom:36px}
+.booking-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px}
+.booking-section-header .section-title{margin:0}
+/* capacity card */
+.capacity-card{background:#0a0612;border:1px solid #e8b84b1a;padding:18px 22px;margin-bottom:28px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.capacity-card .cap-label{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.38em;color:#e8b84b88;text-transform:uppercase;white-space:nowrap}
+.capacity-card .cap-hint{font-family:'EB Garamond',serif;font-size:15px;color:#dddaee66;font-style:italic}
+.capacity-card input{width:80px;text-align:center;font-family:'Cinzel',serif;font-size:22px;color:#e8b84b}
 /* ── INTAKE MODAL ── */
 .intake-row{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
 .intake-label{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.25em;color:#e8b84b99;text-transform:uppercase;min-width:100px;padding-top:2px}
@@ -639,145 +650,140 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#d
   <div class="tab-content" id="tab-booking">
 
     <!-- CALENDAR -->
-    <div class="section-title">Calendar</div>
-    <div class="cal-wrap">
-      <div class="cal-header">
-        <button class="cal-nav" onclick="calPrev()">‹</button>
-        <span class="cal-title" id="calTitle"></span>
-        <button class="cal-nav" onclick="calNext()">›</button>
-      </div>
-      <div class="cal-grid" id="calGrid"></div>
-      <div class="cal-day-panel" id="calDayPanel">
-        <div class="cal-day-panel-title" id="calDayTitle"></div>
-        <div id="calDayList"></div>
+    <div class="booking-section">
+      <div class="section-title">Calendar</div>
+      <div class="cal-wrap">
+        <div class="cal-header">
+          <button class="cal-nav" onclick="calPrev()">‹</button>
+          <span class="cal-title" id="calTitle"></span>
+          <button class="cal-nav" onclick="calNext()">›</button>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+        <div class="cal-day-panel" id="calDayPanel">
+          <div class="cal-day-panel-title" id="calDayTitle"></div>
+          <div id="calDayList"></div>
+        </div>
       </div>
     </div>
 
     <!-- CAPACITY STATS -->
-    <div class="section-title">Schedule Capacity — This Week</div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1px;background:#e8b84b14;margin-bottom:16px">
-      <div class="stat"><span class="stat-val" id="capAvailable">—</span><span class="stat-label">Available Slots</span></div>
-      <div class="stat"><span class="stat-val" id="capBooked">—</span><span class="stat-label">Booked This Week</span></div>
-      <div class="stat"><span class="stat-val" id="capWaitlist">—</span><span class="stat-label">On Waitlist</span></div>
-      <div class="stat"><span class="stat-val" id="capAvgDays">—</span><span class="stat-label">Avg Days to Next Appt</span></div>
-    </div>
-
-    <!-- CAPACITY SETTING -->
-    <div class="card" style="margin-bottom:20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
-      <span style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#e8b84b99;text-transform:uppercase">Weekly Capacity</span>
-      <input id="capacityInput" type="number" min="1" max="60" class="appt-input" style="width:72px;text-align:center;font-family:'Cinzel',serif;font-size:18px" oninput="saveCapacity()" />
-      <span style="font-size:14px;color:#dddaeecc">slots / week</span>
-      <span style="font-size:13px;color:#e8b84b66;font-style:italic">Set your maximum sessions per week so the dashboard knows how full you are</span>
+    <div class="booking-section">
+      <div class="section-title">Schedule Capacity — This Week</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1px;background:#e8b84b14;margin-bottom:18px">
+        <div class="stat"><span class="stat-val" id="capAvailable">—</span><span class="stat-label">Available Slots</span></div>
+        <div class="stat"><span class="stat-val" id="capBooked">—</span><span class="stat-label">Booked This Week</span></div>
+        <div class="stat"><span class="stat-val" id="capWaitlist">—</span><span class="stat-label">On Waitlist</span></div>
+        <div class="stat"><span class="stat-val" id="capAvgDays">—</span><span class="stat-label">Avg Days to Next Appt</span></div>
+      </div>
+      <div class="capacity-card">
+        <span class="cap-label">Weekly Capacity</span>
+        <input id="capacityInput" type="number" min="1" max="60" class="appt-input" style="width:80px;text-align:center;font-family:'Cinzel',serif;font-size:22px;color:#e8b84b;padding:8px" oninput="saveCapacity()" />
+        <span style="font-family:'EB Garamond',serif;font-size:17px;color:#dddaeecc">slots / week</span>
+        <span class="cap-hint">Set your maximum sessions per week so the dashboard knows how full you are.</span>
+      </div>
     </div>
 
     <!-- WAITLIST -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:10px">
-      <div class="section-title" style="margin:0">Waitlist</div>
-      <button class="action-btn approve" onclick="toggleWaitlistForm()">+ Add to Waitlist</button>
-    </div>
-    <div id="waitlistFormWrap" style="display:none" class="appt-form-wrap" style="margin-bottom:12px">
-      <div class="appt-form-grid">
-        <div><label style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b99;text-transform:uppercase;display:block;margin-bottom:6px">Client Name</label>
-          <input class="appt-input" id="wlClient" placeholder="Full name" /></div>
-        <div><label style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b99;text-transform:uppercase;display:block;margin-bottom:6px">Service Requested</label>
-          <input class="appt-input" id="wlService" placeholder="e.g. Energy Session" /></div>
-        <div><label style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b99;text-transform:uppercase;display:block;margin-bottom:6px">Date Added</label>
-          <input class="appt-input" id="wlDate" type="date" /></div>
-        <div><label style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b99;text-transform:uppercase;display:block;margin-bottom:6px">Notes</label>
-          <input class="appt-input" id="wlNotes" placeholder="Urgency, availability, etc." /></div>
+    <div class="booking-section">
+      <div class="booking-section-header">
+        <div class="section-title">Waitlist</div>
+        <button class="action-btn approve" onclick="toggleWaitlistForm()">+ Add to Waitlist</button>
       </div>
-      <div style="margin-top:14px;display:flex;gap:10px">
-        <button class="action-btn approve" onclick="saveWaitlist()">Add to Waitlist</button>
-        <button class="action-btn reject" onclick="toggleWaitlistForm()">Cancel</button>
+      <div id="waitlistFormWrap" style="display:none" class="appt-form-wrap">
+        <div class="appt-form-grid">
+          <div><label>Client Name</label><input class="appt-input" id="wlClient" placeholder="Full name" /></div>
+          <div><label>Service Requested</label><input class="appt-input" id="wlService" placeholder="e.g. Energy Session" /></div>
+          <div><label>Date Added</label><input class="appt-input" id="wlDate" type="date" /></div>
+          <div><label>Notes</label><input class="appt-input" id="wlNotes" placeholder="Urgency, availability, etc." /></div>
+        </div>
+        <div style="margin-top:18px;display:flex;gap:10px">
+          <button class="action-btn approve" onclick="saveWaitlist()">Add to Waitlist</button>
+          <button class="action-btn reject" onclick="toggleWaitlistForm()">Cancel</button>
+        </div>
       </div>
+      <div id="waitlistBody"></div>
     </div>
-    <div id="waitlistBody" style="margin-bottom:24px"></div>
 
     <!-- UPCOMING APPOINTMENTS -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px">
-      <div class="section-title" style="margin:0">Upcoming Appointments</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="action-btn view" id="gcalBtn" onclick="gcalConnect()" style="font-size:10px">🗓 Connect Google Calendar</button>
-        <button class="action-btn approve" onclick="toggleApptForm()">+ Add Appointment</button>
+    <div class="booking-section">
+      <div class="booking-section-header">
+        <div class="section-title">Upcoming Appointments</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="action-btn view" id="gcalBtn" onclick="gcalConnect()" style="font-size:10px">🗓 Connect Google Calendar</button>
+          <button class="action-btn approve" onclick="toggleApptForm()">+ Add Appointment</button>
+        </div>
       </div>
-    </div>
-    <div id="gcalStatus" style="margin-bottom:12px;font-family:'Cinzel',serif;font-size:10px;letter-spacing:.25em;color:#22c98a88;text-transform:uppercase"></div>
+      <div id="gcalStatus" style="margin-bottom:12px;font-family:'Cinzel',serif;font-size:10px;letter-spacing:.25em;color:#22c98a88;text-transform:uppercase"></div>
 
-    <div id="apptFormWrap" style="display:none" class="appt-form-wrap">
-      <div class="appt-form-grid">
-        <div><label style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b99;text-transform:uppercase;display:block;margin-bottom:6px">Client Name</label>
-          <input class="appt-input" id="apptClient" placeholder="Full name" /></div>
-        <div><label style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b99;text-transform:uppercase;display:block;margin-bottom:6px">Date</label>
-          <input class="appt-input" id="apptDate" type="date" /></div>
-        <div><label style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b99;text-transform:uppercase;display:block;margin-bottom:6px">Start Time</label>
-          <input class="appt-input" id="apptTime" type="time" /></div>
-        <div><label style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b99;text-transform:uppercase;display:block;margin-bottom:6px">Duration</label>
-          <select class="appt-input" id="apptDuration">
-            <option value="30">30 min</option>
-            <option value="60" selected>60 min</option>
-            <option value="90">90 min</option>
-            <option value="120">2 hrs</option>
-          </select></div>
-        <div><label style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b99;text-transform:uppercase;display:block;margin-bottom:6px">Service</label>
-          <input class="appt-input" id="apptService" placeholder="e.g. Energy Session, Tarot" /></div>
-        <div><label style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b99;text-transform:uppercase;display:block;margin-bottom:6px">Notes</label>
-          <input class="appt-input" id="apptNotes" placeholder="Optional notes" /></div>
+      <div id="apptFormWrap" style="display:none" class="appt-form-wrap">
+        <div class="appt-form-grid">
+          <div><label>Client Name</label><input class="appt-input" id="apptClient" placeholder="Full name" /></div>
+          <div><label>Date</label><input class="appt-input" id="apptDate" type="date" /></div>
+          <div><label>Start Time</label><input class="appt-input" id="apptTime" type="time" /></div>
+          <div><label>Duration</label>
+            <select class="appt-input" id="apptDuration">
+              <option value="30">30 min</option>
+              <option value="60" selected>60 min</option>
+              <option value="90">90 min</option>
+              <option value="120">2 hrs</option>
+            </select>
+          </div>
+          <div><label>Service</label><input class="appt-input" id="apptService" placeholder="e.g. Energy Session, Tarot" /></div>
+          <div><label>Notes</label><input class="appt-input" id="apptNotes" placeholder="Optional notes" /></div>
+        </div>
+        <div style="margin-top:18px;display:flex;gap:10px">
+          <button class="action-btn approve" onclick="saveAppt()">Save Appointment</button>
+          <button class="action-btn reject" onclick="toggleApptForm()">Cancel</button>
+        </div>
       </div>
-      <div style="margin-top:14px;display:flex;gap:10px">
-        <button class="action-btn approve" onclick="saveAppt()">Save Appointment</button>
-        <button class="action-btn reject" onclick="toggleApptForm()">Cancel</button>
+
+      <div id="upcomingList" style="margin-bottom:16px"></div>
+      <div id="gcalPushAllWrap" style="margin-bottom:8px">
+        <button class="action-btn view" onclick="gcalPushAll()" style="font-size:10px">📅 Push All Upcoming to Google Calendar</button>
       </div>
-    </div>
-
-    <div id="upcomingList" style="margin-bottom:16px"></div>
-
-    <div id="gcalPushAllWrap" style="margin-bottom:24px">
-      <button class="action-btn view" onclick="gcalPushAll()" style="font-size:10px">📅 Push All Upcoming to Google Calendar</button>
-    </div>
-
-    <!-- Google Calendar Setup Instructions -->
-    <div id="gcalSetupNote" style="display:none;margin-bottom:24px" class="card">
-      <p style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#e8b84b99;text-transform:uppercase;margin-bottom:12px">Google Calendar Setup — One-Time</p>
-      <ol style="font-size:15px;color:#dddaeecc;line-height:2.2;padding-left:20px">
-        <li>Go to <a href="https://console.cloud.google.com/" target="_blank" style="color:#e8b84bcc">console.cloud.google.com</a> and create a project</li>
-        <li>Enable the <strong style="color:#f0ecff">Google Calendar API</strong></li>
-        <li>Create an <strong style="color:#f0ecff">OAuth 2.0 Client ID</strong> (Web Application type)</li>
-        <li>Add <code style="color:#e8b84b;background:#e8b84b11;padding:1px 6px">https://royal-energy-alchemy.netlify.app</code> as an Authorized JavaScript Origin</li>
-        <li>Copy the Client ID and paste it into <code style="color:#e8b84b;background:#e8b84b11;padding:1px 6px">GCAL_CLIENT_ID</code> in dashboard.html</li>
-      </ol>
-      <p style="font-size:14px;color:#dddaee88;margin-top:12px;font-style:italic">This only needs to be done once. After that, the Connect button will work every time.</p>
-    </div>
-
-    <div class="section-title">Booking System</div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;background:#e8b84b14;margin-bottom:20px">
-      <div class="stat"><span class="stat-val good">✓ Live</span><span class="stat-label">Square Appointments</span></div>
-      <div class="stat"><span class="stat-val" id="bkTotalSess">—</span><span class="stat-label">Total Sessions Logged</span></div>
-      <div class="stat"><span class="stat-val" id="bkWeeklyAvg">—</span><span class="stat-label">Avg Sessions / Week</span></div>
-      <div class="stat"><span class="stat-val" id="bkTopDay">—</span><span class="stat-label">Busiest Day</span></div>
-    </div>
-
-    <div class="card" style="margin-bottom:16px">
-      <p style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.4em;color:#22c98acc;text-transform:uppercase;margin-bottom:14px">✓ Square Appointments — Live</p>
-      <div style="display:flex;gap:12px;flex-wrap:wrap">
-        <a href="https://book.squareup.com/appointments/gcevwnjduxlw9u/location/LA19CVXRF3KDC/services" target="_blank" class="action-btn view" style="text-decoration:none;display:inline-block;padding:10px 28px">Open Booking Page ↗</a>
-        <a href="https://squareup.com/dashboard/appointments" target="_blank" class="action-btn approve" style="text-decoration:none;display:inline-block;padding:10px 28px">Square Dashboard ↗</a>
+      <!-- Google Calendar Setup Instructions -->
+      <div id="gcalSetupNote" style="display:none;margin-top:16px" class="card">
+        <p style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#e8b84b99;text-transform:uppercase;margin-bottom:14px">Google Calendar Setup — One-Time</p>
+        <ol style="font-family:'EB Garamond',serif;font-size:16px;color:#dddaeecc;line-height:2.2;padding-left:22px">
+          <li>Go to <a href="https://console.cloud.google.com/" target="_blank" style="color:#e8b84bcc">console.cloud.google.com</a> and create a project</li>
+          <li>Enable the <strong style="color:#f0ecff">Google Calendar API</strong></li>
+          <li>Create an <strong style="color:#f0ecff">OAuth 2.0 Client ID</strong> (Web Application type)</li>
+          <li>Add <code style="color:#e8b84b;background:#e8b84b11;padding:2px 8px">https://royal-energy-alchemy.netlify.app</code> as an Authorized JavaScript Origin</li>
+          <li>Copy the Client ID and paste it into <code style="color:#e8b84b;background:#e8b84b11;padding:2px 8px">GCAL_CLIENT_ID</code> in dashboard.html</li>
+        </ol>
+        <p style="font-family:'EB Garamond',serif;font-size:15px;color:#dddaee88;margin-top:14px;font-style:italic">This only needs to be done once. After that, the Connect button will work every time.</p>
       </div>
-    </div>
+    </div><!-- /upcoming section -->
 
-    <div class="section-title">Sessions by Day of Week</div>
-    <div class="card" style="margin-bottom:20px"><div id="bkDayBreakdown" style="display:flex;flex-direction:column;gap:12px"></div></div>
-
-    <div class="section-title">Sessions by Week</div>
-    <div class="card" style="margin-bottom:20px"><div id="bkWeekBreakdown" style="display:flex;flex-direction:column;gap:12px"></div></div>
-
-    <div class="card" style="background:#22c98a08;border-color:#22c98a22">
-      <p style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#22c98a99;text-transform:uppercase;margin-bottom:10px">Square Setup Checklist</p>
-      <div style="display:flex;flex-direction:column;gap:8px;font-size:15px;color:#dddaee;line-height:1.7">
-        <span>✓ Booking link live on public site</span>
-        <span>✓ All 12 services imported to Square</span>
-        <span>✓ Treatment plan packages added to CSV</span>
-        <span>☐ Enable "Available for online booking" on each service in Square</span>
-        <span>☐ Set weekly availability hours in Square Calendar settings</span>
+    <!-- BOOKING SYSTEM STATS -->
+    <div class="booking-section">
+      <div class="section-title">Booking System</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;background:#e8b84b14;margin-bottom:20px">
+        <div class="stat"><span class="stat-val good">✓ Live</span><span class="stat-label">Square Appointments</span></div>
+        <div class="stat"><span class="stat-val" id="bkTotalSess">—</span><span class="stat-label">Total Sessions Logged</span></div>
+        <div class="stat"><span class="stat-val" id="bkWeeklyAvg">—</span><span class="stat-label">Avg Sessions / Week</span></div>
+        <div class="stat"><span class="stat-val" id="bkTopDay">—</span><span class="stat-label">Busiest Day</span></div>
+      </div>
+      <div class="card" style="margin-bottom:20px">
+        <p style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.4em;color:#22c98acc;text-transform:uppercase;margin-bottom:16px">✓ Square Appointments — Live</p>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <a href="https://book.squareup.com/appointments/gcevwnjduxlw9u/location/LA19CVXRF3KDC/services" target="_blank" class="action-btn view" style="text-decoration:none;display:inline-block;padding:10px 28px">Open Booking Page ↗</a>
+          <a href="https://squareup.com/dashboard/appointments" target="_blank" class="action-btn approve" style="text-decoration:none;display:inline-block;padding:10px 28px">Square Dashboard ↗</a>
+        </div>
+      </div>
+      <div class="section-title">Sessions by Day of Week</div>
+      <div class="card" style="margin-bottom:20px"><div id="bkDayBreakdown" style="display:flex;flex-direction:column;gap:14px"></div></div>
+      <div class="section-title">Sessions by Week</div>
+      <div class="card" style="margin-bottom:20px"><div id="bkWeekBreakdown" style="display:flex;flex-direction:column;gap:14px"></div></div>
+      <div class="card" style="background:#22c98a08;border-color:#22c98a22">
+        <p style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#22c98a99;text-transform:uppercase;margin-bottom:12px">Square Setup Checklist</p>
+        <div style="display:flex;flex-direction:column;gap:10px;font-family:'EB Garamond',serif;font-size:16px;color:#dddaee;line-height:1.7">
+          <span>✓ Booking link live on public site</span>
+          <span>✓ All 12 services imported to Square</span>
+          <span>✓ Treatment plan packages added to CSV</span>
+          <span style="color:#dddaee88">☐ Enable "Available for online booking" on each service in Square</span>
+          <span style="color:#dddaee88">☐ Set weekly availability hours in Square Calendar settings</span>
+        </div>
       </div>
     </div>
   </div>
