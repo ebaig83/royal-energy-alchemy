@@ -133,22 +133,31 @@ body{background:#04020e;color:#f0ecff;font-family:'EB Garamond',serif;min-height
 .cal-dot{width:7px;height:7px;border-radius:50%;background:#e8b84b88;flex:0 0 auto;cursor:pointer}
 .cal-dot.appt{background:#22c98a99}
 .cal-count{font-family:'Cinzel',serif;font-size:9px;color:#e8b84b77;letter-spacing:.1em;margin-top:2px}
-.cal-day-panel{border-top:1px solid #e8b84b1a;padding:16px 18px;display:none}
+.cal-day-panel{border-top:2px solid #e8b84b22;padding:22px 22px 28px;display:none;background:#06030f}
 .cal-day-panel.open{display:block}
-.cal-day-panel-title{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;color:#e8b84b99;text-transform:uppercase;margin-bottom:10px}
-.cal-session-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-left:3px solid #e8b84b44;background:#e8b84b06;margin-bottom:6px;cursor:pointer;transition:background .15s,border-color .15s}
-.cal-session-row:hover{background:#e8b84b0e;border-left-color:#e8b84baa}
-.cal-session-row.appt-row{border-left-color:#22c98a66;background:#22c98a06}
-.cal-session-row.appt-row:hover{background:#22c98a0e;border-left-color:#22c98aaa}
-.cal-session-row.open-row{border-left-color:#e8b84bcc;background:#e8b84b0e}
-.cal-client-panel{background:#0a0612;border:1px solid #e8b84b22;border-top:none;padding:16px 16px 18px;margin-bottom:6px;margin-top:-6px}
-.cal-client-panel .lbl{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.38em;color:#e8b84b77;text-transform:uppercase;display:block;margin-bottom:5px;margin-top:12px}
+.cal-day-panel-title{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.28em;color:#e8b84b;text-transform:uppercase;margin-bottom:18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.cal-session-row{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-left:4px solid #e8b84b55;background:#e8b84b08;margin-bottom:3px;cursor:pointer;transition:background .15s,border-color .15s;border-radius:0 3px 3px 0}
+.cal-session-row:hover{background:#e8b84b13;border-left-color:#e8b84bcc}
+.cal-session-row.appt-row{border-left-color:#22c98a66;background:#22c98a08}
+.cal-session-row.appt-row:hover{background:#22c98a13;border-left-color:#22c98acc}
+.cal-session-row.open-row{border-left-color:#e8b84b;background:#e8b84b10}
+.cal-session-row.appt-row.open-row{border-left-color:#22c98a;background:#22c98a10}
+.csr-name{font-family:'Cinzel',serif;font-size:15px;color:#f0ecff;letter-spacing:.03em}
+.csr-meta{font-family:'EB Garamond',serif;font-size:14px;color:#e8b84b88;margin-top:3px;line-height:1.4}
+.csr-badge{font-family:'Cinzel',serif;font-size:11px;color:#e8b84bcc;background:#e8b84b14;border:1px solid #e8b84b33;padding:3px 12px;border-radius:2px;white-space:nowrap}
+.csr-badge.teal{color:#22c98acc;background:#22c98a14;border-color:#22c98a33}
+.csr-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.csr-chevron{font-size:11px;color:#e8b84b44;transition:transform .2s;margin-left:4px}
+.cal-session-row.open-row .csr-chevron{transform:rotate(180deg);color:#e8b84b99}
+.cal-client-panel{background:#04020e;border:1px solid #e8b84b1a;border-top:none;padding:20px 20px 22px;margin-bottom:10px;margin-top:0}
+.cal-client-panel .lbl{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.42em;color:#e8b84b88;text-transform:uppercase;display:block;margin-bottom:7px;margin-top:18px}
 .cal-client-panel .lbl:first-child{margin-top:0}
-.cal-client-panel input,.cal-client-panel select,.cal-client-panel textarea{background:#04020e;border:1px solid #e8b84b22;color:#f0ecff;font-family:'EB Garamond',serif;font-size:15px;padding:9px 12px;width:100%;transition:border-color .2s}
-.cal-client-panel input:focus,.cal-client-panel select:focus,.cal-client-panel textarea:focus{outline:none;border-color:#e8b84b66}
-.cal-client-panel textarea{resize:vertical;min-height:72px}
-.cal-client-panel .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.cal-panel-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.cal-client-panel input,.cal-client-panel select,.cal-client-panel textarea{background:#0a0612;border:1px solid #e8b84b1a;color:#f0ecff;font-family:'EB Garamond',serif;font-size:16px;padding:11px 14px;width:100%;transition:border-color .2s;border-radius:2px;box-sizing:border-box;line-height:1.5}
+.cal-client-panel input:focus,.cal-client-panel select:focus,.cal-client-panel textarea:focus{outline:none;border-color:#e8b84b77;background:#0d0820}
+.cal-client-panel textarea{resize:vertical;min-height:100px;line-height:1.65}
+.cal-client-panel .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.cal-panel-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px;padding-top:16px;border-top:1px solid #e8b84b0f}
+.cal-no-sessions{font-family:'EB Garamond',serif;font-size:16px;color:#dddaee44;font-style:italic;padding:10px 0 2px;letter-spacing:.02em}
 /* ── APPOINTMENT CARDS ── */
 .appt-card{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:14px 16px;border-left:3px solid #e8b84b44;background:#e8b84b06;margin-bottom:8px}
 .appt-card.today{border-left-color:#22c98aaa;background:#22c98a08}
@@ -1449,7 +1458,7 @@ function calSelectDay(dateStr, inMonth) {
   var apts = getAppts().filter(function(a){ return a.date === dateStr; });
 
   if (!sessions.length && !apts.length) {
-    listEl.innerHTML = '<p style="font-size:14px;color:#dddaee88;font-style:italic;padding:8px 0 4px">No sessions logged on this day. Use "+ Add Appointment" to add one.</p>';
+    listEl.innerHTML = '<p class="cal-no-sessions">No sessions logged on this day — use "+ Add Appointment" to add one.</p>';
   } else {
     renderCalDayList(dateStr, sessions, apts, null);
   }
@@ -1472,15 +1481,16 @@ function renderCalDayList(dateStr, sessions, apts, openKey) {
     var savedNote = '';
     try { savedNote = localStorage.getItem(noteKey) || s.notes || ''; } catch(e) { savedNote = s.notes || ''; }
 
+    var roundLabel = s.round ? 'Round ' + s.round : '';
+    var noteHint = (savedNote && !isOpen) ? ' &nbsp;·&nbsp; <span style="font-style:italic;color:#dddaee44;font-size:13px">note saved</span>' : '';
     html += '<div class="cal-session-row' + (isOpen ? ' open-row' : '') + '" onclick="calToggleClient(\'' + dateStr + '\',' + i + ',\'sess\')">'
           + '<div>'
-          + '<span style="font-family:\'Cinzel\',serif;font-size:13px;color:#f0ecff">' + s.client + '</span>'
-          + '<span style="font-size:12px;color:#e8b84b66;margin-left:10px">' + roundStr.replace(' · ','') + '</span>'
-          + (savedNote && !isOpen ? '<span style="font-size:12px;color:#dddaee55;margin-left:8px;font-style:italic">✎ note</span>' : '')
+          + '<div class="csr-name">' + s.client + '</div>'
+          + '<div class="csr-meta">' + (roundLabel ? roundLabel + noteHint : noteHint.replace(' &nbsp;·&nbsp; ','')) + '</div>'
           + '</div>'
-          + '<div style="display:flex;align-items:center;gap:10px">'
-          + '<span style="font-family:\'Cinzel\',serif;font-size:12px;color:#e8b84b99">' + priceStr + '</span>'
-          + '<span style="font-size:11px;color:#e8b84b44">' + (isOpen ? '▲' : '▼') + '</span>'
+          + '<div class="csr-right">'
+          + '<span class="csr-badge">' + priceStr + '</span>'
+          + '<span class="csr-chevron">▼</span>'
           + '</div>'
           + '</div>';
 
@@ -1508,13 +1518,16 @@ function renderCalDayList(dateStr, sessions, apts, openKey) {
   apts.forEach(function(a, i) {
     var key = 'appt_' + a.id;
     var isOpen = openKey === key;
+    var aptMeta = [a.service, a.time ? '⏱ ' + a.time : ''].filter(Boolean).join(' · ');
     html += '<div class="cal-session-row appt-row' + (isOpen ? ' open-row' : '') + '" onclick="calToggleClient(\'' + dateStr + '\',' + a.id + ',\'appt\')">'
           + '<div>'
-          + '<span style="font-family:\'Cinzel\',serif;font-size:13px;color:#22c98acc">📅 ' + a.client + '</span>'
-          + (a.service ? '<span style="font-size:12px;color:#dddaee77;margin-left:8px">'+a.service+'</span>' : '')
-          + (a.time    ? '<span style="font-size:12px;color:#dddaee55;margin-left:6px">'+a.time+'</span>' : '')
+          + '<div class="csr-name" style="color:#22c98acc">📅 ' + a.client + '</div>'
+          + (aptMeta ? '<div class="csr-meta">' + aptMeta + '</div>' : '')
           + '</div>'
-          + '<span style="font-size:11px;color:#22c98a44">' + (isOpen ? '▲' : '▼') + '</span>'
+          + '<div class="csr-right">'
+          + (a.dur ? '<span class="csr-badge teal">' + a.dur + ' min</span>' : '')
+          + '<span class="csr-chevron" style="color:#22c98a44">▼</span>'
+          + '</div>'
           + '</div>';
 
     if (isOpen) {
