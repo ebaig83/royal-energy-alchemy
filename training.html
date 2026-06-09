@@ -59,7 +59,7 @@ body{background:var(--bg);color:#f0ecff;font-family:'EB Garamond',serif;min-heig
 .course-topics li:last-child{border-bottom:none}
 .course-interest-btn{width:100%;font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;text-transform:uppercase;padding:10px;border:1px solid rgba(232,184,75,0.2);color:rgba(232,184,75,0.85);background:transparent;cursor:pointer;transition:all .2s}
 .course-interest-btn:hover{border-color:var(--gold);color:var(--gold);background:rgba(232,184,75,0.04)}
-.course-interest-btn.registered{border-color:var(--teal);color:var(--teal);background:rgba(34,201,138,0.05);cursor:default}
+.course-interest-btn.registered{border-color:var(--teal);color:var(--teal);background:rgba(34,201,138,0.05)}
 
 /* ── TIER LINES ── */
 .tier-line{border:none;border-top:1px solid rgba(232,184,75,0.08);margin:0 24px 80px}
@@ -556,10 +556,15 @@ function saveInterest(courseName) {
 }
 
 function registerInterest(btn, courseName) {
+  if (btn.classList.contains('registered')) {
+    // toggle off
+    btn.textContent = 'Notify Me When Available';
+    btn.classList.remove('registered');
+    return;
+  }
   saveInterest(courseName);
   btn.textContent = '✦ Interest Registered';
   btn.classList.add('registered');
-  btn.disabled = true;
   showToast('Interest noted for: ' + courseName);
   // Scroll to waitlist and pre-check the course
   document.getElementById('waitlistForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -584,19 +589,10 @@ function updateCourseField() {
   document.getElementById('interestedCourses').value = checked.join(', ');
 }
 
-// Pre-populate specific interests from localStorage on load
+// Pre-populate waitlist checkboxes from localStorage (buttons stay interactive)
 (function() {
   const interests = getInterests();
   Object.keys(interests).forEach(name => addSpecificInterest(name));
-  // Also restore button states
-  document.querySelectorAll('.course-interest-btn').forEach(btn => {
-    const courseName = btn.getAttribute('onclick').match(/'([^']+)'\)$/)?.[1];
-    if (courseName && interests[courseName]) {
-      btn.textContent = '✦ Interest Registered';
-      btn.classList.add('registered');
-      btn.disabled = true;
-    }
-  });
 })();
 
 // ── TOAST ────────────────────────────────────────────────────────────────────
