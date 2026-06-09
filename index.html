@@ -264,7 +264,8 @@ footer a:hover,footer a:focus-visible{color:#fff0b8 !important;border-bottom-col
 @media(max-width:480px){
   .journey-flow{flex-direction:column;align-items:center}
   .journey-step{width:100%;min-width:0;flex:auto}
-  .journey-arrow{display:block;transform:rotate(90deg);padding:2px 0}
+  .journey-arrow{display:block;padding:2px 0;font-size:0}
+  .journey-arrow::before{content:'↓';font-size:15px}
   .direct-contact-grid{grid-template-columns:1fr}
   .direct-contact-item{border-right:0;border-bottom:1px solid #e8b84b14}
   .direct-contact-item:last-child{border-bottom:0}
