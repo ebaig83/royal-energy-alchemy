@@ -115,24 +115,24 @@ body{background:#04020e;color:#f0ecff;font-family:'EB Garamond',serif;min-height
 .pattern-hi{color:#ee7070;font-family:'Cinzel',serif}
 .pattern-lo{color:#22c98a99}
 /* ── CALENDAR ── */
-.cal-wrap{background:#0a0612;border:1px solid #e8b84b22;margin-bottom:24px}
-.cal-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #e8b84b1a}
-.cal-title{font-family:'Cinzel',serif;font-size:14px;letter-spacing:.3em;color:#f0ecff;text-transform:uppercase}
-.cal-nav{font-family:'Cinzel',serif;font-size:18px;color:#e8b84bcc;background:none;border:none;cursor:pointer;padding:2px 10px;transition:color .2s}
-.cal-nav:hover{color:#f0ecff}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);border-left:1px solid #e8b84b0f;border-top:1px solid #e8b84b0f}
-.cal-dow{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.3em;color:#e8b84b66;text-transform:uppercase;text-align:center;padding:8px 0;background:#04020e;border-right:1px solid #e8b84b0f;border-bottom:1px solid #e8b84b1a}
-.cal-cell{min-height:72px;border-right:1px solid #e8b84b0f;border-bottom:1px solid #e8b84b0f;padding:6px 7px;position:relative;vertical-align:top;cursor:default}
-.cal-cell.other-month{opacity:.3}
-.cal-cell.today-cell{background:#22c98a08}
+.cal-wrap{background:#08040f;border:1px solid #e8b84b33;margin-bottom:24px;border-radius:4px;overflow:hidden}
+.cal-header{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid #e8b84b22;background:#0d0820}
+.cal-title{font-family:'Cinzel',serif;font-size:16px;letter-spacing:.35em;color:#f0ecff;text-transform:uppercase}
+.cal-nav{font-family:'Cinzel',serif;font-size:22px;color:#e8b84b;background:none;border:none;cursor:pointer;padding:4px 14px;transition:color .2s}
+.cal-nav:hover{color:#fff}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);border-left:1px solid #e8b84b18;border-top:1px solid #e8b84b18}
+.cal-dow{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.35em;color:#e8b84baa;text-transform:uppercase;text-align:center;padding:12px 0;background:#0a0618;border-right:1px solid #e8b84b18;border-bottom:1px solid #e8b84b22}
+.cal-cell{min-height:90px;border-right:1px solid #e8b84b14;border-bottom:1px solid #e8b84b14;padding:8px 10px;position:relative;vertical-align:top;cursor:default}
+.cal-cell.other-month{opacity:.25}
+.cal-cell.today-cell{background:#22c98a0d}
 .cal-cell.has-sessions{cursor:pointer}
-.cal-cell.has-sessions:hover{background:#e8b84b07}
-.cal-day-num{font-family:'Cinzel',serif;font-size:11px;color:#e8b84b88;margin-bottom:4px}
-.cal-cell.today-cell .cal-day-num{color:#22c98a;font-weight:700}
-.cal-dot-row{display:flex;flex-wrap:wrap;gap:3px;margin-top:2px}
-.cal-dot{width:7px;height:7px;border-radius:50%;background:#e8b84b88;flex:0 0 auto;cursor:pointer}
-.cal-dot.appt{background:#22c98a99}
-.cal-count{font-family:'Cinzel',serif;font-size:9px;color:#e8b84b77;letter-spacing:.1em;margin-top:2px}
+.cal-cell.has-sessions:hover{background:#e8b84b0a}
+.cal-day-num{font-family:'Cinzel',serif;font-size:13px;color:#e8b84baa;margin-bottom:5px}
+.cal-cell.today-cell .cal-day-num{color:#22c98a;font-weight:700;font-size:14px}
+.cal-dot-row{display:flex;flex-wrap:wrap;gap:4px;margin-top:3px}
+.cal-dot{width:9px;height:9px;border-radius:50%;background:#e8b84b;flex:0 0 auto;cursor:pointer;box-shadow:0 0 4px #e8b84b55}
+.cal-dot.appt{background:#22c98a;box-shadow:0 0 4px #22c98a55}
+.cal-count{font-family:'Cinzel',serif;font-size:9px;color:#e8b84baa;letter-spacing:.15em;margin-top:4px}
 .cal-day-panel{border-top:2px solid #e8b84b22;padding:22px 22px 28px;display:none;background:#06030f}
 .cal-day-panel.open{display:block}
 .cal-day-panel-title{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.28em;color:#e8b84b;text-transform:uppercase;margin-bottom:18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
@@ -187,6 +187,22 @@ body{background:#04020e;color:#f0ecff;font-family:'EB Garamond',serif;min-height
 .appt-action-btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid #e8b84b0f}
 .btn-cancel-confirm{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;text-transform:uppercase;padding:8px 18px;border:1px solid #ee707077;color:#ee7070;background:transparent;cursor:pointer;transition:all .2s}
 .btn-cancel-confirm:hover{background:#ee707022;border-color:#ee7070}
+/* ── PROFILE PANEL ── */
+.profile-panel{background:#04020e;border:1px solid #9b7fe833;border-top:none;padding:20px 20px 22px;margin-top:0;margin-bottom:8px}
+.profile-panel .lbl{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.42em;color:#9b7fe8aa;text-transform:uppercase;display:block;margin-bottom:7px;margin-top:16px}
+.profile-panel .lbl:first-child{margin-top:0}
+.profile-panel input,.profile-panel textarea{background:#0a0612;border:1px solid #9b7fe822;color:#f0ecff;font-family:'EB Garamond',serif;font-size:16px;padding:10px 14px;width:100%;box-sizing:border-box;border-radius:2px;transition:border-color .2s}
+.profile-panel input:focus,.profile-panel textarea:focus{outline:none;border-color:#9b7fe866}
+.profile-panel .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.enrich-box{background:#e8b84b08;border:1px solid #e8b84b33;padding:14px 16px;margin-top:16px;border-radius:2px}
+.enrich-box-title{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:#e8b84b;text-transform:uppercase;margin-bottom:12px}
+.enrich-item{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.enrich-item input[type=checkbox]{accent-color:#e8b84b;width:15px;height:15px;cursor:pointer;flex-shrink:0}
+.enrich-item label{font-family:'EB Garamond',serif;font-size:15px;color:#f0ecff;cursor:pointer}
+.enrich-item label span{color:#e8b84baa;font-size:13px;margin-left:6px}
+.profile-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid #9b7fe81a}
+.btn-purple{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;text-transform:uppercase;padding:8px 18px;border:1px solid #9b7fe877;color:#9b7fe8cc;background:transparent;cursor:pointer;transition:all .2s}
+.btn-purple:hover{background:#9b7fe822;border-color:#9b7fe8}
 /* cancellations log */
 .cancel-log-card{padding:14px 18px;border-left:4px solid #ee707055;background:#ee707008;margin-bottom:6px;border-radius:0 3px 3px 0}
 .cancel-log-date{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.28em;color:#ee7070bb;text-transform:uppercase;margin-bottom:3px}
@@ -194,6 +210,8 @@ body{background:#04020e;color:#f0ecff;font-family:'EB Garamond',serif;min-height
 .cancel-log-meta{font-family:'EB Garamond',serif;font-size:14px;color:#dddaee88;line-height:1.5}
 .cancel-log-reason{font-family:'EB Garamond',serif;font-size:14px;color:#ee7070aa;font-style:italic;margin-top:4px}
 .reschedule-tag{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;color:#9b7fe8cc;background:#9b7fe814;border:1px solid #9b7fe833;padding:2px 8px;display:inline-block;margin-top:5px;text-transform:uppercase}
+.appt-card.cancelled{border-left-color:#ee707099;background:#ee707008;opacity:0.8}
+.cancelled-badge{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.25em;color:#ee7070;text-transform:uppercase;background:#ee707018;border:1px solid #ee707033;padding:3px 10px;display:inline-block;margin-top:5px}
 /* ── BOOKING SECTION SPACING ── */
 .booking-section{margin-bottom:36px}
 .booking-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px}
@@ -1752,19 +1770,31 @@ function renderUpcoming() {
       if (aStart < bEnd && bStart < aEnd) { conflictSet.add(appts[i].id); conflictSet.add(appts[j].id); }
     }
   }
-  const upcomingSection = appts.filter(a => a.date >= today);
-  const pastSection     = appts.filter(a => a.date <  today);
+  const upcomingSection  = appts.filter(a => a.date >= today && a.status !== 'cancelled');
+  const pastSection      = appts.filter(a => a.date <  today && a.status !== 'cancelled');
+  const cancelledSection = appts.filter(a => a.status === 'cancelled');
 
   function card(a) {
+    const isCancelled = a.status === 'cancelled';
     const isToday    = a.date === today;
     const isPast     = a.date < today;
     const isConflict = conflictSet.has(a.id);
-    const cls = isConflict ? 'conflict' : isToday ? 'today' : isPast ? 'past' : '';
+    const cls = isCancelled ? 'cancelled' : isConflict ? 'conflict' : isToday ? 'today' : isPast ? 'past' : '';
     const timeLabel  = a.time ? ` · ${a.time}` : '';
     const durLabel   = a.dur  ? ` · ${a.dur} min` : '';
     const gcalSynced = a.gcalId ? '<span style="color:#22c98a77;font-size:11px;margin-left:8px">✓ Google Cal</span>' : '';
     const reschedTag = a.rescheduleHistory && a.rescheduleHistory.length
       ? `<span class="reschedule-tag">↺ Rescheduled ${a.rescheduleHistory.length}×</span>` : '';
+    const origDate = a.rescheduleHistory && a.rescheduleHistory.length
+      ? `<div style="font-family:'EB Garamond',serif;font-size:13px;color:#9b7fe877;margin-top:3px">Originally: ${a.rescheduleHistory[0].originalDate}</div>` : '';
+    const cancelledBadge = isCancelled
+      ? `<div class="cancelled-badge">CANCELLED · ${a.cancelledAt||''} · ${a.cancelReason||''}</div>` : '';
+    const actionBtns = isCancelled
+      ? `<button class="action-btn approve" style="padding:5px 12px;font-size:10px;white-space:nowrap" onclick="restoreAppt(${a.id})">↩ Restore</button>`
+      : `<button class="action-btn view" style="padding:5px 12px;font-size:10px;white-space:nowrap" onclick="openEditAppt(${a.id})">✎ Edit</button>
+        <button class="action-btn view" style="padding:5px 12px;font-size:10px;white-space:nowrap;border-color:#9b7fe844;color:#9b7fe8cc" onclick="openProfilePanel(${a.id})">👤 Profile</button>
+        <button class="action-btn approve" style="padding:5px 12px;font-size:10px;white-space:nowrap;background:#9b7fe811;border-color:#9b7fe844;color:#9b7fe8cc" onclick="openReschedulePanel(${a.id})">↺ Reschedule</button>
+        <button class="action-btn reject" style="padding:5px 12px;font-size:10px;white-space:nowrap" onclick="openCancelPanel(${a.id})">✕ Cancel</button>`;
     return `<div class="appt-card ${cls}" id="apptcard_${a.id}">
       <div style="flex:1">
         <div class="appt-date">${a.date}${timeLabel}${durLabel}${isToday?' · <span style="color:#22c98acc">Today</span>':''}${gcalSynced}</div>
@@ -1773,12 +1803,12 @@ function renderUpcoming() {
         ${a.notes ? `<div style="font-family:'EB Garamond',serif;font-size:14px;color:#dddaeecc;font-style:italic;margin-top:4px">${a.notes}</div>` : ''}
         ${isConflict ? '<div class="conflict-tag">⚠ Time Conflict</div>' : ''}
         ${reschedTag}
+        ${origDate}
+        ${cancelledBadge}
         <div id="edit_${a.id}"></div>
       </div>
       <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;flex-shrink:0">
-        <button class="action-btn view" style="padding:5px 12px;font-size:10px;white-space:nowrap" onclick="openEditAppt(${a.id})">✎ Edit</button>
-        <button class="action-btn approve" style="padding:5px 12px;font-size:10px;white-space:nowrap;background:#9b7fe811;border-color:#9b7fe844;color:#9b7fe8cc" onclick="openReschedulePanel(${a.id})">↺ Reschedule</button>
-        <button class="action-btn reject" style="padding:5px 12px;font-size:10px;white-space:nowrap" onclick="openCancelPanel(${a.id})">✕ Cancel</button>
+        ${actionBtns}
       </div>
     </div>
     <div id="actionpanel_${a.id}" style="display:none"></div>`;
@@ -1787,6 +1817,7 @@ function renderUpcoming() {
   let html = '';
   if (upcomingSection.length) html += upcomingSection.map(card).join('');
   if (pastSection.length) html += `<div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:#e8b84b55;text-transform:uppercase;margin:16px 0 8px">Past</div>`+pastSection.slice().reverse().map(card).join('');
+  if (cancelledSection.length) html += `<div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:#ee707077;text-transform:uppercase;margin:16px 0 8px">Cancelled</div>`+cancelledSection.map(card).join('');
   el.innerHTML = html || '<p style="color:#dddaeecc;font-style:italic">No appointments logged.</p>';
 }
 
@@ -1834,21 +1865,32 @@ function openCancelPanel(id) {
 }
 
 function confirmCancel(id) {
-  const a = getAppts().find(x => x.id === id);
+  const appts = getAppts();
+  const a = appts.find(x => x.id === id);
   if (!a) return;
   const reason = (document.getElementById('cancelReason_'+id)||{}).value || 'No reason given';
   const notes  = (document.getElementById('cancelNotes_'+id)||{}).value  || '';
-  const record = Object.assign({}, a, {
-    cancelledAt: new Date().toISOString().slice(0,10),
-    cancelReason: reason,
-    cancelNotes: notes
-  });
-  saveCancellations([record, ...getCancellations()]);
-  saveAppts(getAppts().filter(x => x.id !== id));
+  a.status = 'cancelled';
+  a.cancelledAt = new Date().toISOString().slice(0,10);
+  a.cancelReason = reason;
+  a.cancelNotes = notes;
+  saveAppts(appts);
+  // Also push a copy to rea_cancellations for the log
+  saveCancellations([Object.assign({}, a), ...getCancellations()]);
   renderUpcoming();
   renderCancellationLog();
   updateCapacityStats();
   renderCal();
+}
+
+function restoreAppt(id) {
+  const appts = getAppts();
+  const a = appts.find(x => x.id === id);
+  if (!a) return;
+  delete a.status; delete a.cancelledAt; delete a.cancelReason; delete a.cancelNotes;
+  saveAppts(appts);
+  saveCancellations(getCancellations().filter(c => c.id !== id));
+  renderUpcoming(); renderCancellationLog(); updateCapacityStats(); renderCal();
 }
 
 function openReschedulePanel(id) {
@@ -2680,6 +2722,137 @@ function updateFlagBadge(name, status) {
   if (typeof REA_FLAGS === 'undefined') return;
   REA_FLAGS.all().forEach(f => updateFlagBadge(f.name, f.status));
 })();
+
+// ── CLIENT PROFILES ──────────────────────────────────────────
+function getClientProfiles() {
+  try { return JSON.parse(localStorage.getItem('rea_client_profiles')||'{}'); } catch(e) { return {}; }
+}
+function saveClientProfile(name, data) {
+  const all = getClientProfiles();
+  all[name] = Object.assign(all[name]||{}, data, { updatedAt: new Date().toISOString().slice(0,10) });
+  try { localStorage.setItem('rea_client_profiles', JSON.stringify(all)); } catch(e) {}
+}
+function getProfile(name) {
+  return getClientProfiles()[name] || {};
+}
+
+function openProfilePanel(id) {
+  // Close any other open action panels
+  document.querySelectorAll('[id^="actionpanel_"]').forEach(el => { if (el.id !== 'actionpanel_'+id) el.style.display='none'; });
+  const el = document.getElementById('actionpanel_'+id);
+  if (!el) return;
+  if (el.style.display === 'block' && el.dataset.type === 'profile') { el.style.display='none'; return; }
+  const a = getAppts().find(x => x.id === id);
+  if (!a) return;
+  const p = getProfile(a.client);
+  el.dataset.type = 'profile';
+  el.style.display = 'block';
+  el.innerHTML = `<div class="profile-panel">
+    <span class="lbl">Email</span>
+    <input id="prof_email_${id}" value="${(p.email||'').replace(/"/g,'&quot;')}" placeholder="client@email.com" />
+    <div class="row2" style="margin-top:0">
+      <div>
+        <span class="lbl">Phone</span>
+        <input id="prof_phone_${id}" value="${(p.phone||'').replace(/"/g,'&quot;')}" placeholder="(555) 000-0000" />
+      </div>
+      <div>
+        <span class="lbl">Location / City</span>
+        <input id="prof_location_${id}" value="${(p.location||'').replace(/"/g,'&quot;')}" placeholder="City, State" />
+      </div>
+    </div>
+    <div class="row2">
+      <div>
+        <span class="lbl">Date of Birth</span>
+        <input id="prof_dob_${id}" value="${(p.dob||'').replace(/"/g,'&quot;')}" placeholder="MM/DD/YYYY" />
+      </div>
+      <div>
+        <span class="lbl">Referred By</span>
+        <input id="prof_referred_${id}" value="${(p.referred||'').replace(/"/g,'&quot;')}" placeholder="Name or source" />
+      </div>
+    </div>
+    <span class="lbl">Emergency Contact</span>
+    <input id="prof_emergency_${id}" value="${(p.emergency||'').replace(/"/g,'&quot;')}" placeholder="Name & phone" />
+    <span class="lbl">Notes / Background</span>
+    <textarea id="prof_notes_${id}" placeholder="Client background, intentions, previous work, sensitivities…">${p.notes||''}</textarea>
+
+    <div class="enrich-box" id="enrichBox_${id}">
+      <div class="enrich-box-title">Suggested Demographics</div>
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px">
+        <button class="btn-purple" onclick="enrichClient(${id})">✦ Look Up by Name</button>
+        <button class="btn-purple" onclick="window.open('https://www.google.com/search?q='+encodeURIComponent('${a.client.replace(/'/g,"\\'")}'+' email contact'),'_blank')">🔍 Search Google</button>
+      </div>
+      <div id="enrichResults_${id}" style="color:#e8b84b88;font-family:'EB Garamond',serif;font-size:14px;font-style:italic">Click "Look Up by Name" to get predicted demographics from public APIs.</div>
+    </div>
+
+    <div class="profile-actions">
+      <button class="btn-purple" onclick="saveClientProfile_form(${id})">Save Profile</button>
+      <button class="action-btn view" style="font-size:10px;padding:6px 14px" onclick="document.getElementById('actionpanel_${id}').style.display='none'">Close</button>
+    </div>
+  </div>`;
+}
+
+function enrichClient(id) {
+  const a = getAppts().find(x => x.id === id);
+  if (!a) return;
+  const firstName = a.client.trim().split(/\s+/)[0];
+  const resultsEl = document.getElementById('enrichResults_'+id);
+  if (!resultsEl) return;
+  resultsEl.innerHTML = '<span style="color:#e8b84b88">Fetching…</span>';
+
+  Promise.all([
+    fetch('https://api.agify.io/?name='+encodeURIComponent(firstName)).then(r=>r.json()).catch(()=>null),
+    fetch('https://api.genderize.io/?name='+encodeURIComponent(firstName)).then(r=>r.json()).catch(()=>null),
+    fetch('https://api.nationalize.io/?name='+encodeURIComponent(firstName)).then(r=>r.json()).catch(()=>null)
+  ]).then(([agify, genderize, nationalize]) => {
+    let items = [];
+    if (agify && agify.age) items.push({ key: 'predicted_age', label: 'Predicted Age', value: agify.age });
+    if (genderize && genderize.gender) items.push({ key: 'predicted_gender', label: 'Predicted Gender', value: genderize.gender + (genderize.probability ? ' (' + Math.round(genderize.probability*100) + '% confidence)' : '') });
+    if (nationalize && nationalize.country && nationalize.country[0]) {
+      const top = nationalize.country[0];
+      items.push({ key: 'predicted_nationality', label: 'Predicted Nationality', value: top.country_id + (top.probability ? ' (' + Math.round(top.probability*100) + '% confidence)' : '') });
+    }
+    if (!items.length) { resultsEl.innerHTML = '<span style="color:#ee707077">No results returned.</span>'; return; }
+    resultsEl.innerHTML = items.map((item, i) => `
+      <div class="enrich-item">
+        <input type="checkbox" id="enrich_cb_${id}_${i}" value="${item.key}" data-val="${item.value.replace(/"/g,'&quot;')}">
+        <label for="enrich_cb_${id}_${i}">${item.label}<span>${item.value}</span></label>
+      </div>`).join('') +
+      `<div style="margin-top:12px"><button class="btn-purple" onclick="confirmEnrichment(${id})">Confirm Selected</button></div>`;
+  });
+}
+
+function confirmEnrichment(id) {
+  const a = getAppts().find(x => x.id === id);
+  if (!a) return;
+  const checkboxes = document.querySelectorAll(`[id^="enrich_cb_${id}_"]`);
+  const updates = {};
+  checkboxes.forEach(cb => { if (cb.checked) updates[cb.value] = cb.dataset.val; });
+  if (Object.keys(updates).length) {
+    saveClientProfile(a.client, updates);
+    const resultsEl = document.getElementById('enrichResults_'+id);
+    if (resultsEl) { const saved = document.createElement('div'); saved.style.cssText='color:#22c98acc;font-family:Cinzel,serif;font-size:10px;letter-spacing:.2em;margin-top:8px'; saved.textContent='✓ Saved'; resultsEl.appendChild(saved); }
+  }
+}
+
+function saveClientProfile_form(id) {
+  const a = getAppts().find(x => x.id === id);
+  if (!a) return;
+  const fields = ['email','phone','location','dob','referred','emergency','notes'];
+  const data = {};
+  fields.forEach(f => {
+    const el = document.getElementById('prof_'+f+'_'+id);
+    if (el) data[f] = el.tagName === 'TEXTAREA' ? el.value : el.value.trim();
+  });
+  saveClientProfile(a.client, data);
+  const panel = document.getElementById('actionpanel_'+id);
+  if (panel) {
+    const indicator = document.createElement('div');
+    indicator.style.cssText = 'font-family:Cinzel,serif;font-size:10px;letter-spacing:.2em;color:#22c98acc;text-transform:uppercase;margin-top:8px;padding:0 20px 12px';
+    indicator.textContent = '✓ Profile saved';
+    const profileDiv = panel.querySelector('.profile-panel');
+    if (profileDiv) { const existing = profileDiv.querySelector('.save-confirm'); if(existing) existing.remove(); indicator.className='save-confirm'; profileDiv.appendChild(indicator); }
+  }
+}
 </script>
 </body>
 </html>
