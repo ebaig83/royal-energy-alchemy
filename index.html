@@ -1339,7 +1339,10 @@ document.querySelectorAll('.faq2-trigger').forEach(function(btn){
       <div id="svc-modal-num" style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.5em;color:var(--gold);opacity:0.6;margin-bottom:8px;"></div>
       <div id="svc-modal-title" style="font-family:'Cinzel Decorative',serif;font-size:clamp(18px,2.4vw,24px);color:#f0ecff;margin-bottom:10px;"></div>
       <p id="svc-modal-desc" style="font-family:'EB Garamond',serif;font-size:16px;line-height:1.85;color:rgba(232,228,240,0.68);margin:0;"></p>
-      <button type="button" id="svc-modal-select" class="svc2-select" style="margin-top:18px;">Select This Session</button>
+      <div class="svc-modal-actions">
+        <button type="button" id="svc-modal-return" class="svc2-return">Return to Sessions</button>
+        <button type="button" id="svc-modal-select" class="svc2-select">Select This Session</button>
+      </div>
       <div id="svc-modal-timer" style="margin-top:18px;height:2px;background:#e8b84b1f;border-radius:1px;overflow:hidden;">
         <div id="svc-modal-bar" style="height:100%;width:100%;background:linear-gradient(to right,rgba(68,136,255,0.6),#e8b84bcc);transform-origin:left;transform:scaleX(1);transition:none;"></div>
       </div>
@@ -1413,6 +1416,15 @@ document.querySelectorAll('.faq2-trigger').forEach(function(btn){
   transition:filter 0.2s,transform 0.2s;
 }
 .svc2-select:hover,.svc2-select:focus { filter:brightness(1.1);transform:translateY(-1px);outline:none; }
+.svc-modal-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}
+.svc-modal-actions .svc2-select,.svc-modal-actions .svc2-return{flex:1;min-width:210px}
+.svc2-return{
+  min-height:40px;padding:9px 14px;
+  font-family:'Cinzel',serif;font-size:10px;letter-spacing:.18em;text-transform:uppercase;
+  color:#ffd977;background:rgba(232,184,75,.08);border:1px solid rgba(232,184,75,.5);cursor:pointer;
+  transition:color .2s,border-color .2s,background .2s,transform .2s;
+}
+.svc2-return:hover,.svc2-return:focus{color:#fff0b8;border-color:#ffd977;background:rgba(232,184,75,.14);transform:translateY(-1px);outline:none}
 
 /* modal */
 #svc-modal-box { animation: modalIn 0.35s cubic-bezier(0.2,0,0,1) both; }
@@ -1961,21 +1973,22 @@ var modalNum=document.getElementById('svc-modal-num');
 var modalBar=document.getElementById('svc-modal-bar');
 var modalImage=document.getElementById('svc-modal-image');
 var modalSelect=document.getElementById('svc-modal-select');
+var modalReturn=document.getElementById('svc-modal-return');
 var RAF=null, timerRAF=null, closeTimer=null;
 var DURATION=3800;
 var currentSvcId=null;
 
 var SVC_DATA=[
   null,
-  {name:'Energetic Parasite Removal',price:'$80',image:'images/services/01_energetic_parasite_removal.png',desc:'Daron scans your full energetic field, locates what is attached, removes and transmutes it, then seals your field with a shield of light.'},
-  {name:'Cord Removal & Transmutation',price:'from $40',image:'images/services/02_cord_removal_transmutation.png',desc:'Cord removal begins in the Parasite Removal session and longer distance sessions. Targeted release of cords, hooks, and emotional charges tied to people, places, or patterns that keep returning.'},
-  {name:'Energy Alchemy Exorcism',price:'$100',image:'images/services/03_energy_alchemy_exorcism.png',desc:'Deep clearing for intense spiritual disturbances. Sacred geometry is deployed and the field is sealed with a gold sigil when the work is complete.'},
-  {name:'Distance Energy Session',price:'$70',image:'images/services/04_distance_energy_session.png',desc:'The subject does not need to be present. Daron and his Galactic Team locate and work on the energetic field directly across any distance.'},
-  {name:'House Cleansing & Blessing',price:'$60',image:'images/services/05_house_cleansing_blessing.png',desc:'Gold light is sent through every room. Dark energy is expelled through windows and roof. A protective dome is placed over the structure when complete.'},
-  {name:'Emergency Removal Session',price:'$120',image:'images/services/06_emergency_removal_session.png',desc:'Urgent priority clearing. Daron removes the disturbance rapidly and installs a strong protective field immediately. When it is too heavy to carry another day.'},
-  {name:'Removal + Tarot Bundle',price:'$100',image:'images/services/07_removal_tarot_bundle.png',desc:'Full energy removal followed by a three-card tarot pull for clarity, guidance, and direction on what comes next after the clearing.'},
-  {name:'Spiritual Coaching',price:'$50',image:'images/services/08_spiritual_coaching.png',desc:'One-hour guidance session. Daron illuminates the path forward and helps you navigate what your energy is telling you about your next steps.'},
-  {name:'Youth Sessions (Ages 9–14)',price:'$20–$30',image:'images/services/09_youth_sessions.png',desc:'Gentle, safe clearing sessions for young clients. A protective bubble is placed around the child and the work is calm, supportive, and age-appropriate.'}
+  {name:'Energetic Parasite Removal',price:'$80',image:'images/services/01_energetic_parasite_removal_cinematic.png',desc:'Daron scans your full energetic field, locates what is attached, removes and transmutes it, then seals your field with a shield of light.'},
+  {name:'Cord Removal & Transmutation',price:'from $40',image:'images/services/02_cord_removal_transmutation_cinematic.png',desc:'Cord removal begins in the Parasite Removal session and longer distance sessions. Targeted release of cords, hooks, and emotional charges tied to people, places, or patterns that keep returning.'},
+  {name:'Energy Alchemy Exorcism',price:'$100',image:'images/services/03_energy_alchemy_exorcism_cinematic.png',desc:'Deep clearing for intense spiritual disturbances. Sacred geometry is deployed and the field is sealed with a gold sigil when the work is complete.'},
+  {name:'Distance Energy Session',price:'$70',image:'images/services/04_distance_energy_session_cinematic.png',desc:'The subject does not need to be present. Daron and his Galactic Team locate and work on the energetic field directly across any distance.'},
+  {name:'House Cleansing & Blessing',price:'$60',image:'images/services/05_house_cleansing_blessing_cinematic.png',desc:'Gold light is sent through every room. Dark energy is expelled through windows and roof. A protective dome is placed over the structure when complete.'},
+  {name:'Emergency Removal Session',price:'$120',image:'images/services/06_emergency_removal_session_cinematic.png',desc:'Urgent priority clearing. Daron removes the disturbance rapidly and installs a strong protective field immediately. When it is too heavy to carry another day.'},
+  {name:'Removal + Tarot Bundle',price:'$100',image:'images/services/07_removal_tarot_bundle_cinematic.png',desc:'Full energy removal followed by a three-card tarot pull for clarity, guidance, and direction on what comes next after the clearing.'},
+  {name:'Spiritual Coaching',price:'$50',image:'images/services/08_spiritual_coaching_cinematic.png',desc:'One-hour guidance session. Daron illuminates the path forward and helps you navigate what your energy is telling you about your next steps.'},
+  {name:'Youth Sessions (Ages 9–14)',price:'$20–$30',image:'images/services/09_youth_sessions_cinematic.png',desc:'Gentle, safe clearing sessions for young clients. A protective bubble is placed around the child and the work is calm, supportive, and age-appropriate.'}
 ];
 
 function openModal(svcId){
@@ -2034,6 +2047,15 @@ function selectSession(svcId){
   },modal.classList.contains('open')?340:0);
 }
 
+function returnToSessions(){
+  var services=document.getElementById('services');
+  if(modal.classList.contains('open')) closeModal();
+  window.setTimeout(function(){
+    if(services) services.scrollIntoView({behavior:'smooth',block:'start'});
+    window.history.replaceState(null,'','#services');
+  },340);
+}
+
 // card actions
 document.querySelectorAll('.svc2-card').forEach(function(card){
   var svcId=parseInt(card.dataset.svc);
@@ -2050,6 +2072,7 @@ document.querySelectorAll('.svc2-card').forEach(function(card){
   });
 });
 modalSelect.addEventListener('click',function(){ if(currentSvcId) selectSession(currentSvcId); });
+modalReturn.addEventListener('click',returnToSessions);
 // close triggers
 document.getElementById('svc-modal-close').addEventListener('click',closeModal);
 modalBg.addEventListener('click',closeModal);
