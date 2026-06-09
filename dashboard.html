@@ -115,34 +115,34 @@ body{background:#04020e;color:#f0ecff;font-family:'EB Garamond',serif;min-height
 .pattern-hi{color:#ee7070;font-family:'Cinzel',serif}
 .pattern-lo{color:#22c98a99}
 /* ── CALENDAR ── */
-.cal-wrap{background:#08040f;border:1px solid #e8b84b33;margin-bottom:24px;border-radius:4px;overflow:hidden}
-.cal-header{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid #e8b84b22;background:#0d0820}
-.cal-title{font-family:'Cinzel',serif;font-size:16px;letter-spacing:.35em;color:#f0ecff;text-transform:uppercase}
-.cal-nav{font-family:'Cinzel',serif;font-size:22px;color:#e8b84b;background:none;border:none;cursor:pointer;padding:4px 14px;transition:color .2s}
+.cal-wrap{background:#08040f;border:1px solid #e8b84b44;margin-bottom:24px;border-radius:4px;overflow:hidden}
+.cal-header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid #e8b84b22;background:#0d0820}
+.cal-title{font-family:'Cinzel',serif;font-size:17px;letter-spacing:.35em;color:#f0ecff;text-transform:uppercase}
+.cal-nav{font-family:'Cinzel',serif;font-size:24px;color:#e8b84b;background:none;border:none;cursor:pointer;padding:4px 16px;transition:color .2s}
 .cal-nav:hover{color:#fff}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);border-left:1px solid #e8b84b18;border-top:1px solid #e8b84b18}
-.cal-dow{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.35em;color:#e8b84baa;text-transform:uppercase;text-align:center;padding:12px 0;background:#0a0618;border-right:1px solid #e8b84b18;border-bottom:1px solid #e8b84b22}
-.cal-cell{min-height:90px;border-right:1px solid #e8b84b14;border-bottom:1px solid #e8b84b14;padding:8px 10px;position:relative;vertical-align:top;cursor:default}
+.cal-dow{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.35em;color:#e8b84bcc;text-transform:uppercase;text-align:center;padding:13px 0;background:#0a0618;border-right:1px solid #e8b84b1a;border-bottom:1px solid #e8b84b22}
+.cal-cell{min-height:96px;border-right:1px solid #e8b84b14;border-bottom:1px solid #e8b84b14;padding:9px 11px;position:relative;vertical-align:top;cursor:default}
 .cal-cell.other-month{opacity:.25}
 .cal-cell.today-cell{background:#22c98a0d}
 .cal-cell.has-sessions{cursor:pointer}
 .cal-cell.has-sessions:hover{background:#e8b84b0a}
-.cal-day-num{font-family:'Cinzel',serif;font-size:13px;color:#e8b84baa;margin-bottom:5px}
-.cal-cell.today-cell .cal-day-num{color:#22c98a;font-weight:700;font-size:14px}
+.cal-day-num{font-family:'Cinzel',serif;font-size:14px;color:#e8b84bcc;margin-bottom:5px}
+.cal-cell.today-cell .cal-day-num{color:#22c98a;font-weight:700;font-size:15px}
 .cal-dot-row{display:flex;flex-wrap:wrap;gap:4px;margin-top:3px}
-.cal-dot{width:9px;height:9px;border-radius:50%;background:#e8b84b;flex:0 0 auto;cursor:pointer;box-shadow:0 0 4px #e8b84b55}
-.cal-dot.appt{background:#22c98a;box-shadow:0 0 4px #22c98a55}
-.cal-count{font-family:'Cinzel',serif;font-size:9px;color:#e8b84baa;letter-spacing:.15em;margin-top:4px}
-.cal-day-panel{border-top:2px solid #e8b84b22;padding:22px 22px 28px;display:none;background:#06030f}
+.cal-dot{width:10px;height:10px;border-radius:50%;background:#e8b84b;flex:0 0 auto;cursor:pointer;box-shadow:0 0 5px #e8b84b77}
+.cal-dot.appt{background:#22c98a;box-shadow:0 0 5px #22c98a77}
+.cal-count{font-family:'Cinzel',serif;font-size:10px;color:#e8b84bcc;letter-spacing:.15em;margin-top:4px}
+.cal-day-panel{border-top:2px solid #e8b84b22;padding:24px 26px 32px;display:none;background:#06030f}
 .cal-day-panel.open{display:block}
-.cal-day-panel-title{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.28em;color:#e8b84b;text-transform:uppercase;margin-bottom:18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.cal-day-panel-title{font-family:'Cinzel',serif;font-size:15px;letter-spacing:.28em;color:#e8b84b;text-transform:uppercase;margin-bottom:18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .cal-session-row{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-left:4px solid #e8b84b55;background:#e8b84b08;margin-bottom:3px;cursor:pointer;transition:background .15s,border-color .15s;border-radius:0 3px 3px 0}
 .cal-session-row:hover{background:#e8b84b13;border-left-color:#e8b84bcc}
 .cal-session-row.appt-row{border-left-color:#22c98a66;background:#22c98a08}
 .cal-session-row.appt-row:hover{background:#22c98a13;border-left-color:#22c98acc}
 .cal-session-row.open-row{border-left-color:#e8b84b;background:#e8b84b10}
 .cal-session-row.appt-row.open-row{border-left-color:#22c98a;background:#22c98a10}
-.csr-name{font-family:'Cinzel',serif;font-size:15px;color:#f0ecff;letter-spacing:.03em}
+.csr-name{font-family:'Cinzel',serif;font-size:16px;color:#f0ecff;letter-spacing:.03em}
 .csr-meta{font-family:'EB Garamond',serif;font-size:14px;color:#e8b84b88;margin-top:3px;line-height:1.4}
 .csr-badge{font-family:'Cinzel',serif;font-size:11px;color:#e8b84bcc;background:#e8b84b14;border:1px solid #e8b84b33;padding:3px 12px;border-radius:2px;white-space:nowrap}
 .csr-badge.teal{color:#22c98acc;background:#22c98a14;border-color:#22c98a33}
@@ -509,6 +509,13 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#d
         <option value="first">First-Time Only</option>
         <option value="distance">Distance</option>
         <option value="inperson">In Person</option>
+        <option value="active">Active</option>
+        <option value="cancelled_appointment">Cancelled</option>
+        <option value="rescheduled">Rescheduled</option>
+        <option value="no_show">No-Show</option>
+        <option value="payment_issue">Payment Issue</option>
+        <option value="blocked">Blocked</option>
+        <option value="archived">Archived</option>
       </select>
     </div>
 
@@ -1172,6 +1179,203 @@ function renderBooking() {
 }
 
 // ── CLIENT ROSTER ───────────────────────────────────────────
+function buildClientTimeline(name, crec, sessions) {
+  const timeline = crec ? (crec.timeline || []) : [];
+
+  // Merge session events from REA_DATA (as virtual timeline entries)
+  const sessEvents = sessions.map(s => ({
+    type: 'session',
+    date: s.date,
+    description: `Session completed — Round ${s.round||1} · ${s.price>0?'$'+s.price:'Exchange'}`,
+    data: { round: s.round, price: s.price, notes: s.notes, tags: s.tags }
+  }));
+
+  // Merge manual appointment cancellations and reschedules
+  const apptEvents = getAppts()
+    .filter(a => a.client.toLowerCase().trim() === crmKey(name))
+    .flatMap(a => {
+      const evts = [];
+      if (a.status === 'cancelled') {
+        evts.push({
+          type: 'cancellation',
+          date: a.cancelledAt || a.date,
+          description: `Appointment cancelled. Reason: ${a.cancelReason||'—'}${a.cancelNotes?' — '+a.cancelNotes:''}`,
+          data: { originalDate: a.date, service: a.service, price: a.price }
+        });
+      }
+      (a.rescheduleHistory||[]).forEach(r => {
+        evts.push({
+          type: 'reschedule',
+          date: r.reschedAt || r.newDate,
+          description: `Rescheduled from ${r.originalDate}${r.originalTime?' at '+r.originalTime:''} → ${r.newDate}${r.newTime?' at '+r.newTime:''}`,
+          data: r
+        });
+      });
+      return evts;
+    });
+
+  const allEvents = [...timeline, ...sessEvents, ...apptEvents]
+    .sort((a, b) => (b.date||'').localeCompare(a.date||''));
+
+  if (!allEvents.length) {
+    return `<div style="font-family:'EB Garamond',serif;font-size:15px;color:#dddaee44;font-style:italic;padding:8px 0">No timeline events yet.</div>`;
+  }
+
+  const TYPE_STYLES = {
+    session:      ['✓', '#22c98a', '#22c98a18'],
+    cancellation: ['✕', '#ee7070', '#ee707018'],
+    reschedule:   ['↺', '#9b7fe8', '#9b7fe818'],
+    booking:      ['📅', '#e8b84b', '#e8b84b10'],
+    no_show:      ['!', '#f8a84b', '#f8a84b18'],
+    payment:      ['$', '#22c98a', '#22c98a10'],
+    followup:     ['→', '#4488ff', '#4488ff10'],
+    verification: ['✔', '#e8b84b', '#e8b84b10'],
+    note:         ['✎', '#dddaee', '#dddaee08']
+  };
+
+  const rows = allEvents.map(e => {
+    const [icon, color, bg] = TYPE_STYLES[e.type] || ['•', '#dddaee', '#dddaee08'];
+    const noteHtml = e.data && e.data.notes ? `<div style="font-size:13px;color:#dddaee55;margin-top:3px;font-style:italic">${e.data.notes}</div>` : '';
+    return `<div style="display:flex;gap:12px;padding:10px 14px;background:${bg};border-left:3px solid ${color}66;margin-bottom:3px;border-radius:0 2px 2px 0">
+      <span style="font-family:'Cinzel',serif;font-size:14px;color:${color};flex-shrink:0;width:18px;text-align:center">${icon}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:${color}aa;text-transform:uppercase;margin-bottom:3px">${e.type.replace('_',' ')} · ${e.date||''}</div>
+        <div style="font-family:'EB Garamond',serif;font-size:15px;color:#f0ecff;line-height:1.5">${e.description||''}</div>
+        ${noteHtml}
+      </div>
+    </div>`;
+  }).join('');
+
+  // Add note form
+  const noteId = 'tl_note_' + name.replace(/[^a-z0-9]/gi,'_');
+  return `<div style="background:#06030f;border:1px solid #9b7fe822;padding:16px 18px">
+    <div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:#9b7fe8aa;text-transform:uppercase;margin-bottom:12px">Client Timeline</div>
+    ${rows}
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid #e8b84b0f;display:flex;gap:8px;align-items:flex-end">
+      <textarea id="${noteId}" placeholder="Add a note to this client's timeline…" style="background:#0a0612;border:1px solid #e8b84b1a;color:#f0ecff;font-family:'EB Garamond',serif;font-size:15px;padding:9px 12px;flex:1;min-height:60px;resize:vertical;border-radius:2px"></textarea>
+      <button class="action-btn approve" style="padding:9px 14px;white-space:nowrap" onclick="addManualNote('${name.replace(/'/g,"\\'")}', '${noteId}')">Add Note</button>
+    </div>
+  </div>`;
+}
+
+function toggleClientTimeline(name) {
+  const id = 'timeline_' + name.replace(/[^a-z0-9]/gi,'_');
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+function addManualNote(name, textareaId) {
+  const el = document.getElementById(textareaId);
+  if (!el || !el.value.trim()) return;
+  addTimelineEvent(name, {
+    type: 'note',
+    date: new Date().toISOString().slice(0,10),
+    description: el.value.trim()
+  });
+  el.value = '';
+  renderClients();
+}
+
+function buildVerificationPanel(name, crec) {
+  const contact = crec ? crec.contactInfo : {};
+  const suggested = crec ? (crec.suggestedInfo || []) : [];
+  const safeName = name.replace(/'/g,"\\'");
+  const fieldId = f => 'vf_' + name.replace(/[^a-z0-9]/gi,'_') + '_' + f;
+
+  const fields = [
+    ['fullName','Full Name','text'],
+    ['preferredName','Preferred Name','text'],
+    ['email','Email','email'],
+    ['phone','Phone','tel'],
+    ['city','City','text'],
+    ['state','State / Province','text'],
+    ['country','Country','text'],
+    ['timezone','Time Zone','text'],
+    ['referralSource','Referred By','text'],
+    ['servicePreference','Service Preference','text'],
+    ['emergencyContact','Emergency Contact (optional)','text']
+  ];
+
+  const fieldHtml = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+    ${fields.map(([f, label, type]) => `<div>
+      <span style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.38em;color:#e8b84b88;text-transform:uppercase;display:block;margin-bottom:6px">${label}</span>
+      <input id="${fieldId(f)}" type="${type}" value="${(contact[f]||'').replace(/"/g,'&quot;')}" placeholder="${label}" style="background:#0a0612;border:1px solid #e8b84b1a;color:#f0ecff;font-family:'EB Garamond',serif;font-size:15px;padding:9px 12px;width:100%;box-sizing:border-box;border-radius:2px">
+    </div>`).join('')}
+  </div>
+  <div>
+    <span style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.38em;color:#e8b84b88;text-transform:uppercase;display:block;margin-bottom:6px">Notes</span>
+    <textarea id="${fieldId('notes')}" placeholder="Internal notes about this client…" style="background:#0a0612;border:1px solid #e8b84b1a;color:#f0ecff;font-family:'EB Garamond',serif;font-size:15px;padding:9px 12px;width:100%;box-sizing:border-box;min-height:72px;resize:vertical;border-radius:2px;line-height:1.6">${(contact.notes||'').replace(/</g,'&lt;')}</textarea>
+  </div>`;
+
+  const verifiedLine = contact.confirmedByDaron
+    ? `<span style="color:#22c98acc;font-size:13px">✓ Verified by Daron${contact.lastVerified?' on '+contact.lastVerified:''}</span>`
+    : `<span style="color:#e8b84b88;font-size:13px">Not yet verified</span>`;
+
+  const suggestedHtml = suggested.length ? `
+    <div style="background:#e8b84b08;border:1px solid #e8b84b33;padding:14px 16px;margin-top:16px;border-radius:2px">
+      <div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:#e8b84b;text-transform:uppercase;margin-bottom:12px">⚠ Suggested Info — Awaiting Confirmation</div>
+      ${suggested.map(s => `<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;padding:8px 12px;background:#e8b84b0a;border:1px solid #e8b84b1a;border-radius:2px;flex-wrap:wrap">
+        <div>
+          <span style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84baa;text-transform:uppercase">${s.field}</span>
+          <span style="font-family:'EB Garamond',serif;font-size:15px;color:#f0ecff;margin-left:10px">${s.value}</span>
+          <span style="font-size:12px;color:#dddaee55;margin-left:8px">— from ${s.source}</span>
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0">
+          <button class="action-btn approve" style="padding:4px 12px;font-size:10px" onclick="confirmSuggestedInfo('${safeName}','${s.field}')">Confirm</button>
+          <button class="action-btn reject" style="padding:4px 12px;font-size:10px" onclick="rejectSuggestedInfo('${safeName}','${s.field}')">Dismiss</button>
+        </div>
+      </div>`).join('')}
+    </div>` : '';
+
+  return `<div style="background:#06030f;border:1px solid #e8b84b1a;padding:18px 20px">
+    <div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:#e8b84baa;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+      <span>Client Info Verification</span>
+      ${verifiedLine}
+    </div>
+    ${fieldHtml}
+    ${suggestedHtml}
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid #e8b84b0f">
+      <button class="action-btn approve" onclick="saveVerificationForm('${safeName}',false)">Save Info</button>
+      <button class="action-btn approve" style="background:#22c98a18;border-color:#22c98a44;color:#22c98acc" onclick="saveVerificationForm('${safeName}',true)">✓ Save & Mark Verified</button>
+      <a href="https://www.google.com/search?q=${encodeURIComponent(name)}" target="_blank" class="action-btn view" style="text-decoration:none;font-size:10px">🔍 Search</a>
+    </div>
+  </div>`;
+}
+
+function toggleClientVerification(name) {
+  const id = 'verify_' + name.replace(/[^a-z0-9]/gi,'_');
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+function saveVerificationForm(name, markVerified) {
+  ensureCRMClient(name);
+  const fieldId = f => 'vf_' + name.replace(/[^a-z0-9]/gi,'_') + '_' + f;
+  const fields = ['fullName','preferredName','email','phone','city','state','country','timezone','referralSource','servicePreference','emergencyContact','notes'];
+  const data = {};
+  fields.forEach(f => {
+    const el = document.getElementById(fieldId(f));
+    if (el) data[f] = el.value;
+  });
+  if (markVerified) {
+    data.confirmedByDaron = true;
+    data.lastVerified = new Date().toISOString().slice(0,10);
+  }
+  const crm = getCRM();
+  const k = crmKey(name);
+  if (!crm[k]) ensureCRMClient(name);
+  Object.assign(crm[k].contactInfo, data);
+  saveCRM(crm);
+  addTimelineEvent(name, {
+    type: 'verification',
+    date: new Date().toISOString().slice(0,10),
+    description: markVerified ? 'Client info verified by Daron.' : 'Client info updated.'
+  });
+  renderClients();
+}
+
 function renderClients() {
   const roster = document.getElementById('clientRoster');
   const countEl = document.getElementById('clientCount');
@@ -1195,6 +1399,16 @@ function renderClients() {
     (s.tags || []).forEach(t => map[key].tags.add(t));
   });
 
+  // Also pull in CRM clients who have appointments but no REA_DATA sessions
+  const apptClients = getAppts().map(a => a.client.toLowerCase().trim());
+  const crmAll = getCRM();
+  Object.values(crmAll).forEach(crec => {
+    const key = crmKey(crec.clientName);
+    if (!map[key] && apptClients.includes(key)) {
+      map[key] = { name: crec.clientName, sessions: [], spend: 0, tags: new Set(), isRepeat: false };
+    }
+  });
+
   let clients = Object.values(map);
 
   // Sort by most recent session date
@@ -1208,12 +1422,21 @@ function renderClients() {
   });
   clients.sort((a, b) => b.lastDate.localeCompare(a.lastDate));
 
+  // Merge CRM status onto each client
+  clients.forEach(c => {
+    const crec = getCRMClient(c.name);
+    c.crmStatus = crec ? crec.status : 'active';
+    c.crm = crec || null;
+  });
+
   // Filter
   if (q) clients = clients.filter(c => c.name.toLowerCase().includes(q));
   if (filter === 'repeat')   clients = clients.filter(c => c.isRepeat);
   if (filter === 'first')    clients = clients.filter(c => !c.isRepeat);
   if (filter === 'distance') clients = clients.filter(c => c.isDistance);
   if (filter === 'inperson') clients = clients.filter(c => c.isInPerson);
+  const STATUS_FILTERS = ['active','cancelled_appointment','rescheduled','no_show','payment_issue','blocked','archived'];
+  if (STATUS_FILTERS.includes(filter)) clients = clients.filter(c => c.crmStatus === filter);
 
   countEl.textContent = clients.length + ' clients';
 
@@ -1222,54 +1445,110 @@ function renderClients() {
     return;
   }
 
+  const STATUS_LABELS = {
+    active: ['Active', '#22c98a'],
+    cancelled_appointment: ['Cancelled Appt', '#ee7070'],
+    rescheduled: ['Rescheduled', '#9b7fe8'],
+    no_show: ['No-Show', '#f8a84b'],
+    payment_issue: ['Payment Issue', '#f8e090'],
+    blocked: ['Blocked', '#ee7070'],
+    archived: ['Archived', '#888']
+  };
+
   roster.innerHTML = clients.map(c => {
     const sessCount = c.sessions.length;
-    const lastFmt   = c.lastDate ? c.lastDate.replace('2026-','').replace('2027-','') : '—';
-    const firstFmt  = c.firstDate ? c.firstDate.replace('2026-','').replace('2027-','') : '—';
-    const statusBadge = c.isRepeat
-      ? '<span class="badge approved">Repeat</span>'
-      : '<span class="badge pending">First-Time</span>';
+    const lastFmt   = c.lastDate ? c.lastDate : '—';
+    const firstFmt  = c.firstDate && c.firstDate !== '9999' ? c.firstDate : '—';
+    const crec      = c.crm;
+    const crmStatus = c.crmStatus || 'active';
+
+    // Status badge
+    const [statusLabel, statusColor] = STATUS_LABELS[crmStatus] || ['Active', '#22c98a'];
+    const crmBadge = `<span style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.3em;color:${statusColor};background:${statusColor}18;border:1px solid ${statusColor}44;padding:2px 10px;border-radius:2px;text-transform:uppercase;white-space:nowrap">${statusLabel}</span>`;
+
+    const repeatBadge = c.isRepeat ? '<span class="badge approved">Repeat</span>' : '<span class="badge pending">First-Time</span>';
     const distanceBadge = c.isDistance ? '<span class="badge checkin" style="margin-left:4px">Distance</span>' : '';
     const inPersonBadge = c.isInPerson ? '<span class="badge checkin" style="margin-left:4px">In Person</span>' : '';
+
+    // Pending suggested info count
+    const pendingCount = crec ? (crec.suggestedInfo || []).length : 0;
+    const pendingBadge = pendingCount ? `<span style="font-family:'Cinzel',serif;font-size:9px;background:#e8b84b33;color:#e8b84b;border:1px solid #e8b84b55;padding:2px 8px;border-radius:2px">${pendingCount} pending</span>` : '';
+
     const tagList = [...c.tags].filter(t => !['paid','reschedule','deposit'].includes(t))
       .map(t => `<span class="tag">${t}</span>`).join('');
+
     const serviceTypes = [...new Set(c.sessions.map(s => {
-      const notes = (s.notes||'').toLowerCase();
       if (s.tags && s.tags.includes('tarot')) return 'Tarot';
       if (s.tags && s.tags.includes('in-person')) return 'In Person';
       if (s.tags && s.tags.includes('distance')) return 'Distance';
-      if (notes.includes('exchange')) return 'Exchange';
+      if ((s.notes||'').toLowerCase().includes('exchange')) return 'Exchange';
       return 'Energy Session';
     }))].join(' · ');
 
-    // Flag badge
     const flagBadgeId = 'flag-badge-' + c.name.replace(/[^a-z0-9]/gi,'_');
     const flagStatus = (typeof REA_FLAGS !== 'undefined') ? REA_FLAGS.check(c.name) : null;
-    const flagBadgeHtml = flagStatus
-      ? `<span class="badge ${flagStatus.status}" id="${flagBadgeId}">${flagStatus.status}</span>`
-      : `<span class="badge" id="${flagBadgeId}" style="display:none"></span>`;
+    const flagBadgeHtml = flagStatus ? `<span class="badge ${flagStatus.status}" id="${flagBadgeId}">${flagStatus.status}</span>` : `<span class="badge" id="${flagBadgeId}" style="display:none"></span>`;
 
-    return `<div class="client-card">
-      <div class="card-head">
-        <div>
-          <div class="card-name">${c.name} ${statusBadge}${distanceBadge}${inPersonBadge}</div>
-          <div class="card-time">${serviceTypes}</div>
+    // Contact info summary (if confirmed)
+    const contact = crec ? crec.contactInfo : {};
+    const contactLine = [contact.email, contact.phone, [contact.city, contact.state, contact.country].filter(Boolean).join(', ')].filter(Boolean).join(' · ');
+
+    // Upcoming manual appointments
+    const upcoming = getAppts().filter(a => a.client.toLowerCase().trim() === crmKey(c.name) && a.status !== 'cancelled');
+    const upcomingLine = upcoming.length ? upcoming.slice(0,2).map(a => `<span style="color:#22c98acc">${a.date}${a.time?' at '+a.time:''}</span>`).join(', ') : '';
+
+    // Reschedule history count across all appointments
+    const reschedCount = getAppts().filter(a => a.client.toLowerCase().trim() === crmKey(c.name) && a.rescheduleHistory && a.rescheduleHistory.length)
+      .reduce((sum, a) => sum + a.rescheduleHistory.length, 0);
+
+    const cardId = 'crmcard_' + c.name.replace(/[^a-z0-9]/gi,'_');
+
+    return `<div class="client-card" id="${cardId}" style="${crmStatus==='archived'?'opacity:.5':''}">
+    <div class="card-head">
+      <div style="flex:1;min-width:0">
+        <div class="card-name" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          ${c.name} ${crmBadge} ${repeatBadge}${distanceBadge}${inPersonBadge}${pendingBadge}
         </div>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <button class="action-btn view" onclick="openIntakeModal('${c.name.replace(/'/g,"\\'")}')">📋 Intake</button>
-          <button class="action-btn reject" onclick="openModal('${c.name.replace(/'/g,"\\'")}','')">⚑ Flag</button>
-          ${flagBadgeHtml}
-        </div>
+        <div class="card-time" style="margin-top:4px">${serviceTypes}${reschedCount?' · <span style="color:#9b7fe8cc">↺ Rescheduled '+reschedCount+'×</span>':''}</div>
+        ${contactLine ? `<div style="font-family:'EB Garamond',serif;font-size:14px;color:#dddaee77;margin-top:3px">${contactLine}</div>` : ''}
+        ${upcomingLine ? `<div style="font-family:'EB Garamond',serif;font-size:14px;color:#dddaee99;margin-top:2px">Next: ${upcomingLine}</div>` : ''}
       </div>
-      <div class="client-meta">
-        <div class="client-meta-item">Sessions<span>${sessCount}</span></div>
-        <div class="client-meta-item">First Visit<span>${firstFmt}</span></div>
-        <div class="client-meta-item">Last Visit<span>${lastFmt}</span></div>
-        <div class="client-meta-item">Total Spent<span>$${c.spend}</span></div>
-        ${c.maxRound > 1 ? `<div class="client-meta-item">Highest Round<span>${c.maxRound}</span></div>` : ''}
+      <div style="display:flex;gap:6px;align-items:flex-start;flex-wrap:wrap;flex-shrink:0">
+        <button class="action-btn view" onclick="openIntakeModal('${c.name.replace(/'/g,"\\'")}')">📋 Intake</button>
+        <button class="action-btn view" style="border-color:#9b7fe844;color:#9b7fe8cc" onclick="toggleClientTimeline('${c.name.replace(/'/g,"\\'")}')">⏱ Timeline</button>
+        <button class="action-btn view" style="border-color:#e8b84b44;color:#e8b84bcc" onclick="toggleClientVerification('${c.name.replace(/'/g,"\\'")}')">✎ Info</button>
+        <button class="action-btn reject" onclick="openModal('${c.name.replace(/'/g,"\\'")}','')">⚑ Flag</button>
+        ${flagBadgeHtml}
       </div>
-      ${tagList ? `<div class="tags" style="margin-top:4px">${tagList}</div>` : ''}
-    </div>`;
+    </div>
+    <div class="client-meta" style="margin-top:12px">
+      <div class="client-meta-item">Sessions<span>${sessCount}</span></div>
+      <div class="client-meta-item">First Visit<span>${firstFmt}</span></div>
+      <div class="client-meta-item">Last Visit<span>${lastFmt}</span></div>
+      <div class="client-meta-item">Total Spent<span style="color:#e8b84b">$${c.spend}</span></div>
+      ${c.maxRound > 1 ? `<div class="client-meta-item">Highest Round<span>${c.maxRound}</span></div>` : ''}
+    </div>
+    ${tagList ? `<div class="tags" style="margin-top:8px">${tagList}</div>` : ''}
+
+    <!-- Status change row -->
+    <div style="display:flex;gap:6px;align-items:center;margin-top:10px;flex-wrap:wrap">
+      <span style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.3em;color:#e8b84b66;text-transform:uppercase">Set Status:</span>
+      ${['active','no_show','payment_issue','blocked','archived'].map(s => {
+        const [lbl,col] = STATUS_LABELS[s]||[s,'#888'];
+        return `<button onclick="setClientStatus('${c.name.replace(/'/g,"\\'")}','${s}');renderClients()" style="font-family:'Cinzel',serif;font-size:8px;letter-spacing:.25em;text-transform:uppercase;padding:3px 8px;border:1px solid ${col}44;color:${col}99;background:${col}0d;cursor:pointer;${crmStatus===s?'border-color:'+col+';color:'+col+';':''}">${lbl}</button>`;
+      }).join('')}
+    </div>
+
+    <!-- Timeline panel -->
+    <div id="timeline_${c.name.replace(/[^a-z0-9]/gi,'_')}" style="display:none;margin-top:14px">
+      ${buildClientTimeline(c.name, crec, c.sessions)}
+    </div>
+
+    <!-- Verification panel -->
+    <div id="verify_${c.name.replace(/[^a-z0-9]/gi,'_')}" style="display:none;margin-top:14px">
+      ${buildVerificationPanel(c.name, crec)}
+    </div>
+  </div>`;
   }).join('');
 }
 
@@ -1378,6 +1657,90 @@ function getAppts() {
   try { return JSON.parse(localStorage.getItem('rea_appointments') || '[]'); } catch(e) { return []; }
 }
 function saveAppts(arr) { localStorage.setItem('rea_appointments', JSON.stringify(arr)); }
+
+// ── CRM ──────────────────────────────────────────────────────
+const CRM_KEY = 'rea_crm';
+
+function getCRM() {
+  try { return JSON.parse(localStorage.getItem(CRM_KEY) || '{}'); } catch(e) { return {}; }
+}
+function saveCRM(data) {
+  try { localStorage.setItem(CRM_KEY, JSON.stringify(data)); } catch(e) {}
+}
+function crmKey(name) {
+  return name.toLowerCase().trim().replace(/\s+/g, '_');
+}
+function getCRMClient(name) {
+  return getCRM()[crmKey(name)] || null;
+}
+function ensureCRMClient(name) {
+  const crm = getCRM();
+  const k = crmKey(name);
+  if (!crm[k]) {
+    crm[k] = {
+      clientName: name,
+      status: 'active',
+      contactInfo: {
+        fullName: name, preferredName: '', email: '', phone: '',
+        city: '', state: '', country: '', timezone: '',
+        referralSource: '', servicePreference: '', emergencyContact: '',
+        notes: '', confirmedByDaron: false, lastVerified: null
+      },
+      suggestedInfo: [],
+      timeline: []
+    };
+    saveCRM(crm);
+  }
+  return crm[k];
+}
+function updateCRMClient(name, updates) {
+  const crm = getCRM();
+  const k = crmKey(name);
+  if (!crm[k]) ensureCRMClient(name);
+  Object.assign(crm[k], updates);
+  saveCRM(crm);
+}
+function addTimelineEvent(name, event) {
+  // event = { type, date, description, data:{} }
+  const crm = getCRM();
+  const k = crmKey(name);
+  if (!crm[k]) ensureCRMClient(name);
+  crm[k].timeline = crm[k].timeline || [];
+  crm[k].timeline.unshift(Object.assign({ createdAt: new Date().toISOString().slice(0,10) }, event));
+  saveCRM(crm);
+}
+function setClientStatus(name, status) {
+  updateCRMClient(name, { status });
+}
+function addSuggestedInfo(name, field, value, source) {
+  const crm = getCRM();
+  const k = crmKey(name);
+  if (!crm[k]) ensureCRMClient(name);
+  // Remove any existing suggestion for same field
+  crm[k].suggestedInfo = (crm[k].suggestedInfo || []).filter(s => s.field !== field);
+  crm[k].suggestedInfo.push({ field, value, source, suggestedAt: new Date().toISOString().slice(0,10) });
+  saveCRM(crm);
+}
+function confirmSuggestedInfo(name, field) {
+  const crm = getCRM();
+  const k = crmKey(name);
+  if (!crm[k]) return;
+  const suggestion = (crm[k].suggestedInfo || []).find(s => s.field === field);
+  if (!suggestion) return;
+  crm[k].contactInfo[field] = suggestion.value;
+  crm[k].suggestedInfo = crm[k].suggestedInfo.filter(s => s.field !== field);
+  addTimelineEvent(name, { type: 'verification', date: new Date().toISOString().slice(0,10), description: `Confirmed ${field}: ${suggestion.value}` });
+  saveCRM(crm);
+  renderClients();
+}
+function rejectSuggestedInfo(name, field) {
+  const crm = getCRM();
+  const k = crmKey(name);
+  if (!crm[k]) return;
+  crm[k].suggestedInfo = (crm[k].suggestedInfo || []).filter(s => s.field !== field);
+  saveCRM(crm);
+  renderClients();
+}
 function saveAppt() {
   const client  = (document.getElementById('apptClient')||{}).value.trim();
   const date    = (document.getElementById('apptDate')||{}).value;
@@ -1389,6 +1752,13 @@ function saveAppt() {
   const appts = getAppts();
   appts.push({ client, date, time, dur, service, notes, id: Date.now() });
   saveAppts(appts);
+  ensureCRMClient(appts[appts.length-1].client);
+  addTimelineEvent(appts[appts.length-1].client, {
+    type: 'booking',
+    date: new Date().toISOString().slice(0,10),
+    description: `Appointment booked for ${appts[appts.length-1].date}`,
+    data: { date: appts[appts.length-1].date, service: appts[appts.length-1].service||'' }
+  });
   ['apptClient','apptDate','apptTime','apptService','apptNotes'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
   toggleApptForm();
   renderUpcoming();
@@ -1792,7 +2162,7 @@ function renderUpcoming() {
     const actionBtns = isCancelled
       ? `<button class="action-btn approve" style="padding:5px 12px;font-size:10px;white-space:nowrap" onclick="restoreAppt(${a.id})">↩ Restore</button>`
       : `<button class="action-btn view" style="padding:5px 12px;font-size:10px;white-space:nowrap" onclick="openEditAppt(${a.id})">✎ Edit</button>
-        <button class="action-btn view" style="padding:5px 12px;font-size:10px;white-space:nowrap;border-color:#9b7fe844;color:#9b7fe8cc" onclick="openProfilePanel(${a.id})">👤 Profile</button>
+        <button class="action-btn view" style="padding:5px 12px;font-size:10px;white-space:nowrap;border-color:#9b7fe844;color:#9b7fe8cc" onclick="openVerificationFromAppt(${a.id})">👤 Client</button>
         <button class="action-btn approve" style="padding:5px 12px;font-size:10px;white-space:nowrap;background:#9b7fe811;border-color:#9b7fe844;color:#9b7fe8cc" onclick="openReschedulePanel(${a.id})">↺ Reschedule</button>
         <button class="action-btn reject" style="padding:5px 12px;font-size:10px;white-space:nowrap" onclick="openCancelPanel(${a.id})">✕ Cancel</button>`;
     return `<div class="appt-card ${cls}" id="apptcard_${a.id}">
@@ -1877,6 +2247,14 @@ function confirmCancel(id) {
   saveAppts(appts);
   // Also push a copy to rea_cancellations for the log
   saveCancellations([Object.assign({}, a), ...getCancellations()]);
+  ensureCRMClient(a.client);
+  setClientStatus(a.client, 'cancelled_appointment');
+  addTimelineEvent(a.client, {
+    type: 'cancellation',
+    date: new Date().toISOString().slice(0,10),
+    description: `Appointment cancelled. Reason: ${reason}`,
+    data: { originalDate: a.date, originalTime: a.time||'', service: a.service||'', price: a.price||0, reason, notes }
+  });
   renderUpcoming();
   renderCancellationLog();
   updateCapacityStats();
@@ -1890,6 +2268,12 @@ function restoreAppt(id) {
   delete a.status; delete a.cancelledAt; delete a.cancelReason; delete a.cancelNotes;
   saveAppts(appts);
   saveCancellations(getCancellations().filter(c => c.id !== id));
+  setClientStatus(a.client, 'active');
+  addTimelineEvent(a.client, {
+    type: 'note',
+    date: new Date().toISOString().slice(0,10),
+    description: 'Appointment restored to active.'
+  });
   renderUpcoming(); renderCancellationLog(); updateCapacityStats(); renderCal();
 }
 
@@ -1951,6 +2335,14 @@ function confirmReschedule(id) {
   a.date = newDate;
   if (newTime) a.time = newTime;
   saveAppts(appts);
+  ensureCRMClient(a.client);
+  setClientStatus(a.client, 'rescheduled');
+  addTimelineEvent(a.client, {
+    type: 'reschedule',
+    date: new Date().toISOString().slice(0,10),
+    description: `Appointment rescheduled from ${a.rescheduleHistory[a.rescheduleHistory.length-1].originalDate} to ${newDate}`,
+    data: { originalDate: a.rescheduleHistory[a.rescheduleHistory.length-1].originalDate, newDate, reason, notes }
+  });
   renderUpcoming();
   updateCapacityStats();
   renderCal();
@@ -2633,6 +3025,11 @@ function initDashboard() {
   // Init capacity input
   const inp = document.getElementById('capacityInput');
   if (inp) inp.value = getCapacity();
+  // Auto-create CRM records for all known clients
+  try {
+    REA_DATA.sessions.forEach(s => ensureCRMClient(s.client));
+    getAppts().forEach(a => ensureCRMClient(a.client));
+  } catch(e) {}
 }
 if (typeof REA_DATA !== 'undefined') {
   initDashboard();
@@ -2737,101 +3134,25 @@ function getProfile(name) {
 }
 
 function openProfilePanel(id) {
-  // Close any other open action panels
-  document.querySelectorAll('[id^="actionpanel_"]').forEach(el => { if (el.id !== 'actionpanel_'+id) el.style.display='none'; });
-  const el = document.getElementById('actionpanel_'+id);
-  if (!el) return;
-  if (el.style.display === 'block' && el.dataset.type === 'profile') { el.style.display='none'; return; }
-  const a = getAppts().find(x => x.id === id);
-  if (!a) return;
-  const p = getProfile(a.client);
-  el.dataset.type = 'profile';
-  el.style.display = 'block';
-  el.innerHTML = `<div class="profile-panel">
-    <span class="lbl">Email</span>
-    <input id="prof_email_${id}" value="${(p.email||'').replace(/"/g,'&quot;')}" placeholder="client@email.com" />
-    <div class="row2" style="margin-top:0">
-      <div>
-        <span class="lbl">Phone</span>
-        <input id="prof_phone_${id}" value="${(p.phone||'').replace(/"/g,'&quot;')}" placeholder="(555) 000-0000" />
-      </div>
-      <div>
-        <span class="lbl">Location / City</span>
-        <input id="prof_location_${id}" value="${(p.location||'').replace(/"/g,'&quot;')}" placeholder="City, State" />
-      </div>
-    </div>
-    <div class="row2">
-      <div>
-        <span class="lbl">Date of Birth</span>
-        <input id="prof_dob_${id}" value="${(p.dob||'').replace(/"/g,'&quot;')}" placeholder="MM/DD/YYYY" />
-      </div>
-      <div>
-        <span class="lbl">Referred By</span>
-        <input id="prof_referred_${id}" value="${(p.referred||'').replace(/"/g,'&quot;')}" placeholder="Name or source" />
-      </div>
-    </div>
-    <span class="lbl">Emergency Contact</span>
-    <input id="prof_emergency_${id}" value="${(p.emergency||'').replace(/"/g,'&quot;')}" placeholder="Name & phone" />
-    <span class="lbl">Notes / Background</span>
-    <textarea id="prof_notes_${id}" placeholder="Client background, intentions, previous work, sensitivities…">${p.notes||''}</textarea>
-
-    <div class="enrich-box" id="enrichBox_${id}">
-      <div class="enrich-box-title">Suggested Demographics</div>
-      <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px">
-        <button class="btn-purple" onclick="enrichClient(${id})">✦ Look Up by Name</button>
-        <button class="btn-purple" onclick="window.open('https://www.google.com/search?q='+encodeURIComponent('${a.client.replace(/'/g,"\\'")}'+' email contact'),'_blank')">🔍 Search Google</button>
-      </div>
-      <div id="enrichResults_${id}" style="color:#e8b84b88;font-family:'EB Garamond',serif;font-size:14px;font-style:italic">Click "Look Up by Name" to get predicted demographics from public APIs.</div>
-    </div>
-
-    <div class="profile-actions">
-      <button class="btn-purple" onclick="saveClientProfile_form(${id})">Save Profile</button>
-      <button class="action-btn view" style="font-size:10px;padding:6px 14px" onclick="document.getElementById('actionpanel_${id}').style.display='none'">Close</button>
-    </div>
-  </div>`;
+  // Redirect to new CRM verification flow
+  openVerificationFromAppt(id);
 }
 
-function enrichClient(id) {
+function openVerificationFromAppt(id) {
   const a = getAppts().find(x => x.id === id);
   if (!a) return;
-  const firstName = a.client.trim().split(/\s+/)[0];
-  const resultsEl = document.getElementById('enrichResults_'+id);
-  if (!resultsEl) return;
-  resultsEl.innerHTML = '<span style="color:#e8b84b88">Fetching…</span>';
-
-  Promise.all([
-    fetch('https://api.agify.io/?name='+encodeURIComponent(firstName)).then(r=>r.json()).catch(()=>null),
-    fetch('https://api.genderize.io/?name='+encodeURIComponent(firstName)).then(r=>r.json()).catch(()=>null),
-    fetch('https://api.nationalize.io/?name='+encodeURIComponent(firstName)).then(r=>r.json()).catch(()=>null)
-  ]).then(([agify, genderize, nationalize]) => {
-    let items = [];
-    if (agify && agify.age) items.push({ key: 'predicted_age', label: 'Predicted Age', value: agify.age });
-    if (genderize && genderize.gender) items.push({ key: 'predicted_gender', label: 'Predicted Gender', value: genderize.gender + (genderize.probability ? ' (' + Math.round(genderize.probability*100) + '% confidence)' : '') });
-    if (nationalize && nationalize.country && nationalize.country[0]) {
-      const top = nationalize.country[0];
-      items.push({ key: 'predicted_nationality', label: 'Predicted Nationality', value: top.country_id + (top.probability ? ' (' + Math.round(top.probability*100) + '% confidence)' : '') });
+  ensureCRMClient(a.client);
+  // Switch to clients tab and scroll to card
+  showTab('clients');
+  setTimeout(() => {
+    const cardId = 'crmcard_' + a.client.replace(/[^a-z0-9]/gi,'_');
+    const card = document.getElementById(cardId);
+    if (card) {
+      card.scrollIntoView({ behavior:'smooth', block:'center' });
+      // Open the verify panel
+      toggleClientVerification(a.client);
     }
-    if (!items.length) { resultsEl.innerHTML = '<span style="color:#ee707077">No results returned.</span>'; return; }
-    resultsEl.innerHTML = items.map((item, i) => `
-      <div class="enrich-item">
-        <input type="checkbox" id="enrich_cb_${id}_${i}" value="${item.key}" data-val="${item.value.replace(/"/g,'&quot;')}">
-        <label for="enrich_cb_${id}_${i}">${item.label}<span>${item.value}</span></label>
-      </div>`).join('') +
-      `<div style="margin-top:12px"><button class="btn-purple" onclick="confirmEnrichment(${id})">Confirm Selected</button></div>`;
-  });
-}
-
-function confirmEnrichment(id) {
-  const a = getAppts().find(x => x.id === id);
-  if (!a) return;
-  const checkboxes = document.querySelectorAll(`[id^="enrich_cb_${id}_"]`);
-  const updates = {};
-  checkboxes.forEach(cb => { if (cb.checked) updates[cb.value] = cb.dataset.val; });
-  if (Object.keys(updates).length) {
-    saveClientProfile(a.client, updates);
-    const resultsEl = document.getElementById('enrichResults_'+id);
-    if (resultsEl) { const saved = document.createElement('div'); saved.style.cssText='color:#22c98acc;font-family:Cinzel,serif;font-size:10px;letter-spacing:.2em;margin-top:8px'; saved.textContent='✓ Saved'; resultsEl.appendChild(saved); }
-  }
+  }, 200);
 }
 
 function saveClientProfile_form(id) {
