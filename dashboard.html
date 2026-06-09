@@ -49,28 +49,101 @@ body{background:#04020e;color:#f0ecff;font-family:'EB Garamond',serif;min-height
 .badge.pending{background:#e8b84b1a;color:#e8b84bee;border:1px solid #e8b84b55}
 .badge.approved{background:#22c98a1a;color:#22c98aee;border:1px solid #22c98a55}
 .badge.checkin{background:#8880ee1a;color:#a09cf8;border:1px solid #8880ee55}
-.empty{text-align:center;padding:40px;font-style:italic;color:#c8c4e0;font-size:16px}
+.empty{text-align:center;padding:40px;font-style:italic;color:#dddaee;font-size:16px}
 .tab-bar{display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid #e8b84b22}
 .tab{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.25em;text-transform:uppercase;padding:10px 20px;cursor:pointer;color:#e8b84b88;border-bottom:2px solid transparent;transition:all .2s;background:none;border-top:none;border-left:none;border-right:none}
 .tab.active{color:var(--gold);border-bottom-color:var(--gold)}
 .tab-content{display:none}
 .tab-content.active{display:block}
-.checkin-detail{font-size:16px;color:#c8c4e0;line-height:1.8}
+.checkin-detail{font-size:16px;color:#dddaee;line-height:1.8}
 .checkin-detail strong{color:#e8b84bdd;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.2em;text-transform:uppercase;display:block;margin-top:10px;margin-bottom:3px}
 .intensity-bar{height:6px;background:#e8b84b14;border-radius:3px;margin-top:4px;overflow:hidden}
 .intensity-fill{height:100%;background:linear-gradient(to right,var(--teal),var(--gold));border-radius:3px;transition:width .5s}
+/* ── DAILY TRACKER ── */
+.today-card{background:#e8b84b08;border:1px solid #e8b84b33;padding:20px 24px}
+.today-label{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.4em;color:#e8b84b88;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+.today-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:16px}
+.today-cell{background:#04020e;border:1px solid #e8b84b18;padding:12px 14px}
+.today-cell-label{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.3em;color:#e8b84b66;text-transform:uppercase;margin-bottom:5px}
+.today-cell-val{font-family:'Cinzel',serif;font-size:15px;letter-spacing:.05em}
+.today-cell-val.normal{color:#22c98a}
+.today-cell-val.elevated{color:#f8e090}
+.today-cell-val.high{color:#e8b84b}
+.today-cell-val.extreme{color:#ee7070}
+.today-note-wrap{margin-top:12px}
+.today-note-input{width:100%;box-sizing:border-box;background:#04020e;border:1px solid #e8b84b22;border-top:none;color:#f0ecff;font-family:'EB Garamond',serif;font-size:15px;padding:10px 14px;resize:none;height:56px;display:block}
+.today-note-input:focus{outline:none;border-color:#e8b84b55}
+.day-row{display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid #e8b84b0d;cursor:pointer;transition:background .15s}
+.day-row:hover{background:#e8b84b04}
+.day-row-date{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.2em;color:#e8b84b88;text-transform:uppercase;min-width:90px;padding-top:2px}
+.day-row-dow{font-family:'Cinzel',serif;font-size:10px;color:#e8b84b55;display:block;margin-top:2px}
+.day-row-conds{flex:1;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.day-chip{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:3px 8px;border:1px solid;border-radius:0}
+.day-chip.moon{color:#dddaee;border-color:#dddaee22}
+.day-chip.sch-Normal{color:#22c98a;border-color:#22c98a33}
+.day-chip.sch-Elevated{color:#f8e090;border-color:#f8e09033}
+.day-chip.sch-High{color:#e8b84b;border-color:#e8b84b55}
+.day-chip.sch-Extreme{color:#ee7070;border-color:#ee707055}
+.day-chip.solar{color:#9b7fe8;border-color:#9b7fe833}
+.day-chip.geo{color:#4488ff;border-color:#4488ff33}
+.day-row-note{font-size:13px;color:#dddaeeaa;font-style:italic;margin-top:4px;flex-basis:100%}
+.day-row-sess{font-family:'Cinzel',serif;font-size:10px;color:#22c98a77;min-width:48px;text-align:right;padding-top:2px}
+/* ── ENVIRONMENT ── */
+.env-label{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.22em;color:#e8b84b99;text-transform:uppercase;display:block;margin-bottom:6px}
+.env-card{background:#e8b84b05;border:1px solid #e8b84b18;border-left:3px solid #9b7fe855;padding:14px 16px;margin-bottom:8px}
+.env-card.extreme{border-left-color:#ee7070bb}
+.env-card.high{border-left-color:#e8b84bcc}
+.env-card.elevated{border-left-color:#f8e09088}
+.env-card.normal{border-left-color:#22c98a66}
+.env-date{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.25em;color:#e8b84bcc;text-transform:uppercase;margin-bottom:6px}
+.env-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.env-pill{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.15em;text-transform:uppercase;padding:3px 10px;border:1px solid;border-radius:0}
+.env-pill.schumann-Normal{color:#22c98a;border-color:#22c98a44}
+.env-pill.schumann-Elevated{color:#f8e090;border-color:#f8e09044}
+.env-pill.schumann-High{color:#e8b84b;border-color:#e8b84b66}
+.env-pill.schumann-Extreme{color:#ee7070;border-color:#ee707066}
+.env-pill.solar{color:#9b7fe8;border-color:#9b7fe844}
+.env-pill.geo{color:#4488ff;border-color:#4488ff44}
+.env-pill.moon{color:#dddaee;border-color:#dddaee33}
+.sess-env{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.sess-env-pill{font-size:10px;font-family:'Cinzel',serif;letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;border:1px solid #e8b84b33;color:#e8b84b88}
+/* ── PATTERN TABLE ── */
+.pattern-table{width:100%;border-collapse:collapse;margin-bottom:24px}
+.pattern-table th{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#e8b84b99;padding:8px 12px;border-bottom:1px solid #e8b84b22;text-align:left}
+.pattern-table td{font-size:14px;color:#dddaee;padding:8px 12px;border-bottom:1px solid #e8b84b0d}
+.pattern-table tr:hover td{background:#e8b84b05}
+.pattern-hi{color:#ee7070;font-family:'Cinzel',serif}
+.pattern-lo{color:#22c98a99}
+/* ── APPOINTMENT CARDS ── */
+.appt-card{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:14px 16px;border-left:3px solid #e8b84b44;background:#e8b84b06;margin-bottom:8px}
+.appt-card.today{border-left-color:#22c98aaa;background:#22c98a08}
+.appt-card.past{border-left-color:#e8b84b22;opacity:.6}
+.appt-card.conflict{border-left-color:#ee707099;background:#ee707008}
+.appt-date{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.25em;color:#e8b84bcc;text-transform:uppercase}
+.appt-client{font-family:'Cinzel',serif;font-size:14px;color:#f0ecff;margin:3px 0}
+.appt-meta{font-size:14px;color:#dddaeecc}
+.conflict-tag{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#ee7070;text-transform:uppercase;background:#ee707018;border:1px solid #ee707033;padding:2px 8px;display:inline-block;margin-top:4px}
+.appt-form-wrap{background:#e8b84b08;border:1px solid #e8b84b22;padding:20px;margin-bottom:16px}
+.appt-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:600px){.appt-form-grid{grid-template-columns:1fr}}
+.appt-input{width:100%;background:#04020e;border:1px solid #e8b84b22;color:#f0ecff;font-family:'EB Garamond',serif;font-size:15px;padding:8px 12px;box-sizing:border-box}
+.appt-input:focus{outline:none;border-color:#e8b84b66}
+/* ── INTAKE MODAL ── */
+.intake-row{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.intake-label{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.25em;color:#e8b84b99;text-transform:uppercase;min-width:100px;padding-top:2px}
+.intake-val{font-size:15px;color:#dddaee;flex:1}
 /* ── FLAG MODAL ── */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1000;display:none;align-items:center;justify-content:center;padding:24px}
 .modal-overlay.open{display:flex}
 .modal{background:#0a0612;border:1px solid #e8b84b33;padding:32px;max-width:480px;width:100%;position:relative}
 .modal h2{font-family:'Cinzel',serif;font-size:14px;letter-spacing:.35em;color:#f0ecff;text-transform:uppercase;margin-bottom:6px}
 .modal .modal-sub{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#e8b84b88;text-transform:uppercase;margin-bottom:20px}
-.modal-close{position:absolute;top:14px;right:16px;background:none;border:none;color:#c8c4e066;font-size:20px;cursor:pointer;line-height:1}
+.modal-close{position:absolute;top:14px;right:16px;background:none;border:none;color:#dddaeecc;font-size:20px;cursor:pointer;line-height:1}
 .modal-close:hover{color:#f0ecff}
 .flag-options{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
 .flag-opt{display:flex;align-items:center;gap:10px;cursor:pointer}
 .flag-opt input[type=checkbox]{accent-color:#e8b84b;width:15px;height:15px;cursor:pointer}
-.flag-opt label{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.2em;color:#c8c4e0;text-transform:uppercase;cursor:pointer}
+.flag-opt label{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.2em;color:#dddaee;text-transform:uppercase;cursor:pointer}
 .modal-notes{width:100%;background:#04020e;border:1px solid #e8b84b22;color:#f0ecff;font-family:'EB Garamond',serif;font-size:15px;padding:10px 12px;resize:vertical;min-height:64px;margin-bottom:20px}
 .modal-notes:focus{outline:none;border-color:#e8b84b55}
 .modal-actions{display:flex;gap:10px;flex-wrap:wrap}
@@ -88,7 +161,7 @@ body{background:#04020e;color:#f0ecff;font-family:'EB Garamond',serif;min-height
 .client-card{background:#0a0612;border:1px solid #e8b84b22;padding:22px;margin-bottom:10px;position:relative}
 .client-card:hover{border-color:#e8b84b55}
 .client-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:4px 20px;margin:12px 0}
-.client-meta-item{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.15em;color:#c8c4e0;text-transform:uppercase}
+.client-meta-item{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.15em;color:#dddaee;text-transform:uppercase}
 .client-meta-item span{color:#e8b84bcc;display:block;font-size:13px;margin-top:2px}
 .outcome-track{display:flex;align-items:center;gap:6px;margin:10px 0 4px}
 .outcome-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
@@ -96,18 +169,68 @@ body{background:#04020e;color:#f0ecff;font-family:'EB Garamond',serif;min-height
 .outcome-dot.mid{background:#e8b84b}
 .outcome-dot.low{background:#22c98a}
 .outcome-line{height:2px;flex:1;background:linear-gradient(to right,#ee4444,#e8b84b,#22c98a)}
-.client-notes{font-size:15px;font-style:italic;color:#c8c4e0;line-height:1.75;margin:10px 0;padding:10px 14px;border-left:2px solid #e8b84b33}
+.client-notes{font-size:15px;font-style:italic;color:#dddaee;line-height:1.75;margin:10px 0;padding:10px 14px;border-left:2px solid #e8b84b33}
 .followup-bar{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}
 .fu-badge{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;text-transform:uppercase;padding:3px 9px;border:1px solid}
 .fu-badge.done{color:#22c98acc;border-color:#22c98a55;background:#22c98a0d}
 .fu-badge.pending{color:#e8b84bcc;border-color:#e8b84b55;background:#e8b84b0a}
 .fu-badge.missed{color:#ee707099;border-color:#ee707044;background:#ee70700a}
 footer{text-align:center;padding:32px;border-top:1px solid #e8b84b11;margin-top:48px}
-footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#c8c4e055;text-transform:uppercase}
+footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#dddaee55;text-transform:uppercase}
 @media(max-width:600px){.wrap{padding:20px 14px}.header{flex-direction:column;gap:14px;align-items:flex-start}.nav-links{flex-wrap:wrap}}
+</style>
+<style>
+/* ── ACCESS GATE ── */
+#accessGate{position:fixed;inset:0;background:#04020e;z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px}
+#accessGate.hidden{display:none}
+.gate-box{text-align:center;max-width:360px;width:100%}
+.gate-eyebrow{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.55em;color:#e8b84b66;text-transform:uppercase;display:block;margin-bottom:20px}
+.gate-title{font-family:'Cinzel',serif;font-size:22px;color:#fff;letter-spacing:.1em;margin-bottom:8px}
+.gate-sub{font-family:'EB Garamond',serif;font-size:16px;color:#dddaeecc;font-style:italic;margin-bottom:32px}
+.gate-input{width:100%;background:rgba(8,6,22,.95);border:1px solid #e8b84b22;padding:14px 18px;font-family:'EB Garamond',serif;font-size:18px;color:#f0ecff;outline:none;text-align:center;letter-spacing:.1em;transition:border-color .3s;margin-bottom:12px}
+.gate-input:focus{border-color:#e8b84b66}
+.gate-input.error{border-color:#ee444488;animation:shake .3s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.gate-btn{width:100%;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.45em;color:#000;text-transform:uppercase;background:linear-gradient(135deg,#f5d98a,#e8b84b);padding:14px;border:none;cursor:pointer;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);transition:filter .3s}
+.gate-btn:hover{filter:brightness(1.1)}
+.gate-err{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:#ee444488;text-transform:uppercase;margin-top:10px;min-height:18px}
 </style>
 </head>
 <body>
+
+<!-- ── ACCESS GATE ── -->
+<div id="accessGate">
+  <div class="gate-box">
+    <span class="gate-eyebrow">Practitioner Portal</span>
+    <h1 class="gate-title">Royal Energy Alchemy</h1>
+    <p class="gate-sub">Enter your access code to continue</p>
+    <input type="password" id="gateInput" class="gate-input" placeholder="••••••••" autocomplete="off" onkeydown="if(event.key==='Enter')checkGate()"/>
+    <button class="gate-btn" onclick="checkGate()">Enter</button>
+    <div class="gate-err" id="gateErr"></div>
+  </div>
+</div>
+<script>
+(function(){
+  var PASS = 'daron@123';
+  var SESSION_KEY = 'rea_dash_auth';
+  if(sessionStorage.getItem(SESSION_KEY)==='1'){
+    document.getElementById('accessGate').classList.add('hidden');
+  }
+  window.checkGate = function(){
+    var val = document.getElementById('gateInput').value;
+    if(val === PASS){
+      sessionStorage.setItem(SESSION_KEY,'1');
+      document.getElementById('accessGate').classList.add('hidden');
+    } else {
+      var inp = document.getElementById('gateInput');
+      inp.classList.add('error');
+      document.getElementById('gateErr').textContent = 'Incorrect code';
+      setTimeout(function(){ inp.classList.remove('error'); inp.value=''; }, 600);
+    }
+  };
+})();
+</script>
+
 <div class="wrap">
   <div class="header">
     <div>
@@ -115,9 +238,9 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#c
       <span class="sub">Practitioner Dashboard · Daron Royal</span>
     </div>
     <div class="nav-links">
-      <a href="session-log.html" class="nav-link">Log Session</a>
-      <a href="waiver-esign.html" class="nav-link">Waiver</a>
-      <a href="index.html" class="nav-link">Live Site</a>
+      <a class='nav-link' href='/session-log'>Log Session</a>
+      <a class='nav-link' href='/waiver-esign'>Waiver</a>
+      <a class='nav-link' href='/'>Live Site</a>
     </div>
   </div>
 
@@ -144,10 +267,11 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#c
     <button class="tab" onclick="showTab('clients')">Clients</button>
     <button class="tab" onclick="showTab('analytics')">Analytics</button>
     <button class="tab" onclick="showTab('booking')">Booking</button>
+    <button class="tab" onclick="showTab('environment')">Environment</button>
   </div>
 
   <!-- RATINGS TAB -->
-  <div class="tab-content active" id="tab-ratings">
+  <div class="tab-content active" id="tab-ratings" style="display:block">
     <div class="section-title">Pending Approval</div>
     <div id="pendingList">
       <!-- Demo pending review -->
@@ -253,173 +377,58 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#c
 
   <!-- SESSIONS TAB -->
   <div class="tab-content" id="tab-sessions">
-    <div class="section-title">Recent Sessions</div>
-    <div class="card">
-      <div class="card-head">
-        <div>
-          <div class="card-name">Jordan L. <span class="badge session">Completed</span></div>
-          <div class="card-time">Energetic Parasite Removal · 3 days ago</div>
-        </div>
-      </div>
-      <div class="checkin-detail">
-        <strong>What Was Found</strong>
-        Two parasitic attachments in the solar plexus and crown chakra. One cord to a deceased family member still feeding.
-        <strong>What Was Done</strong>
-        Both parasites removed and transmuted. Cord cleared. Shield of light placed. Crown sealed.
-        <strong>Flags</strong>
-        <div class="tags" style="margin-top:6px"><span class="tag">Parasites</span><span class="tag">Cords</span><span class="tag">Perceptual</span></div>
-        <strong>Next Step</strong>
-        Monitor via check-ins. 72hr follow-up recommended.
-      </div>
-      <div class="actions" style="margin-top:14px">
-        <a href="session-log.html" class="action-btn view" style="text-decoration:none">Log New Session</a>
-      </div>
+    <div class="section-title" style="justify-content:space-between">
+      <span>Session Log</span>
+      <span id="sessCount" style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#e8b84b88;text-transform:uppercase"></span>
     </div>
-    <div style="text-align:center;margin-top:20px">
-      <a href="session-log.html" class="action-btn approve" style="text-decoration:none;display:inline-block;padding:10px 24px">+ Log a New Session</a>
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      <input id="sessSearch" type="text" placeholder="Search by client or date…"
+        style="background:#04020e;border:1px solid #e8b84b22;padding:8px 14px;font-family:'EB Garamond',serif;font-size:15px;color:#f0ecff;outline:none;flex:1;min-width:180px;transition:border-color .2s"
+        oninput="renderSessions()" onfocus="this.style.borderColor='#e8b84b66'" onblur="this.style.borderColor='#e8b84b22'">
+      <select id="sessFilter" onchange="renderSessions()"
+        style="background:#04020e;border:1px solid #e8b84b22;padding:8px 14px;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.2em;color:#e8b84bcc;text-transform:uppercase;outline:none;cursor:pointer">
+        <option value="all">All Sessions</option>
+        <option value="paid">Paid</option>
+        <option value="exchange">Exchange</option>
+        <option value="repeat">Repeat Rounds</option>
+        <option value="distance">Distance</option>
+        <option value="tarot">Tarot</option>
+      </select>
     </div>
+    <div id="sessionLog"></div>
   </div>
 
   <!-- CLIENTS TAB -->
   <div class="tab-content" id="tab-clients">
-    <div class="section-title">Client Roster</div>
-
-    <!-- Jordan L. -->
-    <div class="client-card">
-      <div class="card-head">
-        <div>
-          <div class="card-name">Jordan L. <span class="badge approved">Active</span></div>
-          <div class="card-time">REA-2026-0041 · Energetic Parasite Removal · Cord Removal</div>
-        </div>
-        <div style="display:flex;gap:8px">
-        <button class="action-btn view" onclick="">View Full Record</button>
-        <button class="action-btn reject" onclick="openModal('Jordan L.','')">⚑ Flag</button>
-        <span id="flag-badge-Jordan L." class="badge" style="display:none"></span>
-      </div>
-      </div>
-      <div class="client-meta">
-        <div class="client-meta-item">Total Sessions<span>4</span></div>
-        <div class="client-meta-item">First Visit<span>May 2026</span></div>
-        <div class="client-meta-item">Last Visit<span>June 2026</span></div>
-        <div class="client-meta-item">Avg Session Price<span>$195</span></div>
-        <div class="client-meta-item">Lifetime Value<span>$780</span></div>
-        <div class="client-meta-item">Intake Severity<span>8 / 10</span></div>
-      </div>
-      <div class="tags" style="margin-bottom:8px">
-        <span class="tag">Parasite Removal</span><span class="tag">Cord Removal</span><span class="tag">Perceptual</span>
-      </div>
-      <div style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.2em;color:#e8b84b99;text-transform:uppercase;margin-bottom:6px">Outcome Trend</div>
-      <div class="outcome-track">
-        <span style="font-family:'Cinzel',serif;font-size:10px;color:#ee7070">8</span>
-        <div class="outcome-dot high"></div>
-        <div class="outcome-line"></div>
-        <div class="outcome-dot mid"></div>
-        <div class="outcome-dot low"></div>
-        <span style="font-family:'Cinzel',serif;font-size:10px;color:#22c98a">3</span>
-        <span style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.1em;color:#22c98a99;margin-left:6px">Intensity dropped 8→3</span>
-      </div>
-      <div class="client-notes">"The pressure behind my eyes is gone. I don't feel watched anymore. Slept 8 hours straight for the first time in months."</div>
-      <div class="followup-bar">
-        <span style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b88;text-transform:uppercase">Follow-Ups:</span>
-        <span class="fu-badge done">24hr ✓</span>
-        <span class="fu-badge done">72hr ✓</span>
-        <span class="fu-badge pending">30-day pending</span>
-      </div>
-      <div class="actions" style="margin-top:14px">
-        <button class="action-btn view">View Check-Ins</button>
-        <button class="action-btn approve">Log New Session</button>
-      </div>
+    <div class="section-title" style="justify-content:space-between">
+      <span>Client Roster</span>
+      <span id="clientCount" style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#e8b84b88;text-transform:uppercase"></span>
     </div>
 
-    <!-- Renee K. -->
-    <div class="client-card">
-      <div class="card-head">
-        <div>
-          <div class="card-name">Renee K. <span class="badge approved">Active</span></div>
-          <div class="card-time">REA-2026-0059 · Distance Session</div>
-        </div>
-        <div style="display:flex;gap:8px">
-        <button class="action-btn view" onclick="">View Full Record</button>
-        <button class="action-btn reject" onclick="openModal('Renee K.','')">⚑ Flag</button>
-        <span id="flag-badge-Renee K." class="badge" style="display:none"></span>
-      </div>
-      </div>
-      <div class="client-meta">
-        <div class="client-meta-item">Total Sessions<span>2</span></div>
-        <div class="client-meta-item">First Visit<span>May 2026</span></div>
-        <div class="client-meta-item">Last Visit<span>June 2026</span></div>
-        <div class="client-meta-item">Avg Session Price<span>$150</span></div>
-        <div class="client-meta-item">Lifetime Value<span>$300</span></div>
-        <div class="client-meta-item">Intake Severity<span>9 / 10</span></div>
-      </div>
-      <div class="tags" style="margin-bottom:8px">
-        <span class="tag">Distance Session</span><span class="tag">Cord to Mother</span>
-      </div>
-      <div style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.2em;color:#e8b84b99;text-transform:uppercase;margin-bottom:6px">Outcome Trend</div>
-      <div class="outcome-track">
-        <span style="font-family:'Cinzel',serif;font-size:10px;color:#ee7070">9</span>
-        <div class="outcome-dot high"></div>
-        <div class="outcome-line"></div>
-        <div class="outcome-dot mid"></div>
-        <span style="font-family:'Cinzel',serif;font-size:10px;color:#e8b84b">6</span>
-        <span style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.1em;color:#e8b84b99;margin-left:6px">Improving — cord still active</span>
-      </div>
-      <div class="client-notes">"Something shifted but I can't name it yet. The cord to my mother still feels present."</div>
-      <div class="followup-bar">
-        <span style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b88;text-transform:uppercase">Follow-Ups:</span>
-        <span class="fu-badge done">24hr ✓</span>
-        <span class="fu-badge missed">72hr missed</span>
-        <span class="fu-badge pending">30-day pending</span>
-      </div>
-      <div class="actions" style="margin-top:14px">
-        <button class="action-btn view">View Check-Ins</button>
-        <button class="action-btn approve">Log New Session</button>
-      </div>
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      <input id="clientSearch" type="text" placeholder="Search clients…"
+        style="background:#04020e;border:1px solid #e8b84b22;padding:8px 14px;font-family:'EB Garamond',serif;font-size:15px;color:#f0ecff;outline:none;flex:1;min-width:180px;transition:border-color .2s"
+        oninput="renderClients()" onfocus="this.style.borderColor='#e8b84b66'" onblur="this.style.borderColor='#e8b84b22'">
+      <select id="clientFilter" onchange="renderClients()"
+        style="background:#04020e;border:1px solid #e8b84b22;padding:8px 14px;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.2em;color:#e8b84bcc;text-transform:uppercase;outline:none;cursor:pointer">
+        <option value="all">All Clients</option>
+        <option value="repeat">Repeat Only</option>
+        <option value="first">First-Time Only</option>
+        <option value="distance">Distance</option>
+        <option value="inperson">In Person</option>
+      </select>
     </div>
 
-    <!-- Anonymous / Sarah M. -->
-    <div class="client-card" style="border-color:#e8b84b11;opacity:.75">
-      <div class="card-head">
-        <div>
-          <div class="card-name">Sarah M. <span class="badge pending">Inactive</span> <span id="flag-badge-Sarah M." class="badge" style="display:none"></span></div>
-          <div class="card-time">REA-2026-0012 · Energetic Parasite Removal</div>
-        </div>
-        <button class="action-btn reject" onclick="openModal('Sarah M.','')">⚑ Flag</button>
-      </div>
-      <div class="client-meta">
-        <div class="client-meta-item">Total Sessions<span>1</span></div>
-        <div class="client-meta-item">First Visit<span>Apr 2026</span></div>
-        <div class="client-meta-item">Last Visit<span>Apr 2026</span></div>
-        <div class="client-meta-item">Intake Severity<span>7 / 10</span></div>
-      </div>
-      <div class="followup-bar">
-        <span style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b88;text-transform:uppercase">Follow-Ups:</span>
-        <span class="fu-badge done">24hr ✓</span>
-        <span class="fu-badge missed">72hr missed</span>
-        <span class="fu-badge missed">30-day missed</span>
-      </div>
-      <div class="actions" style="margin-top:14px">
-        <button class="action-btn view">View Check-Ins</button>
-      </div>
-    </div>
-
-    <div style="text-align:center;padding:20px 0">
-      <p style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#e8b84b66;text-transform:uppercase">Client records are assembled from waiver intake, session logs, and check-in responses. Demo data shown.</p>
-    </div>
+    <div id="clientRoster"></div>
   </div>
 
   <!-- ANALYTICS TAB -->
   <div class="tab-content" id="tab-analytics">
-
-    <!-- Revenue -->
-    <div class="section-title">Revenue</div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;background:#e8b84b14;margin-bottom:28px">
-      <div class="stat"><span class="stat-val">$2,340</span><span class="stat-label">Gross Revenue (Demo)</span></div>
-      <div class="stat"><span class="stat-val">12</span><span class="stat-label">Sessions Logged</span></div>
-      <div class="stat"><span class="stat-val">$195</span><span class="stat-label">Avg per Session</span></div>
-    </div>
+    <div id="analyticsBody"></div>
+    <!-- Revenue placeholder removed - rendered by JS -->
+    <div style="display:none">
     <div class="card" style="margin-bottom:24px">
-      <p style="font-size:15px;font-style:italic;color:#c8c4e0;line-height:1.8">Revenue figures are calculated from session prices entered in the Session Log. As you log sessions with prices, this section will reflect real totals. Currently showing demo values.</p>
+      <p style="font-size:15px;font-style:italic;color:#dddaee;line-height:1.8">Revenue figures are calculated from session prices entered in the Session Log. As you log sessions with prices, this section will reflect real totals. Currently showing demo values.</p>
     </div>
 
     <!-- Retention -->
@@ -463,7 +472,7 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#c
           <div class="intensity-bar"><div class="intensity-fill" style="width:12%"></div></div>
         </div>
       </div>
-      <p style="font-size:14px;font-style:italic;color:#c8c4e0;margin-top:14px">Based on referral_source field from intake waivers. Demo values shown.</p>
+      <p style="font-size:14px;font-style:italic;color:#dddaee;margin-top:14px">Based on referral_source field from intake waivers. Demo values shown.</p>
     </div>
 
     <!-- Satisfaction -->
@@ -485,8 +494,8 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#c
         </div>
         <div>
           <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-            <span style="font-size:16px;color:#c8c4e0">Passives (7–8)</span>
-            <span style="font-family:'Cinzel',serif;font-size:12px;color:#c8c4e0">15%</span>
+            <span style="font-size:16px;color:#dddaee">Passives (7–8)</span>
+            <span style="font-family:'Cinzel',serif;font-size:12px;color:#dddaee">15%</span>
           </div>
           <div class="intensity-bar"><div class="intensity-fill" style="width:15%;background:#c8c4e066"></div></div>
         </div>
@@ -523,7 +532,7 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#c
           <span style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.2em;color:#22c98acc;text-transform:uppercase">Avg shift: +3.9 points</span>
         </div>
       </div>
-      <p style="font-size:14px;font-style:italic;color:#c8c4e0;margin-top:14px">Belief Before collected on intake waiver (belief_before field). Belief After collected on 24hr check-in and rating form. Demo values shown.</p>
+      <p style="font-size:14px;font-style:italic;color:#dddaee;margin-top:14px">Belief Before collected on intake waiver (belief_before field). Belief After collected on 24hr check-in and rating form. Demo values shown.</p>
     </div>
 
     <!-- Service Breakdown -->
@@ -566,7 +575,7 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#c
           <div class="intensity-bar"><div class="intensity-fill" style="width:10%"></div></div>
         </div>
       </div>
-      <p style="font-size:14px;font-style:italic;color:#c8c4e0;margin-top:14px">Based on service type logged in Session Log. Demo values shown.</p>
+      <p style="font-size:14px;font-style:italic;color:#dddaee;margin-top:14px">Based on service type logged in Session Log. Demo values shown.</p>
     </div>
 
     <!-- Client Health -->
@@ -580,47 +589,160 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#c
     </div>
 
   </div>
+  </div>
 
   <!-- BOOKING TAB -->
   <div class="tab-content" id="tab-booking">
 
-    <!-- Calendar recommendation -->
-    <div class="section-title">Booking Calendar — Choose One</div>
+    <!-- CAPACITY STATS -->
+    <div class="section-title">Schedule Capacity — This Week</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1px;background:#e8b84b14;margin-bottom:16px">
+      <div class="stat"><span class="stat-val" id="capAvailable">—</span><span class="stat-label">Available Slots</span></div>
+      <div class="stat"><span class="stat-val" id="capBooked">—</span><span class="stat-label">Booked This Week</span></div>
+      <div class="stat"><span class="stat-val" id="capWaitlist">—</span><span class="stat-label">On Waitlist</span></div>
+      <div class="stat"><span class="stat-val" id="capAvgDays">—</span><span class="stat-label">Avg Days to Next Appt</span></div>
+    </div>
+
+    <!-- CAPACITY SETTING -->
+    <div class="card" style="margin-bottom:20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+      <span style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#e8b84b99;text-transform:uppercase">Weekly Capacity</span>
+      <input id="capacityInput" type="number" min="1" max="60" class="appt-input" style="width:72px;text-align:center;font-family:'Cinzel',serif;font-size:18px" oninput="saveCapacity()" />
+      <span style="font-size:14px;color:#dddaeecc">slots / week</span>
+      <span style="font-size:13px;color:#e8b84b66;font-style:italic">Set your maximum sessions per week so the dashboard knows how full you are</span>
+    </div>
+
+    <!-- WAITLIST -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:10px">
+      <div class="section-title" style="margin:0">Waitlist</div>
+      <button class="action-btn approve" onclick="toggleWaitlistForm()">+ Add to Waitlist</button>
+    </div>
+    <div id="waitlistFormWrap" style="display:none" class="appt-form-wrap" style="margin-bottom:12px">
+      <div class="appt-form-grid">
+        <div><label style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b99;text-transform:uppercase;display:block;margin-bottom:6px">Client Name</label>
+          <input class="appt-input" id="wlClient" placeholder="Full name" /></div>
+        <div><label style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b99;text-transform:uppercase;display:block;margin-bottom:6px">Service Requested</label>
+          <input class="appt-input" id="wlService" placeholder="e.g. Energy Session" /></div>
+        <div><label style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b99;text-transform:uppercase;display:block;margin-bottom:6px">Date Added</label>
+          <input class="appt-input" id="wlDate" type="date" /></div>
+        <div><label style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b99;text-transform:uppercase;display:block;margin-bottom:6px">Notes</label>
+          <input class="appt-input" id="wlNotes" placeholder="Urgency, availability, etc." /></div>
+      </div>
+      <div style="margin-top:14px;display:flex;gap:10px">
+        <button class="action-btn approve" onclick="saveWaitlist()">Add to Waitlist</button>
+        <button class="action-btn reject" onclick="toggleWaitlistForm()">Cancel</button>
+      </div>
+    </div>
+    <div id="waitlistBody" style="margin-bottom:24px"></div>
+
+    <!-- UPCOMING APPOINTMENTS -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px">
+      <div class="section-title" style="margin:0">Upcoming Appointments</div>
+      <button class="action-btn approve" onclick="toggleApptForm()">+ Add Appointment</button>
+    </div>
+
+    <div id="apptFormWrap" style="display:none" class="appt-form-wrap">
+      <div class="appt-form-grid">
+        <div><label style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b99;text-transform:uppercase;display:block;margin-bottom:6px">Client Name</label>
+          <input class="appt-input" id="apptClient" placeholder="Full name" /></div>
+        <div><label style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b99;text-transform:uppercase;display:block;margin-bottom:6px">Date</label>
+          <input class="appt-input" id="apptDate" type="date" /></div>
+        <div><label style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b99;text-transform:uppercase;display:block;margin-bottom:6px">Start Time</label>
+          <input class="appt-input" id="apptTime" type="time" /></div>
+        <div><label style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b99;text-transform:uppercase;display:block;margin-bottom:6px">Duration</label>
+          <select class="appt-input" id="apptDuration">
+            <option value="30">30 min</option>
+            <option value="60" selected>60 min</option>
+            <option value="90">90 min</option>
+            <option value="120">2 hrs</option>
+          </select></div>
+        <div><label style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b99;text-transform:uppercase;display:block;margin-bottom:6px">Service</label>
+          <input class="appt-input" id="apptService" placeholder="e.g. Energy Session, Tarot" /></div>
+        <div><label style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b99;text-transform:uppercase;display:block;margin-bottom:6px">Notes</label>
+          <input class="appt-input" id="apptNotes" placeholder="Optional notes" /></div>
+      </div>
+      <div style="margin-top:14px;display:flex;gap:10px">
+        <button class="action-btn approve" onclick="saveAppt()">Save Appointment</button>
+        <button class="action-btn reject" onclick="toggleApptForm()">Cancel</button>
+      </div>
+    </div>
+
+    <div id="upcomingList" style="margin-bottom:24px"></div>
+
+    <div class="section-title">Booking System</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;background:#e8b84b14;margin-bottom:20px">
+      <div class="stat"><span class="stat-val good">✓ Live</span><span class="stat-label">Square Appointments</span></div>
+      <div class="stat"><span class="stat-val" id="bkTotalSess">—</span><span class="stat-label">Total Sessions Logged</span></div>
+      <div class="stat"><span class="stat-val" id="bkWeeklyAvg">—</span><span class="stat-label">Avg Sessions / Week</span></div>
+      <div class="stat"><span class="stat-val" id="bkTopDay">—</span><span class="stat-label">Busiest Day</span></div>
+    </div>
+
     <div class="card" style="margin-bottom:16px">
-      <p style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#22c98acc;text-transform:uppercase;margin-bottom:12px">★ Recommended · TidyCal</p>
-      <p style="font-size:16px;color:#d8d4f0;line-height:1.8"><strong style="color:#f0ecff">TidyCal</strong> — $29 one-time (lifetime). Clean embed iframe, Stripe + PayPal built in, custom session types, 1-click booking. Best value for a solo practitioner. No monthly fees ever. <a href="https://tidycal.com" target="_blank" style="color:#e8b84bcc">tidycal.com</a></p>
-    </div>
-    <div class="card" style="margin-bottom:16px;opacity:.8">
-      <p style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#e8b84b99;text-transform:uppercase;margin-bottom:10px">Option 2 · Calendly</p>
-      <p style="font-size:16px;color:#d8d4f0;line-height:1.8"><strong style="color:#f0ecff">Calendly Free</strong> — $0 forever, 1 event type. Or $10/month for multiple types + payments. Great brand recognition, very easy to embed. No payment on free tier. <a href="https://calendly.com" target="_blank" style="color:#e8b84bcc">calendly.com</a></p>
-    </div>
-    <div class="card" style="margin-bottom:16px;opacity:.8">
-      <p style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#e8b84b99;text-transform:uppercase;margin-bottom:10px">Option 3 · Square Appointments</p>
-      <p style="font-size:16px;color:#d8d4f0;line-height:1.8"><strong style="color:#f0ecff">Square Appointments</strong> — Free for individuals, Square payment processing built in. Best if Daron already uses Square. Embed available but less customizable. <a href="https://squareup.com/us/en/appointments" target="_blank" style="color:#e8b84bcc">squareup.com</a></p>
-    </div>
-    <div class="card" style="margin-bottom:28px;opacity:.8">
-      <p style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#e8b84b99;text-transform:uppercase;margin-bottom:10px">Option 4 · Acuity Scheduling</p>
-      <p style="font-size:16px;color:#d8d4f0;line-height:1.8"><strong style="color:#f0ecff">Acuity</strong> — $16/month entry. Most powerful: intake forms, packages, subscriptions. Overkill for now but worth it if the practice scales. <a href="https://acuityscheduling.com" target="_blank" style="color:#e8b84bcc">acuityscheduling.com</a></p>
+      <p style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.4em;color:#22c98acc;text-transform:uppercase;margin-bottom:14px">✓ Square Appointments — Live</p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <a href="https://book.squareup.com/appointments/gcevwnjduxlw9u/location/LA19CVXRF3KDC/services" target="_blank" class="action-btn view" style="text-decoration:none;display:inline-block;padding:10px 28px">Open Booking Page ↗</a>
+        <a href="https://squareup.com/dashboard/appointments" target="_blank" class="action-btn approve" style="text-decoration:none;display:inline-block;padding:10px 28px">Square Dashboard ↗</a>
+      </div>
     </div>
 
-    <!-- Calendar embed placeholder -->
-    <div class="section-title">Live Booking Widget</div>
-    <div class="card" id="calendarEmbedCard" style="margin-bottom:24px;text-align:center;padding:32px 24px">
-      <p style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.4em;color:#22c98acc;text-transform:uppercase;margin-bottom:12px">✓ Square Appointments — Live</p>
-      <p style="font-size:16px;color:#d8d4f0;font-style:italic;line-height:1.8;margin-bottom:20px">Booking link is live on the public site. Clients click "Book a Session" and are taken directly to Square.</p>
-      <a href="https://book.squareup.com/appointments/gcevwnjduxlw9u/location/LA19CVXRF3KDC/services" target="_blank" class="action-btn view" style="text-decoration:none;display:inline-block;padding:10px 28px">Open Booking Page ↗</a>
-      <p style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#e8b84b55;text-transform:uppercase;margin-top:16px">Next: delete the Square example service → add Daron's real services in Items &amp; services</p>
-    </div>
+    <div class="section-title">Sessions by Day of Week</div>
+    <div class="card" style="margin-bottom:20px"><div id="bkDayBreakdown" style="display:flex;flex-direction:column;gap:12px"></div></div>
 
-    <div class="card" style="margin-bottom:0;background:#22c98a08;border-color:#22c98a22">
-      <p style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#22c98a99;text-transform:uppercase;margin-bottom:10px">Next Steps</p>
-      <p style="font-size:16px;color:#c8c4e0;line-height:1.9">1. Pick TidyCal or Calendly above &nbsp;·&nbsp; 2. Set up your session types + prices &nbsp;·&nbsp; 3. Copy the embed code &nbsp;·&nbsp; 4. Paste it in this file above the comment line &nbsp;·&nbsp; 5. The widget will appear here and on index.html automatically.</p>
+    <div class="section-title">Sessions by Week</div>
+    <div class="card" style="margin-bottom:20px"><div id="bkWeekBreakdown" style="display:flex;flex-direction:column;gap:12px"></div></div>
+
+    <div class="card" style="background:#22c98a08;border-color:#22c98a22">
+      <p style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#22c98a99;text-transform:uppercase;margin-bottom:10px">Square Setup Checklist</p>
+      <div style="display:flex;flex-direction:column;gap:8px;font-size:15px;color:#dddaee;line-height:1.7">
+        <span>✓ Booking link live on public site</span>
+        <span>✓ All 12 services imported to Square</span>
+        <span>✓ Treatment plan packages added to CSV</span>
+        <span>☐ Enable "Available for online booking" on each service in Square</span>
+        <span>☐ Set weekly availability hours in Square Calendar settings</span>
+      </div>
     </div>
+  </div>
+
+  <!-- ENVIRONMENT TAB -->
+  <div class="tab-content" id="tab-environment">
+
+    <!-- TODAY CARD -->
+    <div id="todayEnvCard" style="margin-bottom:24px"></div>
+
+    <!-- DAILY LOG -->
+    <div class="section-title">Daily Log</div>
+    <div id="envLogList" style="margin-bottom:32px"></div>
+
+    <!-- PATTERN ANALYTICS -->
+    <div class="section-title">Pattern Analytics</div>
+    <p style="font-size:13px;color:#dddaeecc;font-style:italic;margin-bottom:16px">Keywords scanned in session notes: sleep · anxiety · stress · drained · headache · emotional · overwhelm · grief. Patterns update as you log daily observations.</p>
+    <div id="patternAnalytics"></div>
 
   </div>
+
 </div>
 
 <footer><p>Royal Energy Alchemy LLC · Practitioner Portal · Private</p></footer>
+
+<!-- ── SESSION DETAIL MODAL ── -->
+<div class="modal-overlay" id="sessModal" onclick="closeSessModal(event)">
+  <div class="modal" style="max-width:520px;max-height:82vh;overflow-y:auto" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeSessModal()">✕</button>
+    <div id="sessModalBody"></div>
+  </div>
+</div>
+
+<!-- ── INTAKE MODAL ── -->
+<div class="modal-overlay" id="intakeModal" onclick="closeIntakeModal(event)">
+  <div class="modal" style="max-width:540px;max-height:80vh;overflow-y:auto" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeIntakeModal()">✕</button>
+    <h2 id="intakeModalName">Intake &amp; Assessment</h2>
+    <div class="modal-sub">Client intake form — submitted via waiver</div>
+    <div id="intakeBody" style="margin-top:4px"></div>
+    <div style="margin-top:20px;border-top:1px solid #e8b84b22;padding-top:16px">
+      <a id="intakeNetlifyLink" href="https://app.netlify.com/projects/royal-energy-alchemy/forms" target="_blank" class="action-btn view" style="text-decoration:none;display:inline-block;padding:8px 20px;margin-right:10px">View All Submissions ↗</a>
+    </div>
+  </div>
+</div>
 
 <!-- ── FLAG / BLOCK MODAL ── -->
 <div class="modal-overlay" id="flagModal">
@@ -651,9 +773,17 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#c
 <script src="clients-data.js"></script>
 <script>
 function showTab(name) {
-  document.querySelectorAll('.tab,.tab-content').forEach(el => el.classList.remove('active'));
-  document.querySelector(`[onclick="showTab('${name}')"]`).classList.add('active');
-  document.getElementById('tab-' + name).classList.add('active');
+  // Hide all tab content via inline style (bypasses any CSS cascade issues)
+  document.querySelectorAll('.tab-content').forEach(el => { el.style.display='none'; el.classList.remove('active'); });
+  document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+  // Show the selected tab
+  var btn = document.querySelector('[onclick="showTab(\''+name+'\')"]');
+  if (btn) btn.classList.add('active');
+  var tc = document.getElementById('tab-' + name);
+  if (tc) { tc.style.display='block'; tc.classList.add('active'); }
+  // Tab-specific renders
+  if (name === 'environment') { try { renderTodayEnvCard(); } catch(e){} try { renderEnvLog(); } catch(e){} try { renderPatterns(); } catch(e){} }
+  if (name === 'booking')     { try { renderUpcoming(); renderWaitlist(); updateCapacityStats(); } catch(e){} }
 }
 
 function approveReview(id) {
@@ -710,6 +840,1025 @@ function updateStats() {
 }
 
 updateStats();
+
+// ── SESSION LOG ─────────────────────────────────────────────
+function renderSessions() {
+  const el = document.getElementById('sessionLog');
+  const countEl = document.getElementById('sessCount');
+  if (!el || typeof REA_DATA === 'undefined') return;
+
+  const q = ((document.getElementById('sessSearch')||{}).value||'').toLowerCase();
+  const f = ((document.getElementById('sessFilter')||{}).value||'all');
+
+  let sessions = [...REA_DATA.sessions].reverse(); // most recent first
+
+  if (q) sessions = sessions.filter(s => s.client.toLowerCase().includes(q) || s.date.includes(q));
+  if (f === 'paid')     sessions = sessions.filter(s => s.price > 0 && !s.tags.includes('exchange'));
+  if (f === 'exchange') sessions = sessions.filter(s => s.tags.includes('exchange'));
+  if (f === 'repeat')   sessions = sessions.filter(s => s.round > 1);
+  if (f === 'distance') sessions = sessions.filter(s => s.tags.includes('distance'));
+  if (f === 'tarot')    sessions = sessions.filter(s => s.tags.includes('tarot'));
+
+  if (countEl) countEl.textContent = sessions.length + ' sessions';
+
+  if (!sessions.length) { el.innerHTML = '<p style="color:#dddaeecc;font-style:italic;padding:24px 0">No sessions match.</p>'; return; }
+
+  // Build session index for modal lookup
+  window._sessIndex = sessions;
+
+  el.innerHTML = sessions.map((s, idx) => {
+    const env = getEnvForDate(s.date);
+    const roundBadge = s.round > 1 ? `<span class="badge checkin">R${s.round}</span>` : '<span class="badge pending">New</span>';
+    const price = s.price > 0 ? `<span style="font-family:'Cinzel',serif;font-size:14px;color:#22c98acc">$${s.price}</span>`
+                              : `<span style="font-family:'Cinzel',serif;font-size:13px;color:#e8b84b66">${(s.tags||[]).includes('exchange')?'Exchange':'$0'}</span>`;
+    // Compact env preview (moon only) for card
+    const moonPreview = env && env.moon ? `<span style="font-size:13px;opacity:.7;margin-left:6px">${env.moon}</span>` : '';
+    return `<div class="card" style="margin-bottom:8px;cursor:pointer;transition:border-color .15s"
+        onmouseover="this.style.borderColor='#e8b84b66'" onmouseout="this.style.borderColor=''"
+        onclick="openSessModal(${idx})">
+      <div class="card-head">
+        <div>
+          <div class="card-name">${s.client} ${roundBadge}${moonPreview}</div>
+          <div class="card-time">${s.date} · ${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date(s.date+'T12:00:00').getDay()]}</div>
+        </div>
+        ${price}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── ANALYTICS ────────────────────────────────────────────────
+function renderAnalytics() {
+  const el = document.getElementById('analyticsBody');
+  if (!el || typeof REA_DATA === 'undefined') return;
+  if (!REA_DATA.computed) REA_DATA.compute();
+  const c = REA_DATA.computed;
+  const s = REA_DATA.sessions;
+  const totalClients = c.totalClients;
+  const repeatClients = c.repeatClients;
+  const repeatRate = c.repeatRate;
+  const avgLTV = totalClients ? Math.round(c.revenue / totalClients) : 0;
+  const avgPerSess = c.avgPerSession;
+  const distCount = s.filter(x=>x.tags&&x.tags.includes('distance')).length;
+  const inPersonCount = s.filter(x=>x.tags&&(x.tags.includes('inPerson')||x.tags.includes('in-person'))).length;
+  const tarotCount = s.filter(x=>x.tags&&x.tags.includes('tarot')).length;
+  const exchangeCount = s.filter(x=>x.tags&&x.tags.includes('exchange')).length;
+  const standardCount = c.sessCount - distCount - inPersonCount - tarotCount - exchangeCount;
+  const distPct  = Math.round(distCount/c.sessCount*100);
+  const inPct    = Math.round(inPersonCount/c.sessCount*100);
+  const tarotPct = Math.round(tarotCount/c.sessCount*100);
+  const exchPct  = Math.round(exchangeCount/c.sessCount*100);
+  const stdPct   = 100 - distPct - inPct - tarotPct - exchPct;
+
+  function bar(label, pct, count, color) {
+    return `<div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+        <span style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.2em;color:#e8b84bcc;text-transform:uppercase">${label}</span>
+        <span style="font-family:'Cinzel',serif;font-size:12px;color:#e8b84b99">${pct}% &nbsp;(${count})</span>
+      </div>
+      <div class="intensity-bar"><div class="intensity-fill" style="width:${pct}%;${color?'background:'+color:''}"></div></div>
+    </div>`;
+  }
+
+  // Week-over-week revenue
+  const weekMap = {};
+  s.forEach(x => {
+    const d = new Date(x.date); const day = d.getDay();
+    const diff = day===0 ? -6 : 1-day;
+    const mon = new Date(d); mon.setDate(d.getDate()+diff);
+    const wk = mon.toISOString().slice(0,10);
+    if (!weekMap[wk]) weekMap[wk] = {rev:0, count:0};
+    weekMap[wk].rev += x.price||0;
+    weekMap[wk].count++;
+  });
+  const weeks = Object.entries(weekMap).sort((a,b)=>a[0].localeCompare(b[0]));
+  const maxWkRev = Math.max(...weeks.map(w=>w[1].rev));
+  const weekBars = weeks.map(([wk,d])=>{
+    const pct = Math.round(d.rev/maxWkRev*100);
+    return `<div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+        <span style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.15em;color:#e8b84bcc">${wk}</span>
+        <span style="font-family:'Cinzel',serif;font-size:12px;color:#e8b84b99">$${d.rev.toLocaleString()} &nbsp;·&nbsp; ${d.count} sess</span>
+      </div>
+      <div class="intensity-bar"><div class="intensity-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+
+  el.innerHTML = `
+    <div class="section-title">Revenue</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1px;background:#e8b84b14;margin-bottom:20px">
+      <div class="stat"><span class="stat-val">$${c.revenue.toLocaleString()}</span><span class="stat-label">Gross Revenue</span></div>
+      <div class="stat"><span class="stat-val">${c.sessCount}</span><span class="stat-label">Sessions Logged</span></div>
+      <div class="stat"><span class="stat-val">$${avgPerSess}</span><span class="stat-label">Avg per Session</span></div>
+      <div class="stat"><span class="stat-val">${weeks.length}</span><span class="stat-label">Weeks Active</span></div>
+    </div>
+
+    <div class="section-title">Revenue by Week</div>
+    <div class="card" style="margin-bottom:24px"><div style="display:flex;flex-direction:column;gap:12px">${weekBars}</div></div>
+
+    <div class="section-title">Client Retention</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1px;background:#e8b84b14;margin-bottom:24px">
+      <div class="stat"><span class="stat-val">${totalClients}</span><span class="stat-label">Unique Clients</span></div>
+      <div class="stat"><span class="stat-val">${repeatClients}</span><span class="stat-label">Repeat Clients</span></div>
+      <div class="stat"><span class="stat-val">${repeatRate}%</span><span class="stat-label">Repeat Rate</span></div>
+      <div class="stat"><span class="stat-val">$${avgLTV}</span><span class="stat-label">Avg Lifetime Value</span></div>
+    </div>
+
+    <div class="section-title">Session Type Breakdown</div>
+    <div class="card" style="margin-bottom:24px">
+      <div style="display:flex;flex-direction:column;gap:14px">
+        ${bar('Standard Energy Sessions', stdPct, standardCount, '')}
+        ${bar('Distance Sessions', distPct, distCount, 'linear-gradient(90deg,#4488ff88,#e8b84bcc)')}
+        ${bar('In-Person Sessions', inPct, inPersonCount, 'linear-gradient(90deg,#22c98a88,#e8b84bcc)')}
+        ${bar('Tarot Readings', tarotPct, tarotCount, 'linear-gradient(90deg,#9b7fe888,#e8b84bcc)')}
+        ${bar('Exchanges', exchPct, exchangeCount, '#e8b84b33')}
+      </div>
+    </div>
+
+    <div class="section-title">Geographic Reach</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1px;background:#e8b84b14;margin-bottom:24px">
+      <div class="stat"><span class="stat-val">${distCount}</span><span class="stat-label">Distance Sessions</span></div>
+      <div class="stat"><span class="stat-val">15+</span><span class="stat-label">Countries Reached</span></div>
+      <div class="stat"><span class="stat-val">${distPct}%</span><span class="stat-label">Sessions Remote</span></div>
+    </div>
+  `;
+}
+
+// ── BOOKING STATS ────────────────────────────────────────────
+function renderBooking() {
+  if (typeof REA_DATA === 'undefined') return;
+  if (!REA_DATA.computed) REA_DATA.compute();
+  const s = REA_DATA.sessions;
+  const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const dayCounts = [0,0,0,0,0,0,0];
+  const weekMap = {};
+  s.forEach(x => {
+    const d = new Date(x.date);
+    dayCounts[d.getDay()]++;
+    const day = d.getDay(); const diff = day===0?-6:1-day;
+    const mon = new Date(d); mon.setDate(d.getDate()+diff);
+    const wk = mon.toISOString().slice(0,10);
+    weekMap[wk] = (weekMap[wk]||0)+1;
+  });
+  const maxDay = Math.max(...dayCounts);
+  const topDayIdx = dayCounts.indexOf(maxDay);
+  const weekKeys = Object.keys(weekMap).sort();
+  const maxWk = Math.max(...Object.values(weekMap));
+  const weeklyAvg = weekKeys.length ? Math.round(s.length/weekKeys.length) : 0;
+
+  const bkEl = document.getElementById('bkTotalSess');
+  if (bkEl) bkEl.textContent = s.length;
+  const wkEl = document.getElementById('bkWeeklyAvg');
+  if (wkEl) wkEl.textContent = weeklyAvg;
+  const topEl = document.getElementById('bkTopDay');
+  if (topEl) topEl.textContent = dayNames[topDayIdx];
+
+  const dayEl = document.getElementById('bkDayBreakdown');
+  if (dayEl) dayEl.innerHTML = dayNames.map((n,i)=>{
+    const pct = Math.round(dayCounts[i]/maxDay*100);
+    return `<div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+        <span style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.2em;color:#e8b84bcc;text-transform:uppercase">${n}</span>
+        <span style="font-family:'Cinzel',serif;font-size:12px;color:#e8b84b99">${dayCounts[i]} sessions</span>
+      </div>
+      <div class="intensity-bar"><div class="intensity-fill" style="width:${pct}%${i===topDayIdx?';background:linear-gradient(90deg,#22c98a99,#e8b84bcc)':''}"></div></div>
+    </div>`;
+  }).join('');
+
+  const wkBreakEl = document.getElementById('bkWeekBreakdown');
+  if (wkBreakEl) wkBreakEl.innerHTML = weekKeys.map(wk=>{
+    const pct = Math.round(weekMap[wk]/maxWk*100);
+    return `<div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+        <span style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.15em;color:#e8b84bcc">Week of ${wk}</span>
+        <span style="font-family:'Cinzel',serif;font-size:12px;color:#e8b84b99">${weekMap[wk]} sessions</span>
+      </div>
+      <div class="intensity-bar"><div class="intensity-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+}
+
+// ── CLIENT ROSTER ───────────────────────────────────────────
+function renderClients() {
+  const roster = document.getElementById('clientRoster');
+  const countEl = document.getElementById('clientCount');
+  if (!roster) return;
+  if (typeof REA_DATA === 'undefined') {
+    roster.innerHTML = '<p style="color:#dddaeecc;font-style:italic;padding:24px">Session data not loaded.</p>';
+    return;
+  }
+
+  const search = (document.getElementById('clientSearch') || {}).value || '';
+  const filter = (document.getElementById('clientFilter') || {}).value || 'all';
+  const q = search.toLowerCase().trim();
+
+  // Build client map from sessions
+  const map = {};
+  REA_DATA.sessions.forEach(s => {
+    const key = s.client.toLowerCase().trim();
+    if (!map[key]) map[key] = { name: s.client, sessions: [], spend: 0, tags: new Set() };
+    map[key].sessions.push(s);
+    map[key].spend += s.price || 0;
+    (s.tags || []).forEach(t => map[key].tags.add(t));
+  });
+
+  let clients = Object.values(map);
+
+  // Sort by most recent session date
+  clients.forEach(c => {
+    c.lastDate = c.sessions.reduce((latest, s) => s.date > latest ? s.date : latest, '');
+    c.firstDate = c.sessions.reduce((earliest, s) => s.date < earliest ? s.date : earliest, '9999');
+    c.maxRound = c.sessions.reduce((max, s) => (s.round||0) > max ? (s.round||0) : max, 0);
+    c.isRepeat = c.sessions.length > 1 || c.maxRound > 1;
+    c.isDistance = c.tags.has('distance');
+    c.isInPerson = c.tags.has('inPerson') || c.tags.has('in-person');
+  });
+  clients.sort((a, b) => b.lastDate.localeCompare(a.lastDate));
+
+  // Filter
+  if (q) clients = clients.filter(c => c.name.toLowerCase().includes(q));
+  if (filter === 'repeat')   clients = clients.filter(c => c.isRepeat);
+  if (filter === 'first')    clients = clients.filter(c => !c.isRepeat);
+  if (filter === 'distance') clients = clients.filter(c => c.isDistance);
+  if (filter === 'inperson') clients = clients.filter(c => c.isInPerson);
+
+  countEl.textContent = clients.length + ' clients';
+
+  if (!clients.length) {
+    roster.innerHTML = '<p style="color:#dddaeecc;font-style:italic;padding:24px 0">No clients match.</p>';
+    return;
+  }
+
+  roster.innerHTML = clients.map(c => {
+    const sessCount = c.sessions.length;
+    const lastFmt   = c.lastDate ? c.lastDate.replace('2026-','').replace('2027-','') : '—';
+    const firstFmt  = c.firstDate ? c.firstDate.replace('2026-','').replace('2027-','') : '—';
+    const statusBadge = c.isRepeat
+      ? '<span class="badge approved">Repeat</span>'
+      : '<span class="badge pending">First-Time</span>';
+    const distanceBadge = c.isDistance ? '<span class="badge checkin" style="margin-left:4px">Distance</span>' : '';
+    const inPersonBadge = c.isInPerson ? '<span class="badge checkin" style="margin-left:4px">In Person</span>' : '';
+    const tagList = [...c.tags].filter(t => !['paid','reschedule','deposit'].includes(t))
+      .map(t => `<span class="tag">${t}</span>`).join('');
+    const serviceTypes = [...new Set(c.sessions.map(s => {
+      const notes = (s.notes||'').toLowerCase();
+      if (s.tags && s.tags.includes('tarot')) return 'Tarot';
+      if (s.tags && s.tags.includes('in-person')) return 'In Person';
+      if (s.tags && s.tags.includes('distance')) return 'Distance';
+      if (notes.includes('exchange')) return 'Exchange';
+      return 'Energy Session';
+    }))].join(' · ');
+
+    // Flag badge
+    const flagBadgeId = 'flag-badge-' + c.name.replace(/[^a-z0-9]/gi,'_');
+    const flagStatus = (typeof REA_FLAGS !== 'undefined') ? REA_FLAGS.check(c.name) : null;
+    const flagBadgeHtml = flagStatus
+      ? `<span class="badge ${flagStatus.status}" id="${flagBadgeId}">${flagStatus.status}</span>`
+      : `<span class="badge" id="${flagBadgeId}" style="display:none"></span>`;
+
+    return `<div class="client-card">
+      <div class="card-head">
+        <div>
+          <div class="card-name">${c.name} ${statusBadge}${distanceBadge}${inPersonBadge}</div>
+          <div class="card-time">${serviceTypes}</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <button class="action-btn view" onclick="openIntakeModal('${c.name.replace(/'/g,"\\'")}')">📋 Intake</button>
+          <button class="action-btn reject" onclick="openModal('${c.name.replace(/'/g,"\\'")}','')">⚑ Flag</button>
+          ${flagBadgeHtml}
+        </div>
+      </div>
+      <div class="client-meta">
+        <div class="client-meta-item">Sessions<span>${sessCount}</span></div>
+        <div class="client-meta-item">First Visit<span>${firstFmt}</span></div>
+        <div class="client-meta-item">Last Visit<span>${lastFmt}</span></div>
+        <div class="client-meta-item">Total Spent<span>$${c.spend}</span></div>
+        ${c.maxRound > 1 ? `<div class="client-meta-item">Highest Round<span>${c.maxRound}</span></div>` : ''}
+      </div>
+      ${tagList ? `<div class="tags" style="margin-top:4px">${tagList}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// Render after data loads
+// ── SESSION DETAIL MODAL ─────────────────────────────────────
+function openSessModal(idx) {
+  var s = (window._sessIndex || [])[idx];
+  if (!s) return;
+  var env = getEnvForDate(s.date);
+  var dow = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date(s.date+'T12:00:00').getDay()];
+  var tags = (s.tags||[]).filter(function(t){return t!=='paid';});
+  var price = s.price > 0 ? '$'+s.price : ((s.tags||[]).includes('exchange') ? 'Exchange' : '$0');
+
+  // Schumann color
+  var schuCol = {Normal:'#22c98a', Elevated:'#f8e090', High:'#e8b84b', Extreme:'#ee7070'};
+
+  var envBlock = '';
+  if (env) {
+    var rows = [
+      ['Day of Week', dow, '#dddaee'],
+      env.moon    ? ['Moon Phase', env.moon, '#dddaee'] : null,
+      env.schumann? ['Schumann',   env.schumann + (env.schumannVal?' — Kp '+env.schumannVal:''), schuCol[env.schumann]||'#dddaee'] : null,
+      env.solar && env.solar!=='None' ? ['Solar Activity', env.solar, '#9b7fe8'] : null,
+      env.geo && env.geo!=='Quiet' && env.geo!=='' ? ['Geomagnetic', env.geo, '#4488ff'] : null,
+    ].filter(Boolean);
+
+    envBlock = `<div style="margin-top:20px;border-top:1px solid #e8b84b22;padding-top:16px">
+      <div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.35em;color:#e8b84b88;text-transform:uppercase;margin-bottom:12px">Environmental Conditions — Auto-Attached</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        ${rows.map(function(r){return `<div style="background:#e8b84b08;border:1px solid #e8b84b14;padding:10px 14px">
+          <div style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;color:#e8b84b66;text-transform:uppercase;margin-bottom:4px">${r[0]}</div>
+          <div style="font-size:15px;color:${r[2]};font-family:'Cinzel',serif">${r[1]}</div>
+        </div>`;}).join('')}
+      </div>
+    </div>`;
+  } else {
+    envBlock = `<div style="margin-top:20px;border-top:1px solid #e8b84b22;padding-top:12px;font-size:13px;color:#e8b84b44;font-style:italic">No environmental data logged for this date.</div>`;
+  }
+
+  var nameKey = 'rea_intake_name_' + s.client.toLowerCase().trim().replace(/\s+/g,'_');
+  var hasIntake = !!localStorage.getItem(nameKey);
+
+  document.getElementById('sessModalBody').innerHTML = `
+    <div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.35em;color:#e8b84b88;text-transform:uppercase;margin-bottom:4px">${s.date} · ${dow}</div>
+    <h2 style="font-family:'Cinzel',serif;font-size:16px;letter-spacing:.15em;color:#f0ecff;margin-bottom:2px">${s.client}</h2>
+    <div style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.2em;color:#22c98acc;margin-bottom:16px">Round ${s.round||1} · ${price}</div>
+
+    ${tags.length ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">${tags.map(function(t){return '<span class="tag">'+t+'</span>';}).join('')}</div>` : ''}
+    ${s.notes ? `<div style="font-size:15px;color:#dddaee;font-style:italic;line-height:1.7;background:#e8b84b06;border-left:2px solid #e8b84b33;padding:10px 14px">${s.notes}</div>` : ''}
+
+    ${envBlock}
+
+    ${hasIntake ? `<div style="margin-top:16px"><button class="action-btn view" onclick="openIntakeModal('${s.client.replace(/'/g,"\\'")}');closeSessModal()" style="padding:8px 20px">View Intake Form ↗</button></div>` : ''}
+  `;
+  document.getElementById('sessModal').classList.add('open');
+}
+function closeSessModal(e) {
+  if (e && e.target !== document.getElementById('sessModal')) return;
+  document.getElementById('sessModal').classList.remove('open');
+}
+
+// ── INTAKE MODAL ─────────────────────────────────────────────
+function openIntakeModal(clientName) {
+  const nameKey = 'rea_intake_name_' + clientName.toLowerCase().trim().replace(/\s+/g,'_');
+  const raw = localStorage.getItem(nameKey);
+  const modal = document.getElementById('intakeModal');
+  const body = document.getElementById('intakeBody');
+  document.getElementById('intakeModalName').textContent = clientName + ' — Intake';
+
+  if (!raw) {
+    body.innerHTML = `
+      <p style="color:#dddaeecc;font-style:italic;margin-bottom:16px">No intake form on file for this client (not yet submitted via the waiver page, or submitted on a different device).</p>
+      <a href="https://app.netlify.com/projects/royal-energy-alchemy/forms" target="_blank" class="action-btn view" style="text-decoration:none;display:inline-block;padding:8px 20px">View Netlify Form Submissions ↗</a>`;
+  } else {
+    const d = JSON.parse(raw);
+    const ts = d.timestamp ? new Date(d.timestamp).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}) : '—';
+    const ref = d.referral === 'Other' ? (d.referralOther || 'Other') : (d.referral || '—');
+    body.innerHTML = `
+      <div class="intake-row"><span class="intake-label">Submitted</span><span class="intake-val">${ts}</span></div>
+      <div class="intake-row"><span class="intake-label">Full Name</span><span class="intake-val">${d.name||'—'}</span></div>
+      <div class="intake-row"><span class="intake-label">Email</span><span class="intake-val">${d.email||'—'}</span></div>
+      <div class="intake-row"><span class="intake-label">Phone</span><span class="intake-val">${d.phone||'—'}</span></div>
+      <div class="intake-row"><span class="intake-label">Date of Birth</span><span class="intake-val">${d.dob||'—'}</span></div>
+      <div class="intake-row"><span class="intake-label">Client ID</span><span class="intake-val" style="font-family:'Cinzel',serif;color:#e8b84bcc">${d.clientId||'—'}</span></div>
+      <div style="border-top:1px solid #e8b84b14;margin:14px 0"></div>
+      <div class="intake-row"><span class="intake-label">Pain Severity (0–10)</span><span class="intake-val">${d.severity||'—'}</span></div>
+      <div class="intake-row"><span class="intake-label">Referral Source</span><span class="intake-val">${ref}</span></div>
+      <div style="margin-top:10px"><span class="intake-label" style="display:block;margin-bottom:6px">Goals & Expectations</span>
+        <div style="font-size:15px;color:#dddaee;line-height:1.7;font-style:italic;background:#e8b84b06;border-left:2px solid #e8b84b33;padding:10px 14px">${d.expectations||'—'}</div>
+      </div>
+      <div style="margin-top:14px"><span style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#22c98a99;text-transform:uppercase">✓ Signed &amp; Submitted</span></div>`;
+  }
+  modal.classList.add('open');
+}
+function closeIntakeModal(e) {
+  if (e && e.target !== document.getElementById('intakeModal')) return;
+  document.getElementById('intakeModal').classList.remove('open');
+}
+
+// ── APPOINTMENTS ─────────────────────────────────────────────
+function toggleApptForm() {
+  const w = document.getElementById('apptFormWrap');
+  w.style.display = w.style.display === 'none' ? 'block' : 'none';
+}
+function getAppts() {
+  try { return JSON.parse(localStorage.getItem('rea_appointments') || '[]'); } catch(e) { return []; }
+}
+function saveAppts(arr) { localStorage.setItem('rea_appointments', JSON.stringify(arr)); }
+function saveAppt() {
+  const client  = (document.getElementById('apptClient')||{}).value.trim();
+  const date    = (document.getElementById('apptDate')||{}).value;
+  const time    = (document.getElementById('apptTime')||{}).value;
+  const dur     = parseInt((document.getElementById('apptDuration')||{}).value)||60;
+  const service = (document.getElementById('apptService')||{}).value.trim();
+  const notes   = (document.getElementById('apptNotes')||{}).value.trim();
+  if (!client || !date || !time) { alert('Client name, date, and time are required.'); return; }
+  const appts = getAppts();
+  appts.push({ client, date, time, dur, service, notes, id: Date.now() });
+  saveAppts(appts);
+  ['apptClient','apptDate','apptTime','apptService','apptNotes'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  toggleApptForm();
+  renderUpcoming();
+  updateCapacityStats();
+}
+function deleteAppt(id) {
+  saveAppts(getAppts().filter(a => a.id !== id));
+  renderUpcoming();
+  updateCapacityStats();
+}
+function renderUpcoming() {
+  const el = document.getElementById('upcomingList');
+  if (!el) return;
+  const appts = getAppts().sort((a,b) => (a.date+a.time).localeCompare(b.date+b.time));
+  if (!appts.length) {
+    el.innerHTML = '<p style="color:#dddaeecc;font-style:italic;padding:12px 0 20px">No upcoming appointments logged. Use "+ Add Appointment" to track sessions. Appointment data from Square can be seen on the <a href="https://squareup.com/dashboard/appointments" target="_blank" style="color:#e8b84bcc">Square Dashboard ↗</a></p>';
+    return;
+  }
+  const today = new Date().toISOString().slice(0,10);
+  // Detect conflicts: same date, overlapping time windows
+  const conflictSet = new Set();
+  for (let i = 0; i < appts.length; i++) {
+    for (let j = i+1; j < appts.length; j++) {
+      if (appts[i].date !== appts[j].date) continue;
+      const aStart = appts[i].time, aEnd = addMins(appts[i].time, appts[i].dur);
+      const bStart = appts[j].time, bEnd = addMins(appts[j].time, appts[j].dur);
+      if (aStart < bEnd && bStart < aEnd) { conflictSet.add(appts[i].id); conflictSet.add(appts[j].id); }
+    }
+  }
+  function addMins(t, m) {
+    const [h,min] = t.split(':').map(Number);
+    const total = h*60+min+m;
+    return String(Math.floor(total/60)).padStart(2,'0')+':'+String(total%60).padStart(2,'0');
+  }
+  const upcomingSection = appts.filter(a => a.date >= today);
+  const pastSection     = appts.filter(a => a.date <  today);
+
+  function card(a) {
+    const isToday = a.date === today;
+    const isPast  = a.date < today;
+    const isConflict = conflictSet.has(a.id);
+    const cls = isConflict ? 'conflict' : isToday ? 'today' : isPast ? 'past' : '';
+    const timeLabel = a.time ? ` · ${a.time}` : '';
+    const durLabel  = a.dur  ? ` · ${a.dur} min` : '';
+    return `<div class="appt-card ${cls}">
+      <div>
+        <div class="appt-date">${a.date}${timeLabel}${durLabel}${isToday?' · <span style="color:#22c98acc">Today</span>':''}</div>
+        <div class="appt-client">${a.client}</div>
+        <div class="appt-meta">${a.service||''}</div>
+        ${a.notes ? `<div style="font-size:14px;color:#dddaeecc;font-style:italic;margin-top:4px">${a.notes}</div>` : ''}
+        ${isConflict ? '<div class="conflict-tag">⚠ Time Conflict</div>' : ''}
+      </div>
+      <button class="action-btn reject" style="padding:4px 10px;font-size:11px;white-space:nowrap" onclick="deleteAppt(${a.id})">✕</button>
+    </div>`;
+  }
+
+  let html = '';
+  if (upcomingSection.length) html += upcomingSection.map(card).join('');
+  if (pastSection.length) html += `<div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:#e8b84b55;text-transform:uppercase;margin:16px 0 8px">Past</div>`+pastSection.reverse().map(card).join('');
+  el.innerHTML = html || '<p style="color:#dddaeecc;font-style:italic">No appointments logged.</p>';
+}
+
+// ── AUTO ENV FETCH ───────────────────────────────────────────
+
+function calcMoonPhase(dateStr) {
+  var d = new Date(dateStr + 'T12:00:00');
+  var knownNew = new Date('2000-01-06T18:14:00Z');
+  var synodic = 29.53058867;
+  var days = (d - knownNew) / 86400000;
+  var cycle = ((days % synodic) + synodic) % synodic;
+  var pct = cycle / synodic;
+  if (pct < 0.033 || pct >= 0.967) return '🌑 New Moon';
+  if (pct < 0.217) return '🌒 Waxing Crescent';
+  if (pct < 0.283) return '🌓 First Quarter';
+  if (pct < 0.467) return '🌔 Waxing Gibbous';
+  if (pct < 0.533) return '🌕 Full Moon';
+  if (pct < 0.717) return '🌖 Waning Gibbous';
+  if (pct < 0.783) return '🌗 Last Quarter';
+  return '🌘 Waning Crescent';
+}
+
+function kpToGeo(kp) {
+  if (kp === null || kp === undefined) return '';
+  if (kp >= 7) return 'Strong G3+';
+  if (kp >= 6) return 'Moderate G2';
+  if (kp >= 5) return 'Minor G1';
+  if (kp >= 3) return 'Unsettled';
+  return 'Quiet';
+}
+function kpToSchumann(kp) {
+  if (kp === null || kp === undefined) return '';
+  if (kp >= 6) return 'Extreme';
+  if (kp >= 4) return 'High';
+  if (kp >= 2) return 'Elevated';
+  return 'Normal';
+}
+
+function setEnvStatus(msg, ok) {
+  var el = document.getElementById('envStatus');
+  if (el) { el.textContent = msg; el.style.color = ok ? '#22c98acc' : '#e8b84b88'; }
+}
+
+async function fetchKpNow() {
+  var r = await fetch('https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json');
+  var d = await r.json();
+  // rows: [time, Kp, Kp_index, station_count] — skip header row (index 0)
+  for (var i = d.length - 1; i >= 1; i--) {
+    var val = parseFloat(d[i][1]);
+    if (!isNaN(val)) return val;
+  }
+  return null;
+}
+
+async function fetchSolarNow() {
+  var r = await fetch('https://services.swpc.noaa.gov/json/goes/primary/xrays-6-hour.json');
+  var d = await r.json();
+  // Take last 40 entries (~2 hours at 3-min cadence)
+  var recent = d.slice(-40);
+  var maxFlux = 0;
+  recent.forEach(function(x) { var f = parseFloat(x.flux); if (!isNaN(f) && f > maxFlux) maxFlux = f; });
+  if (maxFlux >= 1e-4) return 'X-class';
+  if (maxFlux >= 1e-5) return 'Major';
+  if (maxFlux >= 1e-6) return 'Moderate';
+  if (maxFlux >= 1e-7) return 'Minor';
+  return 'None';
+}
+
+async function autoFetchToday(force) {
+  var today = new Date().toISOString().slice(0, 10);
+  var log = getEnvLog();
+  var existing = log.find(function(e) { return e.date === today; });
+  var age = existing && existing.fetchedAt ? Date.now() - existing.fetchedAt : Infinity;
+  if (!force && existing && existing.solar && age < 3 * 3600 * 1000) {
+    setEnvStatus('✓ Today loaded from cache', true);
+    return;
+  }
+  setEnvStatus('Fetching NOAA data…', false);
+  var kp = null, solar = 'None';
+  try { kp = await fetchKpNow(); } catch(e) { console.warn('Kp fetch failed', e); }
+  try { solar = await fetchSolarNow(); } catch(e) { console.warn('Solar fetch failed', e); }
+  var moon = calcMoonPhase(today);
+  var entry = {
+    date: today,
+    schumann: kpToSchumann(kp),
+    schumannVal: kp !== null ? kp.toFixed(1) : '',
+    solar: solar,
+    geo: kpToGeo(kp),
+    moon: moon,
+    notes: '',
+    autoFetched: true,
+    fetchedAt: Date.now(),
+    id: existing ? existing.id : Date.now()
+  };
+  var newLog = log.filter(function(e) { return e.date !== today; });
+  newLog.push(entry);
+  saveEnvLog(newLog);
+  var ts = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  setEnvStatus('✓ Live data pulled at ' + ts + ' · Kp ' + (kp !== null ? kp.toFixed(1) : '?') + ' · ' + solar + ' solar · ' + moon, true);
+  try { renderTodayEnvCard(); } catch(e) {}
+  renderEnvLog();
+  renderSessions();
+}
+
+function populateMoonPhases() {
+  // Fill moon phase for every session date that has no env entry at all
+  if (typeof REA_DATA === 'undefined') return;
+  var log = getEnvLog();
+  var logDates = {};
+  log.forEach(function(e) { logDates[e.date] = true; });
+  var added = false;
+  REA_DATA.sessions.forEach(function(s) {
+    if (!logDates[s.date]) {
+      log.push({
+        date: s.date,
+        schumann: '', schumannVal: '',
+        solar: '', geo: '',
+        moon: calcMoonPhase(s.date),
+        notes: '', autoFetched: true, moonOnly: true,
+        id: Date.now() + Math.random()
+      });
+      logDates[s.date] = true;
+      added = true;
+    }
+  });
+  if (added) { saveEnvLog(log); renderEnvLog(); renderSessions(); }
+}
+
+// ── ENVIRONMENT LOG ──────────────────────────────────────────
+var SYMPTOM_PATTERNS = {
+  sleep:     /\b(sleep|insomn|woke|restless|tired|fatigue|fatigued)\b/i,
+  anxiety:   /\b(anxi|stress|stressed|panic|overwhelm|worried|worry)\b/i,
+  drained:   /\b(drain|exhaust|depleted|low energy|no energy|empty)\b/i,
+  headache:  /\b(headach|migraine|head pain|pressure in head)\b/i,
+  emotional: /\b(emotion|cry|grief|trauma|sadness|weeping|tears)\b/i,
+};
+var BUSINESS_PATTERNS = {
+  cancellation: /\b(cancel|reschedule|rescheduled|no.show)\b/i,
+  emergency:    /\b(emergency|urgent|crisis|breakdown)\b/i,
+};
+
+function getEnvLog() { try { return JSON.parse(localStorage.getItem('rea_env_log') || '[]'); } catch(e) { return []; } }
+function saveEnvLog(arr) { localStorage.setItem('rea_env_log', JSON.stringify(arr)); }
+function getEnvForDate(date) { return getEnvLog().find(e => e.date === date) || null; }
+
+function toggleEnvForm() {
+  const w = document.getElementById('envFormWrap');
+  if (!w) return;
+  w.style.display = w.style.display === 'none' ? 'block' : 'none';
+  const d = document.getElementById('envDate');
+  if (d && !d.value) d.value = new Date().toISOString().slice(0,10);
+}
+
+function saveEnvEntry() {
+  const date        = (document.getElementById('envDate')||{}).value;
+  const schumann    = (document.getElementById('envSchumann')||{}).value;
+  const schumannVal = (document.getElementById('envSchumannVal')||{}).value;
+  const solar       = (document.getElementById('envSolar')||{}).value;
+  const geo         = (document.getElementById('envGeo')||{}).value;
+  const moon        = (document.getElementById('envMoon')||{}).value;
+  const notes       = (document.getElementById('envNotes')||{}).value.trim();
+  if (!date) { alert('Date is required.'); return; }
+  const log = getEnvLog().filter(e => e.date !== date); // overwrite same-day entry
+  log.push({ date, schumann, schumannVal, solar, geo, moon, notes, id: Date.now() });
+  saveEnvLog(log);
+  ['envDate','envSchumann','envSchumannVal','envSolar','envGeo','envMoon','envNotes'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.value = '';
+  });
+  toggleEnvForm();
+  renderEnvLog();
+  renderPatterns();
+  renderSessions(); // refresh session tags
+}
+
+function deleteEnvEntry(date) {
+  saveEnvLog(getEnvLog().filter(e => e.date !== date));
+  renderEnvLog(); renderPatterns(); renderSessions();
+}
+
+function renderTodayEnvCard() {
+  const el = document.getElementById('todayEnvCard');
+  if (!el) return;
+  const today = new Date().toISOString().slice(0,10);
+  const log = getEnvLog();
+  const e = log.find(x => x.date === today);
+  const dows = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const dow = dows[new Date(today+'T12:00:00').getDay()];
+  const moon = e ? (e.moon || calcMoonPhase(today)) : calcMoonPhase(today);
+
+  // Schumann color class
+  const schCat = e ? (e.schumann || '') : '';
+  const schClsMap = {Normal:'normal',Elevated:'elevated',High:'high',Extreme:'extreme'};
+  const schCls = schClsMap[schCat] || 'normal';
+  const schDisplay = schCat || '—';
+  const kpDisplay = e && e.schumannVal ? `Kp ${e.schumannVal}` : '';
+
+  const solarDisplay = e ? (e.solar || '—') : '—';
+  const geoDisplay = e ? (e.geo || '—') : '—';
+  const fetchedAt = e && e.fetchedAt ? new Date(e.fetchedAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : null;
+
+  const statusDiv = `<div id="envStatus" style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.25em;color:#e8b84b88;text-transform:uppercase">${fetchedAt ? '✓ fetched at ' + fetchedAt : 'not yet fetched'}</div>`;
+
+  el.innerHTML = `<div class="card today-card">
+    <div class="today-label">
+      <span style="font-size:13px;letter-spacing:.3em">✦ Today · ${dow}, ${today}</span>
+      <div style="display:flex;align-items:center;gap:10px">
+        ${statusDiv}
+        <button class="action-btn" style="padding:4px 12px;font-size:11px" onclick="autoFetchToday(true)">↻ Refresh</button>
+      </div>
+    </div>
+    <div style="font-size:44px;line-height:1;margin-bottom:16px;text-align:center;letter-spacing:.05em">${moon}</div>
+    <div class="today-grid">
+      <div class="today-cell">
+        <div class="today-cell-label">Schumann</div>
+        <div class="today-cell-val ${schCls}">${schDisplay}</div>
+        ${kpDisplay ? `<div style="font-size:11px;color:#e8b84b55;margin-top:3px">${kpDisplay}</div>` : ''}
+      </div>
+      <div class="today-cell">
+        <div class="today-cell-label">Moon Phase</div>
+        <div class="today-cell-val" style="font-size:13px;color:#dddaee">${moon}</div>
+      </div>
+      <div class="today-cell">
+        <div class="today-cell-label">Solar Activity</div>
+        <div class="today-cell-val" style="font-size:13px;color:${solarDisplay==='None'||solarDisplay==='—'?'#22c98a':'#9b7fe8'}">${solarDisplay}</div>
+      </div>
+      <div class="today-cell">
+        <div class="today-cell-label">Geomagnetic</div>
+        <div class="today-cell-val" style="font-size:13px;color:${geoDisplay==='Quiet'||geoDisplay==='—'?'#22c98a':geoDisplay.includes('Severe')||geoDisplay.includes('Extreme')?'#ee7070':'#e8b84b'}">${geoDisplay}</div>
+      </div>
+    </div>
+    <div class="today-note-wrap">
+      <div style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.35em;color:#e8b84b55;text-transform:uppercase;border:1px solid #e8b84b18;border-bottom:none;padding:6px 14px">Today's Observations</div>
+      <textarea class="today-note-input" id="todayNoteInput" placeholder="Note anything you're noticing today — client energy, your own state, atmospheric feel…" onblur="saveTodayNote(this.value)">${e && e.notes ? e.notes : ''}</textarea>
+    </div>
+  </div>`;
+}
+
+function saveTodayNote(val) {
+  const today = new Date().toISOString().slice(0,10);
+  const log = getEnvLog();
+  const idx = log.findIndex(x => x.date === today);
+  if (idx >= 0) {
+    log[idx].notes = val;
+    saveEnvLog(log);
+  } else {
+    log.push({ date: today, schumann:'', schumannVal:'', solar:'', geo:'', moon: calcMoonPhase(today), notes: val, id: Date.now() });
+    saveEnvLog(log);
+  }
+  renderEnvLog();
+}
+
+function renderEnvLog() {
+  const el = document.getElementById('envLogList');
+  if (!el) return;
+  const today = new Date().toISOString().slice(0,10);
+  // exclude today — it's shown in the today card
+  const log = getEnvLog().filter(e => e.date !== today).sort((a,b) => b.date.localeCompare(a.date));
+  if (!log.length) {
+    el.innerHTML = '<p style="color:#dddaeecc;font-style:italic;padding:8px 0 20px">No past days logged yet. History will build automatically as you work.</p>';
+    return;
+  }
+  const dows = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+  el.innerHTML = log.map(e => {
+    const dow = dows[new Date(e.date+'T12:00:00').getDay()];
+    const daySessions = (typeof REA_DATA !== 'undefined') ? REA_DATA.sessions.filter(s => s.date === e.date) : [];
+    const sessCount = daySessions.length ? `<span class="day-row-sess">${daySessions.length} sess</span>` : '<span class="day-row-sess" style="color:transparent">—</span>';
+
+    const chips = [
+      e.moon ? `<span class="day-chip moon">${e.moon}</span>` : '',
+      e.schumann ? `<span class="day-chip sch-${e.schumann}">${e.schumann}${e.schumannVal?' · Kp '+e.schumannVal:''}</span>` : '',
+      e.solar && e.solar !== 'None' ? `<span class="day-chip solar">☀ ${e.solar}</span>` : '',
+      e.geo && e.geo !== 'Quiet' ? `<span class="day-chip geo">⚡ ${e.geo}</span>` : '',
+    ].filter(Boolean).join('');
+
+    const noteId = 'daynote_' + e.date.replace(/-/g,'');
+    const noteHtml = e.notes
+      ? `<div class="day-row-note">✎ ${e.notes}</div>`
+      : `<div class="day-row-note" style="color:#e8b84b33;cursor:pointer" onclick="expandDayNote('${e.date}')">+ add note</div>`;
+
+    return `<div class="day-row" id="dayrow_${e.date.replace(/-/g,'')}">
+      <div class="day-row-date">${e.date}<span class="day-row-dow">${dow}</span></div>
+      <div class="day-row-conds">
+        ${chips || '<span style="color:#dddaee33;font-size:12px;font-style:italic">moon only</span>'}
+        ${noteHtml}
+      </div>
+      ${sessCount}
+    </div>`;
+  }).join('');
+}
+
+function expandDayNote(date) {
+  const log = getEnvLog();
+  const e = log.find(x => x.date === date) || {};
+  const key = date.replace(/-/g,'');
+  const row = document.getElementById('dayrow_' + key);
+  if (!row) return;
+  const noteDiv = row.querySelector('.day-row-note');
+  if (!noteDiv) return;
+  noteDiv.outerHTML = `<div class="day-row-note" style="flex-basis:100%"><textarea id="dninput_${key}" style="width:100%;box-sizing:border-box;background:#04020e;border:1px solid #e8b84b22;color:#f0ecff;font-family:'EB Garamond',serif;font-size:14px;padding:6px 10px;resize:none;height:44px" onblur="saveDayNote('${date}',this.value)">${e.notes||''}</textarea></div>`;
+  const inp = document.getElementById('dninput_' + key);
+  if (inp) { inp.focus(); }
+}
+
+function saveDayNote(date, val) {
+  const log = getEnvLog();
+  const idx = log.findIndex(x => x.date === date);
+  if (idx >= 0) { log[idx].notes = val; saveEnvLog(log); renderEnvLog(); }
+}
+
+function renderPatterns() {
+  const el = document.getElementById('patternAnalytics');
+  if (!el || typeof REA_DATA === 'undefined') return;
+  const log = getEnvLog();
+  // no minimum — day-of-week patterns work from session data alone
+
+  // Build a map: date → env entry
+  const envByDate = {};
+  log.forEach(e => { envByDate[e.date] = e; });
+
+  // Bucket sessions by Schumann category
+  const cats = ['Normal','Elevated','High','Extreme'];
+  const symptomKeys = Object.keys(SYMPTOM_PATTERNS);
+  const bizKeys = Object.keys(BUSINESS_PATTERNS);
+
+  const buckets = {};
+  cats.forEach(c => { buckets[c] = { total: 0, symptoms: {}, biz: {} }; symptomKeys.forEach(k => buckets[c].symptoms[k]=0); bizKeys.forEach(k => buckets[c].biz[k]=0); });
+  const noCat = { total: 0, symptoms: {}, biz: {} }; symptomKeys.forEach(k=>noCat.symptoms[k]=0); bizKeys.forEach(k=>noCat.biz[k]=0);
+
+  const moonBuckets = {};
+  const dayBuckets = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].reduce((o,d)=>({...o,[d]:{total:0,symptoms:{},biz:{}}}), {});
+  symptomKeys.forEach(k=>Object.values(dayBuckets).forEach(b=>{b.symptoms[k]=0}));
+  bizKeys.forEach(k=>Object.values(dayBuckets).forEach(b=>{b.biz[k]=0}));
+
+  REA_DATA.sessions.forEach(s => {
+    const env = envByDate[s.date];
+    const notes = (s.notes||'') + ' ' + (s.tags||[]).join(' ');
+    const cat = env ? (env.schumann||'') : '';
+    const bucket = buckets[cat] || noCat;
+    bucket.total++;
+    symptomKeys.forEach(k => { if(SYMPTOM_PATTERNS[k].test(notes)) bucket.symptoms[k]++; });
+    bizKeys.forEach(k => { if(BUSINESS_PATTERNS[k].test(notes)) bucket.biz[k]++; });
+
+    // Moon phase
+    if (env && env.moon) {
+      if (!moonBuckets[env.moon]) { moonBuckets[env.moon] = {total:0,symptoms:{},biz:{}}; symptomKeys.forEach(k=>moonBuckets[env.moon].symptoms[k]=0); bizKeys.forEach(k=>moonBuckets[env.moon].biz[k]=0); }
+      moonBuckets[env.moon].total++;
+      symptomKeys.forEach(k => { if(SYMPTOM_PATTERNS[k].test(notes)) moonBuckets[env.moon].symptoms[k]++; });
+    }
+
+    // Day of week
+    const dow = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date(s.date+'T12:00:00').getDay()];
+    dayBuckets[dow].total++;
+    symptomKeys.forEach(k => { if(SYMPTOM_PATTERNS[k].test(notes)) dayBuckets[dow].symptoms[k]++; });
+    bizKeys.forEach(k => { if(BUSINESS_PATTERNS[k].test(notes)) dayBuckets[dow].biz[k]++; });
+  });
+
+  function pct(n,total) { return total ? Math.round(n/total*100)+'%' : '—'; }
+  function cell(n, total) {
+    if (!total) return '<td class="pattern-lo">—</td>';
+    const p = Math.round(n/total*100);
+    const cls = p >= 30 ? 'pattern-hi' : p >= 15 ? '' : 'pattern-lo';
+    return `<td class="${cls}">${n} <span style="font-size:12px;opacity:.7">(${p}%)</span></td>`;
+  }
+
+  // Schumann table
+  const activeCats = cats.filter(c => buckets[c].total > 0);
+  let html = '';
+  if (activeCats.length >= 1) {
+    html += `<div class="section-title" style="margin-top:0">Symptoms by Schumann Category</div>
+    <div style="overflow-x:auto;margin-bottom:24px"><table class="pattern-table">
+      <thead><tr><th>Symptom</th>${activeCats.map(c=>`<th>${c} (${buckets[c].total} sess)</th>`).join('')}</tr></thead>
+      <tbody>
+        ${symptomKeys.map(k=>`<tr><td style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:#e8b84b88">${k}</td>${activeCats.map(c=>cell(buckets[c].symptoms[k],buckets[c].total)).join('')}</tr>`).join('')}
+        ${bizKeys.map(k=>`<tr><td style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:#ee707088">${k}</td>${activeCats.map(c=>cell(buckets[c].biz[k],buckets[c].total)).join('')}</tr>`).join('')}
+      </tbody>
+    </table></div>`;
+  }
+
+  // Day of week table
+  const activeDays = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].filter(d => dayBuckets[d].total > 0);
+  if (activeDays.length >= 1) {
+    html += `<div class="section-title">Symptoms by Day of Week</div>
+    <div style="overflow-x:auto;margin-bottom:24px"><table class="pattern-table">
+      <thead><tr><th>Symptom</th>${activeDays.map(d=>`<th>${d} (${dayBuckets[d].total})</th>`).join('')}</tr></thead>
+      <tbody>
+        ${symptomKeys.map(k=>`<tr><td style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:#e8b84b88">${k}</td>${activeDays.map(d=>cell(dayBuckets[d].symptoms[k],dayBuckets[d].total)).join('')}</tr>`).join('')}
+        ${bizKeys.map(k=>`<tr><td style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:#ee707088">${k}</td>${activeDays.map(d=>cell(dayBuckets[d].biz[k],dayBuckets[d].total)).join('')}</tr>`).join('')}
+      </tbody>
+    </table></div>`;
+  }
+
+  // Moon phase table
+  const activeMoons = Object.keys(moonBuckets).filter(m => moonBuckets[m].total > 0);
+  if (activeMoons.length >= 1) {
+    html += `<div class="section-title">Symptoms by Moon Phase</div>
+    <div style="overflow-x:auto;margin-bottom:24px"><table class="pattern-table">
+      <thead><tr><th>Symptom</th>${activeMoons.map(m=>`<th>${m} (${moonBuckets[m].total})</th>`).join('')}</tr></thead>
+      <tbody>
+        ${symptomKeys.map(k=>`<tr><td style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:#e8b84b88">${k}</td>${activeMoons.map(m=>cell(moonBuckets[m].symptoms[k],moonBuckets[m].total)).join('')}</tr>`).join('')}
+      </tbody>
+    </table></div>`;
+  }
+
+  if (!html) html = '<div class="card" style="color:#dddaeecc;font-style:italic">No patterns yet — log more days with matching session dates.</div>';
+  el.innerHTML = html;
+}
+
+// ── CAPACITY ──────────────────────────────────────────────────
+function getCapacity() { return parseInt(localStorage.getItem('rea_weekly_capacity') || '15'); }
+function saveCapacity() {
+  const v = parseInt((document.getElementById('capacityInput')||{}).value);
+  if (v > 0) { localStorage.setItem('rea_weekly_capacity', v); updateCapacityStats(); }
+}
+function getWeekBounds() {
+  const now = new Date();
+  const day = now.getDay(); // 0=Sun
+  const diffToMon = (day === 0) ? -6 : 1 - day;
+  const mon = new Date(now); mon.setDate(now.getDate() + diffToMon); mon.setHours(0,0,0,0);
+  const sun = new Date(mon); sun.setDate(mon.getDate() + 6); sun.setHours(23,59,59,999);
+  return { mon: mon.toISOString().slice(0,10), sun: sun.toISOString().slice(0,10) };
+}
+function updateCapacityStats() {
+  const cap = getCapacity();
+  const inp = document.getElementById('capacityInput');
+  if (inp && !inp.value) inp.value = cap;
+
+  const { mon, sun } = getWeekBounds();
+  const appts = getAppts();
+  const bookedThisWeek = appts.filter(a => a.date >= mon && a.date <= sun).length;
+  const available = Math.max(0, cap - bookedThisWeek);
+
+  const waitlist = getWaitlist();
+  const waitCount = waitlist.length;
+
+  // Avg days to next upcoming appointment
+  const today = new Date().toISOString().slice(0,10);
+  const upcoming = appts.filter(a => a.date >= today).sort((a,b) => a.date.localeCompare(b.date));
+  let avgDays = '—';
+  if (upcoming.length) {
+    const todayMs = new Date(today).getTime();
+    const totalDays = upcoming.reduce((sum, a) => {
+      return sum + Math.round((new Date(a.date).getTime() - todayMs) / 86400000);
+    }, 0);
+    avgDays = Math.round(totalDays / upcoming.length);
+  }
+
+  const avEl = document.getElementById('capAvailable');
+  const bkEl = document.getElementById('capBooked');
+  const wlEl = document.getElementById('capWaitlist');
+  const adEl = document.getElementById('capAvgDays');
+
+  if (avEl) { avEl.textContent = available; avEl.className = 'stat-val ' + (available === 0 ? 'warn' : available <= 3 ? '' : 'good'); }
+  if (bkEl) { bkEl.textContent = bookedThisWeek + ' / ' + cap; }
+  if (wlEl) { wlEl.textContent = waitCount; wlEl.className = 'stat-val ' + (waitCount > 0 ? 'warn' : ''); }
+  if (adEl) { adEl.textContent = avgDays === '—' ? '—' : avgDays + ' days'; }
+}
+
+// ── WAITLIST ──────────────────────────────────────────────────
+function getWaitlist() { try { return JSON.parse(localStorage.getItem('rea_waitlist') || '[]'); } catch(e) { return []; } }
+function saveWaitlistData(arr) { localStorage.setItem('rea_waitlist', JSON.stringify(arr)); }
+function toggleWaitlistForm() {
+  const w = document.getElementById('waitlistFormWrap');
+  if (w) w.style.display = w.style.display === 'none' ? 'block' : 'none';
+  // Set default date to today
+  const d = document.getElementById('wlDate');
+  if (d && !d.value) d.value = new Date().toISOString().slice(0,10);
+}
+function saveWaitlist() {
+  const client  = (document.getElementById('wlClient')||{}).value.trim();
+  const service = (document.getElementById('wlService')||{}).value.trim();
+  const date    = (document.getElementById('wlDate')||{}).value;
+  const notes   = (document.getElementById('wlNotes')||{}).value.trim();
+  if (!client) { alert('Client name is required.'); return; }
+  const list = getWaitlist();
+  list.push({ client, service, date, notes, id: Date.now() });
+  saveWaitlistData(list);
+  ['wlClient','wlService','wlDate','wlNotes'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  toggleWaitlistForm();
+  renderWaitlist();
+  updateCapacityStats();
+}
+function removeWaitlist(id) {
+  saveWaitlistData(getWaitlist().filter(w => w.id !== id));
+  renderWaitlist();
+  updateCapacityStats();
+}
+function renderWaitlist() {
+  const el = document.getElementById('waitlistBody');
+  if (!el) return;
+  const list = getWaitlist();
+  if (!list.length) {
+    el.innerHTML = '<p style="color:#dddaeecc;font-style:italic;padding:8px 0 16px">No one on the waitlist.</p>';
+    return;
+  }
+  el.innerHTML = list.map((w, i) => `
+    <div class="appt-card" style="border-left-color:#9b7fe855;background:#9b7fe808;margin-bottom:8px">
+      <div>
+        <div class="appt-date">#${i+1} · Added ${w.date||'—'}</div>
+        <div class="appt-client">${w.client}</div>
+        <div class="appt-meta">${w.service||''}</div>
+        ${w.notes ? `<div style="font-size:14px;color:#dddaeecc;font-style:italic;margin-top:4px">${w.notes}</div>` : ''}
+      </div>
+      <button class="action-btn approve" style="padding:4px 12px;font-size:11px;white-space:nowrap" onclick="bookFromWaitlist(${w.id})">Book ↓</button>
+      <button class="action-btn reject" style="padding:4px 10px;font-size:11px;white-space:nowrap" onclick="removeWaitlist(${w.id})">✕</button>
+    </div>`).join('');
+}
+function bookFromWaitlist(id) {
+  const entry = getWaitlist().find(w => w.id === id);
+  if (!entry) return;
+  // Pre-fill appointment form with waitlist client
+  toggleApptForm();
+  const c = document.getElementById('apptClient'); if(c) c.value = entry.client;
+  const s = document.getElementById('apptService'); if(s) s.value = entry.service||'';
+  const d = document.getElementById('apptDate');   if(d) d.value = '';
+  // Remove from waitlist
+  removeWaitlist(id);
+}
+
+function initDashboard() {
+  if (!REA_DATA.computed) REA_DATA.compute();
+  renderClients();
+  renderSessions();
+  renderAnalytics();
+  renderBooking();
+  renderUpcoming();
+  renderWaitlist();
+  updateCapacityStats();
+  try { populateMoonPhases(); } catch(e) { console.error('moonPhases',e); }
+  try { renderTodayEnvCard(); } catch(e) { console.error('renderTodayEnvCard',e); }
+  try { renderEnvLog(); } catch(e) { console.error('renderEnvLog',e); }
+  try { renderPatterns(); } catch(e) { console.error('renderPatterns',e); }
+  autoFetchToday(false); // async — runs in background
+  // Init capacity input
+  const inp = document.getElementById('capacityInput');
+  if (inp) inp.value = getCapacity();
+}
+if (typeof REA_DATA !== 'undefined') {
+  initDashboard();
+} else {
+  window.addEventListener('load', function() {
+    if (typeof REA_DATA !== 'undefined') initDashboard();
+  });
+}
 
 // ── FLAG / BLOCK SYSTEM ─────────────────────────────────────
 let _modalClient = { name: '', email: '' };

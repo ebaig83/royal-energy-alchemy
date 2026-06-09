@@ -21,8 +21,15 @@ body{background:var(--deep);color:var(--text);font-family:'EB Garamond',serif;fo
 nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:18px 48px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(to bottom,rgba(0,4,8,0.85) 0%,transparent 100%);backdrop-filter:blur(2px)}
 .nav-logo{font-family:'Cinzel',serif;font-size:15px;letter-spacing:.35em;color:#ffffff;text-transform:uppercase;text-decoration:none;text-shadow:0 0 20px #e8b84b99}
 .nav-links{display:flex;gap:36px;list-style:none}
-.nav-links a{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.3em;color:rgba(232,228,240,.55);text-transform:uppercase;text-decoration:none;transition:color .3s}
+.nav-links a{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.3em;color:rgba(232,228,240,.82);text-transform:uppercase;text-decoration:none;transition:color .3s}
 .nav-links a:hover{color:var(--gold)}
+.nav-dropdown{position:relative}
+.nav-dropdown-menu{position:absolute;top:calc(100% + 14px);left:50%;width:330px;padding:10px 0;list-style:none;background:rgba(4,2,14,.98);border:1px solid #e8b84b40;box-shadow:0 18px 45px rgba(0,0,0,.65);opacity:0;visibility:hidden;transform:translate(-50%,-8px);transition:opacity .2s,transform .2s,visibility .2s}
+.nav-dropdown-menu::before{content:'';position:absolute;left:0;right:0;top:-15px;height:15px}
+.nav-dropdown:hover .nav-dropdown-menu,.nav-dropdown:focus-within .nav-dropdown-menu{opacity:1;visibility:visible;transform:translate(-50%,0)}
+.nav-dropdown-menu li{display:block}
+.nav-dropdown-menu a{display:block;padding:10px 18px;font-size:10px;line-height:1.35;letter-spacing:.14em;color:rgba(232,228,240,.78);white-space:normal}
+.nav-dropdown-menu a:hover,.nav-dropdown-menu a:focus{color:var(--gold-light);background:#e8b84b0d;outline:none}
 .nav-book{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.3em;color:var(--gold);text-transform:uppercase;text-decoration:none;border:1px solid #e8b84b59;padding:9px 22px;transition:all .3s}
 .nav-book:hover{background:#e8b84b14;border-color:var(--gold);color:var(--gold-light)}
 
@@ -41,12 +48,12 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:18px 48px;display:fl
 .hero-content{position:relative;z-index:5;text-align:center;padding:0 24px;max-width:780px}
 .hero-eyebrow{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.55em;color:var(--gold);text-transform:uppercase;margin-bottom:14px;opacity:0;animation:revUp 1.2s ease-out .8s forwards}
 .hero-eyebrow::before,.hero-eyebrow::after{content:'✦';margin:0 12px;opacity:.6}
-.hero-loc{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.5em;color:#e8b84b99;text-transform:uppercase;margin-bottom:18px;opacity:0;animation:revUp 1.2s ease-out 1s forwards}
+.hero-loc{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.5em;color:#e8b84bcc;text-transform:uppercase;margin-bottom:18px;opacity:0;animation:revUp 1.2s ease-out 1s forwards}
 .hero-title{font-family:'Cinzel Decorative',serif;font-size:clamp(30px,4.7vw,64px);font-weight:700;line-height:1;color:#fff;text-shadow:0 0 60px #e8b84b40,0 0 120px rgba(68,136,255,.15),0 2px 8px rgba(0,0,0,.9);margin-bottom:18px;opacity:0;animation:revUp 1.4s ease-out 1.2s forwards;letter-spacing:.04em}
 .hero-div{display:flex;align-items:center;gap:16px;margin:0 auto 18px;width:min(460px,90vw);opacity:0;animation:revUp 1.2s ease-out 1.4s forwards}
 .hero-div::before,.hero-div::after{content:'';flex:1;height:1px;background:linear-gradient(to right,transparent,#e8b84b80,transparent)}
-.hero-div span{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.4em;color:#e8b84bb3;white-space:nowrap}
-.hero-body{font-family:'EB Garamond',serif;font-size:clamp(17px,1.5vw,20px);font-style:italic;color:rgba(232,228,240,.72);line-height:1.8;max-width:520px;margin:0 auto 32px;opacity:0;animation:revUp 1.2s ease-out 1.6s forwards}
+.hero-div span{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.4em;color:#e8b84bdd;white-space:nowrap}
+.hero-body{font-family:'EB Garamond',serif;font-size:clamp(17px,1.5vw,20px);font-style:italic;color:rgba(232,228,240,.88);line-height:1.8;max-width:520px;margin:0 auto 32px;opacity:0;animation:revUp 1.2s ease-out 1.6s forwards}
 .hero-ctas{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;opacity:0;animation:revUp 1.2s ease-out 1.8s forwards}
 .btn-gold{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;color:#000;text-transform:uppercase;text-decoration:none;background:linear-gradient(135deg,var(--gold-light),var(--gold));padding:15px 40px;transition:all .3s;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);display:inline-block}
 .btn-gold:hover{transform:translateY(-2px);box-shadow:0 8px 30px #e8b84b66;filter:brightness(1.1)}
@@ -55,14 +62,14 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:18px 48px;display:fl
 .scroll-hint{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);z-index:5;display:flex;flex-direction:column;align-items:center;gap:8px;opacity:0;animation:revUp 1.2s ease-out 2.5s forwards}
 .scroll-line{width:1px;height:44px;background:linear-gradient(to bottom,var(--gold),transparent);animation:scPulse 2s ease-in-out infinite}
 @keyframes scPulse{0%,100%{opacity:.3}50%{opacity:.8}}
-.scroll-txt{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.4em;color:#e8b84b73;text-transform:uppercase}
+.scroll-txt{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.4em;color:#e8b84baa;text-transform:uppercase}
 @keyframes revUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
 .veil{position:fixed;inset:0;background:#000;z-index:200;pointer-events:none;animation:vFade 2s ease-out .2s forwards}
 @keyframes vFade{from{opacity:1}to{opacity:0}}
 
 /* TRUST STRIP */
 .trust{background:rgba(0,4,8,.96);border-top:1px solid #e8b84b1a;border-bottom:1px solid #e8b84b1a;padding:18px 48px;display:flex;align-items:center;justify-content:center;gap:40px;flex-wrap:wrap}
-.trust-item{display:flex;align-items:center;gap:10px;font-family:'Cinzel',serif;font-size:12px;letter-spacing:.28em;color:#e8b84ba6;text-transform:uppercase}
+.trust-item{display:flex;align-items:center;gap:10px;font-family:'Cinzel',serif;font-size:12px;letter-spacing:.28em;color:#e8b84bdd;text-transform:uppercase}
 .trust-dot{width:4px;height:4px;border-radius:50%;background:var(--gold);opacity:.4}
 
 /* SECTIONS */
@@ -70,7 +77,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:18px 48px;display:fl
 .section::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(to right,transparent,#e8b84b26,transparent)}
 .sec-label{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.5em;color:var(--gold);text-transform:uppercase;display:block;margin-bottom:12px}
 .sec-title{font-family:'Cinzel Decorative',serif;font-size:clamp(26px,3.4vw,46px);font-weight:400;color:#f0ecff;margin-bottom:16px;line-height:1.1}
-.sec-body{font-family:'EB Garamond',serif;font-size:clamp(18px,1.6vw,20px);font-style:italic;color:rgba(200,195,220,.65);line-height:1.8;max-width:560px;margin-bottom:52px}
+.sec-body{font-family:'EB Garamond',serif;font-size:clamp(18px,1.6vw,20px);font-style:italic;color:rgba(215,210,235,.9);line-height:1.8;max-width:560px;margin-bottom:52px}
 .sec-dark{background:radial-gradient(ellipse at 30% 50%,rgba(10,15,40,.8) 0%,var(--deep) 70%)}
 .sec-blue{background:radial-gradient(ellipse at 70% 30%,rgba(68,136,255,.04) 0%,var(--deep) 60%)}
 .sec-teal{background:radial-gradient(ellipse at 50% 100%,rgba(29,158,117,.05) 0%,var(--deep) 60%)}
@@ -83,22 +90,87 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:18px 48px;display:fl
 .svc-card:hover{background:rgba(8,6,22,.98)}
 .svc-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(to right,transparent,#e8b84b33,transparent);transform:scaleX(0);transition:transform .4s}
 .svc-card:hover::after{transform:scaleX(1)}
-.svc-num{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.3em;color:#e8b84b4d;margin-bottom:16px;display:block}
+.svc-num{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.3em;color:#e8b84b99;margin-bottom:16px;display:block}
 .svc-name{font-family:'Cinzel',serif;font-size:16px;letter-spacing:.1em;color:#f0ecff;margin-bottom:10px}
 .svc-price{font-family:'Cinzel Decorative',serif;font-size:22px;color:var(--gold);margin-bottom:14px;transition:color .3s}
 .svc-card:hover .svc-price{color:var(--gold-light)}
-.svc-desc{font-family:'EB Garamond',serif;font-size:16px;color:rgba(180,170,200,.65);line-height:1.7}
+.svc-desc{font-family:'EB Garamond',serif;font-size:16px;color:rgba(210,205,230,.92);line-height:1.7}
 
 /* TREATMENT PLANS */
-.plan-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1px;background:#e8b84b12;max-width:1100px;margin:0 auto}
-.plan-card{background:rgba(0,4,8,.96);padding:40px 32px;position:relative;cursor:pointer;transition:background .4s}
+.plan-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1px;background:#e8b84b12;max-width:1100px;margin:0 auto}
+.plan-card{background:rgba(0,4,8,.96);padding:40px 32px;position:relative;cursor:pointer;transition:background .4s,border-color .4s}
 .plan-card:hover{background:rgba(6,4,18,.98)}
+.plan-card .plan-expand-hint{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.35em;color:#e8b84b44;text-transform:uppercase;margin-top:20px;display:block;transition:color .3s}
+.plan-card:hover .plan-expand-hint{color:#e8b84b88}
 .plan-tag{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.4em;color:var(--gold);text-transform:uppercase;margin-bottom:14px;display:block}
 .plan-name{font-family:'Cinzel Decorative',serif;font-size:22px;color:#f0ecff;margin-bottom:16px}
-.plan-desc{font-family:'EB Garamond',serif;font-size:16px;color:rgba(180,170,200,.65);line-height:1.7;margin-bottom:24px}
+.plan-desc{font-family:'EB Garamond',serif;font-size:16px;color:rgba(210,205,230,.92);line-height:1.7;margin-bottom:24px}
 .plan-includes{list-style:none}
-.plan-includes li{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.2em;color:#e8b84b99;text-transform:uppercase;padding:6px 0;border-bottom:1px solid #e8b84b14}
+.plan-includes li{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.2em;color:#e8b84bcc;text-transform:uppercase;padding:6px 0;border-bottom:1px solid #e8b84b14}
 .plan-includes li::before{content:'✦ ';opacity:.5}
+/* JOURNEY DIAGRAM */
+.journey-wrap{max-width:860px;margin:0 auto 72px;text-align:center}
+.journey-title{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.5em;color:#e8b84b88;text-transform:uppercase;margin-bottom:32px}
+.journey-flow{display:flex;flex-direction:column;align-items:center;gap:0}
+.journey-step{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;color:#f0ecff;text-transform:uppercase;padding:10px 28px;border:1px solid #e8b84b22;background:rgba(0,4,8,.8);min-width:240px;position:relative}
+.journey-step.highlight{border-color:#e8b84b55;color:var(--gold)}
+.journey-arrow{font-family:'Cinzel',serif;font-size:14px;color:#e8b84b33;line-height:1;padding:2px 0}
+/* PLAN MODAL */
+.plan-modal-overlay{position:fixed;inset:0;background:rgba(4,2,14,.92);z-index:900;display:flex;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto;opacity:0;pointer-events:none;transition:opacity .35s}
+.plan-modal-overlay.open{opacity:1;pointer-events:all}
+.plan-modal{background:#07051a;border:1px solid #e8b84b22;max-width:760px;width:100%;padding:0;position:relative;transform:translateY(24px);transition:transform .35s}
+.plan-modal-overlay.open .plan-modal{transform:translateY(0)}
+.plan-modal-header{padding:36px 40px 28px;border-bottom:1px solid #e8b84b14}
+.plan-modal-tag{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.5em;color:var(--gold);text-transform:uppercase;display:block;margin-bottom:10px}
+.plan-modal-title{font-family:'Cinzel Decorative',serif;font-size:clamp(22px,3vw,30px);color:#f0ecff}
+.plan-modal-close{position:absolute;top:20px;right:24px;background:none;border:none;color:#e8b84b55;font-size:20px;cursor:pointer;font-family:'Cinzel',serif;letter-spacing:.1em;padding:4px 8px;transition:color .2s}
+.plan-modal-close:hover{color:var(--gold)}
+.plan-modal-body{padding:36px 40px}
+.pm-section{margin-bottom:36px}
+.pm-section:last-child{margin-bottom:0}
+.pm-label{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.5em;color:#e8b84baa;text-transform:uppercase;margin-bottom:14px;display:block}
+.pm-h{font-family:'Cinzel',serif;font-size:14px;letter-spacing:.15em;color:#f0ecff;margin-bottom:8px}
+.pm-p{font-family:'EB Garamond',serif;font-size:16px;color:rgba(210,205,230,.92);line-height:1.75}
+.pm-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.pm-tag{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.25em;color:#e8b84b88;text-transform:uppercase;padding:6px 14px;border:1px solid #e8b84b22;background:rgba(232,184,75,.03)}
+.pm-list{list-style:none;margin:0}
+.pm-list li{font-family:'EB Garamond',serif;font-size:16px;color:rgba(210,205,230,.92);padding:7px 0;border-bottom:1px solid #e8b84b0d;display:flex;align-items:baseline;gap:10px;line-height:1.5}
+.pm-list li::before{content:'✦';color:#e8b84b44;font-size:10px;flex-shrink:0}
+.pm-list li:last-child{border-bottom:none}
+.pm-phases{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;background:#e8b84b12;margin-top:8px}
+.pm-phase{background:#07051a;padding:18px 16px;text-align:center}
+.pm-phase-num{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.4em;color:#e8b84b55;text-transform:uppercase;display:block;margin-bottom:6px}
+.pm-phase-name{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.1em;color:#f0ecff}
+.pm-weeks{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:#e8b84b12;margin-top:8px}
+.pm-week{background:#07051a;padding:18px 16px}
+.pm-week-label{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.4em;color:var(--gold);text-transform:uppercase;display:block;margin-bottom:8px}
+.pm-week ul{list-style:none;margin:0}
+.pm-week ul li{font-family:'EB Garamond',serif;font-size:14px;color:rgba(210,205,230,.92);padding:3px 0;display:flex;align-items:baseline;gap:8px;line-height:1.4}
+.pm-week ul li::before{content:'·';color:#e8b84b44}
+.plan-modal-cta{display:block;width:calc(100% - 80px);margin:0 40px 40px;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.45em;color:#000;text-transform:uppercase;background:linear-gradient(135deg,#f5d98a,#e8b84b);padding:15px;border:none;cursor:pointer;clip-path:polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%);transition:filter .3s;text-align:center;text-decoration:none}
+.plan-modal-cta:hover{filter:brightness(1.1)}
+/* intensity chart */
+.pm-intensity{margin-top:8px}
+.pm-int-row{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.pm-int-label{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:rgba(232,184,75,.6);text-transform:uppercase;width:80px;flex-shrink:0}
+.pm-int-bar-wrap{flex:1;background:rgba(232,184,75,.06);height:8px;position:relative}
+.pm-int-bar{height:100%;background:linear-gradient(90deg,#e8b84b,#f5d98a);transition:width 1s ease}
+.pm-int-score{font-family:'Cinzel',serif;font-size:11px;color:rgba(232,184,75,.7);width:36px;text-align:right;flex-shrink:0}
+/* outcome tags */
+.pm-outcomes{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.pm-outcome{font-family:'EB Garamond',serif;font-size:15px;color:rgba(210,205,230,.95);padding:7px 16px;border:1px solid rgba(34,201,138,.2);background:rgba(34,201,138,.03);display:flex;align-items:center;gap:8px;line-height:1}
+.pm-outcome::before{content:'↑';color:#22c98a;font-size:13px}
+/* stall / time / graduation */
+.pm-stall-list{list-style:none;margin:0}
+.pm-stall-list li{font-family:'EB Garamond',serif;font-size:16px;color:rgba(210,205,230,.92);padding:8px 0;border-bottom:1px solid #e8b84b0d;display:flex;align-items:baseline;gap:10px;line-height:1.5}
+.pm-stall-list li::before{content:'→';color:#e8b84b55;flex-shrink:0}
+.pm-stall-list li:last-child{border-bottom:none}
+.pm-time-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1px;background:#e8b84b12;margin-top:8px}
+.pm-time-item{background:#07051a;padding:16px;text-align:center}
+.pm-time-val{font-family:'Cinzel Decorative',serif;font-size:18px;color:var(--gold);display:block;margin-bottom:4px}
+.pm-time-desc{font-family:'EB Garamond',serif;font-size:14px;color:rgba(180,170,200,.6)}
+.pm-grad-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.pm-grad-opt{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.25em;color:#e8b84b88;text-transform:uppercase;padding:8px 16px;border:1px solid #e8b84b22;background:rgba(232,184,75,.03)}
 
 /* ASSESS SECTION */
 .assess-wrap{max-width:680px;margin:0 auto}
@@ -116,31 +188,37 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:18px 48px;display:fl
 .tl-dot span{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.1em;color:var(--gold)}
 .tl-content{padding-top:8px}
 .tl-title{font-family:'Cinzel',serif;font-size:15px;letter-spacing:.15em;color:#f0ecff;margin-bottom:6px}
-.tl-body{font-family:'EB Garamond',serif;font-size:15px;color:rgba(180,170,200,.65);line-height:1.6}
+.tl-body{font-family:'EB Garamond',serif;font-size:15px;color:rgba(210,205,230,.92);line-height:1.6}
 
 /* PAYMENTS */
-.pay-grid{display:flex;gap:1px;flex-wrap:wrap;background:#e8b84b12;max-width:980px;margin:0 auto 24px}
-.pay-card{background:#04020e;padding:24px 20px;flex:1;min-width:200px;text-align:center;cursor:pointer;transition:background .3s;display:flex;flex-direction:column;align-items:center;gap:10px;text-decoration:none;color:inherit}
-.pay-card:hover{background:#0a0612}
-.pay-method{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.35em;color:#e8b84b99;text-transform:uppercase;display:block}
-.pay-handle{font-family:'EB Garamond',serif;font-size:18px;color:#f0ecff}
-.pay-qr{background:#fff;padding:8px;display:inline-block;margin:4px 0}
-.pay-qr img{display:block;width:90px;height:90px;object-fit:contain}
-.pay-scan{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.2em;color:#e8b84b4d;text-transform:uppercase}
+.pay-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:#e8b84b18;max-width:1040px;margin:0 auto 24px}
+.pay-card{background:#04020e;padding:20px 16px 16px;text-align:center;cursor:pointer;transition:background .3s,border .3s;display:flex;flex-direction:column;align-items:center;gap:8px;text-decoration:none;color:inherit;border:1px solid transparent}
+.pay-card:hover{background:#0a0612;border-color:#e8b84b22}
+.pay-method{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.45em;color:#e8b84b88;text-transform:uppercase;display:block}
+.pay-handle{font-family:'Cinzel',serif;font-size:14px;letter-spacing:.1em;color:#f0ecff}
+.pay-qr{background:#ffffff;padding:10px;display:inline-block}
+.pay-qr img{display:block;width:min(220px,calc(100vw / 4 - 40px));height:min(220px,calc(100vw / 4 - 40px));object-fit:contain}
+.pay-scan{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:#e8b84b55;text-transform:uppercase}
 
 /* CONTACT */
 .contact-wrap{max-width:680px;margin:0 auto}
 .contact-field{margin-bottom:1px}
-.contact-field label{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;color:#e8b84b99;text-transform:uppercase;display:block;margin-bottom:8px}
+.contact-field label{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;color:#e8b84bcc;text-transform:uppercase;display:block;margin-bottom:8px}
 .contact-field input,.contact-field textarea,.contact-field select{width:100%;background:rgba(8,6,22,.95);border:1px solid #e8b84b1a;padding:14px 18px;font-family:'EB Garamond',serif;font-size:16px;color:#f0ecff;outline:none;transition:border-color .3s}
 .contact-field input:focus,.contact-field textarea:focus,.contact-field select:focus{border-color:#e8b84b59}
 .contact-field textarea{min-height:100px;resize:vertical}
 .contact-field select option{background:#060418}
 .contact-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1px;margin-bottom:1px}
+.direct-contact-grid{margin-top:56px;display:grid;grid-template-columns:1fr 1.7fr 1fr 1.15fr;border:1px solid #e8b84b1a}
+.direct-contact-item{min-width:0;padding:24px 18px;text-align:center;border-right:1px solid #e8b84b14}
+.direct-contact-item:last-child{border-right:0}
+.direct-contact-item .pay-handle{font-size:13px;letter-spacing:.06em;line-height:1.45;overflow-wrap:anywhere}
 
 /* FOOTER */
-footer{padding:36px 48px;border-top:1px solid #e8b84b14;text-align:center}
-footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.28em;color:rgba(180,170,200,.22);text-transform:uppercase;line-height:2.2}
+footer{padding:44px 32px;border-top:1px solid rgba(232,184,75,.22);background:linear-gradient(180deg,rgba(4,2,14,.72),rgba(4,2,14,.98));text-align:center}
+footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.28em;color:rgba(232,228,240,.66);text-transform:uppercase;line-height:2.2;text-shadow:0 0 18px rgba(232,184,75,.12)}
+footer a{color:#f0c96d !important;text-decoration:none !important;text-shadow:0 0 18px rgba(232,184,75,.22);border-bottom:1px solid rgba(240,201,109,.28);transition:color .25s,border-color .25s,text-shadow .25s}
+footer a:hover,footer a:focus-visible{color:#fff0b8 !important;border-bottom-color:rgba(255,240,184,.72);text-shadow:0 0 22px rgba(232,184,75,.42);outline:none}
 
 /* REVEAL */
 .reveal{opacity:0;transform:translateY(32px);transition:opacity .9s ease,transform .9s ease}
@@ -152,6 +230,18 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.28em;color:rg
   .section{padding:70px 20px}.trust{gap:18px;padding:14px 20px}
   .rit-div{padding:0 20px}.pay-grid{flex-direction:column}
   .contact-grid-2{grid-template-columns:1fr}
+  .direct-contact-grid{grid-template-columns:1fr 1fr}
+  .direct-contact-item:nth-child(2){border-right:0}
+  .direct-contact-item:nth-child(-n+2){border-bottom:1px solid #e8b84b14}
+  footer{padding:38px 18px}
+  footer p{font-size:10px;letter-spacing:.18em;line-height:2.35}
+  footer p:last-child{display:flex;flex-wrap:wrap;justify-content:center;gap:8px 12px}
+  footer p:last-child span{margin:0 2px !important}
+}
+@media(max-width:480px){
+  .direct-contact-grid{grid-template-columns:1fr}
+  .direct-contact-item{border-right:0;border-bottom:1px solid #e8b84b14}
+  .direct-contact-item:last-child{border-bottom:0}
 }
 </style>
 </head>
@@ -164,15 +254,44 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.28em;color:rg
 <!-- ═══ NAV ═══ -->
 <nav>
   <ul class="nav-links">
+    <li><a href="#hero">Home</a></li>
     <li><a href="#about">About</a></li>
-    <li><a href="#services">Services</a></li>
-    <li><a href="#plans">Plans</a></li>
+    <li class="nav-dropdown">
+      <a href="#services">Services</a>
+      <ul class="nav-dropdown-menu" aria-label="Services">
+        <li><a href="#services">Energetic Parasite Removal</a></li>
+        <li><a href="#services">Cord Removal &amp; Transmutation</a></li>
+        <li><a href="#services">Energy Alchemy Exorcism</a></li>
+        <li><a href="#services">Distance Energy Session</a></li>
+        <li><a href="#services">House Cleansing &amp; Blessing</a></li>
+        <li><a href="#services">Emergency Removal Session</a></li>
+        <li><a href="#services">Removal + Tarot Bundle</a></li>
+        <li><a href="#services">Spiritual Coaching</a></li>
+        <li><a href="#services">Youth Sessions (Ages 9–14)</a></li>
+      </ul>
+    </li>
+    <li class="nav-dropdown">
+      <a href="#plans">Plans</a>
+      <ul class="nav-dropdown-menu" aria-label="Plans">
+        <li><a href="#plans">Stabilize &amp; Clear</a></li>
+        <li><a href="#plans">Pattern Release</a></li>
+        <li><a href="#plans">Maintenance Circle</a></li>
+        <li><a href="#plans">Research &amp; Outcomes</a></li>
+      </ul>
+    </li>
     <li><a href="#assess">Assess</a></li>
     <li><a href="#contact">Contact</a></li>
-    <li><a href="/training.html" style="color:#e8b84bb3">Training</a></li>
-    <li><a href="/waiver-esign.html" style="color:#e8b84bb3">Sign Waiver</a></li>
+    <li class="nav-dropdown">
+      <a href='/training' style='color:#e8b84bdd'>Training</a>
+      <ul class="nav-dropdown-menu" aria-label="Training">
+        <li><a href='/training'>Level One - Foundations</a></li>
+        <li><a href='/training'>Level Two - Intermediate</a></li>
+        <li><a href='/training'>Level Three - Advanced</a></li>
+      </ul>
+    </li>
+    <li><a href='/waiver-esign' style='color:#e8b84bdd'>Sign Waiver</a></li>
   </ul>
-  <a href="#assess" class="nav-book">Begin</a>
+  <a href="#contact" class="nav-book">Book Session</a>
 </nav>
 
 <!-- ═══ HERO ═══ -->
@@ -262,9 +381,9 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.28em;color:rg
 
     <!-- Stats — tighter to bio -->
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-bottom:40px;">
-      <div><div style="font-family:'Cinzel Decorative',serif;font-size:32px;color:var(--gold);font-weight:700;">16K+</div><div style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.4em;color:#e8b84b99;text-transform:uppercase;margin-top:4px;">Followers</div></div>
-      <div><div style="font-family:'Cinzel Decorative',serif;font-size:32px;color:var(--gold);font-weight:700;">276K</div><div style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.4em;color:#e8b84b99;text-transform:uppercase;margin-top:4px;">Top Reel Views</div></div>
-      <div><div style="font-family:'Cinzel Decorative',serif;font-size:32px;color:var(--gold);font-weight:700;">Erie</div><div style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.4em;color:#e8b84b99;text-transform:uppercase;margin-top:4px;">Pennsylvania</div></div>
+      <div><div style="font-family:'Cinzel Decorative',serif;font-size:32px;color:var(--gold);font-weight:700;">16K+</div><div style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.4em;color:#e8b84bcc;text-transform:uppercase;margin-top:4px;">Followers</div></div>
+      <div><div style="font-family:'Cinzel Decorative',serif;font-size:32px;color:var(--gold);font-weight:700;">276K</div><div style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.4em;color:#e8b84bcc;text-transform:uppercase;margin-top:4px;">Top Reel Views</div></div>
+      <div><div style="font-family:'Cinzel Decorative',serif;font-size:32px;color:var(--gold);font-weight:700;">Erie</div><div style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.4em;color:#e8b84bcc;text-transform:uppercase;margin-top:4px;">Pennsylvania</div></div>
     </div>
 
     <!-- Footer info cards — tighter, metadata feel -->
@@ -766,7 +885,7 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.28em;color:rg
     <div class="reveal" style="text-align:center;margin-bottom:72px;">
       <span class="sec-label">Before You Book</span>
       <h2 class="sec-title" style="font-size:clamp(30px,3.7vw,54px);text-shadow:0 0 40px #e8b84b4d,0 0 80px #e8b84b1f;margin-bottom:20px;">Common Questions</h2>
-      <p style="font-family:'EB Garamond',serif;font-size:18px;font-style:italic;color:#e8b84b99;letter-spacing:0.04em;margin:0;">Questions about the work? Start here.</p>
+      <p style="font-family:'EB Garamond',serif;font-size:18px;font-style:italic;color:#e8b84bcc;letter-spacing:0.04em;margin:0;">Questions about the work? Start here.</p>
     </div>
 
     <!-- Accordion -->
@@ -1087,7 +1206,10 @@ document.querySelectorAll('.faq2-trigger').forEach(function(btn){
         <div class="svc2-name">Energetic Parasite Removal</div>
         <div class="svc2-price">$80</div>
         <p class="svc2-desc">Deep intuitive clearing for attachments and disruptive patterns. Includes 24, 48, and 72-hour aftercare check-ins.</p>
-        <div class="svc2-play"><svg width="18" height="18" viewBox="0 0 18 18"><polygon points="4,2 16,9 4,16" fill="currentColor"/></svg> Preview</div>
+        <div class="svc2-actions">
+          <button type="button" class="svc2-play"><svg width="18" height="18" viewBox="0 0 18 18"><polygon points="4,2 16,9 4,16" fill="currentColor"/></svg> Preview</button>
+          <button type="button" class="svc2-select">Select Session</button>
+        </div>
       </div>
 
       <div class="svc2-card" data-svc="2">
@@ -1095,7 +1217,10 @@ document.querySelectorAll('.faq2-trigger').forEach(function(btn){
         <div class="svc2-name">Cord Removal &amp; Transmutation</div>
         <div class="svc2-price">from $40</div>
         <p class="svc2-desc">15-minute session for regular cleansing and energy boost. A focused tune-up for maintaining your field.</p>
-        <div class="svc2-play"><svg width="18" height="18" viewBox="0 0 18 18"><polygon points="4,2 16,9 4,16" fill="currentColor"/></svg> Preview</div>
+        <div class="svc2-actions">
+          <button type="button" class="svc2-play"><svg width="18" height="18" viewBox="0 0 18 18"><polygon points="4,2 16,9 4,16" fill="currentColor"/></svg> Preview</button>
+          <button type="button" class="svc2-select">Select Session</button>
+        </div>
       </div>
 
       <div class="svc2-card" data-svc="3">
@@ -1103,7 +1228,10 @@ document.querySelectorAll('.faq2-trigger').forEach(function(btn){
         <div class="svc2-name">Energy Alchemy Exorcism</div>
         <div class="svc2-price">$100</div>
         <p class="svc2-desc">Deep spiritual clearing for intense concerns. Requires intake assessment first. Not for the faint of heart.</p>
-        <div class="svc2-play"><svg width="18" height="18" viewBox="0 0 18 18"><polygon points="4,2 16,9 4,16" fill="currentColor"/></svg> Preview</div>
+        <div class="svc2-actions">
+          <button type="button" class="svc2-play"><svg width="18" height="18" viewBox="0 0 18 18"><polygon points="4,2 16,9 4,16" fill="currentColor"/></svg> Preview</button>
+          <button type="button" class="svc2-select">Select Session</button>
+        </div>
       </div>
 
       <div class="svc2-card" data-svc="4">
@@ -1111,7 +1239,10 @@ document.querySelectorAll('.faq2-trigger').forEach(function(btn){
         <div class="svc2-name">Distance Energy Session</div>
         <div class="svc2-price">$70</div>
         <p class="svc2-desc">The subject does not need to be present or aware. Distance is no barrier to this work.</p>
-        <div class="svc2-play"><svg width="18" height="18" viewBox="0 0 18 18"><polygon points="4,2 16,9 4,16" fill="currentColor"/></svg> Preview</div>
+        <div class="svc2-actions">
+          <button type="button" class="svc2-play"><svg width="18" height="18" viewBox="0 0 18 18"><polygon points="4,2 16,9 4,16" fill="currentColor"/></svg> Preview</button>
+          <button type="button" class="svc2-select">Select Session</button>
+        </div>
       </div>
 
       <div class="svc2-card" data-svc="5">
@@ -1119,7 +1250,10 @@ document.querySelectorAll('.faq2-trigger').forEach(function(btn){
         <div class="svc2-name">House Cleansing &amp; Blessing</div>
         <div class="svc2-price">$60</div>
         <p class="svc2-desc">Energetic support for homes and spaces that feel heavy, unsettled, or occupied by something unwelcome.</p>
-        <div class="svc2-play"><svg width="18" height="18" viewBox="0 0 18 18"><polygon points="4,2 16,9 4,16" fill="currentColor"/></svg> Preview</div>
+        <div class="svc2-actions">
+          <button type="button" class="svc2-play"><svg width="18" height="18" viewBox="0 0 18 18"><polygon points="4,2 16,9 4,16" fill="currentColor"/></svg> Preview</button>
+          <button type="button" class="svc2-select">Select Session</button>
+        </div>
       </div>
 
       <div class="svc2-card" data-svc="6">
@@ -1127,7 +1261,10 @@ document.querySelectorAll('.faq2-trigger').forEach(function(btn){
         <div class="svc2-name">Emergency Removal Session</div>
         <div class="svc2-price">$120</div>
         <p class="svc2-desc">Priority session for urgent concerns. When you cannot wait. When it is too heavy to carry another day.</p>
-        <div class="svc2-play"><svg width="18" height="18" viewBox="0 0 18 18"><polygon points="4,2 16,9 4,16" fill="currentColor"/></svg> Preview</div>
+        <div class="svc2-actions">
+          <button type="button" class="svc2-play"><svg width="18" height="18" viewBox="0 0 18 18"><polygon points="4,2 16,9 4,16" fill="currentColor"/></svg> Preview</button>
+          <button type="button" class="svc2-select">Select Session</button>
+        </div>
       </div>
 
       <div class="svc2-card" data-svc="7">
@@ -1135,7 +1272,10 @@ document.querySelectorAll('.faq2-trigger').forEach(function(btn){
         <div class="svc2-name">Removal + Tarot Bundle</div>
         <div class="svc2-price">$100</div>
         <p class="svc2-desc">Bundled removal session plus tarot support for direction and next steps after the clearing.</p>
-        <div class="svc2-play"><svg width="18" height="18" viewBox="0 0 18 18"><polygon points="4,2 16,9 4,16" fill="currentColor"/></svg> Preview</div>
+        <div class="svc2-actions">
+          <button type="button" class="svc2-play"><svg width="18" height="18" viewBox="0 0 18 18"><polygon points="4,2 16,9 4,16" fill="currentColor"/></svg> Preview</button>
+          <button type="button" class="svc2-select">Select Session</button>
+        </div>
       </div>
 
       <div class="svc2-card" data-svc="8">
@@ -1143,7 +1283,10 @@ document.querySelectorAll('.faq2-trigger').forEach(function(btn){
         <div class="svc2-name">Spiritual Coaching</div>
         <div class="svc2-price">$50</div>
         <p class="svc2-desc">One-hour spiritual coaching session for support, reflection, and guidance on your path.</p>
-        <div class="svc2-play"><svg width="18" height="18" viewBox="0 0 18 18"><polygon points="4,2 16,9 4,16" fill="currentColor"/></svg> Preview</div>
+        <div class="svc2-actions">
+          <button type="button" class="svc2-play"><svg width="18" height="18" viewBox="0 0 18 18"><polygon points="4,2 16,9 4,16" fill="currentColor"/></svg> Preview</button>
+          <button type="button" class="svc2-select">Select Session</button>
+        </div>
       </div>
 
       <div class="svc2-card" data-svc="9">
@@ -1151,7 +1294,10 @@ document.querySelectorAll('.faq2-trigger').forEach(function(btn){
         <div class="svc2-name">Youth Sessions (Ages 9–14)</div>
         <div class="svc2-price">$20–$30</div>
         <p class="svc2-desc">Short focused energy sessions for younger clients with parent or guardian consent and simple aftercare guidance.</p>
-        <div class="svc2-play"><svg width="18" height="18" viewBox="0 0 18 18"><polygon points="4,2 16,9 4,16" fill="currentColor"/></svg> Preview</div>
+        <div class="svc2-actions">
+          <button type="button" class="svc2-play"><svg width="18" height="18" viewBox="0 0 18 18"><polygon points="4,2 16,9 4,16" fill="currentColor"/></svg> Preview</button>
+          <button type="button" class="svc2-select">Select Session</button>
+        </div>
       </div>
 
     </div>
@@ -1164,13 +1310,16 @@ document.querySelectorAll('.faq2-trigger').forEach(function(btn){
 <!-- ═══ SERVICE MODAL ═══ -->
 <div id="svc-modal" style="position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;display:none;">
   <div id="svc-modal-bg" style="position:absolute;inset:0;background:rgba(0,4,8,0.88);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);"></div>
-  <div id="svc-modal-box" style="position:relative;z-index:1;width:min(560px,92vw);max-width:100%;background:rgba(4,6,20,0.96);border:1px solid #e8b84b40;border-radius:4px;overflow:hidden;box-shadow:0 0 80px rgba(0,0,0,0.8),0 0 40px #e8b84b14;">
-    <button id="svc-modal-close" style="position:absolute;top:14px;right:18px;background:none;border:none;color:#e8b84b99;font-size:22px;cursor:pointer;z-index:2;font-family:'Cinzel',serif;line-height:1;" aria-label="Close">×</button>
-    <canvas id="svc-anim-canvas" style="display:block;width:min(90vw,560px);height:auto;aspect-ratio:7/4;"></canvas>
+  <div id="svc-modal-box" style="position:relative;z-index:1;width:min(700px,92vw);max-width:100%;max-height:92vh;background:rgba(4,6,20,0.96);border:1px solid #e8b84b40;border-radius:4px;overflow-y:auto;box-shadow:0 0 80px rgba(0,0,0,0.8),0 0 40px #e8b84b14;">
+    <button id="svc-modal-close" style="position:absolute;top:14px;right:18px;background:none;border:none;color:#e8b84bcc;font-size:22px;cursor:pointer;z-index:2;font-family:'Cinzel',serif;line-height:1;" aria-label="Close">×</button>
+    <img id="svc-modal-image" src="" alt="" style="display:block;width:100%;height:auto;background:#020410;">
+    <div style="padding:18px 28px 8px;font-family:'Cinzel',serif;font-size:10px;letter-spacing:.4em;color:#e8b84b99;text-transform:uppercase;">How the session works</div>
+    <canvas id="svc-anim-canvas" style="display:block;width:100%;height:auto;aspect-ratio:7/4;"></canvas>
     <div style="padding:24px 28px 30px;">
       <div id="svc-modal-num" style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.5em;color:var(--gold);opacity:0.6;margin-bottom:8px;"></div>
       <div id="svc-modal-title" style="font-family:'Cinzel Decorative',serif;font-size:clamp(18px,2.4vw,24px);color:#f0ecff;margin-bottom:10px;"></div>
       <p id="svc-modal-desc" style="font-family:'EB Garamond',serif;font-size:16px;line-height:1.85;color:rgba(232,228,240,0.68);margin:0;"></p>
+      <button type="button" id="svc-modal-select" class="svc2-select" style="margin-top:18px;">Select This Session</button>
       <div id="svc-modal-timer" style="margin-top:18px;height:2px;background:#e8b84b1f;border-radius:1px;overflow:hidden;">
         <div id="svc-modal-bar" style="height:100%;width:100%;background:linear-gradient(to right,rgba(68,136,255,0.6),#e8b84bcc);transform-origin:left;transform:scaleX(1);transition:none;"></div>
       </div>
@@ -1182,6 +1331,8 @@ document.querySelectorAll('.faq2-trigger').forEach(function(btn){
 /* ── Service Cards v2 ── */
 .svc2-card {
   position: relative;
+  display:flex;
+  flex-direction:column;
   background: rgba(4,6,20,0.7);
   border: 1px solid #e8b84b24;
   padding: 28px 24px 24px;
@@ -1217,16 +1368,31 @@ document.querySelectorAll('.faq2-trigger').forEach(function(btn){
 .svc2-name { font-family:'Cinzel',serif;font-size:clamp(14px,1.4vw,16px);color:#f0ecff;letter-spacing:0.04em;line-height:1.4;margin-bottom:8px;transition:color 0.2s; }
 .svc2-card:hover .svc2-name { color:#fff; }
 .svc2-price { font-family:'Cinzel Decorative',serif;font-size:18px;color:var(--gold);margin-bottom:12px; }
-.svc2-desc { font-family:'EB Garamond',serif;font-size:16px;line-height:1.8;color:rgba(232,228,240,0.55);margin:0 0 20px; }
-.svc2-play {
-  display:inline-flex;align-items:center;gap:8px;
-  font-family:'Cinzel',serif;font-size:11px;letter-spacing:.4em;text-transform:uppercase;
-  color:#e8b84b80;
-  opacity:0;transform:translateY(4px);
-  transition:opacity 0.3s,transform 0.3s,color 0.2s;
+.svc2-desc { flex:1;font-family:'EB Garamond',serif;font-size:16px;line-height:1.8;color:rgba(232,228,240,0.55);margin:0 0 20px; }
+.svc2-actions {
+  position:relative;
+  z-index:2;
+  display:flex;
+  align-items:stretch;
+  gap:10px;
 }
-.svc2-card:hover .svc2-play { opacity:1;transform:translateY(0); }
-.svc2-card:hover .svc2-play { color:#e8b84bd9; }
+.svc2-play {
+  flex:1;
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  min-height:40px;padding:9px 12px;
+  font-family:'Cinzel',serif;font-size:10px;letter-spacing:.22em;text-transform:uppercase;
+  color:#e8b84bcc;background:transparent;border:1px solid #e8b84b4d;cursor:pointer;
+  transition:color 0.2s,border-color 0.2s,background 0.2s;
+}
+.svc2-play:hover,.svc2-play:focus { color:#f8e090;border-color:#e8b84b;background:#e8b84b0f;outline:none; }
+.svc2-select {
+  flex:1;
+  min-height:40px;padding:9px 12px;
+  font-family:'Cinzel',serif;font-size:10px;letter-spacing:.16em;text-transform:uppercase;
+  color:#05030d;background:linear-gradient(135deg,#f8e090,#e8b84b);border:1px solid #e8b84b;cursor:pointer;
+  transition:filter 0.2s,transform 0.2s;
+}
+.svc2-select:hover,.svc2-select:focus { filter:brightness(1.1);transform:translateY(-1px);outline:none; }
 
 /* modal */
 #svc-modal-box { animation: modalIn 0.35s cubic-bezier(0.2,0,0,1) both; }
@@ -1239,6 +1405,7 @@ document.querySelectorAll('.faq2-trigger').forEach(function(btn){
 }
 @media(max-width:480px){
   #svc-card-grid { grid-template-columns: 1fr !important; }
+  .svc2-actions { flex-direction:column; }
 }
 </style>
 
@@ -1772,31 +1939,37 @@ var modalTitle=document.getElementById('svc-modal-title');
 var modalDesc=document.getElementById('svc-modal-desc');
 var modalNum=document.getElementById('svc-modal-num');
 var modalBar=document.getElementById('svc-modal-bar');
+var modalImage=document.getElementById('svc-modal-image');
+var modalSelect=document.getElementById('svc-modal-select');
 var RAF=null, timerRAF=null, closeTimer=null;
 var DURATION=3800;
+var currentSvcId=null;
 
 var SVC_DATA=[
   null,
-  {name:'Energetic Parasite Removal',price:'$80',desc:'Daron scans your full energetic field, locates what is attached, removes and transmutes it, then seals your field with a shield of light.'},
-  {name:'Cord Removal & Transmutation',price:'from $40',desc:'Cord removal begins in the Parasite Removal session and longer distance sessions. Targeted release of cords, hooks, and emotional charges tied to people, places, or patterns that keep returning.'},
-  {name:'Energy Alchemy Exorcism',price:'$100',desc:'Deep clearing for intense spiritual disturbances. Sacred geometry is deployed and the field is sealed with a gold sigil when the work is complete.'},
-  {name:'Distance Energy Session',price:'$70',desc:'The subject does not need to be present. Daron and his Galactic Team locate and work on the energetic field directly across any distance.'},
-  {name:'House Cleansing & Blessing',price:'$60',desc:'Gold light is sent through every room. Dark energy is expelled through windows and roof. A protective dome is placed over the structure when complete.'},
-  {name:'Emergency Removal Session',price:'$120',desc:'Urgent priority clearing. Daron removes the disturbance rapidly and installs a strong protective field immediately. When it is too heavy to carry another day.'},
-  {name:'Removal + Tarot Bundle',price:'$100',desc:'Full energy removal followed by a three-card tarot pull for clarity, guidance, and direction on what comes next after the clearing.'},
-  {name:'Spiritual Coaching',price:'$50',desc:'One-hour guidance session. Daron illuminates the path forward and helps you navigate what your energy is telling you about your next steps.'},
-  {name:'Youth Sessions (Ages 9–14)',price:'$20–$30',desc:'Gentle, safe clearing sessions for young clients. A protective bubble is placed around the child and the work is calm, supportive, and age-appropriate.'}
+  {name:'Energetic Parasite Removal',price:'$80',image:'images/services/01_energetic_parasite_removal.png',desc:'Daron scans your full energetic field, locates what is attached, removes and transmutes it, then seals your field with a shield of light.'},
+  {name:'Cord Removal & Transmutation',price:'from $40',image:'images/services/02_cord_removal_transmutation.png',desc:'Cord removal begins in the Parasite Removal session and longer distance sessions. Targeted release of cords, hooks, and emotional charges tied to people, places, or patterns that keep returning.'},
+  {name:'Energy Alchemy Exorcism',price:'$100',image:'images/services/03_energy_alchemy_exorcism.png',desc:'Deep clearing for intense spiritual disturbances. Sacred geometry is deployed and the field is sealed with a gold sigil when the work is complete.'},
+  {name:'Distance Energy Session',price:'$70',image:'images/services/04_distance_energy_session.png',desc:'The subject does not need to be present. Daron and his Galactic Team locate and work on the energetic field directly across any distance.'},
+  {name:'House Cleansing & Blessing',price:'$60',image:'images/services/05_house_cleansing_blessing.png',desc:'Gold light is sent through every room. Dark energy is expelled through windows and roof. A protective dome is placed over the structure when complete.'},
+  {name:'Emergency Removal Session',price:'$120',image:'images/services/06_emergency_removal_session.png',desc:'Urgent priority clearing. Daron removes the disturbance rapidly and installs a strong protective field immediately. When it is too heavy to carry another day.'},
+  {name:'Removal + Tarot Bundle',price:'$100',image:'images/services/07_removal_tarot_bundle.png',desc:'Full energy removal followed by a three-card tarot pull for clarity, guidance, and direction on what comes next after the clearing.'},
+  {name:'Spiritual Coaching',price:'$50',image:'images/services/08_spiritual_coaching.png',desc:'One-hour guidance session. Daron illuminates the path forward and helps you navigate what your energy is telling you about your next steps.'},
+  {name:'Youth Sessions (Ages 9–14)',price:'$20–$30',image:'images/services/09_youth_sessions.png',desc:'Gentle, safe clearing sessions for young clients. A protective bubble is placed around the child and the work is calm, supportive, and age-appropriate.'}
 ];
 
 function openModal(svcId){
   var data=SVC_DATA[svcId]; if(!data) return;
+  currentSvcId=svcId;
   modalNum.textContent='0'+svcId+' — '+data.price;
   modalTitle.textContent=data.name;
   modalDesc.textContent=data.desc;
+  modalImage.src=data.image;
+  modalImage.alt=data.name+' session card';
   modal.style.display='flex';
   modal.classList.add('open');
   document.body.style.overflow='hidden';
-  var W=560, H=320;
+  var W=700, H=400;
   var dpr=Math.min(window.devicePixelRatio||1,3);
   canvas.width=W*dpr; canvas.height=H*dpr;
   var ctx2=canvas.getContext('2d');
@@ -1814,7 +1987,6 @@ function openModal(svcId){
     modalBar.style.transform='scaleX('+(1-progress)+')';
     modalBar.style.transition='none';
     if(progress<1){ RAF=requestAnimationFrame(tick); }
-    else { setTimeout(function(){ closeModal(); },400); }
   }
   if(RAF) cancelAnimationFrame(RAF);
   RAF=requestAnimationFrame(tick);
@@ -1830,10 +2002,34 @@ function closeModal(){
   },320);
 }
 
-// card clicks
+function selectSession(svcId){
+  var serviceSelect=document.getElementById('cf-service');
+  var contact=document.getElementById('contact');
+  if(serviceSelect) serviceSelect.selectedIndex=svcId;
+  if(modal.classList.contains('open')) closeModal();
+  window.setTimeout(function(){
+    if(contact) contact.scrollIntoView({behavior:'smooth',block:'start'});
+    window.history.replaceState(null,'','#contact');
+    if(serviceSelect) serviceSelect.focus({preventScroll:true});
+  },modal.classList.contains('open')?340:0);
+}
+
+// card actions
 document.querySelectorAll('.svc2-card').forEach(function(card){
-  card.addEventListener('click',function(){ openModal(parseInt(card.dataset.svc)); });
+  var svcId=parseInt(card.dataset.svc);
+  card.querySelector('.svc2-play').addEventListener('click',function(e){
+    e.stopPropagation();
+    openModal(svcId);
+  });
+  card.querySelector('.svc2-select').addEventListener('click',function(e){
+    e.stopPropagation();
+    selectSession(svcId);
+  });
+  card.addEventListener('click',function(e){
+    if(!e.target.closest('button')) openModal(svcId);
+  });
 });
+modalSelect.addEventListener('click',function(){ if(currentSvcId) selectSession(currentSvcId); });
 // close triggers
 document.getElementById('svc-modal-close').addEventListener('click',closeModal);
 modalBg.addEventListener('click',closeModal);
@@ -1852,8 +2048,36 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&modal.clas
       <h2 class="sec-title">Treatment Plans</h2>
       <p class="sec-body">One session clears. A treatment plan transforms. Tracked check-ins at 24hrs, 48hrs, 72hrs, one month, and three months — with professional referrals built in where needed.</p>
     </div>
-    <div class="plan-grid reveal reveal-d1">
-      <div class="plan-card">
+
+    <!-- JOURNEY DIAGRAM -->
+    <div class="journey-wrap reveal reveal-d1">
+      <div class="journey-title">Your Journey</div>
+      <div class="journey-flow">
+        <div class="journey-step highlight">Intake</div>
+        <div class="journey-arrow">↓</div>
+        <div class="journey-step">Assessment</div>
+        <div class="journey-arrow">↓</div>
+        <div class="journey-step highlight">Session</div>
+        <div class="journey-arrow">↓</div>
+        <div class="journey-step">24 Hour Check-In</div>
+        <div class="journey-arrow">↓</div>
+        <div class="journey-step">48 Hour Check-In</div>
+        <div class="journey-arrow">↓</div>
+        <div class="journey-step">72 Hour Check-In</div>
+        <div class="journey-arrow">↓</div>
+        <div class="journey-step highlight">Follow-Up Session</div>
+        <div class="journey-arrow">↓</div>
+        <div class="journey-step">Progress Review</div>
+        <div class="journey-arrow">↓</div>
+        <div class="journey-step">Completion Report</div>
+        <div class="journey-arrow">↓</div>
+        <div class="journey-step highlight">Maintenance or Discharge</div>
+      </div>
+    </div>
+
+    <!-- PLAN CARDS -->
+    <div class="plan-grid reveal reveal-d2">
+      <div class="plan-card" onclick="openPlanModal('stabilize')">
         <span class="plan-tag">4-Week Reset</span>
         <div class="plan-name">Stabilize & Clear</div>
         <p class="plan-desc">Weekly sessions focused on your main energetic concern, with check-ins and a month-end progress report.</p>
@@ -1861,8 +2085,9 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&modal.clas
           <li>Weekly sessions</li><li>24 / 48 / 72hr check-ins</li>
           <li>Month-end progress report</li><li>Aftercare guidance each session</li>
         </ul>
+        <span class="plan-expand-hint">View full program ✦</span>
       </div>
-      <div class="plan-card">
+      <div class="plan-card" onclick="openPlanModal('pattern')">
         <span class="plan-tag">8-Week Deep Work</span>
         <div class="plan-name">Pattern Release</div>
         <p class="plan-desc">Multiple sessions for recurring heaviness, attachments, fear patterns, or empath overwhelm. Full longitudinal tracking.</p>
@@ -1870,8 +2095,9 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&modal.clas
           <li>Bi-weekly sessions</li><li>Full symptom tracking</li>
           <li>Professional referral if flagged</li><li>Therapist coordination at 72hrs</li>
         </ul>
+        <span class="plan-expand-hint">View full program ✦</span>
       </div>
-      <div class="plan-card">
+      <div class="plan-card" onclick="openPlanModal('maintenance')">
         <span class="plan-tag">Quarterly Care</span>
         <div class="plan-name">Maintenance Circle</div>
         <p class="plan-desc">Monthly tune-ups for ongoing spiritual hygiene, protection routines, and seasonal energy review.</p>
@@ -1879,11 +2105,22 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&modal.clas
           <li>Monthly sessions</li><li>Seasonal energy review</li>
           <li>Protection routine updates</li><li>3-month progress summary</li>
         </ul>
+        <span class="plan-expand-hint">View full program ✦</span>
+      </div>
+      <div class="plan-card" onclick="openPlanModal('research')">
+        <span class="plan-tag">Outcomes Program</span>
+        <div class="plan-name">Research & Outcomes</div>
+        <p class="plan-desc">Anonymous data collection that improves services, informs training, and advances the field of energy work.</p>
+        <ul class="plan-includes">
+          <li>Symptom severity tracking</li><li>Session outcome data</li>
+          <li>Anonymous aggregation</li><li>Consent required</li>
+        </ul>
+        <span class="plan-expand-hint">Learn more ✦</span>
       </div>
     </div>
 
     <!-- Follow-up timeline -->
-    <div style="margin-top:80px" class="reveal reveal-d2">
+    <div style="margin-top:80px" class="reveal reveal-d3">
       <span class="sec-label">Aftercare System</span>
       <h3 style="font-family:'Cinzel Decorative',serif;font-size:clamp(22px,2.7vw,34px);color:#f0ecff;margin-bottom:40px">Every Session Is Tracked</h3>
       <div class="timeline">
@@ -1897,6 +2134,312 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&modal.clas
   </div>
 </section>
 
+<!-- ═══ PLAN MODALS ═══ -->
+<div class="plan-modal-overlay" id="planModalOverlay" onclick="closePlanModal(event)">
+  <div class="plan-modal" id="planModal">
+    <button class="plan-modal-close" onclick="closePlanModal()">✕ Close</button>
+    <div class="plan-modal-header">
+      <span class="plan-modal-tag" id="pmTag"></span>
+      <div class="plan-modal-title" id="pmTitle"></div>
+    </div>
+    <div class="plan-modal-body" id="pmBody"></div>
+    <a href="#contact" class="plan-modal-cta" onclick="closePlanModal()">Book a Consultation</a>
+  </div>
+</div>
+
+<script>
+(function(){
+  var plans = {
+    stabilize: {
+      tag: '4-Week Reset',
+      title: 'Stabilize & Clear',
+      body: `
+        <div class="pm-section">
+          <span class="pm-label">Who This Is For</span>
+          <div class="pm-tags">
+            <span class="pm-tag">First-Time Clients</span>
+            <span class="pm-tag">Acute Overwhelm</span>
+            <span class="pm-tag">New Attachment Concerns</span>
+            <span class="pm-tag">Empath Overload</span>
+            <span class="pm-tag">Recent Spiritual Event</span>
+          </div>
+        </div>
+        <div class="pm-section">
+          <span class="pm-label">Typical Outcomes Reported</span>
+          <p class="pm-p" style="margin-bottom:12px;font-size:14px;font-style:italic">Not promises — what clients have reported after completing this program.</p>
+          <div class="pm-outcomes">
+            <span class="pm-outcome">Improved sleep</span>
+            <span class="pm-outcome">Reduced anxiety</span>
+            <span class="pm-outcome">Feeling lighter</span>
+            <span class="pm-outcome">Fewer intrusive thoughts</span>
+            <span class="pm-outcome">Improved focus</span>
+            <span class="pm-outcome">Greater emotional regulation</span>
+            <span class="pm-outcome">Reduced overwhelm</span>
+          </div>
+        </div>
+        <div class="pm-section">
+          <span class="pm-label">Baseline vs Final — Example Progress</span>
+          <p class="pm-p" style="margin-bottom:14px;font-size:14px;font-style:italic">Intensity tracked 1–10 each week. Example from a typical client journey.</p>
+          <div class="pm-intensity" id="pmIntensityBars">
+            <div class="pm-int-row"><span class="pm-int-label">Starting</span><div class="pm-int-bar-wrap"><div class="pm-int-bar" style="width:80%"></div></div><span class="pm-int-score">8 / 10</span></div>
+            <div class="pm-int-row"><span class="pm-int-label">Week 1</span><div class="pm-int-bar-wrap"><div class="pm-int-bar" style="width:70%"></div></div><span class="pm-int-score">7 / 10</span></div>
+            <div class="pm-int-row"><span class="pm-int-label">Week 2</span><div class="pm-int-bar-wrap"><div class="pm-int-bar" style="width:50%"></div></div><span class="pm-int-score">5 / 10</span></div>
+            <div class="pm-int-row"><span class="pm-int-label">Week 3</span><div class="pm-int-bar-wrap"><div class="pm-int-bar" style="width:40%"></div></div><span class="pm-int-score">4 / 10</span></div>
+            <div class="pm-int-row"><span class="pm-int-label">Week 4</span><div class="pm-int-bar-wrap"><div class="pm-int-bar" style="width:30%;background:linear-gradient(90deg,#22c98a,#5de8b8)"></div></div><span class="pm-int-score" style="color:#22c98a88">3 / 10</span></div>
+          </div>
+        </div>
+        <div class="pm-section">
+          <span class="pm-label">Program Workflow</span>
+          <div class="pm-weeks">
+            <div class="pm-week"><span class="pm-week-label">Week 1</span><ul><li>Intake assessment</li><li>Initial session</li><li>24 / 48 / 72hr check-ins</li></ul></div>
+            <div class="pm-week"><span class="pm-week-label">Week 2</span><ul><li>Follow-up session</li><li>Symptom tracking review</li><li>Pattern identification</li></ul></div>
+            <div class="pm-week"><span class="pm-week-label">Week 3</span><ul><li>Continued clearing work</li><li>Progress scoring</li><li>Aftercare adjustments</li></ul></div>
+            <div class="pm-week"><span class="pm-week-label">Week 4</span><ul><li>Final session</li><li>Outcome assessment</li><li>Progress report</li></ul></div>
+          </div>
+        </div>
+        <div class="pm-section">
+          <span class="pm-label">Expected Time Commitment</span>
+          <div class="pm-time-grid">
+            <div class="pm-time-item"><span class="pm-time-val">1×</span><span class="pm-time-desc">Session per week</span></div>
+            <div class="pm-time-item"><span class="pm-time-val">5–10</span><span class="pm-time-desc">Min check-ins</span></div>
+            <div class="pm-time-item"><span class="pm-time-val">Daily</span><span class="pm-time-desc">Aftercare practices</span></div>
+          </div>
+        </div>
+        <div class="pm-section">
+          <span class="pm-label">What Is Tracked</span>
+          <ul class="pm-list">
+            <li>Sleep quality & duration</li>
+            <li>Anxiety & mood</li>
+            <li>Physical symptoms</li>
+            <li>Relationship impact</li>
+            <li>Work / school functioning</li>
+            <li>Intensity score session to session</li>
+          </ul>
+        </div>
+        <div class="pm-section">
+          <span class="pm-label">What Happens If Progress Stalls?</span>
+          <ul class="pm-stall-list">
+            <li>Additional assessment to identify what's blocking</li>
+            <li>Different treatment approach if needed</li>
+            <li>Extended tracking period</li>
+            <li>Referral recommendations when appropriate</li>
+          </ul>
+        </div>
+        <div class="pm-section">
+          <span class="pm-label">Deliverables</span>
+          <ul class="pm-list">
+            <li>Intake report</li>
+            <li>Session notes after each clearing</li>
+            <li>Check-in monitoring throughout</li>
+            <li>Final progress summary</li>
+          </ul>
+        </div>
+        <div class="pm-section">
+          <span class="pm-label">After Completion You May</span>
+          <div class="pm-grad-grid">
+            <span class="pm-grad-opt">End Treatment</span>
+            <span class="pm-grad-opt">Enter Maintenance Circle</span>
+            <span class="pm-grad-opt">Begin Pattern Release</span>
+            <span class="pm-grad-opt">Schedule As Needed</span>
+          </div>
+        </div>`
+    },
+    pattern: {
+      tag: '8-Week Deep Work',
+      title: 'Pattern Release',
+      body: `
+        <div class="pm-section">
+          <span class="pm-label">Who This Is For</span>
+          <div class="pm-tags">
+            <span class="pm-tag">Recurring Issues</span>
+            <span class="pm-tag">Long-Term Patterns</span>
+            <span class="pm-tag">Repeat Clients</span>
+            <span class="pm-tag">Multiple Attachment Concerns</span>
+          </div>
+        </div>
+        <div class="pm-section">
+          <span class="pm-label">Program Workflow</span>
+          <div class="pm-phases">
+            <div class="pm-phase"><span class="pm-phase-num">Phase 1</span><div class="pm-phase-name">Assessment & Discovery</div></div>
+            <div class="pm-phase"><span class="pm-phase-num">Phase 2</span><div class="pm-phase-name">Pattern Identification</div></div>
+            <div class="pm-phase"><span class="pm-phase-num">Phase 3</span><div class="pm-phase-name">Release Work</div></div>
+            <div class="pm-phase"><span class="pm-phase-num">Phase 4</span><div class="pm-phase-name">Integration</div></div>
+          </div>
+        </div>
+        <div class="pm-section">
+          <span class="pm-label">Longitudinal Tracking</span>
+          <p class="pm-p" style="margin-bottom:10px">Changes tracked across the full 8 weeks:</p>
+          <ul class="pm-list">
+            <li>Multiple sessions & repeating symptoms</li>
+            <li>Trigger patterns & life events</li>
+            <li>Emotional state week over week</li>
+            <li>Sleep, anxiety, work impact</li>
+            <li>Relationship changes</li>
+          </ul>
+        </div>
+        <div class="pm-section">
+          <span class="pm-label">Typical Outcomes Reported</span>
+          <p class="pm-p" style="margin-bottom:12px;font-size:14px;font-style:italic">Not promises — what clients have reported after completing this program.</p>
+          <div class="pm-outcomes">
+            <span class="pm-outcome">Patterns broken at the root</span>
+            <span class="pm-outcome">Reduced recurring heaviness</span>
+            <span class="pm-outcome">Emotional regulation</span>
+            <span class="pm-outcome">Attachment-free clarity</span>
+            <span class="pm-outcome">Sustained energy improvement</span>
+          </div>
+        </div>
+        <div class="pm-section">
+          <span class="pm-label">Expected Time Commitment</span>
+          <div class="pm-time-grid">
+            <div class="pm-time-item"><span class="pm-time-val">2×</span><span class="pm-time-desc">Sessions per month</span></div>
+            <div class="pm-time-item"><span class="pm-time-val">5–10</span><span class="pm-time-desc">Min check-ins</span></div>
+            <div class="pm-time-item"><span class="pm-time-val">8 Wks</span><span class="pm-time-desc">Full program</span></div>
+          </div>
+        </div>
+        <div class="pm-section">
+          <span class="pm-label">What Happens If Progress Stalls?</span>
+          <ul class="pm-stall-list">
+            <li>Phase reassessment — return to discovery if needed</li>
+            <li>Adjusted session frequency</li>
+            <li>Referral recommendations when appropriate</li>
+            <li>Extended tracking with no additional charge</li>
+          </ul>
+        </div>
+        <div class="pm-section">
+          <span class="pm-label">Deliverables</span>
+          <ul class="pm-list">
+            <li>Progress dashboard</li>
+            <li>Pattern map</li>
+            <li>Outcome report</li>
+            <li>Recommendations for next phase</li>
+          </ul>
+        </div>
+        <div class="pm-section">
+          <span class="pm-label">After Completion You May</span>
+          <div class="pm-grad-grid">
+            <span class="pm-grad-opt">End Treatment</span>
+            <span class="pm-grad-opt">Enter Maintenance Circle</span>
+            <span class="pm-grad-opt">Schedule As Needed</span>
+          </div>
+        </div>`
+    },
+    maintenance: {
+      tag: 'Quarterly Care',
+      title: 'Maintenance Circle',
+      body: `
+        <div class="pm-section">
+          <span class="pm-label">Who This Is For</span>
+          <div class="pm-tags">
+            <span class="pm-tag">Previous Clients</span>
+            <span class="pm-tag">Long-Term Support</span>
+            <span class="pm-tag">Preventative Work</span>
+          </div>
+        </div>
+        <div class="pm-section">
+          <span class="pm-label">Monthly Workflow</span>
+          <div class="pm-weeks">
+            <div class="pm-week"><span class="pm-week-label">Month 1</span><ul><li>Full review session</li><li>Protection audit</li><li>Symptom check</li></ul></div>
+            <div class="pm-week"><span class="pm-week-label">Month 2</span><ul><li>Maintenance clearing</li><li>Routine updates</li><li>Pattern monitoring</li></ul></div>
+            <div class="pm-week"><span class="pm-week-label">Month 3</span><ul><li>Quarterly assessment</li><li>Progress summary</li><li>Next-quarter plan</li></ul></div>
+          </div>
+        </div>
+        <div class="pm-section">
+          <span class="pm-label">Typical Outcomes Reported</span>
+          <div class="pm-outcomes">
+            <span class="pm-outcome">Sustained clarity</span>
+            <span class="pm-outcome">Fewer re-attachments</span>
+            <span class="pm-outcome">Seasonal stability</span>
+            <span class="pm-outcome">Proactive energy management</span>
+          </div>
+        </div>
+        <div class="pm-section">
+          <span class="pm-label">Expected Time Commitment</span>
+          <div class="pm-time-grid">
+            <div class="pm-time-item"><span class="pm-time-val">1×</span><span class="pm-time-desc">Session per month</span></div>
+            <div class="pm-time-item"><span class="pm-time-val">5–10</span><span class="pm-time-desc">Min check-ins</span></div>
+            <div class="pm-time-item"><span class="pm-time-val">Ongoing</span><span class="pm-time-desc">Cancel anytime</span></div>
+          </div>
+        </div>
+        <div class="pm-section">
+          <span class="pm-label">Benefits</span>
+          <ul class="pm-list">
+            <li>Priority booking access</li>
+            <li>Ongoing field monitoring</li>
+            <li>Seasonal energy reviews</li>
+            <li>Updated care recommendations quarterly</li>
+            <li>3-month progress summary</li>
+          </ul>
+        </div>
+        <div class="pm-section">
+          <span class="pm-label">After Completion You May</span>
+          <div class="pm-grad-grid">
+            <span class="pm-grad-opt">Continue Another Quarter</span>
+            <span class="pm-grad-opt">Schedule As Needed</span>
+            <span class="pm-grad-opt">End Treatment</span>
+          </div>
+        </div>`
+    },
+    research: {
+      tag: 'Outcomes Program',
+      title: 'Research & Outcomes',
+      body: `
+        <div class="pm-section">
+          <span class="pm-label">What We Track</span>
+          <ul class="pm-list">
+            <li>Symptom severity before & after</li>
+            <li>Sleep quality changes</li>
+            <li>Emotional state & mood</li>
+            <li>Work & relationship impact</li>
+            <li>Session outcomes</li>
+            <li>Client satisfaction</li>
+          </ul>
+        </div>
+        <div class="pm-section">
+          <span class="pm-label">Why We Track It</span>
+          <ul class="pm-list">
+            <li>Improve services over time</li>
+            <li>Build educational materials</li>
+            <li>Develop training programs for practitioners</li>
+            <li>Identify the most successful interventions</li>
+          </ul>
+        </div>
+        <div class="pm-section">
+          <span class="pm-label">Privacy</span>
+          <ul class="pm-list">
+            <li>All data anonymously aggregated</li>
+            <li>No personal information published</li>
+            <li>Explicit consent required before participation</li>
+            <li>You may opt out at any time</li>
+          </ul>
+        </div>`
+    }
+  };
+
+  window.openPlanModal = function(key) {
+    var plan = plans[key];
+    if (!plan) return;
+    document.getElementById('pmTag').textContent = plan.tag;
+    document.getElementById('pmTitle').textContent = plan.title;
+    document.getElementById('pmBody').innerHTML = plan.body;
+    document.getElementById('planModalOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  };
+
+  window.closePlanModal = function(e) {
+    if (e && e.target !== document.getElementById('planModalOverlay') && !e.target.classList.contains('plan-modal-close')) return;
+    document.getElementById('planModalOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+  };
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      document.getElementById('planModalOverlay').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+  });
+})();
+</script>
+
 <div class="rit-div"><span>✦ &nbsp; Begin Your Assessment &nbsp; ✦</span></div>
 
 <!-- ═══ ASSESS ═══ -->
@@ -1907,7 +2450,7 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&modal.clas
     <p class="sec-body">Answer honestly. This helps Daron understand what you're carrying before your first session. Your responses feed directly into your treatment plan.</p>
 
     <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:20px">
-      <a href="/waiver-esign.html" class="btn-gold">Start Full Assessment →</a>
+      <a class='btn-gold' href='/waiver-esign'>Start Full Assessment →</a>
       <a href="#faq" class="btn-outline" onclick="document.getElementById('faq').scrollIntoView({behavior:'smooth'});return false;">Learn How It Works</a>
     </div>
     <p style="font-family:'EB Garamond',serif;font-size:15px;font-style:italic;color:rgba(180,170,200,.5);line-height:1.7">Complete your intake form and consent before your first session. Takes about 10 minutes.</p>
@@ -1924,38 +2467,38 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&modal.clas
     <p class="sec-body">Payment is collected after Daron confirms the right session. Send through any of the methods below.</p>
   </div>
   <div class="pay-grid reveal reveal-d1">
-    <a href="/pay.html" class="pay-card">
+    <a class='pay-card' href='/pay'>
       <span class="pay-method">Cash App</span>
       <div class="pay-qr"><img src="images/cashapp-qr.png" alt="Cash App QR"></div>
       <div class="pay-handle">$DaronRoyal</div>
       <span class="pay-scan">Scan to pay</span>
     </a>
-    <a href="/pay.html" class="pay-card">
+    <a class='pay-card' href='/pay'>
       <span class="pay-method">Venmo</span>
       <div class="pay-qr"><img src="images/venmo-qr.png" alt="Venmo QR"></div>
       <div class="pay-handle">@Daron-Royal</div>
       <span class="pay-scan">Scan to pay</span>
     </a>
-    <a href="/pay.html" class="pay-card">
+    <a class='pay-card' href='/pay'>
       <span class="pay-method">PayPal</span>
       <div class="pay-qr"><img src="images/paypal-qr.png" alt="PayPal QR"></div>
       <div class="pay-handle">Daron Royal</div>
       <span class="pay-scan">Scan to pay</span>
     </a>
-    <a href="/pay.html" class="pay-card">
+    <a class='pay-card' href='/pay'>
       <span class="pay-method">Zelle</span>
       <div class="pay-qr"><img src="images/zelle-qr.png" alt="Zelle QR"></div>
       <div class="pay-handle">814-392-2095</div>
       <span class="pay-scan">Scan with bank app</span>
     </a>
-    <a href="/pay.html" class="pay-card" style="justify-content:center">
+    <a class='pay-card' href='/pay' style='justify-content:center'>
       <span class="pay-method">Cash</span>
       <div class="pay-handle" style="margin-top:8px">Local sessions</div>
       <span class="pay-scan" style="margin-top:4px">In person only</span>
     </a>
   </div>
   <div style="text-align:center" class="reveal reveal-d2">
-    <a href="/pay.html" class="btn-gold" style="font-size:11px">View All QR Codes →</a>
+    <a class='btn-gold' href='/pay' style='font-size:11px'>View All QR Codes →</a>
   </div>
 </section>
 
@@ -1968,7 +2511,7 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&modal.clas
     <h2 style="font-family:'Cinzel',serif;font-size:clamp(18px,2.4vw,28px);color:#fff;letter-spacing:.08em;margin-bottom:10px">Select a Time</h2>
     <p style="font-family:'EB Garamond',serif;font-size:17px;font-style:italic;color:#d8d4f099;line-height:1.8;margin-bottom:32px">Choose an open slot below. After booking you will receive session details and a payment link.</p>
     <a href="https://book.squareup.com/appointments/gcevwnjduxlw9u/location/LA19CVXRF3KDC/services" target="_blank" rel="noopener" style="display:inline-block;font-family:'Cinzel',serif;font-size:12px;letter-spacing:.4em;color:#000;text-transform:uppercase;text-decoration:none;background:linear-gradient(135deg,#f8e090,#e8b84b);padding:18px 52px;clip-path:polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%);transition:all .3s;margin-bottom:18px" onmouseover="this.style.filter='brightness(1.1)';this.style.transform='translateY(-2px)'" onmouseout="this.style.filter='brightness(1)';this.style.transform='translateY(0)'">Book a Session</a>
-    <p style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#e8b84b66;text-transform:uppercase;margin-top:8px">Opens Square Appointments — select your service and time</p>
+    <p style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#e8b84baa;text-transform:uppercase;margin-top:8px">Opens Square Appointments — select your service and time</p>
   </div>
 </section>
 
@@ -1980,7 +2523,7 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&modal.clas
       <h2 class="sec-title">Book a Session</h2>
       <p class="sec-body">Send your concern, preferred service, and two appointment windows. You will receive the right session match and payment link.</p>
     </div>
-    <form class="reveal reveal-d1" name="booking" method="POST" netlify data-netlify="true" netlify-honeypot="bot-field" action="/thank-you" onsubmit="return checkPolicy(event)">
+    <form action='/thank-you' class='reveal reveal-d1' method='POST' name='booking' onsubmit='return checkPolicy(event)'>
       <input type="hidden" name="form-name" value="booking"/>
       <p style="display:none"><label>Don't fill this out: <input name="bot-field"/></label></p>
       <div class="contact-grid-2">
@@ -1998,6 +2541,7 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&modal.clas
           <option>Emergency Removal Session — $120</option>
           <option>Removal + Tarot Bundle — $100</option>
           <option>Spiritual Coaching — $50</option>
+          <option>Youth Sessions (Ages 9–14) — $20–$30</option>
           <option>Not sure — need assessment first</option>
         </select>
       </div>
@@ -2020,17 +2564,17 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&modal.clas
     </form>
 
     <!-- Direct contact -->
-    <div style="margin-top:56px;display:flex;gap:0;border:1px solid #e8b84b1a;flex-wrap:wrap" class="reveal reveal-d2">
-      <div style="flex:1;min-width:150px;padding:24px 28px;text-align:center;border-right:1px solid #e8b84b14">
+    <div class="direct-contact-grid reveal reveal-d2">
+      <div class="direct-contact-item">
         <span class="pay-method">Phone</span><div class="pay-handle">814-392-2095</div>
       </div>
-      <div style="flex:1;min-width:150px;padding:24px 28px;text-align:center;border-right:1px solid #e8b84b14">
+      <div class="direct-contact-item">
         <span class="pay-method">Email</span><div class="pay-handle">royalenergyalchemy@gmail.com</div>
       </div>
-      <div style="flex:1;min-width:150px;padding:24px 28px;text-align:center;border-right:1px solid #e8b84b14">
+      <div class="direct-contact-item">
         <span class="pay-method">Messenger</span><div class="pay-handle">Daron Royal</div>
       </div>
-      <div style="flex:1;min-width:150px;padding:24px 28px;text-align:center">
+      <div class="direct-contact-item">
         <span class="pay-method">Location</span><div class="pay-handle">Erie / Waterford, PA</div>
       </div>
     </div>
@@ -2046,7 +2590,7 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&modal.clas
     <!-- Booking & Payment -->
     <div style="margin-bottom:36px;">
       <h3 style="font-family:'Cinzel',serif;font-size:15px;letter-spacing:.35em;color:#e8b84bd9;text-transform:uppercase;margin-bottom:12px;">Booking &amp; Payment Policy</h3>
-      <p style="font-family:'EB Garamond',serif;font-size:16px;color:rgba(232,228,240,.72);line-height:1.75;">Full payment is required at the time of scheduling to reserve an appointment. Appointments are not confirmed until payment is received.</p>
+      <p style="font-family:'EB Garamond',serif;font-size:16px;color:rgba(232,228,240,.88);line-height:1.75;">Full payment is required at the time of scheduling to reserve an appointment. Appointments are not confirmed until payment is received.</p>
     </div>
 
     <!-- Cancellation table -->
@@ -2054,8 +2598,8 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&modal.clas
       <h3 style="font-family:'Cinzel',serif;font-size:15px;letter-spacing:.35em;color:#e8b84bd9;text-transform:uppercase;margin-bottom:16px;">Cancellation &amp; Refund Schedule</h3>
       <div style="border:1px solid #e8b84b24;overflow:hidden;">
         <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid rgba(201,168,76,.10);background:#e8b84b0f;padding:10px 20px;">
-          <span style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;color:#e8b84b99;text-transform:uppercase;">Notice Given</span>
-          <span style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;color:#e8b84b99;text-transform:uppercase;">Outcome</span>
+          <span style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;color:#e8b84bcc;text-transform:uppercase;">Notice Given</span>
+          <span style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;color:#e8b84bcc;text-transform:uppercase;">Outcome</span>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid #e8b84b14;padding:14px 20px;">
           <span style="font-family:'EB Garamond',serif;font-size:16px;color:#d8d4f0d9;">72+ hours notice</span>
@@ -2079,13 +2623,13 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&modal.clas
     <!-- No-Show -->
     <div style="margin-bottom:28px;">
       <h3 style="font-family:'Cinzel',serif;font-size:15px;letter-spacing:.35em;color:#e8b84bd9;text-transform:uppercase;margin-bottom:12px;">No-Show Policy</h3>
-      <p style="font-family:'EB Garamond',serif;font-size:16px;color:rgba(232,228,240,.72);line-height:1.75;">Clients who miss an appointment without notice forfeit the session fee. Returning clients with a previous no-show must clear any outstanding balance before being placed back on the schedule.</p>
+      <p style="font-family:'EB Garamond',serif;font-size:16px;color:rgba(232,228,240,.88);line-height:1.75;">Clients who miss an appointment without notice forfeit the session fee. Returning clients with a previous no-show must clear any outstanding balance before being placed back on the schedule.</p>
     </div>
 
     <!-- If Daron cancels -->
     <div>
       <h3 style="font-family:'Cinzel',serif;font-size:15px;letter-spacing:.35em;color:#e8b84bd9;text-transform:uppercase;margin-bottom:12px;">If Daron Must Cancel</h3>
-      <p style="font-family:'EB Garamond',serif;font-size:16px;color:rgba(232,228,240,.72);line-height:1.75;">Client may choose a full refund or a rescheduled appointment.</p>
+      <p style="font-family:'EB Garamond',serif;font-size:16px;color:rgba(232,228,240,.88);line-height:1.75;">Client may choose a full refund or a rescheduled appointment.</p>
     </div>
   </div>
 </section>
@@ -2095,21 +2639,21 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&modal.clas
   <p>Spiritual and energetic services are complementary wellness offerings and are not medical, legal, psychological, or financial advice.</p>
   <p style="margin-top:8px">© 2026 Royal Energy Alchemy LLC · royalenergyalchemy@gmail.com · 814-392-2095</p>
   <p style="margin-top:16px;display:flex;align-items:center;justify-content:center;gap:20px">
-    <a href="https://www.facebook.com/RoyalEnergyAlchemyLLC/" target="_blank" rel="noopener" title="Royal Energy Alchemy on Facebook" style="display:inline-flex;align-items:center;gap:8px;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#e8b84b73;text-decoration:none;text-transform:uppercase;transition:color .25s" onmouseover="this.style.color='#e8b84bdd'" onmouseout="this.style.color='#e8b84b73'">
+    <a href="https://www.facebook.com/RoyalEnergyAlchemyLLC/" target="_blank" rel="noopener" title="Royal Energy Alchemy on Facebook" style="display:inline-flex;align-items:center;gap:8px;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#e8b84baa;text-decoration:none;text-transform:uppercase;transition:color .25s" onmouseover="this.style.color='#e8b84bdd'" onmouseout="this.style.color='#e8b84b73'">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
       Facebook
     </a>
   </p>
   <p style="margin-top:12px">
-    <a href="/privacy-policy.html" style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;font-size:11px;color:#e8b84b73;text-decoration:none;text-transform:uppercase;transition:color .25s;" onmouseover="this.style.color='#e8b84bd9'" onmouseout="this.style.color='#e8b84b73'">Privacy Policy</a>
+    <a href='/privacy-policy' onmouseout='this.style.color=\'#e8b84b73\'' onmouseover='this.style.color=\'#e8b84bd9\'' style='font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:.35em;font-size:11px;color:#e8b84baa;text-decoration:none;text-transform:uppercase;transition:color .25s;'>Privacy Policy</a>
     <span style="color:#e8b84b33;margin:0 10px">·</span>
-    <a href="/terms.html" style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;font-size:11px;color:#e8b84b73;text-decoration:none;text-transform:uppercase;transition:color .25s;" onmouseover="this.style.color='#e8b84bd9'" onmouseout="this.style.color='#e8b84b73'">Terms of Service</a>
+    <a href='/terms' onmouseout='this.style.color=\'#e8b84b73\'' onmouseover='this.style.color=\'#e8b84bd9\'' style='font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:.35em;font-size:11px;color:#e8b84baa;text-decoration:none;text-transform:uppercase;transition:color .25s;'>Terms of Service</a>
     <span style="color:#e8b84b33;margin:0 10px">·</span>
-    <a href="/data-retention.html" style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;font-size:11px;color:#e8b84b73;text-decoration:none;text-transform:uppercase;transition:color .25s;" onmouseover="this.style.color='#e8b84bd9'" onmouseout="this.style.color='#e8b84b73'">Data Retention</a>
+    <a href='/data-retention' onmouseout='this.style.color=\'#e8b84b73\'' onmouseover='this.style.color=\'#e8b84bd9\'' style='font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:.35em;font-size:11px;color:#e8b84baa;text-decoration:none;text-transform:uppercase;transition:color .25s;'>Data Retention</a>
     <span style="color:#e8b84b33;margin:0 10px">·</span>
-    <a href="#refund-policy" style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;font-size:11px;color:#e8b84b73;text-decoration:none;text-transform:uppercase;transition:color .25s;" onmouseover="this.style.color='#e8b84bd9'" onmouseout="this.style.color='#e8b84b73'">Cancellation Policy</a>
+    <a href="#refund-policy" style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;font-size:11px;color:#e8b84baa;text-decoration:none;text-transform:uppercase;transition:color .25s;" onmouseover="this.style.color='#e8b84bd9'" onmouseout="this.style.color='#e8b84b73'">Cancellation Policy</a>
     <span style="color:#e8b84b33;margin:0 10px">·</span>
-    <a href="/waiver-esign.html" style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;font-size:11px;color:#e8b84b73;text-decoration:none;text-transform:uppercase;transition:color .25s;" onmouseover="this.style.color='#e8b84bd9'" onmouseout="this.style.color='#e8b84b73'">Sign Waiver</a>
+    <a href='/waiver-esign' onmouseout='this.style.color=\'#e8b84b73\'' onmouseover='this.style.color=\'#e8b84bd9\'' style='font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:.35em;font-size:11px;color:#e8b84baa;text-decoration:none;text-transform:uppercase;transition:color .25s;'>Sign Waiver</a>
   </p>
 </footer>
 

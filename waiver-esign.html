@@ -135,7 +135,16 @@ footer .pa-disclaimer{font-family:'EB Garamond',serif;font-size:15px;font-style:
   .form-row{grid-template-columns:1fr}
   .wrap{padding:80px 16px 48px}
 }
+@media print{
+  nav,footer,#waiverForm,.submit-btn,.legal-note{display:none!important}
+  body{background:#fff;color:#000}
+  .success{display:block!important;color:#000;background:#fff;max-width:100%;padding:40px}
+  .success h2,.success p{color:#000}
+  button{display:none!important}
+}
 </style>
+<link rel="stylesheet" href="/site-nav.css">
+<script defer src="/site-nav.js"></script>
 </head>
 <body>
 
@@ -254,7 +263,7 @@ footer .pa-disclaimer{font-family:'EB Garamond',serif;font-size:15px;font-style:
 
         <!-- Privacy note -->
         <div class="notice" style="margin-bottom:20px">
-          <p style="font-size:16px">This information is voluntary where indicated. It helps Daron provide the most effective session and may be used in de-identified aggregate form for research and service improvement as described in our <a href="privacy-policy.html" style="color:#e8b84bb3">Privacy Policy</a>.</p>
+          <p style="font-size:16px">This information is voluntary where indicated. It helps Daron provide the most effective session and may be used in de-identified aggregate form for research and service improvement as described in our <a href='/privacy-policy' style='color:#e8b84bb3'>Privacy Policy</a>.</p>
         </div>
 
         <p style="font-size:15px;color:#d8d4f0b3;margin-bottom:20px">Please answer honestly so Daron can provide the safest and most effective session possible.</p>
@@ -536,7 +545,8 @@ footer .pa-disclaimer{font-family:'EB Garamond',serif;font-size:15px;font-style:
       <p id="displayClientId" style="font-family:'Cinzel Decorative',serif;font-size:26px;color:var(--gold);letter-spacing:.08em;font-style:normal;margin-bottom:10px"></p>
       <p style="font-size:16px;color:#c8c4e099;font-style:italic;margin:0">Save this for your records. You'll use it when returning for future sessions.</p>
     </div>
-    <p style="margin-top:8px;font-family:'Cinzel',serif;font-size:12px;letter-spacing:.3em;color:#e8b84b80;text-transform:uppercase">Royal Energy Alchemy LLC · Erie, Pennsylvania</p>
+    <button onclick="window.print()" style="margin-top:20px;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;text-transform:uppercase;padding:10px 28px;cursor:pointer;border:1px solid #e8b84b66;background:transparent;color:#e8b84bcc;transition:all .2s" onmouseover="this.style.background='#e8b84b14'" onmouseout="this.style.background='transparent'">Print / Save as PDF ↓</button>
+    <p style="margin-top:20px;font-family:'Cinzel',serif;font-size:12px;letter-spacing:.3em;color:#e8b84b80;text-transform:uppercase">Royal Energy Alchemy LLC · Erie, Pennsylvania</p>
   </div>
 
 </div>
@@ -544,7 +554,7 @@ footer .pa-disclaimer{font-family:'EB Garamond',serif;font-size:15px;font-style:
 <footer>
   <p>Royal Energy Alchemy LLC · Erie / Waterford, Pennsylvania · royalenergyalchemy@gmail.com · 814-392-2095</p>
   <p>Spiritual and energetic services are complementary wellness offerings and are not medical, legal, psychological, or financial advice.</p>
-  <p class="pa-disclaimer">Pennsylvania is a two-party consent state (18 Pa. C.S. § 5703). Daron Royal recommends consulting a Pennsylvania attorney to confirm this recording policy aligns with applicable law before going live.</p>
+
   <p style="margin-top:12px"><a href="/" style="color:#e8b84b4d;text-decoration:none;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;">← Return to site</a></p>
 </footer>
 
@@ -683,6 +693,24 @@ document.getElementById('waiverForm').addEventListener('submit', function(e) {
   sessionStorage.removeItem('rea_pending_client_id');
   document.getElementById('client_id').value = clientId;
   document.getElementById('displayClientId').textContent = clientId;
+
+  // Save intake snapshot to localStorage for dashboard access
+  var intakeSnap = {
+    clientId: clientId,
+    name: document.getElementById('fullName').value.trim(),
+    email: email,
+    phone: document.getElementById('phone').value.trim(),
+    dob: document.getElementById('dob').value,
+    expectations: document.getElementById('expectations').value.trim(),
+    severity: (document.querySelector('input[name="intake_severity"]:checked')||{}).value||'',
+    referral: (document.querySelector('input[name="referral_source"]:checked')||{}).value||'',
+    referralOther: (document.getElementById('referralOtherText')||{}).value||'',
+    timestamp: new Date().toISOString(),
+    signed: true
+  };
+  var nameKey = 'rea_intake_name_' + intakeSnap.name.toLowerCase().trim().replace(/\s+/g,'_');
+  localStorage.setItem('rea_intake_' + clientId, JSON.stringify(intakeSnap));
+  localStorage.setItem(nameKey, JSON.stringify(intakeSnap));
 
   document.getElementById('waiverForm').style.display = 'none';
   document.getElementById('successMsg').style.display = 'block';
