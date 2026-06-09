@@ -7,8 +7,8 @@
 .rea-nav-dropdown-menu{position:absolute;top:calc(100% + 14px);left:50%;width:330px;padding:10px 0;background:rgba(4,2,14,.98);border:1px solid rgba(232,184,75,.36);box-shadow:0 18px 45px rgba(0,0,0,.65);opacity:0;visibility:hidden;transform:translate(-50%,-8px);transition:opacity .2s,transform .2s,visibility .2s}
 .rea-nav-dropdown-menu::before{content:'';position:absolute;left:0;right:0;top:-15px;height:15px}
 .rea-nav-dropdown:hover .rea-nav-dropdown-menu,.rea-nav-dropdown:focus-within .rea-nav-dropdown-menu{opacity:1;visibility:visible;transform:translate(-50%,0)}
-.rea-nav-dropdown-menu a{display:block;padding:10px 18px;font-size:10px;line-height:1.35;letter-spacing:.14em;color:rgba(232,228,240,.78);white-space:normal}
-.rea-nav-dropdown-menu a:hover,.rea-nav-dropdown-menu a:focus-visible{color:#fff0b8;background:rgba(232,184,75,.08)}
+.rea-nav-dropdown-menu a{display:block;padding:10px 18px;font-size:10px;line-height:1.35;letter-spacing:.14em;color:rgba(246,241,255,.9);white-space:normal;text-shadow:0 0 12px rgba(232,184,75,.12)}
+.rea-nav-dropdown-menu a:hover,.rea-nav-dropdown-menu a:focus-visible{color:#fff0b8;background:rgba(232,184,75,.12)}
 .rea-nav-book{color:#ffd977!important;border:1px solid rgba(232,184,75,.5);padding:9px 18px}
 .rea-nav-book:hover,.rea-nav-book:focus-visible{background:rgba(232,184,75,.12);border-color:#ffd977}
 @media(max-width:900px){
