@@ -174,6 +174,68 @@ body{background:#04020e;color:#f0ecff;font-family:'EB Garamond',serif;min-height
 .appt-form-wrap label,.form-lbl{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.38em;color:#e8b84b88;text-transform:uppercase;display:block;margin-bottom:7px}
 .appt-input{width:100%;background:#04020e;border:1px solid #e8b84b1a;color:#f0ecff;font-family:'EB Garamond',serif;font-size:16px;padding:11px 14px;box-sizing:border-box;border-radius:2px;transition:border-color .2s}
 .appt-input:focus{outline:none;border-color:#e8b84b77;background:#0d0820}
+/* ── BOOKING INTELLIGENCE ── */
+.bi-section{margin-bottom:32px}
+.bi-section-title{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.42em;color:#e8b84b;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:12px}
+.bi-section-title::after{content:'';flex:1;height:1px;background:#e8b84b22}
+/* Glance table */
+.bi-glance{background:#0a0618;border:1px solid #e8b84b22;width:100%}
+.bi-glance tr{border-bottom:1px solid #e8b84b0f}
+.bi-glance tr:last-child{border-bottom:none}
+.bi-glance td{padding:13px 18px;font-family:'EB Garamond',serif;font-size:16px;color:#dddaeecc;line-height:1.4}
+.bi-glance td:first-child{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:#e8b84b88;text-transform:uppercase;width:50%;border-right:1px solid #e8b84b0f}
+.bi-glance .val-gold{color:#e8b84b;font-family:'Cinzel',serif;font-size:18px}
+.bi-glance .val-teal{color:#22c98a;font-family:'Cinzel',serif;font-size:18px}
+.bi-glance .val-red{color:#ee7070;font-family:'Cinzel',serif;font-size:18px}
+.bi-glance .val-amber{color:#f8a84b;font-family:'Cinzel',serif;font-size:18px}
+/* Issue cards */
+.bi-issues-grid{display:flex;flex-direction:column;gap:6px}
+.bi-issue{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-left:3px solid #f8a84b77;background:#f8a84b08;border-radius:0 3px 3px 0}
+.bi-issue.red{border-left-color:#ee707077;background:#ee707008}
+.bi-issue.gold{border-left-color:#e8b84b77;background:#e8b84b08}
+.bi-issue-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+.bi-issue-text{font-family:'EB Garamond',serif;font-size:16px;color:#f0ecff;line-height:1.5}
+.bi-issue-sub{font-family:'EB Garamond',serif;font-size:14px;color:#dddaee77;margin-top:2px}
+.bi-no-issues{font-family:'EB Garamond',serif;font-size:16px;color:#22c98a88;font-style:italic;padding:8px 0}
+/* Day cards */
+.bi-day-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.bi-day-card{background:#0a0618;border:1px solid #e8b84b1a;padding:18px 20px}
+.bi-day-card.today-day{border-color:#e8b84b44;background:#e8b84b06}
+.bi-day-card.empty-day{opacity:.4}
+.bi-day-name{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.35em;color:#e8b84bcc;text-transform:uppercase;margin-bottom:10px}
+.bi-day-card.today-day .bi-day-name{color:#22c98a}
+.bi-day-row{display:flex;justify-content:space-between;align-items:baseline;padding:4px 0;border-bottom:1px solid #e8b84b08}
+.bi-day-row:last-child{border-bottom:none}
+.bi-day-lbl{font-family:'EB Garamond',serif;font-size:14px;color:#dddaee88}
+.bi-day-val{font-family:'Cinzel',serif;font-size:14px;color:#f0ecff}
+.bi-day-val.gold{color:#e8b84b}
+.bi-day-val.teal{color:#22c98a}
+.bi-day-val.red{color:#ee7070}
+/* Client mix */
+.bi-mix-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1px;background:#e8b84b14}
+.bi-mix-cell{background:#0a0618;padding:16px 18px;display:flex;flex-direction:column;gap:4px}
+.bi-mix-val{font-family:'Cinzel',serif;font-size:26px;color:#e8b84b;line-height:1}
+.bi-mix-lbl{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.35em;color:#e8b84b88;text-transform:uppercase;line-height:1.4}
+/* Revenue */
+.bi-rev-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.bi-rev-card{background:#0a0618;border:1px solid #e8b84b1a;padding:20px 22px}
+.bi-rev-eyebrow{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.38em;color:#e8b84b77;text-transform:uppercase;margin-bottom:8px}
+.bi-rev-val{font-family:'Cinzel',serif;font-size:28px;color:#e8b84b;line-height:1;margin-bottom:4px}
+.bi-rev-sub{font-family:'EB Garamond',serif;font-size:14px;color:#dddaee77}
+/* Load score */
+.bi-load-wrap{background:#0a0618;border:1px solid #e8b84b1a;padding:22px 24px}
+.bi-load-score{display:flex;align-items:center;gap:20px;margin-bottom:18px;flex-wrap:wrap}
+.bi-load-dot{width:18px;height:18px;border-radius:50%;flex-shrink:0}
+.bi-load-label{font-family:'Cinzel',serif;font-size:20px;color:#f0ecff;letter-spacing:.06em}
+.bi-load-metrics{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1px;background:#e8b84b14}
+.bi-load-metric{background:#0a0618;padding:13px 16px;display:flex;justify-content:space-between;align-items:center}
+.bi-load-metric-lbl{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.3em;color:#e8b84b88;text-transform:uppercase}
+.bi-load-metric-val{font-family:'Cinzel',serif;font-size:16px;color:#f0ecff}
+/* Cal day summary bar */
+.cal-day-summary{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;padding:12px 16px;background:#0a0618;border:1px solid #e8b84b1a;border-radius:2px}
+.cal-day-summary-item{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:56px}
+.cal-day-summary-val{font-family:'Cinzel',serif;font-size:18px;color:#e8b84b;line-height:1}
+.cal-day-summary-lbl{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.3em;color:#e8b84b77;text-transform:uppercase;text-align:center}
 /* ── CANCEL / RESCHEDULE PANELS ── */
 .appt-action-panel{background:#04020e;border:1px solid #e8b84b1a;border-top:none;padding:18px 20px 20px;margin-top:-6px;margin-bottom:8px}
 .appt-action-panel.cancel-panel{border-color:#ee707033}
@@ -802,34 +864,30 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#d
 
     <!-- BOOKING SYSTEM STATS -->
     <div class="booking-section">
-      <div class="section-title">Booking System</div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;background:#e8b84b14;margin-bottom:20px">
-        <div class="stat"><span class="stat-val good">✓ Live</span><span class="stat-label">Square Appointments</span></div>
-        <div class="stat"><span class="stat-val" id="bkTotalSess">—</span><span class="stat-label">Total Sessions Logged</span></div>
-        <div class="stat"><span class="stat-val" id="bkWeeklyAvg">—</span><span class="stat-label">Avg Sessions / Week</span></div>
-        <div class="stat"><span class="stat-val" id="bkTopDay">—</span><span class="stat-label">Busiest Day</span></div>
+      <!-- Square links always visible -->
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:28px">
+        <a href="https://book.squareup.com/appointments/gcevwnjduxlw9u/location/LA19CVXRF3KDC/services" target="_blank" class="action-btn view" style="text-decoration:none;display:inline-block;padding:10px 28px">Open Booking Page ↗</a>
+        <a href="https://squareup.com/dashboard/appointments" target="_blank" class="action-btn approve" style="text-decoration:none;display:inline-block;padding:10px 28px">Square Dashboard ↗</a>
       </div>
-      <div class="card" style="margin-bottom:20px">
-        <p style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.4em;color:#22c98acc;text-transform:uppercase;margin-bottom:16px">✓ Square Appointments — Live</p>
-        <div style="display:flex;gap:12px;flex-wrap:wrap">
-          <a href="https://book.squareup.com/appointments/gcevwnjduxlw9u/location/LA19CVXRF3KDC/services" target="_blank" class="action-btn view" style="text-decoration:none;display:inline-block;padding:10px 28px">Open Booking Page ↗</a>
-          <a href="https://squareup.com/dashboard/appointments" target="_blank" class="action-btn approve" style="text-decoration:none;display:inline-block;padding:10px 28px">Square Dashboard ↗</a>
-        </div>
-      </div>
-      <div class="section-title">Sessions by Day of Week</div>
-      <div class="card" style="margin-bottom:20px"><div id="bkDayBreakdown" style="display:flex;flex-direction:column;gap:14px"></div></div>
-      <div class="section-title">Sessions by Week</div>
-      <div class="card" style="margin-bottom:20px"><div id="bkWeekBreakdown" style="display:flex;flex-direction:column;gap:14px"></div></div>
-      <div class="card" style="background:#22c98a08;border-color:#22c98a22">
-        <p style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#22c98a99;text-transform:uppercase;margin-bottom:12px">Square Setup Checklist</p>
-        <div style="display:flex;flex-direction:column;gap:10px;font-family:'EB Garamond',serif;font-size:16px;color:#dddaee;line-height:1.7">
-          <span>✓ Booking link live on public site</span>
-          <span>✓ All 12 services imported to Square</span>
-          <span>✓ Treatment plan packages added to CSV</span>
-          <span style="color:#dddaee88">☐ Enable "Available for online booking" on each service in Square</span>
-          <span style="color:#dddaee88">☐ Set weekly availability hours in Square Calendar settings</span>
-        </div>
-      </div>
+
+      <!-- ① THIS WEEK AT A GLANCE -->
+      <div id="bk-week-glance"></div>
+
+      <!-- ② UPCOMING ISSUES -->
+      <div id="bk-issues"></div>
+
+      <!-- ③ WEEK BREAKDOWN -->
+      <div id="bk-week-breakdown"></div>
+
+      <!-- ④ CLIENT MIX -->
+      <div id="bk-client-mix"></div>
+
+      <!-- ⑤ REVENUE INTELLIGENCE -->
+      <div id="bk-revenue"></div>
+
+      <!-- ⑥ PRACTITIONER LOAD -->
+      <div id="bk-load"></div>
+
     </div>
 
     <!-- CANCELLATIONS LOG -->
@@ -923,7 +981,7 @@ function showTab(name) {
   if (tc) { tc.style.display='block'; tc.classList.add('active'); }
   // Tab-specific renders
   if (name === 'environment') { try { renderTodayEnvCard(); } catch(e){} try { renderEnvLog(); } catch(e){} try { renderPatterns(); } catch(e){} }
-  if (name === 'booking')     { try { renderCal(); renderUpcoming(); renderWaitlist(); updateCapacityStats(); renderCancellationLog(); } catch(e){} }
+  if (name === 'booking')     { try { renderCal(); renderUpcoming(); renderWaitlist(); updateCapacityStats(); renderCancellationLog(); renderBooking(); } catch(e){} }
 }
 
 function approveReview(id) {
@@ -1124,58 +1182,350 @@ function renderAnalytics() {
   `;
 }
 
-// ── BOOKING STATS ────────────────────────────────────────────
+// ── BOOKING INTELLIGENCE ─────────────────────────────────────
+function getWeekStart(dateStr) {
+  const d = new Date(dateStr + 'T12:00:00');
+  const day = d.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  const mon = new Date(d);
+  mon.setDate(d.getDate() + diff);
+  return mon.toISOString().slice(0, 10);
+}
+function getWeekDays(weekStart) {
+  const days = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(weekStart + 'T12:00:00');
+    d.setDate(d.getDate() + i);
+    days.push(d.toISOString().slice(0, 10));
+  }
+  return days;
+}
+function isFirstTimeSessions(clientName, beforeDate) {
+  if (typeof REA_DATA === 'undefined') return false;
+  return !REA_DATA.sessions.some(s => s.client === clientName && s.date < beforeDate);
+}
+
 function renderBooking() {
   if (typeof REA_DATA === 'undefined') return;
   if (!REA_DATA.computed) REA_DATA.compute();
-  const s = REA_DATA.sessions;
-  const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  const dayCounts = [0,0,0,0,0,0,0];
-  const weekMap = {};
-  s.forEach(x => {
-    const d = new Date(x.date);
-    dayCounts[d.getDay()]++;
-    const day = d.getDay(); const diff = day===0?-6:1-day;
-    const mon = new Date(d); mon.setDate(d.getDate()+diff);
-    const wk = mon.toISOString().slice(0,10);
-    weekMap[wk] = (weekMap[wk]||0)+1;
-  });
-  const maxDay = Math.max(...dayCounts);
-  const topDayIdx = dayCounts.indexOf(maxDay);
-  const weekKeys = Object.keys(weekMap).sort();
-  const maxWk = Math.max(...Object.values(weekMap));
-  const weeklyAvg = weekKeys.length ? Math.round(s.length/weekKeys.length) : 0;
 
-  const bkEl = document.getElementById('bkTotalSess');
-  if (bkEl) bkEl.textContent = s.length;
-  const wkEl = document.getElementById('bkWeeklyAvg');
-  if (wkEl) wkEl.textContent = weeklyAvg;
-  const topEl = document.getElementById('bkTopDay');
-  if (topEl) topEl.textContent = dayNames[topDayIdx];
+  const allSessions = REA_DATA.sessions;
+  const allAppts    = getAppts();
+  const today       = new Date().toISOString().slice(0, 10);
+  const weekStart   = getWeekStart(today);
+  const weekDays    = getWeekDays(weekStart);
+  const DOW_FULL    = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const DOW_SHORT   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
-  const dayEl = document.getElementById('bkDayBreakdown');
-  if (dayEl) dayEl.innerHTML = dayNames.map((n,i)=>{
-    const pct = Math.round(dayCounts[i]/maxDay*100);
-    return `<div>
-      <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-        <span style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.2em;color:#e8b84bcc;text-transform:uppercase">${n}</span>
-        <span style="font-family:'Cinzel',serif;font-size:12px;color:#e8b84b99">${dayCounts[i]} sessions</span>
-      </div>
-      <div class="intensity-bar"><div class="intensity-fill" style="width:${pct}%${i===topDayIdx?';background:linear-gradient(90deg,#22c98a99,#e8b84bcc)':''}"></div></div>
-    </div>`;
-  }).join('');
+  // Sessions this week (REA_DATA)
+  const weekSessions = allSessions.filter(s => s.date >= weekDays[0] && s.date <= weekDays[6]);
+  // Upcoming appts this week (non-cancelled)
+  const weekAppts    = allAppts.filter(a => a.date >= weekDays[0] && a.date <= weekDays[6] && a.status !== 'cancelled');
+  // All booked this week
+  const weekBooked   = weekSessions.length + weekAppts.length;
+  const weekRevenue  = weekSessions.reduce((sum, s) => sum + (s.price || 0), 0)
+                     + weekAppts.reduce((sum, a) => sum + (a.price || 0), 0);
+  const capacity     = parseInt(localStorage.getItem('rea_weekly_capacity') || '20');
+  const openSlots    = Math.max(0, capacity - weekBooked);
 
-  const wkBreakEl = document.getElementById('bkWeekBreakdown');
-  if (wkBreakEl) wkBreakEl.innerHTML = weekKeys.map(wk=>{
-    const pct = Math.round(weekMap[wk]/maxWk*100);
-    return `<div>
-      <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-        <span style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.15em;color:#e8b84bcc">Week of ${wk}</span>
-        <span style="font-family:'Cinzel',serif;font-size:12px;color:#e8b84b99">${weekMap[wk]} sessions</span>
-      </div>
-      <div class="intensity-bar"><div class="intensity-fill" style="width:${pct}%"></div></div>
-    </div>`;
-  }).join('');
+  // Reschedules this week
+  const reschedThisWeek = allAppts.filter(a =>
+    (a.rescheduleHistory || []).some(r => r.newDate >= weekDays[0] && r.newDate <= weekDays[6])
+  ).length;
+
+  // Follow-ups due: sessions that were Round 1/2 from 24–72hrs ago
+  const yesterday  = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+  const threeDays  = new Date(); threeDays.setDate(threeDays.getDate() - 3);
+  const followUpDue = allSessions.filter(s => {
+    const d = s.date;
+    return d >= threeDays.toISOString().slice(0, 10) && d <= yesterday.toISOString().slice(0, 10)
+        && (s.round || 1) <= 2;
+  }).length;
+
+  // High-risk: 2+ cancellations or no-show status in CRM
+  const crm = getCRM();
+  const highRisk = Object.values(crm).filter(c =>
+    c.status === 'no_show' || c.status === 'blocked' ||
+    (c.timeline || []).filter(t => t.type === 'cancellation').length >= 2
+  ).length;
+
+  // ─── SECTION 1: This Week at a Glance ───────────────────────
+  const glanceEl = document.getElementById('bk-week-glance');
+  if (glanceEl) {
+    const rows = [
+      ['Scheduled Sessions', weekBooked, weekBooked >= capacity ? 'val-amber' : 'val-teal'],
+      ['Revenue Scheduled',  '$' + weekRevenue, 'val-gold'],
+      ['Open Slots',         openSlots, openSlots === 0 ? 'val-red' : openSlots <= 3 ? 'val-amber' : 'val-teal'],
+      ['Reschedules',        reschedThisWeek, reschedThisWeek >= 3 ? 'val-red' : reschedThisWeek >= 1 ? 'val-amber' : ''],
+      ['Follow-Ups Due',     followUpDue, followUpDue >= 5 ? 'val-red' : followUpDue >= 2 ? 'val-amber' : ''],
+      ['High-Risk Clients',  highRisk, highRisk >= 3 ? 'val-red' : highRisk >= 1 ? 'val-amber' : ''],
+    ];
+    glanceEl.innerHTML = `
+      <div class="bi-section">
+        <div class="bi-section-title">This Week at a Glance</div>
+        <table class="bi-glance" cellspacing="0">
+          ${rows.map(([label, val, cls]) => `<tr>
+            <td>${label}</td>
+            <td class="${cls || ''}">${val}</td>
+          </tr>`).join('')}
+        </table>
+      </div>`;
+  }
+
+  // ─── SECTION 2: Upcoming Issues ─────────────────────────────
+  const issuesEl = document.getElementById('bk-issues');
+  if (issuesEl) {
+    const issues = [];
+
+    // Repeated reschedulers (3+)
+    allAppts.forEach(a => {
+      if ((a.rescheduleHistory || []).length >= 3) {
+        issues.push({ icon: '↺', text: `${a.client} has rescheduled ${a.rescheduleHistory.length}×`, sub: `Next: ${a.date}`, sev: 'red' });
+      }
+    });
+
+    // Clients with 2+ cancellations
+    Object.values(crm).forEach(c => {
+      const cancelCount = (c.timeline || []).filter(t => t.type === 'cancellation').length;
+      if (cancelCount >= 2) {
+        issues.push({ icon: '⚠', text: `${c.clientName} — repeat cancellation pattern`, sub: `${cancelCount} cancellations on record`, sev: 'red' });
+      }
+    });
+
+    // No-shows
+    Object.values(crm).filter(c => c.status === 'no_show').forEach(c => {
+      issues.push({ icon: '⚠', text: `${c.clientName} — no-show on record`, sub: '', sev: 'red' });
+    });
+
+    // Missing waiver (check localStorage for intake data)
+    weekSessions.forEach(s => {
+      const key = 'rea_intake_name_' + s.client.toLowerCase().trim().replace(/\s+/g,'_');
+      if (!localStorage.getItem(key)) {
+        issues.push({ icon: '📋', text: `${s.client} — waiver / intake missing`, sub: `Session: ${s.date}`, sev: 'gold' });
+      }
+    });
+
+    // Payment pending (session price=0, not marked exchange, recent)
+    const recentSessions = allSessions.filter(s => s.date >= weekDays[0]);
+    recentSessions.forEach(s => {
+      if (s.price === 0 && !(s.tags || []).includes('exchange') && !(s.tags || []).includes('paid')) {
+        issues.push({ icon: '$', text: `${s.client} — payment status unclear`, sub: `Session: ${s.date} · Not marked paid or exchange`, sev: 'amber' });
+      }
+    });
+
+    // Unverified CRM records for this week's clients
+    weekSessions.forEach(s => {
+      const crec = getCRMClient(s.client);
+      if (crec && !crec.contactInfo.email && !crec.contactInfo.confirmedByDaron) {
+        issues.push({ icon: '👤', text: `${s.client} — no contact info on file`, sub: 'Add email/phone in Client Info', sev: 'gold' });
+      }
+    });
+
+    // Follow-ups overdue
+    if (followUpDue > 0) {
+      issues.push({ icon: '→', text: `${followUpDue} client${followUpDue > 1 ? 's' : ''} need follow-up contact`, sub: 'Sessions within last 72 hours, Round 1–2', sev: 'amber' });
+    }
+
+    const SV = { red: 0, amber: 1, gold: 2 };
+    issues.sort((a, b) => (SV[a.sev] || 9) - (SV[b.sev] || 9));
+
+    issuesEl.innerHTML = `
+      <div class="bi-section">
+        <div class="bi-section-title">Upcoming Issues</div>
+        <div class="bi-issues-grid">
+          ${issues.length ? issues.map(i => `
+            <div class="bi-issue ${i.sev === 'red' ? 'red' : i.sev === 'gold' ? 'gold' : ''}">
+              <span class="bi-issue-icon">${i.icon}</span>
+              <div>
+                <div class="bi-issue-text">${i.text}</div>
+                ${i.sub ? `<div class="bi-issue-sub">${i.sub}</div>` : ''}
+              </div>
+            </div>`).join('')
+          : '<div class="bi-no-issues">✓ No issues flagged this week.</div>'}
+        </div>
+      </div>`;
+  }
+
+  // ─── SECTION 3: Week Breakdown ───────────────────────────────
+  const breakdownEl = document.getElementById('bk-week-breakdown');
+  if (breakdownEl) {
+    const dayCards = weekDays.map(dateStr => {
+      const d = new Date(dateStr + 'T12:00:00');
+      const dayName = DOW_FULL[d.getDay()];
+      const dayDate = d.toDate ? d.toDate() : `${DOW_SHORT[d.getDay()]} ${d.getMonth()+1}/${d.getDate()}`;
+      const shortDate = `${DOW_SHORT[d.getDay()]} ${d.getMonth()+1}/${d.getDate()}`;
+      const sess = allSessions.filter(s => s.date === dateStr);
+      const apts = allAppts.filter(a => a.date === dateStr && a.status !== 'cancelled');
+      const total = sess.length + apts.length;
+      const revenue = sess.reduce((s, x) => s + (x.price || 0), 0) + apts.reduce((s, a) => s + (a.price || 0), 0);
+      const newClients = sess.filter(s => isFirstTimeSessions(s.client, s.date)).length;
+      const returning  = sess.length - newClients;
+      const distance   = sess.filter(s => (s.tags || []).includes('distance')).length;
+      const inPerson   = sess.filter(s => (s.tags || []).includes('inPerson') || (s.tags || []).includes('in-person')).length;
+      const cancelled  = allAppts.filter(a => a.date === dateStr && a.status === 'cancelled').length;
+      const isToday    = dateStr === today;
+      const isEmpty    = total === 0 && cancelled === 0;
+
+      return `<div class="bi-day-card ${isToday ? 'today-day' : ''} ${isEmpty ? 'empty-day' : ''}">
+        <div class="bi-day-name">${dayName}${isToday ? ' · Today' : ''}<br><span style="font-size:11px;opacity:.7">${shortDate}</span></div>
+        ${total === 0 && cancelled === 0
+          ? `<div style="font-family:'EB Garamond',serif;font-size:14px;color:#dddaee44;font-style:italic;margin-top:6px">No sessions</div>`
+          : `
+        <div class="bi-day-row"><span class="bi-day-lbl">Clients</span><span class="bi-day-val">${total}</span></div>
+        <div class="bi-day-row"><span class="bi-day-lbl">Revenue</span><span class="bi-day-val gold">$${revenue}</span></div>
+        ${newClients ? `<div class="bi-day-row"><span class="bi-day-lbl">New Clients</span><span class="bi-day-val teal">${newClients}</span></div>` : ''}
+        ${returning  ? `<div class="bi-day-row"><span class="bi-day-lbl">Returning</span><span class="bi-day-val">${returning}</span></div>` : ''}
+        ${distance   ? `<div class="bi-day-row"><span class="bi-day-lbl">Distance</span><span class="bi-day-val">${distance}</span></div>` : ''}
+        ${inPerson   ? `<div class="bi-day-row"><span class="bi-day-lbl">In Person</span><span class="bi-day-val">${inPerson}</span></div>` : ''}
+        ${cancelled  ? `<div class="bi-day-row"><span class="bi-day-lbl">Cancelled</span><span class="bi-day-val red">${cancelled}</span></div>` : ''}`}
+      </div>`;
+    });
+
+    breakdownEl.innerHTML = `
+      <div class="bi-section">
+        <div class="bi-section-title">Week Breakdown</div>
+        <div class="bi-day-grid">${dayCards.join('')}</div>
+      </div>`;
+  }
+
+  // ─── SECTION 4: Client Mix ────────────────────────────────────
+  const mixEl = document.getElementById('bk-client-mix');
+  if (mixEl) {
+    // Build first-seen map
+    const firstSeenMap = {};
+    allSessions.forEach(s => {
+      if (!firstSeenMap[s.client] || s.date < firstSeenMap[s.client]) firstSeenMap[s.client] = s.date;
+    });
+    const thisWeekClients = [...new Set(weekSessions.map(s => s.client))];
+    const newThisWeek     = thisWeekClients.filter(c => firstSeenMap[c] >= weekDays[0]).length;
+    const round2          = weekSessions.filter(s => s.round === 2).length;
+    const round3plus      = weekSessions.filter(s => (s.round || 0) >= 3).length;
+    const packages        = weekSessions.filter(s => (s.tags || []).some(t => ['package','pkg','plan'].includes(t))).length;
+    const distWeek        = weekSessions.filter(s => (s.tags || []).includes('distance')).length;
+    const inPersonWeek    = weekSessions.filter(s => (s.tags || []).includes('inPerson') || (s.tags || []).includes('in-person')).length;
+    const referrals       = Object.values(crm).filter(c => c.contactInfo && c.contactInfo.referralSource && c.contactInfo.referralSource.trim()).length;
+
+    const cells = [
+      ['New Clients This Week', newThisWeek],
+      ['Round 2',               round2],
+      ['Round 3+',              round3plus],
+      ['Package Clients',       packages],
+      ['Distance Sessions',     distWeek],
+      ['In-Person Sessions',    inPersonWeek],
+      ['Referrals on File',     referrals],
+    ];
+
+    mixEl.innerHTML = `
+      <div class="bi-section">
+        <div class="bi-section-title">Client Mix — This Week</div>
+        <div class="bi-mix-grid">
+          ${cells.map(([lbl, val]) => `<div class="bi-mix-cell">
+            <span class="bi-mix-val">${val}</span>
+            <span class="bi-mix-lbl">${lbl}</span>
+          </div>`).join('')}
+        </div>
+      </div>`;
+  }
+
+  // ─── SECTION 5: Revenue Intelligence ─────────────────────────
+  const revEl = document.getElementById('bk-revenue');
+  if (revEl) {
+    // Build weekly revenue map
+    const wkRevMap = {};
+    allSessions.forEach(s => {
+      const wk = getWeekStart(s.date);
+      if (!wkRevMap[wk]) wkRevMap[wk] = { revenue: 0, sessions: 0 };
+      wkRevMap[wk].revenue  += s.price || 0;
+      wkRevMap[wk].sessions += 1;
+    });
+    const wkEntries  = Object.entries(wkRevMap);
+    const topWeekEntry = wkEntries.length ? wkEntries.reduce((a, b) => b[1].revenue > a[1].revenue ? b : a) : null;
+
+    // Client totals
+    const clientSpend = {};
+    allSessions.forEach(s => { clientSpend[s.client] = (clientSpend[s.client] || 0) + (s.price || 0); });
+    const topClientEntry = Object.entries(clientSpend).length
+      ? Object.entries(clientSpend).reduce((a, b) => b[1] > a[1] ? b : a)
+      : null;
+
+    const paidSessions = allSessions.filter(s => s.price > 0);
+    const avgVal = paidSessions.length ? Math.round(paidSessions.reduce((s, x) => s + x.price, 0) / paidSessions.length) : 0;
+    const wkAvgSessions = wkEntries.length ? allSessions.length / wkEntries.length : 0;
+    const projMonthly   = Math.round(wkAvgSessions * avgVal * 4);
+
+    const cards = [
+      { eyebrow: 'Highest Paying Week',    val: topWeekEntry ? '$'+topWeekEntry[1].revenue : '—', sub: topWeekEntry ? 'Week of '+topWeekEntry[0] : '' },
+      { eyebrow: 'Highest Paying Client',  val: topClientEntry ? '$'+topClientEntry[1] : '—',     sub: topClientEntry ? topClientEntry[0] : '' },
+      { eyebrow: 'Average Session Value',  val: '$'+avgVal,      sub: paidSessions.length+' paid sessions' },
+      { eyebrow: 'Projected Monthly',      val: '$'+projMonthly, sub: 'Based on current avg pace' },
+    ];
+
+    revEl.innerHTML = `
+      <div class="bi-section">
+        <div class="bi-section-title">Revenue Intelligence</div>
+        <div class="bi-rev-grid">
+          ${cards.map(c => `<div class="bi-rev-card">
+            <div class="bi-rev-eyebrow">${c.eyebrow}</div>
+            <div class="bi-rev-val">${c.val}</div>
+            <div class="bi-rev-sub">${c.sub}</div>
+          </div>`).join('')}
+        </div>
+      </div>`;
+  }
+
+  // ─── SECTION 6: Practitioner Load ────────────────────────────
+  const loadEl = document.getElementById('bk-load');
+  if (loadEl) {
+    const sessThisWeek = weekSessions.length + weekAppts.length;
+
+    // Consecutive work days (look back 14 days)
+    let consecutiveDays = 0;
+    for (let i = 0; i < 14; i++) {
+      const d = new Date(today + 'T12:00:00');
+      d.setDate(d.getDate() - i);
+      const ds = d.toISOString().slice(0, 10);
+      const hasWork = allSessions.some(s => s.date === ds) || allAppts.some(a => a.date === ds);
+      if (hasWork) consecutiveDays++;
+      else if (i > 0) break;
+    }
+
+    // Repeat client % this week
+    const wkUniqueClients  = [...new Set(weekSessions.map(s => s.client))];
+    const repeatThisWeek   = wkUniqueClients.filter(c => {
+      const allForClient = allSessions.filter(x => x.client === c);
+      return allForClient.length > 1;
+    }).length;
+    const repeatPct = wkUniqueClients.length ? Math.round(repeatThisWeek / wkUniqueClients.length * 100) : 0;
+
+    // Load score
+    let score = 0;
+    if (sessThisWeek > 15) score += 2; else if (sessThisWeek > 10) score += 1;
+    if (consecutiveDays >= 6) score += 2; else if (consecutiveDays >= 4) score += 1;
+    if (followUpDue >= 5) score += 2; else if (followUpDue >= 3) score += 1;
+    if (highRisk >= 3) score += 1;
+
+    const loadLevel = score >= 5 ? ['🔴 Overloaded', '#ee7070', '#ee7070']
+                    : score >= 3 ? ['🟡 Heavy',      '#f8e090', '#f8a84b']
+                    :              ['🟢 Normal',      '#22c98a', '#22c98a'];
+
+    loadEl.innerHTML = `
+      <div class="bi-section">
+        <div class="bi-section-title">Practitioner Load</div>
+        <div class="bi-load-wrap">
+          <div class="bi-load-score">
+            <div class="bi-load-dot" style="background:${loadLevel[1]};box-shadow:0 0 10px ${loadLevel[2]}66"></div>
+            <span class="bi-load-label">${loadLevel[0]}</span>
+          </div>
+          <div class="bi-load-metrics">
+            <div class="bi-load-metric"><span class="bi-load-metric-lbl">Sessions This Week</span><span class="bi-load-metric-val" style="color:${sessThisWeek>15?'#ee7070':sessThisWeek>10?'#f8a84b':'#22c98a'}">${sessThisWeek}</span></div>
+            <div class="bi-load-metric"><span class="bi-load-metric-lbl">Consecutive Work Days</span><span class="bi-load-metric-val" style="color:${consecutiveDays>=6?'#ee7070':consecutiveDays>=4?'#f8a84b':'#22c98a'}">${consecutiveDays}</span></div>
+            <div class="bi-load-metric"><span class="bi-load-metric-lbl">Repeat Clients</span><span class="bi-load-metric-val">${repeatPct}%</span></div>
+            <div class="bi-load-metric"><span class="bi-load-metric-lbl">Follow-Ups Pending</span><span class="bi-load-metric-val" style="color:${followUpDue>=5?'#ee7070':followUpDue>=2?'#f8a84b':'#dddaee'}">${followUpDue}</span></div>
+            <div class="bi-load-metric"><span class="bi-load-metric-lbl">High-Risk Clients</span><span class="bi-load-metric-val" style="color:${highRisk>=3?'#ee7070':highRisk>=1?'#f8a84b':'#dddaee'}">${highRisk}</span></div>
+          </div>
+        </div>
+      </div>`;
+  }
 }
 
 // ── CLIENT ROSTER ───────────────────────────────────────────
@@ -1879,17 +2229,56 @@ function calSelectDay(dateStr, inMonth) {
     ? REA_DATA.sessions.filter(function(s){ return s.date === dateStr; })
     : [];
   var apts = getAppts().filter(function(a){ return a.date === dateStr; });
+  var activeApts = apts.filter(function(a){ return a.status !== 'cancelled'; });
+
+  // ── Day summary bar ───────────────────────────────────────────
+  var totalClients  = sessions.length + activeApts.length;
+  var dayRevenue    = sessions.reduce(function(s,x){ return s+(x.price||0); }, 0)
+                   + activeApts.reduce(function(s,a){ return s+(a.price||0); }, 0);
+  var newCount      = sessions.filter(function(s){ return isFirstTimeSessions(s.client, s.date); }).length;
+  var returning     = sessions.length - newCount;
+  var distCount     = sessions.filter(function(s){ return (s.tags||[]).includes('distance'); }).length;
+  var inPCount      = sessions.filter(function(s){ return (s.tags||[]).includes('inPerson')||(s.tags||[]).includes('in-person'); }).length;
+  var cancelledApts = apts.filter(function(a){ return a.status === 'cancelled'; }).length;
+  var followDue     = sessions.filter(function(s){
+    var sd = new Date(s.date+'T12:00:00'), now = new Date();
+    var diffDays = Math.floor((now - sd)/(1000*60*60*24));
+    return diffDays >= 1 && diffDays <= 3 && (s.round||1) <= 2;
+  }).length;
+
+  var summaryItems = [
+    [totalClients, 'Clients'],
+    ['$'+dayRevenue, 'Revenue'],
+    [newCount, 'New'],
+    [returning, 'Returning'],
+  ];
+  if (distCount)     summaryItems.push([distCount, 'Distance']);
+  if (inPCount)      summaryItems.push([inPCount, 'In-Person']);
+  if (cancelledApts) summaryItems.push([cancelledApts, 'Cancelled']);
+  if (followDue)     summaryItems.push([followDue, 'Follow-Up Due']);
+
+  var summaryHtml = totalClients > 0
+    ? '<div class="cal-day-summary">'
+        + summaryItems.map(function(item){
+            return '<div class="cal-day-summary-item">'
+              + '<span class="cal-day-summary-val">' + item[0] + '</span>'
+              + '<span class="cal-day-summary-lbl">' + item[1] + '</span>'
+              + '</div>';
+          }).join('')
+        + '</div>'
+    : '';
 
   if (!sessions.length && !apts.length) {
-    listEl.innerHTML = '<p class="cal-no-sessions">No sessions logged on this day — use "+ Add Appointment" to add one.</p>';
+    listEl.innerHTML = summaryHtml + '<p class="cal-no-sessions">No sessions logged on this day — use "+ Add Appointment" to add one.</p>';
   } else {
-    renderCalDayList(dateStr, sessions, apts, null);
+    listEl.innerHTML = summaryHtml;
+    renderCalDayList(dateStr, sessions, apts, null, true);
   }
   panel.classList.add('open');
   panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
-function renderCalDayList(dateStr, sessions, apts, openKey) {
+function renderCalDayList(dateStr, sessions, apts, openKey, append) {
   var listEl = document.getElementById('calDayList');
   if (!listEl) return;
 
@@ -1974,7 +2363,11 @@ function renderCalDayList(dateStr, sessions, apts, openKey) {
     }
   });
 
-  listEl.innerHTML = html || '<p style="font-size:14px;color:#dddaee88;font-style:italic;padding:8px 0">No sessions on this day.</p>';
+  if (append) {
+    listEl.innerHTML += html || '';
+  } else {
+    listEl.innerHTML = html || '<p style="font-size:14px;color:#dddaee88;font-style:italic;padding:8px 0">No sessions on this day.</p>';
+  }
 }
 
 function calToggleClient(dateStr, idx, type) {
