@@ -174,6 +174,26 @@ body{background:#04020e;color:#f0ecff;font-family:'EB Garamond',serif;min-height
 .appt-form-wrap label,.form-lbl{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.38em;color:#e8b84b88;text-transform:uppercase;display:block;margin-bottom:7px}
 .appt-input{width:100%;background:#04020e;border:1px solid #e8b84b1a;color:#f0ecff;font-family:'EB Garamond',serif;font-size:16px;padding:11px 14px;box-sizing:border-box;border-radius:2px;transition:border-color .2s}
 .appt-input:focus{outline:none;border-color:#e8b84b77;background:#0d0820}
+/* ── CANCEL / RESCHEDULE PANELS ── */
+.appt-action-panel{background:#04020e;border:1px solid #e8b84b1a;border-top:none;padding:18px 20px 20px;margin-top:-6px;margin-bottom:8px}
+.appt-action-panel.cancel-panel{border-color:#ee707033}
+.appt-action-panel.reschedule-panel{border-color:#9b7fe844}
+.appt-action-panel .lbl{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.42em;color:#e8b84b88;text-transform:uppercase;display:block;margin-bottom:7px;margin-top:14px}
+.appt-action-panel .lbl:first-child{margin-top:0}
+.appt-action-panel select,.appt-action-panel input,.appt-action-panel textarea{background:#0a0612;border:1px solid #e8b84b1a;color:#f0ecff;font-family:'EB Garamond',serif;font-size:16px;padding:10px 14px;width:100%;box-sizing:border-box;border-radius:2px;transition:border-color .2s}
+.appt-action-panel select:focus,.appt-action-panel input:focus,.appt-action-panel textarea:focus{outline:none;border-color:#e8b84b66;background:#0d0820}
+.appt-action-panel textarea{resize:vertical;min-height:72px;line-height:1.6}
+.appt-action-panel .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.appt-action-btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid #e8b84b0f}
+.btn-cancel-confirm{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;text-transform:uppercase;padding:8px 18px;border:1px solid #ee707077;color:#ee7070;background:transparent;cursor:pointer;transition:all .2s}
+.btn-cancel-confirm:hover{background:#ee707022;border-color:#ee7070}
+/* cancellations log */
+.cancel-log-card{padding:14px 18px;border-left:4px solid #ee707055;background:#ee707008;margin-bottom:6px;border-radius:0 3px 3px 0}
+.cancel-log-date{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.28em;color:#ee7070bb;text-transform:uppercase;margin-bottom:3px}
+.cancel-log-client{font-family:'Cinzel',serif;font-size:15px;color:#f0ecff;margin-bottom:4px}
+.cancel-log-meta{font-family:'EB Garamond',serif;font-size:14px;color:#dddaee88;line-height:1.5}
+.cancel-log-reason{font-family:'EB Garamond',serif;font-size:14px;color:#ee7070aa;font-style:italic;margin-top:4px}
+.reschedule-tag{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;color:#9b7fe8cc;background:#9b7fe814;border:1px solid #9b7fe833;padding:2px 8px;display:inline-block;margin-top:5px;text-transform:uppercase}
 /* ── BOOKING SECTION SPACING ── */
 .booking-section{margin-bottom:36px}
 .booking-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px}
@@ -786,6 +806,15 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#d
         </div>
       </div>
     </div>
+
+    <!-- CANCELLATIONS LOG -->
+    <div class="booking-section">
+      <div class="section-title" style="color:#ee7070bb">Cancellation Log</div>
+      <div id="cancellationLog">
+        <p class="cal-no-sessions">No cancellations on record.</p>
+      </div>
+    </div>
+
   </div>
 
   <!-- ENVIRONMENT TAB -->
@@ -869,7 +898,7 @@ function showTab(name) {
   if (tc) { tc.style.display='block'; tc.classList.add('active'); }
   // Tab-specific renders
   if (name === 'environment') { try { renderTodayEnvCard(); } catch(e){} try { renderEnvLog(); } catch(e){} try { renderPatterns(); } catch(e){} }
-  if (name === 'booking')     { try { renderCal(); renderUpcoming(); renderWaitlist(); updateCapacityStats(); } catch(e){} }
+  if (name === 'booking')     { try { renderCal(); renderUpcoming(); renderWaitlist(); updateCapacityStats(); renderCancellationLog(); } catch(e){} }
 }
 
 function approveReview(id) {
@@ -1727,33 +1756,184 @@ function renderUpcoming() {
   const pastSection     = appts.filter(a => a.date <  today);
 
   function card(a) {
-    const isToday   = a.date === today;
-    const isPast    = a.date < today;
+    const isToday    = a.date === today;
+    const isPast     = a.date < today;
     const isConflict = conflictSet.has(a.id);
     const cls = isConflict ? 'conflict' : isToday ? 'today' : isPast ? 'past' : '';
-    const timeLabel = a.time ? ` · ${a.time}` : '';
-    const durLabel  = a.dur  ? ` · ${a.dur} min` : '';
+    const timeLabel  = a.time ? ` · ${a.time}` : '';
+    const durLabel   = a.dur  ? ` · ${a.dur} min` : '';
     const gcalSynced = a.gcalId ? '<span style="color:#22c98a77;font-size:11px;margin-left:8px">✓ Google Cal</span>' : '';
+    const reschedTag = a.rescheduleHistory && a.rescheduleHistory.length
+      ? `<span class="reschedule-tag">↺ Rescheduled ${a.rescheduleHistory.length}×</span>` : '';
     return `<div class="appt-card ${cls}" id="apptcard_${a.id}">
       <div style="flex:1">
         <div class="appt-date">${a.date}${timeLabel}${durLabel}${isToday?' · <span style="color:#22c98acc">Today</span>':''}${gcalSynced}</div>
         <div class="appt-client">${a.client}</div>
         <div class="appt-meta">${a.service||''}</div>
-        ${a.notes ? `<div style="font-size:14px;color:#dddaeecc;font-style:italic;margin-top:4px">${a.notes}</div>` : ''}
+        ${a.notes ? `<div style="font-family:'EB Garamond',serif;font-size:14px;color:#dddaeecc;font-style:italic;margin-top:4px">${a.notes}</div>` : ''}
         ${isConflict ? '<div class="conflict-tag">⚠ Time Conflict</div>' : ''}
+        ${reschedTag}
         <div id="edit_${a.id}"></div>
       </div>
-      <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
-        <button class="action-btn view" style="padding:4px 10px;font-size:10px;white-space:nowrap" onclick="openEditAppt(${a.id})">✎ Edit</button>
-        <button class="action-btn reject" style="padding:4px 10px;font-size:11px;white-space:nowrap" onclick="deleteAppt(${a.id})">✕</button>
+      <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;flex-shrink:0">
+        <button class="action-btn view" style="padding:5px 12px;font-size:10px;white-space:nowrap" onclick="openEditAppt(${a.id})">✎ Edit</button>
+        <button class="action-btn approve" style="padding:5px 12px;font-size:10px;white-space:nowrap;background:#9b7fe811;border-color:#9b7fe844;color:#9b7fe8cc" onclick="openReschedulePanel(${a.id})">↺ Reschedule</button>
+        <button class="action-btn reject" style="padding:5px 12px;font-size:10px;white-space:nowrap" onclick="openCancelPanel(${a.id})">✕ Cancel</button>
       </div>
-    </div>`;
+    </div>
+    <div id="actionpanel_${a.id}" style="display:none"></div>`;
   }
 
   let html = '';
   if (upcomingSection.length) html += upcomingSection.map(card).join('');
   if (pastSection.length) html += `<div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:#e8b84b55;text-transform:uppercase;margin:16px 0 8px">Past</div>`+pastSection.slice().reverse().map(card).join('');
   el.innerHTML = html || '<p style="color:#dddaeecc;font-style:italic">No appointments logged.</p>';
+}
+
+// ── CANCELLATIONS ────────────────────────────────────────────────────────────
+function getCancellations() {
+  try { return JSON.parse(localStorage.getItem('rea_cancellations')||'[]'); } catch(e) { return []; }
+}
+function saveCancellations(arr) {
+  try { localStorage.setItem('rea_cancellations', JSON.stringify(arr)); } catch(e) {}
+}
+
+const CANCEL_REASONS = [
+  'Client cancelled — personal',
+  'Client cancelled — scheduling conflict',
+  'Client cancelled — illness',
+  'Client no-show',
+  'Practitioner rescheduled',
+  'Practitioner cancelled — emergency',
+  'Mutual reschedule',
+  'Other'
+];
+
+function openCancelPanel(id) {
+  // Close any other open panels first
+  document.querySelectorAll('[id^="actionpanel_"]').forEach(el => { if (el.id !== 'actionpanel_'+id) el.style.display='none'; });
+  const el = document.getElementById('actionpanel_'+id);
+  if (!el) return;
+  if (el.style.display === 'block' && el.dataset.type === 'cancel') { el.style.display='none'; return; }
+  const a = getAppts().find(x => x.id === id);
+  if (!a) return;
+  el.dataset.type = 'cancel';
+  el.style.display = 'block';
+  el.innerHTML = `<div class="appt-action-panel cancel-panel">
+    <span class="lbl">Reason for Cancellation</span>
+    <select id="cancelReason_${id}">
+      ${CANCEL_REASONS.map(r => `<option value="${r}">${r}</option>`).join('')}
+    </select>
+    <span class="lbl">Notes (optional)</span>
+    <textarea id="cancelNotes_${id}" placeholder="Any additional context — client communication, rebooking intent, etc."></textarea>
+    <div class="appt-action-btns">
+      <button class="btn-cancel-confirm" onclick="confirmCancel(${id})">Confirm Cancellation</button>
+      <button class="action-btn reject" style="font-size:10px;padding:5px 12px" onclick="document.getElementById('actionpanel_${id}').style.display='none'">Close</button>
+    </div>
+  </div>`;
+}
+
+function confirmCancel(id) {
+  const a = getAppts().find(x => x.id === id);
+  if (!a) return;
+  const reason = (document.getElementById('cancelReason_'+id)||{}).value || 'No reason given';
+  const notes  = (document.getElementById('cancelNotes_'+id)||{}).value  || '';
+  const record = Object.assign({}, a, {
+    cancelledAt: new Date().toISOString().slice(0,10),
+    cancelReason: reason,
+    cancelNotes: notes
+  });
+  saveCancellations([record, ...getCancellations()]);
+  saveAppts(getAppts().filter(x => x.id !== id));
+  renderUpcoming();
+  renderCancellationLog();
+  updateCapacityStats();
+  renderCal();
+}
+
+function openReschedulePanel(id) {
+  document.querySelectorAll('[id^="actionpanel_"]').forEach(el => { if (el.id !== 'actionpanel_'+id) el.style.display='none'; });
+  const el = document.getElementById('actionpanel_'+id);
+  if (!el) return;
+  if (el.style.display === 'block' && el.dataset.type === 'reschedule') { el.style.display='none'; return; }
+  const a = getAppts().find(x => x.id === id);
+  if (!a) return;
+  el.dataset.type = 'reschedule';
+  el.style.display = 'block';
+  el.innerHTML = `<div class="appt-action-panel reschedule-panel">
+    <div class="row2">
+      <div>
+        <span class="lbl">New Date</span>
+        <input type="date" id="reschedDate_${id}" value="${a.date||''}" />
+      </div>
+      <div>
+        <span class="lbl">New Time</span>
+        <input type="time" id="reschedTime_${id}" value="${a.time||''}" />
+      </div>
+    </div>
+    <span class="lbl">Reason for Rescheduling</span>
+    <select id="reschedReason_${id}">
+      <option>Client requested reschedule</option>
+      <option>Practitioner initiated</option>
+      <option>Mutual agreement</option>
+      <option>Other</option>
+    </select>
+    <span class="lbl">Notes (optional)</span>
+    <textarea id="reschedNotes_${id}" placeholder="What changed and why?"></textarea>
+    <div class="appt-action-btns">
+      <button class="action-btn approve" onclick="confirmReschedule(${id})">Save New Date</button>
+      <button class="action-btn reject" style="font-size:10px;padding:5px 12px" onclick="document.getElementById('actionpanel_${id}').style.display='none'">Close</button>
+    </div>
+  </div>`;
+}
+
+function confirmReschedule(id) {
+  const appts = getAppts();
+  const idx   = appts.findIndex(x => x.id === id);
+  if (idx < 0) return;
+  const a = appts[idx];
+  const newDate   = (document.getElementById('reschedDate_'+id)||{}).value;
+  const newTime   = (document.getElementById('reschedTime_'+id)||{}).value;
+  const reason    = (document.getElementById('reschedReason_'+id)||{}).value || '';
+  const notes     = (document.getElementById('reschedNotes_'+id)||{}).value  || '';
+  if (!newDate) { alert('Please enter a new date.'); return; }
+  // Log the history entry
+  if (!a.rescheduleHistory) a.rescheduleHistory = [];
+  a.rescheduleHistory.push({
+    originalDate: a.date,
+    originalTime: a.time || '',
+    newDate, newTime,
+    reason, notes,
+    reschedAt: new Date().toISOString().slice(0,10)
+  });
+  a.date = newDate;
+  if (newTime) a.time = newTime;
+  saveAppts(appts);
+  renderUpcoming();
+  updateCapacityStats();
+  renderCal();
+}
+
+function renderCancellationLog() {
+  const el = document.getElementById('cancellationLog');
+  if (!el) return;
+  const list = getCancellations();
+  if (!list.length) {
+    el.innerHTML = '<p class="cal-no-sessions">No cancellations on record.</p>';
+    return;
+  }
+  el.innerHTML = list.map(c => {
+    const histLines = (c.rescheduleHistory||[]).map(h =>
+      `<div style="font-size:13px;color:#9b7fe888;margin-top:2px">↺ Originally ${h.originalDate}${h.originalTime?' at '+h.originalTime:''}</div>`
+    ).join('');
+    return `<div class="cancel-log-card">
+      <div class="cancel-log-date">Cancelled ${c.cancelledAt||'—'} · Original: ${c.date||'—'}${c.time?' at '+c.time:''}</div>
+      <div class="cancel-log-client">${c.client||'—'}</div>
+      <div class="cancel-log-meta">${[c.service, c.dur ? c.dur+' min' : ''].filter(Boolean).join(' · ')}</div>
+      <div class="cancel-log-reason">${c.cancelReason||''}${c.cancelNotes ? ' — '+c.cancelNotes : ''}</div>
+      ${histLines}
+    </div>`;
+  }).join('');
 }
 
 // ── GOOGLE CALENDAR ──────────────────────────────────────────────────────────
@@ -2402,6 +2582,7 @@ function initDashboard() {
   renderUpcoming();
   renderWaitlist();
   updateCapacityStats();
+  try { renderCancellationLog(); } catch(e) {}
   try { populateMoonPhases(); } catch(e) { console.error('moonPhases',e); }
   try { renderTodayEnvCard(); } catch(e) { console.error('renderTodayEnvCard',e); }
   try { renderEnvLog(); } catch(e) { console.error('renderEnvLog',e); }
