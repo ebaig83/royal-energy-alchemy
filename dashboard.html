@@ -136,8 +136,19 @@ body{background:#04020e;color:#f0ecff;font-family:'EB Garamond',serif;min-height
 .cal-day-panel{border-top:1px solid #e8b84b1a;padding:16px 18px;display:none}
 .cal-day-panel.open{display:block}
 .cal-day-panel-title{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;color:#e8b84b99;text-transform:uppercase;margin-bottom:10px}
-.cal-session-row{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border-left:2px solid #e8b84b44;background:#e8b84b06;margin-bottom:5px;font-size:14px}
+.cal-session-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-left:3px solid #e8b84b44;background:#e8b84b06;margin-bottom:6px;cursor:pointer;transition:background .15s,border-color .15s}
+.cal-session-row:hover{background:#e8b84b0e;border-left-color:#e8b84baa}
 .cal-session-row.appt-row{border-left-color:#22c98a66;background:#22c98a06}
+.cal-session-row.appt-row:hover{background:#22c98a0e;border-left-color:#22c98aaa}
+.cal-session-row.open-row{border-left-color:#e8b84bcc;background:#e8b84b0e}
+.cal-client-panel{background:#0a0612;border:1px solid #e8b84b22;border-top:none;padding:16px 16px 18px;margin-bottom:6px;margin-top:-6px}
+.cal-client-panel .lbl{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.38em;color:#e8b84b77;text-transform:uppercase;display:block;margin-bottom:5px;margin-top:12px}
+.cal-client-panel .lbl:first-child{margin-top:0}
+.cal-client-panel input,.cal-client-panel select,.cal-client-panel textarea{background:#04020e;border:1px solid #e8b84b22;color:#f0ecff;font-family:'EB Garamond',serif;font-size:15px;padding:9px 12px;width:100%;transition:border-color .2s}
+.cal-client-panel input:focus,.cal-client-panel select:focus,.cal-client-panel textarea:focus{outline:none;border-color:#e8b84b66}
+.cal-client-panel textarea{resize:vertical;min-height:72px}
+.cal-client-panel .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cal-panel-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
 /* ── APPOINTMENT CARDS ── */
 .appt-card{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:14px 16px;border-left:3px solid #e8b84b44;background:#e8b84b06;margin-bottom:8px}
 .appt-card.today{border-left-color:#22c98aaa;background:#22c98a08}
@@ -1418,46 +1429,202 @@ function padD(d) { return String(d).padStart(2,'0'); }
 
 function calSelectDay(dateStr, inMonth) {
   window._calOpenDay = dateStr;
-  var panel = document.getElementById('calDayPanel');
+  window._calOpenClient = null;
+
+  var panel   = document.getElementById('calDayPanel');
   var titleEl = document.getElementById('calDayTitle');
   var listEl  = document.getElementById('calDayList');
   if (!panel || !titleEl || !listEl) return;
 
-  // Parse date for display
   var parts = dateStr.split('-');
-  var d = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]));
-  var dows = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  var mons = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  titleEl.textContent = dows[d.getDay()] + ', ' + mons[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
+  var d     = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]));
+  var dows  = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var mons  = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  titleEl.innerHTML = dows[d.getDay()] + ', ' + mons[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear()
+    + ' <button class="action-btn approve" style="font-size:10px;padding:3px 10px;margin-left:14px" onclick="calAddApptOnDay(\''+dateStr+'\')">+ Add Appointment</button>';
 
-  var sessions = [];
-  if (typeof REA_DATA !== 'undefined') {
-    sessions = REA_DATA.sessions.filter(function(s) { return s.date === dateStr; });
-  }
-  var apts = getAppts().filter(function(a) { return a.date === dateStr; });
+  var sessions = typeof REA_DATA !== 'undefined'
+    ? REA_DATA.sessions.filter(function(s){ return s.date === dateStr; })
+    : [];
+  var apts = getAppts().filter(function(a){ return a.date === dateStr; });
 
   if (!sessions.length && !apts.length) {
-    listEl.innerHTML = '<p style="font-size:14px;color:#dddaee88;font-style:italic;padding:4px 0">No sessions on this day.</p>';
+    listEl.innerHTML = '<p style="font-size:14px;color:#dddaee88;font-style:italic;padding:8px 0 4px">No sessions logged on this day. Use "+ Add Appointment" to add one.</p>';
   } else {
-    var rows = '';
-    sessions.forEach(function(s) {
-      rows += '<div class="cal-session-row">'
-            + '<span style="font-family:\'Cinzel\',serif;font-size:13px;color:#f0ecff">' + s.client + '</span>'
-            + '<span style="font-size:13px;color:#e8b84b99">' + (s.price > 0 ? '$'+s.price : (s.tags&&s.tags.includes('exchange')?'Exchange':'—')) + '</span>'
+    renderCalDayList(dateStr, sessions, apts, null);
+  }
+  panel.classList.add('open');
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function renderCalDayList(dateStr, sessions, apts, openKey) {
+  var listEl = document.getElementById('calDayList');
+  if (!listEl) return;
+
+  var html = '';
+
+  sessions.forEach(function(s, i) {
+    var key = 'sess_' + i;
+    var isOpen = openKey === key;
+    var priceStr = s.price > 0 ? '$' + s.price : (s.tags && s.tags.includes('exchange') ? 'Exchange' : '—');
+    var roundStr = s.round ? ' · R' + s.round : '';
+    var noteKey  = 'rea_sess_note_' + dateStr + '_' + i;
+    var savedNote = '';
+    try { savedNote = localStorage.getItem(noteKey) || s.notes || ''; } catch(e) { savedNote = s.notes || ''; }
+
+    html += '<div class="cal-session-row' + (isOpen ? ' open-row' : '') + '" onclick="calToggleClient(\'' + dateStr + '\',' + i + ',\'sess\')">'
+          + '<div>'
+          + '<span style="font-family:\'Cinzel\',serif;font-size:13px;color:#f0ecff">' + s.client + '</span>'
+          + '<span style="font-size:12px;color:#e8b84b66;margin-left:10px">' + roundStr.replace(' · ','') + '</span>'
+          + (savedNote && !isOpen ? '<span style="font-size:12px;color:#dddaee55;margin-left:8px;font-style:italic">✎ note</span>' : '')
+          + '</div>'
+          + '<div style="display:flex;align-items:center;gap:10px">'
+          + '<span style="font-family:\'Cinzel\',serif;font-size:12px;color:#e8b84b99">' + priceStr + '</span>'
+          + '<span style="font-size:11px;color:#e8b84b44">' + (isOpen ? '▲' : '▼') + '</span>'
+          + '</div>'
+          + '</div>';
+
+    if (isOpen) {
+      var tagsStr = s.tags ? s.tags.join(', ') : '';
+      html += '<div class="cal-client-panel">'
+            + '<div class="row2">'
+            + '<div><span class="lbl">Client</span><input id="calEd_client_' + key + '" value="' + (s.client||'').replace(/"/g,'&quot;') + '"></div>'
+            + '<div><span class="lbl">Price ($)</span><input type="number" id="calEd_price_' + key + '" value="' + (s.price||0) + '"></div>'
+            + '<div><span class="lbl">Round</span><select id="calEd_round_' + key + '">'
+            + [null,1,2,3,4,5].map(function(r){ return '<option value="'+(r||'')+'"'+(s.round===r?' selected':'')+'>'+(!r?'—':'Round '+r)+'</option>'; }).join('')
+            + '</select></div>'
+            + '<div><span class="lbl">Tags</span><input id="calEd_tags_' + key + '" value="' + tagsStr + '" placeholder="paid, exchange, distance…"></div>'
+            + '</div>'
+            + '<span class="lbl">Session Notes</span>'
+            + '<textarea id="calEd_notes_' + key + '" placeholder="What happened in this session? Energy observations, client response, what was cleared…">' + savedNote.replace(/</g,'&lt;') + '</textarea>'
+            + '<div class="cal-panel-actions">'
+            + '<button class="action-btn approve" onclick="calSaveSess(\'' + dateStr + '\',' + i + ',\'' + key + '\')">Save</button>'
+            + '<button class="action-btn reject" style="font-size:10px;padding:4px 10px" onclick="calToggleClient(\'' + dateStr + '\',' + i + ',\'sess\')">Close</button>'
+            + '</div>'
             + '</div>';
-    });
-    apts.forEach(function(a) {
-      rows += '<div class="cal-session-row appt-row">'
-            + '<div><span style="font-family:\'Cinzel\',serif;font-size:13px;color:#22c98acc">📅 ' + a.client + '</span>'
-            + (a.service ? '<span style="font-size:12px;color:#dddaee88;margin-left:8px">'+a.service+'</span>' : '')
-            + (a.time    ? '<span style="font-size:12px;color:#dddaee66;margin-left:6px">'+a.time+'</span>' : '') + '</div>'
-            + '<button class="action-btn view" style="font-size:10px;padding:3px 8px" onclick="openEditAppt('+a.id+');calSelectDay(\''+dateStr+'\',true)">✎ Edit</button>'
+    }
+  });
+
+  apts.forEach(function(a, i) {
+    var key = 'appt_' + a.id;
+    var isOpen = openKey === key;
+    html += '<div class="cal-session-row appt-row' + (isOpen ? ' open-row' : '') + '" onclick="calToggleClient(\'' + dateStr + '\',' + a.id + ',\'appt\')">'
+          + '<div>'
+          + '<span style="font-family:\'Cinzel\',serif;font-size:13px;color:#22c98acc">📅 ' + a.client + '</span>'
+          + (a.service ? '<span style="font-size:12px;color:#dddaee77;margin-left:8px">'+a.service+'</span>' : '')
+          + (a.time    ? '<span style="font-size:12px;color:#dddaee55;margin-left:6px">'+a.time+'</span>' : '')
+          + '</div>'
+          + '<span style="font-size:11px;color:#22c98a44">' + (isOpen ? '▲' : '▼') + '</span>'
+          + '</div>';
+
+    if (isOpen) {
+      html += '<div class="cal-client-panel">'
+            + '<div class="row2">'
+            + '<div><span class="lbl">Client</span><input id="calEd_ac_' + a.id + '" value="' + (a.client||'').replace(/"/g,'&quot;') + '"></div>'
+            + '<div><span class="lbl">Service</span><input id="calEd_as_' + a.id + '" value="' + (a.service||'').replace(/"/g,'&quot;') + '"></div>'
+            + '<div><span class="lbl">Time</span><input type="time" id="calEd_at_' + a.id + '" value="' + (a.time||'') + '"></div>'
+            + '<div><span class="lbl">Duration</span><select id="calEd_ad_' + a.id + '">'
+            + [30,60,90,120].map(function(v){ return '<option value="'+v+'"'+(a.dur==v?' selected':'')+'>'+v+' min</option>'; }).join('')
+            + '</select></div>'
+            + '</div>'
+            + '<span class="lbl">Notes</span>'
+            + '<textarea id="calEd_an_' + a.id + '" placeholder="Session notes, observations, follow-up needed…">' + (a.notes||'').replace(/</g,'&lt;') + '</textarea>'
+            + '<div class="cal-panel-actions">'
+            + '<button class="action-btn approve" onclick="calSaveAppt(' + a.id + ')">Save</button>'
+            + '<button class="action-btn reject" style="font-size:10px;padding:4px 10px;color:#ee7070" onclick="calDeleteAppt(' + a.id + ',\''+dateStr+'\')">Delete</button>'
+            + '<button class="action-btn reject" style="font-size:10px;padding:4px 10px" onclick="calToggleClient(\'' + dateStr + '\',' + a.id + ',\'appt\')">Close</button>'
+            + '</div>'
             + '</div>';
-    });
-    listEl.innerHTML = rows;
+    }
+  });
+
+  listEl.innerHTML = html || '<p style="font-size:14px;color:#dddaee88;font-style:italic;padding:8px 0">No sessions on this day.</p>';
+}
+
+function calToggleClient(dateStr, idx, type) {
+  var key = type === 'appt' ? 'appt_' + idx : 'sess_' + idx;
+  var currentOpen = window._calOpenClient;
+  window._calOpenClient = (currentOpen === key) ? null : key;
+
+  var sessions = typeof REA_DATA !== 'undefined'
+    ? REA_DATA.sessions.filter(function(s){ return s.date === dateStr; })
+    : [];
+  var apts = getAppts().filter(function(a){ return a.date === dateStr; });
+  renderCalDayList(dateStr, sessions, apts, window._calOpenClient);
+}
+
+function calSaveSess(dateStr, idx, key) {
+  // Save edits back into REA_DATA.sessions in memory + persist notes to localStorage
+  if (typeof REA_DATA === 'undefined') return;
+  var sessions = REA_DATA.sessions.filter(function(s){ return s.date === dateStr; });
+  var s = sessions[idx];
+  if (!s) return;
+
+  var clientEl = document.getElementById('calEd_client_' + key);
+  var priceEl  = document.getElementById('calEd_price_'  + key);
+  var roundEl  = document.getElementById('calEd_round_'  + key);
+  var tagsEl   = document.getElementById('calEd_tags_'   + key);
+  var notesEl  = document.getElementById('calEd_notes_'  + key);
+
+  if (clientEl) s.client = clientEl.value.trim();
+  if (priceEl)  s.price  = parseFloat(priceEl.value) || 0;
+  if (roundEl)  s.round  = parseInt(roundEl.value) || null;
+  if (tagsEl)   s.tags   = tagsEl.value.split(',').map(function(t){ return t.trim(); }).filter(Boolean);
+  if (notesEl) {
+    s.notes = notesEl.value;
+    try { localStorage.setItem('rea_sess_note_' + dateStr + '_' + idx, notesEl.value); } catch(e) {}
   }
 
-  panel.classList.add('open');
+  window._calOpenClient = null;
+  renderCalDayList(dateStr, REA_DATA.sessions.filter(function(s){ return s.date === dateStr; }), getAppts().filter(function(a){ return a.date === dateStr; }), null);
+  renderSessions();
+}
+
+function calSaveAppt(id) {
+  var appts = getAppts();
+  var idx   = appts.findIndex(function(a){ return a.id === id; });
+  if (idx < 0) return;
+  var a = appts[idx];
+  var clientEl = document.getElementById('calEd_ac_' + id);
+  var servEl   = document.getElementById('calEd_as_' + id);
+  var timeEl   = document.getElementById('calEd_at_' + id);
+  var durEl    = document.getElementById('calEd_ad_' + id);
+  var notesEl  = document.getElementById('calEd_an_' + id);
+  if (clientEl) a.client  = clientEl.value.trim();
+  if (servEl)   a.service = servEl.value.trim();
+  if (timeEl)   a.time    = timeEl.value;
+  if (durEl)    a.dur     = parseInt(durEl.value) || 60;
+  if (notesEl)  a.notes   = notesEl.value;
+  saveAppts(appts);
+  window._calOpenClient = null;
+  var dateStr = a.date;
+  var sessions = typeof REA_DATA !== 'undefined'
+    ? REA_DATA.sessions.filter(function(s){ return s.date === dateStr; })
+    : [];
+  renderCalDayList(dateStr, sessions, getAppts().filter(function(x){ return x.date === dateStr; }), null);
+  renderUpcoming(); updateCapacityStats(); renderCal();
+}
+
+function calDeleteAppt(id, dateStr) {
+  if (!confirm('Delete this appointment?')) return;
+  saveAppts(getAppts().filter(function(a){ return a.id !== id; }));
+  window._calOpenClient = null;
+  var sessions = typeof REA_DATA !== 'undefined'
+    ? REA_DATA.sessions.filter(function(s){ return s.date === dateStr; })
+    : [];
+  renderCalDayList(dateStr, sessions, getAppts().filter(function(a){ return a.date === dateStr; }), null);
+  renderUpcoming(); updateCapacityStats(); renderCal();
+}
+
+function calAddApptOnDay(dateStr) {
+  // Pre-fill the Add Appointment form with the selected date and scroll to it
+  var dateInput = document.getElementById('apptDate');
+  if (dateInput) { dateInput.value = dateStr; }
+  var wrap = document.getElementById('apptFormWrap');
+  if (wrap) {
+    wrap.style.display = 'block';
+    wrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
 }
 
 function deleteAppt(id) {
