@@ -114,6 +114,30 @@ body{background:#04020e;color:#f0ecff;font-family:'EB Garamond',serif;min-height
 .pattern-table tr:hover td{background:#e8b84b05}
 .pattern-hi{color:#ee7070;font-family:'Cinzel',serif}
 .pattern-lo{color:#22c98a99}
+/* ── CALENDAR ── */
+.cal-wrap{background:#0a0612;border:1px solid #e8b84b22;margin-bottom:24px}
+.cal-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #e8b84b1a}
+.cal-title{font-family:'Cinzel',serif;font-size:14px;letter-spacing:.3em;color:#f0ecff;text-transform:uppercase}
+.cal-nav{font-family:'Cinzel',serif;font-size:18px;color:#e8b84bcc;background:none;border:none;cursor:pointer;padding:2px 10px;transition:color .2s}
+.cal-nav:hover{color:#f0ecff}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);border-left:1px solid #e8b84b0f;border-top:1px solid #e8b84b0f}
+.cal-dow{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.3em;color:#e8b84b66;text-transform:uppercase;text-align:center;padding:8px 0;background:#04020e;border-right:1px solid #e8b84b0f;border-bottom:1px solid #e8b84b1a}
+.cal-cell{min-height:72px;border-right:1px solid #e8b84b0f;border-bottom:1px solid #e8b84b0f;padding:6px 7px;position:relative;vertical-align:top;cursor:default}
+.cal-cell.other-month{opacity:.3}
+.cal-cell.today-cell{background:#22c98a08}
+.cal-cell.has-sessions{cursor:pointer}
+.cal-cell.has-sessions:hover{background:#e8b84b07}
+.cal-day-num{font-family:'Cinzel',serif;font-size:11px;color:#e8b84b88;margin-bottom:4px}
+.cal-cell.today-cell .cal-day-num{color:#22c98a;font-weight:700}
+.cal-dot-row{display:flex;flex-wrap:wrap;gap:3px;margin-top:2px}
+.cal-dot{width:7px;height:7px;border-radius:50%;background:#e8b84b88;flex:0 0 auto;cursor:pointer}
+.cal-dot.appt{background:#22c98a99}
+.cal-count{font-family:'Cinzel',serif;font-size:9px;color:#e8b84b77;letter-spacing:.1em;margin-top:2px}
+.cal-day-panel{border-top:1px solid #e8b84b1a;padding:16px 18px;display:none}
+.cal-day-panel.open{display:block}
+.cal-day-panel-title{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;color:#e8b84b99;text-transform:uppercase;margin-bottom:10px}
+.cal-session-row{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border-left:2px solid #e8b84b44;background:#e8b84b06;margin-bottom:5px;font-size:14px}
+.cal-session-row.appt-row{border-left-color:#22c98a66;background:#22c98a06}
 /* ── APPOINTMENT CARDS ── */
 .appt-card{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:14px 16px;border-left:3px solid #e8b84b44;background:#e8b84b06;margin-bottom:8px}
 .appt-card.today{border-left-color:#22c98aaa;background:#22c98a08}
@@ -594,6 +618,21 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#d
   <!-- BOOKING TAB -->
   <div class="tab-content" id="tab-booking">
 
+    <!-- CALENDAR -->
+    <div class="section-title">Calendar</div>
+    <div class="cal-wrap">
+      <div class="cal-header">
+        <button class="cal-nav" onclick="calPrev()">‹</button>
+        <span class="cal-title" id="calTitle"></span>
+        <button class="cal-nav" onclick="calNext()">›</button>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+      <div class="cal-day-panel" id="calDayPanel">
+        <div class="cal-day-panel-title" id="calDayTitle"></div>
+        <div id="calDayList"></div>
+      </div>
+    </div>
+
     <!-- CAPACITY STATS -->
     <div class="section-title">Schedule Capacity — This Week</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1px;background:#e8b84b14;margin-bottom:16px">
@@ -804,7 +843,7 @@ function showTab(name) {
   if (tc) { tc.style.display='block'; tc.classList.add('active'); }
   // Tab-specific renders
   if (name === 'environment') { try { renderTodayEnvCard(); } catch(e){} try { renderEnvLog(); } catch(e){} try { renderPatterns(); } catch(e){} }
-  if (name === 'booking')     { try { renderUpcoming(); renderWaitlist(); updateCapacityStats(); } catch(e){} }
+  if (name === 'booking')     { try { renderCal(); renderUpcoming(); renderWaitlist(); updateCapacityStats(); } catch(e){} }
 }
 
 function approveReview(id) {
@@ -1281,10 +1320,149 @@ function saveAppt() {
   toggleApptForm();
   renderUpcoming();
   updateCapacityStats();
+  renderCal();
 }
+// ── CALENDAR ────────────────────────────────────────────────────────────────
+var _calYear  = new Date().getFullYear();
+var _calMonth = new Date().getMonth(); // 0-based
+
+function calPrev() { _calMonth--; if (_calMonth < 0) { _calMonth = 11; _calYear--; } renderCal(); }
+function calNext() { _calMonth++; if (_calMonth > 11) { _calMonth = 0;  _calYear++; } renderCal(); }
+
+function renderCal() {
+  var titleEl = document.getElementById('calTitle');
+  var gridEl  = document.getElementById('calGrid');
+  if (!titleEl || !gridEl) return;
+
+  var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  titleEl.textContent = months[_calMonth] + ' ' + _calYear;
+
+  // Build date → sessions map from REA_DATA
+  var sessMap = {};
+  if (typeof REA_DATA !== 'undefined') {
+    REA_DATA.sessions.forEach(function(s) {
+      if (!sessMap[s.date]) sessMap[s.date] = [];
+      sessMap[s.date].push({ label: s.client, sub: s.service || '', type: 'session', price: s.price, notes: s.notes });
+    });
+  }
+  // Overlay manual appointments from localStorage
+  var apptMap = {};
+  getAppts().forEach(function(a) {
+    if (!apptMap[a.date]) apptMap[a.date] = [];
+    apptMap[a.date].push({ label: a.client, sub: (a.service||'') + (a.time?' · '+a.time:''), type: 'appt', id: a.id });
+  });
+
+  var today = new Date().toISOString().slice(0,10);
+  var firstDay = new Date(_calYear, _calMonth, 1).getDay(); // 0=Sun
+  var daysInMonth = new Date(_calYear, _calMonth+1, 0).getDate();
+  var daysInPrev  = new Date(_calYear, _calMonth, 0).getDate();
+
+  var html = '';
+  // Day-of-week headers
+  ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(function(d) {
+    html += '<div class="cal-dow">' + d + '</div>';
+  });
+
+  var totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
+  for (var i = 0; i < totalCells; i++) {
+    var dayNum, dateStr, inMonth;
+    if (i < firstDay) {
+      dayNum = daysInPrev - firstDay + 1 + i;
+      dateStr = pad(_calYear, _calMonth === 0 ? _calYear-1 : _calYear) + '-' + padM(_calMonth === 0 ? 12 : _calMonth) + '-' + padD(dayNum);
+      inMonth = false;
+    } else if (i >= firstDay + daysInMonth) {
+      dayNum = i - firstDay - daysInMonth + 1;
+      dateStr = _calYear + '-' + padM(_calMonth+2 > 12 ? 1 : _calMonth+2) + '-' + padD(dayNum);
+      inMonth = false;
+    } else {
+      dayNum = i - firstDay + 1;
+      dateStr = _calYear + '-' + padM(_calMonth+1) + '-' + padD(dayNum);
+      inMonth = true;
+    }
+
+    var sessions = (sessMap[dateStr] || []);
+    var apts     = (apptMap[dateStr] || []);
+    var total    = sessions.length + apts.length;
+    var isToday  = dateStr === today;
+    var cls = [
+      !inMonth ? 'other-month' : '',
+      isToday  ? 'today-cell'  : '',
+      total    ? 'has-sessions' : ''
+    ].filter(Boolean).join(' ');
+
+    var dots = '';
+    // Show up to 5 session dots + appointment dots
+    var shown = Math.min(sessions.length, 5);
+    for (var d2 = 0; d2 < shown; d2++) dots += '<div class="cal-dot" title="'+sessions[d2].label+'"></div>';
+    if (sessions.length > 5) dots += '<div class="cal-dot" style="background:#e8b84b44"></div>';
+    for (var d3 = 0; d3 < Math.min(apts.length, 3); d3++) dots += '<div class="cal-dot appt" title="'+apts[d3].label+'"></div>';
+
+    var countLabel = total ? '<div class="cal-count">' + total + (total===1?' client':' clients') + '</div>' : '';
+
+    html += '<div class="cal-cell ' + cls + '" onclick="calSelectDay(\'' + dateStr + '\','+JSON.stringify(inMonth)+')">'
+          + '<div class="cal-day-num">' + dayNum + '</div>'
+          + (dots ? '<div class="cal-dot-row">' + dots + '</div>' : '')
+          + countLabel
+          + '</div>';
+  }
+
+  gridEl.innerHTML = html;
+
+  // Re-open the same day panel if one was open
+  if (window._calOpenDay) calSelectDay(window._calOpenDay, true);
+}
+
+function pad(y, altY) { return altY !== undefined ? String(altY) : String(y); }
+function padM(m) { return String(m).padStart(2,'0'); }
+function padD(d) { return String(d).padStart(2,'0'); }
+
+function calSelectDay(dateStr, inMonth) {
+  window._calOpenDay = dateStr;
+  var panel = document.getElementById('calDayPanel');
+  var titleEl = document.getElementById('calDayTitle');
+  var listEl  = document.getElementById('calDayList');
+  if (!panel || !titleEl || !listEl) return;
+
+  // Parse date for display
+  var parts = dateStr.split('-');
+  var d = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]));
+  var dows = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var mons = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  titleEl.textContent = dows[d.getDay()] + ', ' + mons[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
+
+  var sessions = [];
+  if (typeof REA_DATA !== 'undefined') {
+    sessions = REA_DATA.sessions.filter(function(s) { return s.date === dateStr; });
+  }
+  var apts = getAppts().filter(function(a) { return a.date === dateStr; });
+
+  if (!sessions.length && !apts.length) {
+    listEl.innerHTML = '<p style="font-size:14px;color:#dddaee88;font-style:italic;padding:4px 0">No sessions on this day.</p>';
+  } else {
+    var rows = '';
+    sessions.forEach(function(s) {
+      rows += '<div class="cal-session-row">'
+            + '<span style="font-family:\'Cinzel\',serif;font-size:13px;color:#f0ecff">' + s.client + '</span>'
+            + '<span style="font-size:13px;color:#e8b84b99">' + (s.price > 0 ? '$'+s.price : (s.tags&&s.tags.includes('exchange')?'Exchange':'—')) + '</span>'
+            + '</div>';
+    });
+    apts.forEach(function(a) {
+      rows += '<div class="cal-session-row appt-row">'
+            + '<div><span style="font-family:\'Cinzel\',serif;font-size:13px;color:#22c98acc">📅 ' + a.client + '</span>'
+            + (a.service ? '<span style="font-size:12px;color:#dddaee88;margin-left:8px">'+a.service+'</span>' : '')
+            + (a.time    ? '<span style="font-size:12px;color:#dddaee66;margin-left:6px">'+a.time+'</span>' : '') + '</div>'
+            + '<button class="action-btn view" style="font-size:10px;padding:3px 8px" onclick="openEditAppt('+a.id+');calSelectDay(\''+dateStr+'\',true)">✎ Edit</button>'
+            + '</div>';
+    });
+    listEl.innerHTML = rows;
+  }
+
+  panel.classList.add('open');
+}
+
 function deleteAppt(id) {
   saveAppts(getAppts().filter(a => a.id !== id));
-  renderUpcoming(); updateCapacityStats();
+  renderUpcoming(); updateCapacityStats(); renderCal();
 }
 
 function openEditAppt(id) {
@@ -1333,7 +1511,7 @@ function saveEditAppt(id) {
   appts[idx].service = document.getElementById('ed_service_'+id).value.trim();
   appts[idx].notes   = document.getElementById('ed_notes_'+id).value.trim();
   saveAppts(appts);
-  renderUpcoming(); updateCapacityStats();
+  renderUpcoming(); updateCapacityStats(); renderCal();
 }
 
 function renderUpcoming() {
