@@ -3438,14 +3438,30 @@ document.querySelectorAll('.reveal').forEach(r=>obs.observe(r));
 var _clientCalYear=new Date().getFullYear(), _clientCalMonth=new Date().getMonth();
 var _clientSelectedDate=null, _clientSlot1=null, _clientSlot2=null;
 
+var _publicSlotsCache=null;
+var _publicSlotsFetched=false;
 function getPublicSlots(){
-  var arr;try{arr=JSON.parse(localStorage.getItem('rea_available_slots')||'[]');}catch(e){arr=[];}
-  var today=new Date();today.setHours(0,0,0,0);
-  return arr.filter(function(s){
+  return (_publicSlotsCache||[]).filter(function(s){
     if(s.booked)return false;
     var d=new Date(s.date+'T12:00');
+    var today=new Date();today.setHours(0,0,0,0);
     return d>=today;
   });
+}
+function fetchPublicSlots(cb){
+  fetch('https://raw.githubusercontent.com/ebaig83/royal-energy-alchemy/main/website/slots.json?_='+Date.now())
+    .then(function(r){return r.json();})
+    .then(function(arr){
+      _publicSlotsCache=Array.isArray(arr)?arr:[];
+      _publicSlotsFetched=true;
+      if(cb)cb();
+    })
+    .catch(function(){
+      /* fallback to localStorage if fetch fails */
+      try{_publicSlotsCache=JSON.parse(localStorage.getItem('rea_available_slots')||'[]');}catch(e){_publicSlotsCache=[];}
+      _publicSlotsFetched=true;
+      if(cb)cb();
+    });
 }
 
 function clientCalPrev(){_clientCalMonth--;if(_clientCalMonth<0){_clientCalMonth=11;_clientCalYear--;}renderClientCal();}
@@ -3560,16 +3576,16 @@ function clearClientSlots(){
 }
 
 function loadBookingSlots(){
-  var slots=getPublicSlots();
-  var banner=document.getElementById('no-slots-banner');
-  var calWrap=document.getElementById('clientCalGrid');
-  if(!slots.length){
-    if(banner)banner.style.display='block';
-    if(calWrap)calWrap.parentNode.parentNode.style.opacity='.4';
-  } else {
-    if(banner)banner.style.display='none';
-  }
-  renderClientCal();
+  fetchPublicSlots(function(){
+    var slots=getPublicSlots();
+    var banner=document.getElementById('no-slots-banner');
+    if(!slots.length){
+      if(banner)banner.style.display='block';
+    } else {
+      if(banner)banner.style.display='none';
+    }
+    renderClientCal();
+  });
 }
 loadBookingSlots();
 selectPayMethod("square");

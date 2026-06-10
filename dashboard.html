@@ -5393,7 +5393,28 @@ var _slotPickerDate=null;
 var SLOT_TIMES=['7:00 AM','7:30 AM','8:00 AM','8:30 AM','9:00 AM','9:30 AM','10:00 AM','10:30 AM','11:00 AM','11:30 AM','12:00 PM','12:30 PM','1:00 PM','1:30 PM','2:00 PM','2:30 PM','3:00 PM','3:30 PM','4:00 PM','4:30 PM','5:00 PM','5:30 PM','6:00 PM','6:30 PM','7:00 PM','7:30 PM','8:00 PM'];
 
 function getSlots(){return JSON.parse(localStorage.getItem('rea_available_slots')||'[]');}
-function saveSlots(arr){localStorage.setItem('rea_available_slots',JSON.stringify(arr));}
+function pushSlotsToGitHub(arr){
+  var st=getSettings();
+  var token=st.githubToken||'';
+  if(!token)return; // silently skip if not configured
+  var owner='ebaig83', repo='royal-energy-alchemy', path='website/slots.json';
+  var apiUrl='https://api.github.com/repos/'+owner+'/'+repo+'/contents/'+path;
+  var content=btoa(unescape(encodeURIComponent(JSON.stringify(arr,null,2))));
+  // get current SHA first
+  fetch(apiUrl,{headers:{'Authorization':'token '+token,'Accept':'application/vnd.github.v3+json'}})
+    .then(function(r){return r.json();})
+    .then(function(meta){
+      return fetch(apiUrl,{
+        method:'PUT',
+        headers:{'Authorization':'token '+token,'Content-Type':'application/json','Accept':'application/vnd.github.v3+json'},
+        body:JSON.stringify({message:'Update available slots',content:content,sha:meta.sha||undefined})
+      });
+    })
+    .then(function(r){return r.json();})
+    .then(function(){showToast('Slots synced to website ✓','#44cc88');})
+    .catch(function(e){console.warn('GitHub slot sync failed:',e);});
+}
+function saveSlots(arr){localStorage.setItem('rea_available_slots',JSON.stringify(arr));pushSlotsToGitHub(arr);}
 
 function slotCalPrev(){_slotCalMonth--;if(_slotCalMonth<0){_slotCalMonth=11;_slotCalYear--;}renderSlotCal();}
 function slotCalNext(){_slotCalMonth++;if(_slotCalMonth>11){_slotCalMonth=0;_slotCalYear++;}renderSlotCal();}
@@ -5766,7 +5787,8 @@ function saveSettings(){
     zelle:(document.getElementById('st-zelle')||{}).value||'',
     myemail:(document.getElementById('st-myemail')||{}).value||'',
     video:(document.getElementById('st-video')||{}).value||'',
-    netlifyToken:(document.getElementById('st-netlify-token')||{}).value||''
+    netlifyToken:(document.getElementById('st-netlify-token')||{}).value||'',
+    githubToken:(document.getElementById('settGithubToken')||{}).value||''
   };
   localStorage.setItem('rea_settings',JSON.stringify(s));
   // also save as pay_handles for website to read
@@ -5966,4 +5988,9 @@ function pullNetlifySubmissions(){
 
 </script>
 </body>
-</html>
+</html><div style="margin-bottom:18px">
+              <label style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:#e8b84b88;text-transform:uppercase;display:block;margin-bottom:6px">GITHUB TOKEN (for slot sync)</label>
+              <input id="settGithubToken" type="password" placeholder="ghp_xxxxxxxxxxxx" style="width:100%;padding:10px 14px;background:#0e0c22;border:1px solid #e8b84b33;color:#e0ddf8;font-family:'EB Garamond',serif;font-size:14px;border-radius:4px;box-sizing:border-box"/>
+              <div style="font-family:'EB Garamond',serif;font-size:12px;color:#6662aa;margin-top:4px">Create at github.com → Settings → Developer settings → Personal access tokens → Fine-grained → repo write access. This lets the dashboard push slots live to the website.</div>
+            </div>
+            
