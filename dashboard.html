@@ -2803,6 +2803,19 @@ function toggleApptForm() {
 function getAppts() {
   try { return JSON.parse(localStorage.getItem('rea_appointments') || '[]'); } catch(e) { return []; }
 }
+/* ── TEST ENTRY FILTER ── */
+function isTestEntry(str){
+  if(!str)return false;
+  var s=str.toString().toLowerCase().trim();
+  return s==='test'||s.startsWith('test ')||s.endsWith(' test')||s.includes(' test ')||
+         s==='testing'||s.includes('testing')||s==='test test';
+}
+function shouldSkipEntry(name,email){
+  return isTestEntry(name)||isTestEntry(email)||
+         (email&&email.toLowerCase().includes('test@'))||
+         (name&&name.toLowerCase().replace(/\s+/g,' ').trim()==='test test');
+}
+
 function saveAppts(arr) { localStorage.setItem('rea_appointments', JSON.stringify(arr)); }
 
 // ── SYNC ENGINE ──────────────────────────────────────────────────────────────
@@ -2888,6 +2901,12 @@ function importAppointment(rec) {
     importedAt:           new Date().toISOString(),
   };
 
+  /* skip test/dummy entries */
+  if(shouldSkipEntry(appt.client, appt.email)){
+    showToast('Test entry skipped — not saved.','#e8b84b');
+    document.getElementById('apptForm').style.display='none';
+    return;
+  }
   appts.push(appt);
   saveAppts(appts);
 
@@ -6006,6 +6025,8 @@ function pullNetlifySubmissions(){
       var added=0;
       bookings.forEach(function(sub){
         if(existingIds.has(sub.id))return;
+        var _nm=((dv['first-name']||'')+' '+(dv['last-name']||'')).trim()||dv['name']||'';
+        if(shouldSkipEntry(_nm,dv['email']))return;
         var dv=sub.data||{};
         existing.unshift({
           netlifyId:sub.id,
@@ -6041,6 +6062,19 @@ function pullNetlifySubmissions(){
     });
 }
 /* Auto-pull on dashboard load if token is set */
+
+/* purge any test entries already in storage */
+function purgeTestEntries(){
+  var appts=getAppts().filter(function(a){return !shouldSkipEntry(a.client,a.email);});
+  saveAppts(appts);
+  var bookings=[];try{bookings=JSON.parse(localStorage.getItem('rea_pending_bookings')||'[]');}catch(e){}
+  bookings=bookings.filter(function(b){return !shouldSkipEntry(b.name,b.email);});
+  localStorage.setItem('rea_pending_bookings',JSON.stringify(bookings));
+  var wl=[];try{wl=JSON.parse(localStorage.getItem('rea_waitlist')||'[]');}catch(e){}
+  wl=wl.filter(function(w){return !shouldSkipEntry(w.name,w.contact);});
+  localStorage.setItem('rea_waitlist',JSON.stringify(wl));
+}
+purgeTestEntries();
 (function(){var st=getSettings();if(st&&st.netlifyToken)setTimeout(pullNetlifySubmissions,1500);})();
 
 </script>
