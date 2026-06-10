@@ -749,6 +749,11 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#d
           <div><label class="form-lbl">Default Video Link (Zoom/Meet)</label><input id="st-video" class="appt-input" type="url" placeholder="https://zoom.us/j/your-room" /></div>
           <div><label class="form-lbl">Netlify API Token</label><input id="st-netlify-token" class="appt-input" type="password" placeholder="Netlify User Settings > Applications > API token" /></div>
         </div>
+        <div class="form-row"><div class="form-group" style="grid-column:span 2">
+          <label class="form-lbl">GitHub Token (for live slot sync)</label>
+          <input id="settGithubToken" class="appt-input" type="password" placeholder="github_pat_xxxxxxxxxxxx" />
+          <div style="font-size:11px;color:#6662aa;margin-top:4px;font-family:'EB Garamond',serif">Paste the token you just created on GitHub. This lets the dashboard push available slots to the website in real-time so clients see them instantly.</div>
+        </div></div>
         <div style="display:flex;gap:10px">
           <button class="action-btn approve" onclick="saveSettings()">Save Settings</button>
           <button class="action-btn" onclick="toggleSettingsForm()">Cancel</button>
