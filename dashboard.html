@@ -823,7 +823,10 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#d
           </select>
         </div>
       </div>
-      <p style="font-family:'EB Garamond',serif;font-size:14px;color:#aaa8cc;padding:0 0 14px 0;margin:0">Click any date to add time slots. Green = open, gold = booked, grey = past.</p>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <p style="font-family:'EB Garamond',serif;font-size:14px;color:#aaa8cc;margin:0">Click any date to add time slots. Green = open, gold = booked, grey = past.</p>
+        <button onclick="pullSlotsFromGitHub()" style="background:#0e0c22;border:1px solid #44cc8855;color:#44cc88;font-family:'Cinzel',serif;font-size:10px;letter-spacing:.15em;padding:7px 14px;border-radius:4px;cursor:pointer">&#8635; SYNC FROM WEBSITE</button>
+      </div>
 
       <!-- SLOT CALENDAR -->
       <div id="slotCalWrap">
@@ -5492,6 +5495,19 @@ function pushSlotsToGitHub(arr){
 }
 function saveSlots(arr){localStorage.setItem('rea_available_slots',JSON.stringify(arr));pushSlotsToGitHub(arr);}
 
+
+/* Pull latest slots.json from GitHub into localStorage + re-render */
+function pullSlotsFromGitHub(){
+  fetch('https://raw.githubusercontent.com/ebaig83/royal-energy-alchemy/main/website/slots.json?_='+Date.now())
+    .then(function(r){return r.json();})
+    .then(function(arr){
+      if(!Array.isArray(arr))return;
+      localStorage.setItem('rea_available_slots',JSON.stringify(arr));
+      renderSlotCal();renderSlots();
+      showToast('Slots refreshed from website ✓','#44cc88');
+    })
+    .catch(function(e){showToast('Could not refresh slots: '+e.message,'#cc4455');});
+}
 function slotCalPrev(){_slotCalMonth--;if(_slotCalMonth<0){_slotCalMonth=11;_slotCalYear--;}renderSlotCal();}
 function slotCalNext(){_slotCalMonth++;if(_slotCalMonth>11){_slotCalMonth=0;_slotCalYear++;}renderSlotCal();}
 

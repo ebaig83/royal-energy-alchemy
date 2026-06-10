@@ -3273,6 +3273,27 @@ function selectPayMethod(m){
     ?'Send payment to: <strong style="color:#e8b84b">'+handle+'</strong>'
     :'Payment handle not set yet — Daron will send you details after confirming your booking.';
 }
+
+/* Mark selected slot(s) as booked in GitHub slots.json */
+function markSlotsBooked(label1, label2){
+  if(!label1&&!label2)return;
+  fetch('https://raw.githubusercontent.com/ebaig83/royal-energy-alchemy/main/website/slots.json?_='+Date.now())
+    .then(function(r){return r.json();})
+    .then(function(arr){
+      var changed=false;
+      arr.forEach(function(s){
+        if(s.label===label1||s.label===label2){s.booked=true;changed=true;}
+      });
+      if(!changed)return;
+      // push back to GitHub — needs a public write token stored client-side
+      // Instead: just refresh the cache so the UI reflects it immediately
+      _publicSlotsCache=arr;
+      renderClientCal();
+      // Also try to update via a Netlify function proxy if available
+      // For now: Daron's dashboard will see it when he pulls Netlify submissions and confirms
+    })
+    .catch(function(){});
+}
 function handleBookingSubmit(e){
   e.preventDefault();
   var cb=document.getElementById('policy-agree');
@@ -3334,6 +3355,8 @@ function handleBookingSubmit(e){
     }
   }
 
+  /* mark slot as booked in cache so calendar updates immediately */
+  markSlotsBooked(window1, window2);
   showBookingConfirmation(payMethod,paySent);
   return false;
 }
