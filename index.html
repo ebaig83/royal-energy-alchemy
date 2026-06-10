@@ -796,7 +796,449 @@ footer a:hover,footer a:focus-visible{color:#fff0b8 !important;border-bottom-col
     <!-- ── CANVAS ── -->
     <div class="reveal reveal-d1 dist-canvas-wrap">
       <div class="dist-canvas-frame">
-        <img id="dist-canvas" src="assets/distance-healing.jpg" alt="Distance Energy Session - Two beings connected through sacred geometry portal" style="width:100%;height:100%;object-fit:cover;object-position:center;display:block;">
+        <svg id="dist-canvas" viewBox="0 0 920 378" xmlns="http://www.w3.org/2000/svg" aria-label="Distance Energy Session - Two beings connected through sacred geometry portal" role="img">
+          <defs>
+            <radialGradient id="dSky" cx="50%" cy="35%" r="70%">
+              <stop offset="0%" stop-color="#0d0a1e"/>
+              <stop offset="45%" stop-color="#06061a"/>
+              <stop offset="100%" stop-color="#010108"/>
+            </radialGradient>
+            <radialGradient id="dNebL" cx="18%" cy="28%" r="40%">
+              <stop offset="0%" stop-color="#4a1880" stop-opacity="0.65"/>
+              <stop offset="60%" stop-color="#2a0a55" stop-opacity="0.3"/>
+              <stop offset="100%" stop-color="#2a0a55" stop-opacity="0"/>
+            </radialGradient>
+            <radialGradient id="dNebR" cx="82%" cy="22%" r="38%">
+              <stop offset="0%" stop-color="#0a2a70" stop-opacity="0.6"/>
+              <stop offset="60%" stop-color="#051840" stop-opacity="0.25"/>
+              <stop offset="100%" stop-color="#051840" stop-opacity="0"/>
+            </radialGradient>
+            <radialGradient id="dNebC" cx="50%" cy="50%" r="35%">
+              <stop offset="0%" stop-color="#1a0a40" stop-opacity="0.4"/>
+              <stop offset="100%" stop-color="#1a0a40" stop-opacity="0"/>
+            </radialGradient>
+            <radialGradient id="dHorizon" cx="50%" cy="100%" r="55%">
+              <stop offset="0%" stop-color="#e8b84b" stop-opacity="0.18"/>
+              <stop offset="50%" stop-color="#cc7722" stop-opacity="0.06"/>
+              <stop offset="100%" stop-color="#cc7722" stop-opacity="0"/>
+            </radialGradient>
+            <radialGradient id="dGeoGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#e8b84b" stop-opacity="0.5"/>
+              <stop offset="40%" stop-color="#e8b84b" stop-opacity="0.15"/>
+              <stop offset="100%" stop-color="#e8b84b" stop-opacity="0"/>
+            </radialGradient>
+            <radialGradient id="dFigBL" cx="50%" cy="45%" r="55%">
+              <stop offset="0%" stop-color="#4488ff" stop-opacity="0.9"/>
+              <stop offset="50%" stop-color="#1155cc" stop-opacity="0.4"/>
+              <stop offset="100%" stop-color="#1155cc" stop-opacity="0"/>
+            </radialGradient>
+            <radialGradient id="dFigBR" cx="50%" cy="45%" r="55%">
+              <stop offset="0%" stop-color="#43d0c1" stop-opacity="0.85"/>
+              <stop offset="50%" stop-color="#1a8878" stop-opacity="0.35"/>
+              <stop offset="100%" stop-color="#1a8878" stop-opacity="0"/>
+            </radialGradient>
+            <linearGradient id="dBeamCore" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#4488ff"/>
+              <stop offset="25%" stop-color="#aaccff"/>
+              <stop offset="50%" stop-color="#ffffff"/>
+              <stop offset="75%" stop-color="#aaffee"/>
+              <stop offset="100%" stop-color="#43d0c1"/>
+            </linearGradient>
+            <linearGradient id="dBeamHalo" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#4488ff" stop-opacity="0.5"/>
+              <stop offset="50%" stop-color="#e8b84b" stop-opacity="0.2"/>
+              <stop offset="100%" stop-color="#43d0c1" stop-opacity="0.5"/>
+            </linearGradient>
+            <linearGradient id="dCliffL" x1="0%" y1="0%" x2="60%" y2="100%">
+              <stop offset="0%" stop-color="#1c2a18"/>
+              <stop offset="50%" stop-color="#0e1a12"/>
+              <stop offset="100%" stop-color="#050c08"/>
+            </linearGradient>
+            <linearGradient id="dCliffR" x1="100%" y1="0%" x2="40%" y2="100%">
+              <stop offset="0%" stop-color="#182428"/>
+              <stop offset="50%" stop-color="#0e181c"/>
+              <stop offset="100%" stop-color="#050a0c"/>
+            </linearGradient>
+            <filter id="dGlowB" x="-60%" y="-60%" width="220%" height="220%">
+              <feGaussianBlur stdDeviation="6" result="b"/>
+              <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <filter id="dGlowT" x="-60%" y="-60%" width="220%" height="220%">
+              <feGaussianBlur stdDeviation="6" result="b"/>
+              <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <filter id="dBloom" x="-100%" y="-100%" width="300%" height="300%">
+              <feGaussianBlur stdDeviation="14"/>
+            </filter>
+            <filter id="dBloomSm" x="-80%" y="-80%" width="260%" height="260%">
+              <feGaussianBlur stdDeviation="7"/>
+            </filter>
+            <filter id="dBeamBlur" x="-5%" y="-400%" width="110%" height="900%">
+              <feGaussianBlur stdDeviation="3"/>
+            </filter>
+            <clipPath id="dClip"><rect width="920" height="378"/></clipPath>
+          </defs>
+
+          <g clip-path="url(#dClip)">
+            <!-- Deep space background -->
+            <rect width="920" height="378" fill="url(#dSky)"/>
+            <!-- Nebula left purple -->
+            <rect width="920" height="378" fill="url(#dNebL)"/>
+            <!-- Nebula right blue -->
+            <rect width="920" height="378" fill="url(#dNebR)"/>
+            <!-- Central dark void -->
+            <rect width="920" height="378" fill="url(#dNebC)"/>
+            <!-- Horizon warmth -->
+            <rect width="920" height="378" fill="url(#dHorizon)"/>
+
+            <!-- Star field — dense -->
+            <g fill="#ffffff">
+              <circle cx="22" cy="12" r="0.7" opacity="0.8"/><circle cx="58" cy="8" r="0.5" opacity="0.6"/>
+              <circle cx="95" cy="25" r="1.0" opacity="0.9"/><circle cx="130" cy="14" r="0.6" opacity="0.7"/>
+              <circle cx="162" cy="38" r="0.8" opacity="0.65"/><circle cx="198" cy="9" r="0.5" opacity="0.8"/>
+              <circle cx="235" cy="30" r="0.9" opacity="0.7"/><circle cx="272" cy="17" r="0.6" opacity="0.6"/>
+              <circle cx="308" cy="42" r="0.7" opacity="0.75"/><circle cx="345" cy="11" r="1.1" opacity="0.85"/>
+              <circle cx="382" cy="28" r="0.5" opacity="0.6"/><circle cx="418" cy="6" r="0.8" opacity="0.9"/>
+              <circle cx="460" cy="19" r="0.6" opacity="0.7"/><circle cx="497" cy="35" r="0.9" opacity="0.65"/>
+              <circle cx="534" cy="8" r="0.7" opacity="0.8"/><circle cx="571" cy="22" r="0.5" opacity="0.75"/>
+              <circle cx="608" cy="40" r="1.0" opacity="0.7"/><circle cx="645" cy="13" r="0.6" opacity="0.85"/>
+              <circle cx="682" cy="31" r="0.8" opacity="0.6"/><circle cx="719" cy="7" r="0.7" opacity="0.9"/>
+              <circle cx="756" cy="26" r="0.5" opacity="0.7"/><circle cx="793" cy="44" r="0.9" opacity="0.65"/>
+              <circle cx="830" cy="15" r="0.7" opacity="0.8"/><circle cx="867" cy="32" r="0.6" opacity="0.75"/>
+              <circle cx="904" cy="10" r="0.8" opacity="0.7"/>
+              <!-- Mid-level stars -->
+              <circle cx="40" cy="65" r="0.6" opacity="0.5"/><circle cx="88" cy="78" r="0.8" opacity="0.6"/>
+              <circle cx="145" cy="58" r="0.5" opacity="0.55"/><circle cx="210" cy="85" r="0.7" opacity="0.5"/>
+              <circle cx="285" cy="62" r="0.9" opacity="0.6"/><circle cx="360" cy="75" r="0.5" opacity="0.5"/>
+              <circle cx="430" cy="55" r="0.7" opacity="0.65"/><circle cx="505" cy="88" r="0.6" opacity="0.5"/>
+              <circle cx="575" cy="60" r="0.8" opacity="0.55"/><circle cx="648" cy="80" r="0.5" opacity="0.6"/>
+              <circle cx="720" cy="65" r="0.7" opacity="0.5"/><circle cx="792" cy="72" r="0.9" opacity="0.55"/>
+              <circle cx="862" cy="58" r="0.6" opacity="0.6"/><circle cx="910" cy="82" r="0.5" opacity="0.5"/>
+            </g>
+            <!-- Golden/warm stars -->
+            <g fill="#ffe8a0">
+              <circle cx="175" cy="20" r="0.9" opacity="0.8"/><circle cx="440" cy="14" r="1.0" opacity="0.7"/>
+              <circle cx="695" cy="22" r="0.8" opacity="0.75"/><circle cx="855" cy="18" r="0.9" opacity="0.65"/>
+              <circle cx="320" cy="50" r="0.6" opacity="0.6"/><circle cx="580" cy="45" r="0.7" opacity="0.55"/>
+            </g>
+            <!-- Blue tinted stars -->
+            <g fill="#c8d8ff">
+              <circle cx="70" cy="44" r="0.7" opacity="0.7"/><circle cx="255" cy="18" r="0.8" opacity="0.65"/>
+              <circle cx="490" cy="48" r="0.6" opacity="0.7"/><circle cx="738" cy="36" r="0.8" opacity="0.6"/>
+              <circle cx="886" cy="52" r="0.6" opacity="0.65"/>
+            </g>
+            <!-- Twinkling bright stars -->
+            <circle cx="112" cy="18" r="1.4" fill="#fff" opacity="0.9">
+              <animate attributeName="opacity" values="0.9;0.2;0.9" dur="2.6s" repeatCount="indefinite"/>
+              <animate attributeName="r" values="1.4;2.0;1.4" dur="2.6s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="390" cy="22" r="1.3" fill="#ffe8a0" opacity="0.85">
+              <animate attributeName="opacity" values="0.85;0.15;0.85" dur="3.8s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="670" cy="16" r="1.5" fill="#fff" opacity="0.8">
+              <animate attributeName="opacity" values="0.8;0.1;0.8" dur="2.1s" repeatCount="indefinite"/>
+              <animate attributeName="r" values="1.5;2.2;1.5" dur="2.1s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="825" cy="28" r="1.2" fill="#c8d8ff" opacity="0.9">
+              <animate attributeName="opacity" values="0.9;0.3;0.9" dur="4.4s" repeatCount="indefinite"/>
+            </circle>
+
+            <!-- Crescent moon -->
+            <circle cx="812" cy="46" r="26" fill="#0f1830"/>
+            <circle cx="812" cy="46" r="24" fill="#1a2a50" opacity="0.8"/>
+            <circle cx="821" cy="40" r="20" fill="#0a1020"/>
+            <circle cx="812" cy="46" r="24" fill="none" stroke="#3355aa" stroke-width="0.8" opacity="0.4"/>
+            <!-- Moon glow -->
+            <circle cx="812" cy="46" r="32" fill="#1a2a50" filter="url(#dBloomSm)" opacity="0.15"/>
+
+            <!-- Nebula wisps — painted streaks -->
+            <path d="M0,80 Q60,60 120,90 Q180,115 240,80 Q280,58 320,72" fill="none" stroke="#6622aa" stroke-width="18" opacity="0.12" stroke-linecap="round"/>
+            <path d="M0,55 Q80,35 160,65 Q220,85 280,55" fill="none" stroke="#8833cc" stroke-width="10" opacity="0.1" stroke-linecap="round"/>
+            <path d="M640,55 Q700,30 760,55 Q820,78 880,42 Q910,28 920,35" fill="none" stroke="#2244aa" stroke-width="16" opacity="0.12" stroke-linecap="round"/>
+            <path d="M700,30 Q780,10 860,32 Q900,42 920,30" fill="none" stroke="#1133cc" stroke-width="8" opacity="0.1" stroke-linecap="round"/>
+
+            <!-- ── TERRAIN LEFT ── -->
+            <!-- Back cliff layers (distant, darker) -->
+            <path d="M-10,320 Q20,270 55,245 Q80,228 110,232 Q130,234 145,248 Q160,262 155,285 L-10,378 Z" fill="#0c1510" opacity="0.7"/>
+            <!-- Main left cliff -->
+            <path d="M-10,340 Q15,295 50,268 Q85,242 125,230 Q155,220 178,228 Q202,237 210,258 Q218,275 205,295 Q192,315 168,330 L-10,378 Z" fill="url(#dCliffL)"/>
+            <!-- Cliff face detail -->
+            <path d="M50,268 Q70,255 95,248 Q115,243 135,248 Q158,255 172,268" fill="none" stroke="#2a3a28" stroke-width="1.5" opacity="0.5"/>
+            <path d="M80,285 Q100,272 125,268 Q150,265 165,275" fill="none" stroke="#1e2e1c" stroke-width="1" opacity="0.4"/>
+            <!-- Left cliff edge glow (blue light from figure) -->
+            <path d="M125,230 Q155,220 178,228 Q202,237 210,258" fill="none" stroke="#4488ff" stroke-width="1.5" opacity="0.35"/>
+            <path d="M125,230 Q155,220 178,228 Q202,237 210,258" fill="none" stroke="#4488ff" stroke-width="8" filter="url(#dBloomSm)" opacity="0.1"/>
+
+            <!-- ── TERRAIN RIGHT ── -->
+            <path d="M930,315 Q900,265 865,242 Q840,226 810,230 Q790,232 775,246 Q760,260 765,282 L930,378 Z" fill="#0c1418" opacity="0.7"/>
+            <path d="M930,338 Q905,292 870,265 Q835,240 795,228 Q765,218 742,226 Q718,235 710,256 Q702,273 715,293 Q728,313 752,328 L930,378 Z" fill="url(#dCliffR)"/>
+            <path d="M870,265 Q850,252 825,246 Q805,241 785,246 Q762,253 748,266" fill="none" stroke="#283438" stroke-width="1.5" opacity="0.5"/>
+            <path d="M840,282 Q820,270 795,266 Q770,263 755,273" fill="none" stroke="#1c2c2e" stroke-width="1" opacity="0.4"/>
+            <path d="M795,228 Q765,218 742,226 Q718,235 710,256" fill="none" stroke="#43d0c1" stroke-width="1.5" opacity="0.3"/>
+            <path d="M795,228 Q765,218 742,226 Q718,235 710,256" fill="none" stroke="#43d0c1" stroke-width="8" filter="url(#dBloomSm)" opacity="0.08"/>
+
+            <!-- Foreground dark ground -->
+            <path d="M-10,358 Q150,342 460,350 Q770,358 930,342 L930,378 L-10,378 Z" fill="#020508"/>
+            <!-- Chasm/abyss glow at bottom center -->
+            <ellipse cx="460" cy="360" rx="180" ry="20" fill="#e8b84b" opacity="0.04"/>
+
+            <!-- ── ENERGY BEAM SYSTEM ── -->
+            <!-- Wide atmospheric halo -->
+            <rect x="195" y="162" width="530" height="28" fill="url(#dBeamHalo)" filter="url(#dBeamBlur)" opacity="0.5">
+              <animate attributeName="opacity" values="0.5;0.8;0.5" dur="3s" repeatCount="indefinite"/>
+            </rect>
+            <!-- Mid beam glow -->
+            <line x1="195" y1="176" x2="725" y2="176" stroke="url(#dBeamHalo)" stroke-width="12" opacity="0.6" filter="url(#dBeamBlur)">
+              <animate attributeName="opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite"/>
+            </line>
+            <!-- Core beam -->
+            <line x1="195" y1="176" x2="725" y2="176" stroke="url(#dBeamCore)" stroke-width="2" opacity="0.95">
+              <animate attributeName="opacity" values="0.95;1;0.95" dur="1.5s" repeatCount="indefinite"/>
+            </line>
+            <!-- Bright core center -->
+            <line x1="350" y1="176" x2="570" y2="176" stroke="#ffffff" stroke-width="1" opacity="0.7"/>
+
+            <!-- Beam particles L→R -->
+            <circle r="3.5" fill="#ffffff" opacity="0">
+              <animateMotion path="M195,176 L725,176" dur="1.8s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.1;0.85;1" dur="1.8s" repeatCount="indefinite"/>
+            </circle>
+            <circle r="2" fill="#aaccff" opacity="0">
+              <animateMotion path="M195,176 L725,176" dur="1.8s" begin="0.6s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0;0.7;0.7;0" keyTimes="0;0.1;0.85;1" dur="1.8s" begin="0.6s" repeatCount="indefinite"/>
+            </circle>
+            <circle r="2.5" fill="#e8b84b" opacity="0">
+              <animateMotion path="M195,176 L725,176" dur="1.8s" begin="1.1s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0;0.8;0.8;0" keyTimes="0;0.1;0.85;1" dur="1.8s" begin="1.1s" repeatCount="indefinite"/>
+            </circle>
+            <!-- Beam particles R→L -->
+            <circle r="3" fill="#43d0c1" opacity="0">
+              <animateMotion path="M725,176 L195,176" dur="2.2s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0;0.85;0.85;0" keyTimes="0;0.1;0.85;1" dur="2.2s" repeatCount="indefinite"/>
+            </circle>
+            <circle r="2" fill="#aaffee" opacity="0">
+              <animateMotion path="M725,176 L195,176" dur="2.2s" begin="0.9s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0;0.7;0.7;0" keyTimes="0;0.1;0.85;1" dur="2.2s" begin="0.9s" repeatCount="indefinite"/>
+            </circle>
+
+            <!-- ── SACRED GEOMETRY MANDALA ── -->
+            <!-- Outer bloom -->
+            <circle cx="460" cy="176" r="105" fill="url(#dGeoGlow)" filter="url(#dBloom)" opacity="0.6">
+              <animate attributeName="r" values="105;115;105" dur="5s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0.6;0.4;0.6" dur="5s" repeatCount="indefinite"/>
+            </circle>
+
+            <!-- Outer decorative ring with dashes -->
+            <circle cx="460" cy="176" r="88" fill="none" stroke="#e8b84b" stroke-width="0.5" stroke-dasharray="2 8" opacity="0.5">
+              <animateTransform attributeName="transform" type="rotate" from="0 460 176" to="360 460 176" dur="40s" repeatCount="indefinite"/>
+            </circle>
+
+            <!-- Outer solid ring -->
+            <circle cx="460" cy="176" r="78" fill="none" stroke="#e8b84b" stroke-width="1" opacity="0.55">
+              <animateTransform attributeName="transform" type="rotate" from="0 460 176" to="360 460 176" dur="28s" repeatCount="indefinite"/>
+            </circle>
+            <!-- Tick marks on outer ring -->
+            <g stroke="#e8b84b" stroke-width="1.2" opacity="0.6">
+              <animateTransform attributeName="transform" type="rotate" from="0 460 176" to="360 460 176" dur="28s" repeatCount="indefinite"/>
+              <line x1="460" y1="98" x2="460" y2="108"/><line x1="460" y1="244" x2="460" y2="254"/>
+              <line x1="382" y1="176" x2="392" y2="176"/><line x1="528" y1="176" x2="538" y2="176"/>
+              <line x1="405" y1="120" x2="412" y2="130"/><line x1="515" y1="120" x2="508" y2="130"/>
+              <line x1="405" y1="232" x2="412" y2="222"/><line x1="515" y1="232" x2="508" y2="222"/>
+              <line x1="423" y1="106" x2="428" y2="115"/><line x1="497" y1="106" x2="492" y2="115"/>
+              <line x1="423" y1="246" x2="428" y2="237"/><line x1="497" y1="246" x2="492" y2="237"/>
+            </g>
+
+            <!-- Counter-rotating middle ring -->
+            <circle cx="460" cy="176" r="62" fill="none" stroke="#e8b84b" stroke-width="0.7" opacity="0.45" stroke-dasharray="6 5">
+              <animateTransform attributeName="transform" type="rotate" from="0 460 176" to="-360 460 176" dur="18s" repeatCount="indefinite"/>
+            </circle>
+
+            <!-- Flower of Life — 7 circles -->
+            <g stroke="#e8b84b" stroke-width="0.6" fill="none" opacity="0.4">
+              <circle cx="460" cy="176" r="36"/>
+              <circle cx="460" cy="140" r="36"/>
+              <circle cx="460" cy="212" r="36"/>
+              <circle cx="429" cy="158" r="36"/>
+              <circle cx="491" cy="158" r="36"/>
+              <circle cx="429" cy="194" r="36"/>
+              <circle cx="491" cy="194" r="36"/>
+            </g>
+
+            <!-- 6-pointed star (Star of David geometry) -->
+            <g stroke="#e8b84b" stroke-width="0.7" fill="none" opacity="0.5">
+              <polygon points="460,140 491,194 429,194"/>
+              <polygon points="460,212 429,158 491,158"/>
+            </g>
+
+            <!-- Inner ring spinning fast -->
+            <circle cx="460" cy="176" r="44" fill="none" stroke="#ffffff" stroke-width="0.5" opacity="0.35">
+              <animateTransform attributeName="transform" type="rotate" from="0 460 176" to="360 460 176" dur="10s" repeatCount="indefinite"/>
+            </circle>
+
+            <!-- Axes -->
+            <line x1="382" y1="176" x2="538" y2="176" stroke="#e8b84b" stroke-width="0.8" opacity="0.5"/>
+            <line x1="460" y1="98" x2="460" y2="254" stroke="#e8b84b" stroke-width="0.8" opacity="0.5"/>
+            <line x1="405" y1="121" x2="515" y2="231" stroke="#e8b84b" stroke-width="0.5" opacity="0.3"/>
+            <line x1="515" y1="121" x2="405" y2="231" stroke="#e8b84b" stroke-width="0.5" opacity="0.3"/>
+
+            <!-- Central sunburst -->
+            <circle cx="460" cy="176" r="20" fill="#e8b84b" filter="url(#dBloomSm)" opacity="0.4">
+              <animate attributeName="r" values="20;26;20" dur="2.2s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="460" cy="176" r="10" fill="#fff8e0" opacity="0.8">
+              <animate attributeName="opacity" values="0.8;1;0.8" dur="1.8s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="460" cy="176" r="5" fill="#ffffff" opacity="1"/>
+            <!-- Sunburst rays -->
+            <g stroke="#e8b84b" stroke-width="0.8" opacity="0.65">
+              <animateTransform attributeName="transform" type="rotate" from="0 460 176" to="360 460 176" dur="7s" repeatCount="indefinite"/>
+              <line x1="460" y1="158" x2="460" y2="149"/>
+              <line x1="460" y1="194" x2="460" y2="203"/>
+              <line x1="442" y1="176" x2="433" y2="176"/>
+              <line x1="478" y1="176" x2="487" y2="176"/>
+              <line x1="447" y1="163" x2="441" y2="157"/>
+              <line x1="473" y1="163" x2="479" y2="157"/>
+              <line x1="447" y1="189" x2="441" y2="195"/>
+              <line x1="473" y1="189" x2="479" y2="195"/>
+              <line x1="453" y1="159" x2="451" y2="151"/>
+              <line x1="467" y1="159" x2="469" y2="151"/>
+              <line x1="453" y1="193" x2="451" y2="201"/>
+              <line x1="467" y1="193" x2="469" y2="201"/>
+            </g>
+
+            <!-- ── LEFT FIGURE — BLUE ENERGY BEING ── -->
+            <!-- Deep aura bloom -->
+            <ellipse cx="162" cy="168" rx="55" ry="72" fill="url(#dFigBL)" filter="url(#dBloom)" opacity="0.5">
+              <animate attributeName="ry" values="72;85;72" dur="3.2s" repeatCount="indefinite"/>
+            </ellipse>
+            <!-- Mid aura -->
+            <ellipse cx="162" cy="168" rx="36" ry="50" fill="#4488ff" filter="url(#dBloomSm)" opacity="0.25">
+              <animate attributeName="ry" values="50;60;50" dur="3.2s" repeatCount="indefinite"/>
+            </ellipse>
+
+            <g filter="url(#dGlowB)">
+              <!-- Legs -->
+              <path d="M152,238 Q149,255 146,270 Q144,280 141,288" fill="none" stroke="#4488ff" stroke-width="2" stroke-linecap="round"/>
+              <path d="M172,238 Q175,255 178,270 Q180,280 183,288" fill="none" stroke="#4488ff" stroke-width="2" stroke-linecap="round"/>
+              <!-- Leg inner glow -->
+              <path d="M152,238 Q149,255 146,270" fill="none" stroke="#88aaff" stroke-width="0.8" opacity="0.6"/>
+              <path d="M172,238 Q175,255 178,270" fill="none" stroke="#88aaff" stroke-width="0.8" opacity="0.6"/>
+              <!-- Torso -->
+              <path d="M138,196 Q140,178 150,168 Q162,158 174,168 Q184,178 186,196 Q184,220 176,238 L148,238 Q140,220 138,196 Z" fill="#0d2255" fill-opacity="0.6" stroke="#4488ff" stroke-width="1.8"/>
+              <!-- Torso highlight -->
+              <path d="M148,185 Q152,172 162,165 Q172,172 176,185" fill="none" stroke="#88aaff" stroke-width="0.8" opacity="0.7"/>
+              <!-- Shoulder width lines -->
+              <path d="M138,196 Q130,193 122,190" fill="none" stroke="#4488ff" stroke-width="1" opacity="0.5"/>
+              <path d="M186,196 Q194,193 202,190" fill="none" stroke="#4488ff" stroke-width="1" opacity="0.5"/>
+              <!-- Arms — left arm back, right arm extended toward mandala -->
+              <path d="M138,202 Q115,196 95,188 Q78,181 65,176" fill="none" stroke="#4488ff" stroke-width="1.8" stroke-linecap="round"/>
+              <path d="M186,202 Q205,194 225,185" fill="none" stroke="#4488ff" stroke-width="2.5" stroke-linecap="round"/>
+              <!-- Head -->
+              <ellipse cx="162" cy="148" rx="15" ry="17" fill="#0d2255" fill-opacity="0.5" stroke="#4488ff" stroke-width="1.5"/>
+              <!-- Head inner light -->
+              <ellipse cx="162" cy="145" rx="8" ry="9" fill="#4488ff" opacity="0.2"/>
+              <!-- Crown energy -->
+              <line x1="162" y1="131" x2="162" y2="122" stroke="#4488ff" stroke-width="1.5" opacity="0.7" stroke-linecap="round"/>
+              <line x1="155" y1="133" x2="151" y2="124" stroke="#4488ff" stroke-width="1" opacity="0.5" stroke-linecap="round"/>
+              <line x1="169" y1="133" x2="173" y2="124" stroke="#4488ff" stroke-width="1" opacity="0.5" stroke-linecap="round"/>
+              <!-- Head glow pulse -->
+              <ellipse cx="162" cy="148" rx="22" ry="24" fill="#4488ff" opacity="0.08">
+                <animate attributeName="rx" values="22;28;22" dur="3s" repeatCount="indefinite"/>
+                <animate attributeName="ry" values="24;30;24" dur="3s" repeatCount="indefinite"/>
+              </ellipse>
+              <!-- Energy hand toward mandala -->
+              <circle cx="225" cy="184" r="8" fill="#4488ff" opacity="0.55">
+                <animate attributeName="r" values="8;12;8" dur="1.6s" repeatCount="indefinite"/>
+                <animate attributeName="opacity" values="0.55;0.85;0.55" dur="1.6s" repeatCount="indefinite"/>
+              </circle>
+              <circle cx="225" cy="184" r="4" fill="#aaccff" opacity="0.8">
+                <animate attributeName="r" values="4;6;4" dur="1.6s" repeatCount="indefinite"/>
+              </circle>
+            </g>
+            <!-- Floating energy motes left figure -->
+            <circle cx="145" cy="122" r="2" fill="#4488ff" opacity="0">
+              <animate attributeName="cy" values="122;105;88" dur="2.5s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0;0.8;0" dur="2.5s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="175" cy="130" r="1.5" fill="#88aaff" opacity="0">
+              <animate attributeName="cy" values="130;112;94" dur="3s" begin="0.8s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0;0.7;0" dur="3s" begin="0.8s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="132" cy="135" r="1.2" fill="#4488ff" opacity="0">
+              <animate attributeName="cy" values="135;118;100" dur="2.8s" begin="1.5s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0;0.6;0" dur="2.8s" begin="1.5s" repeatCount="indefinite"/>
+            </circle>
+
+            <!-- ── RIGHT FIGURE — TEAL ENERGY BEING ── -->
+            <!-- Deep aura bloom -->
+            <ellipse cx="758" cy="166" rx="55" ry="74" fill="url(#dFigBR)" filter="url(#dBloom)" opacity="0.48">
+              <animate attributeName="ry" values="74;88;74" dur="3.6s" repeatCount="indefinite"/>
+            </ellipse>
+            <ellipse cx="758" cy="166" rx="36" ry="52" fill="#43d0c1" filter="url(#dBloomSm)" opacity="0.22">
+              <animate attributeName="ry" values="52;62;52" dur="3.6s" repeatCount="indefinite"/>
+            </ellipse>
+
+            <g filter="url(#dGlowT)">
+              <!-- Legs -->
+              <path d="M748,236 Q745,253 742,268 Q740,278 737,286" fill="none" stroke="#43d0c1" stroke-width="2" stroke-linecap="round"/>
+              <path d="M768,236 Q771,253 774,268 Q776,278 779,286" fill="none" stroke="#43d0c1" stroke-width="2" stroke-linecap="round"/>
+              <path d="M748,236 Q745,253 742,268" fill="none" stroke="#88eedd" stroke-width="0.8" opacity="0.6"/>
+              <path d="M768,236 Q771,253 774,268" fill="none" stroke="#88eedd" stroke-width="0.8" opacity="0.6"/>
+              <!-- Torso — slightly wider at hips (feminine) -->
+              <path d="M734,194 Q736,176 746,166 Q758,156 770,166 Q780,176 782,194 Q782,218 774,236 L742,236 Q736,218 734,194 Z" fill="#0a2e2a" fill-opacity="0.6" stroke="#43d0c1" stroke-width="1.8"/>
+              <path d="M744,183 Q748,170 758,163 Q768,170 772,183" fill="none" stroke="#88eedd" stroke-width="0.8" opacity="0.7"/>
+              <!-- Shoulder lines -->
+              <path d="M734,194 Q726,191 718,188" fill="none" stroke="#43d0c1" stroke-width="1" opacity="0.5"/>
+              <path d="M782,194 Q790,191 798,188" fill="none" stroke="#43d0c1" stroke-width="1" opacity="0.5"/>
+              <!-- Arms -->
+              <path d="M734,200 Q715,192 695,184" fill="none" stroke="#43d0c1" stroke-width="2.5" stroke-linecap="round"/>
+              <path d="M782,200 Q805,192 825,184 Q842,178 855,172" fill="none" stroke="#43d0c1" stroke-width="1.8" stroke-linecap="round"/>
+              <!-- Head -->
+              <ellipse cx="758" cy="146" rx="15" ry="17" fill="#0a2e2a" fill-opacity="0.5" stroke="#43d0c1" stroke-width="1.5"/>
+              <ellipse cx="758" cy="143" rx="8" ry="9" fill="#43d0c1" opacity="0.18"/>
+              <!-- Hair wisps flowing -->
+              <path d="M758,129 Q766,118 772,108 Q776,100 771,94" fill="none" stroke="#43d0c1" stroke-width="1.2" stroke-linecap="round" opacity="0.65"/>
+              <path d="M758,129 Q750,116 745,104 Q742,96 746,90" fill="none" stroke="#43d0c1" stroke-width="1" stroke-linecap="round" opacity="0.5"/>
+              <path d="M765,125 Q774,115 778,105" fill="none" stroke="#88eedd" stroke-width="0.7" stroke-linecap="round" opacity="0.4"/>
+              <!-- Crown energy -->
+              <line x1="758" y1="129" x2="758" y2="120" stroke="#43d0c1" stroke-width="1.5" opacity="0.7" stroke-linecap="round"/>
+              <line x1="751" y1="131" x2="747" y2="122" stroke="#43d0c1" stroke-width="1" opacity="0.5" stroke-linecap="round"/>
+              <line x1="765" y1="131" x2="769" y2="122" stroke="#43d0c1" stroke-width="1" opacity="0.5" stroke-linecap="round"/>
+              <!-- Head glow pulse -->
+              <ellipse cx="758" cy="146" rx="22" ry="25" fill="#43d0c1" opacity="0.07">
+                <animate attributeName="rx" values="22;29;22" dur="3.4s" repeatCount="indefinite"/>
+                <animate attributeName="ry" values="25;32;25" dur="3.4s" repeatCount="indefinite"/>
+              </ellipse>
+              <!-- Energy hand toward mandala -->
+              <circle cx="695" cy="183" r="8" fill="#43d0c1" opacity="0.55">
+                <animate attributeName="r" values="8;12;8" dur="1.7s" repeatCount="indefinite"/>
+                <animate attributeName="opacity" values="0.55;0.85;0.55" dur="1.7s" repeatCount="indefinite"/>
+              </circle>
+              <circle cx="695" cy="183" r="4" fill="#aaffee" opacity="0.8">
+                <animate attributeName="r" values="4;6;4" dur="1.7s" repeatCount="indefinite"/>
+              </circle>
+            </g>
+            <!-- Floating motes right figure -->
+            <circle cx="775" cy="120" r="2" fill="#43d0c1" opacity="0">
+              <animate attributeName="cy" values="120;103;86" dur="2.8s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0;0.8;0" dur="2.8s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="745" cy="128" r="1.5" fill="#88eedd" opacity="0">
+              <animate attributeName="cy" values="128;110;92" dur="3.3s" begin="1s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0;0.7;0" dur="3.3s" begin="1s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="785" cy="136" r="1.2" fill="#43d0c1" opacity="0">
+              <animate attributeName="cy" values="136;119;101" dur="2.6s" begin="0.5s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0;0.6;0" dur="2.6s" begin="0.5s" repeatCount="indefinite"/>
+            </circle>
+
+            <!-- Edge vignettes -->
+            <rect width="80" height="378" fill="url(#dSky)" opacity="0.5"/>
+            <rect x="840" width="80" height="378" fill="url(#dSky)" opacity="0.5"/>
+            <rect y="320" width="920" height="58" fill="#010108" opacity="0.75"/>
+            <rect width="920" height="40" fill="#010108" opacity="0.4"/>
+          </g>
+        </svg>
       </div>
     </div>
 
