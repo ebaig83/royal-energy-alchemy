@@ -455,7 +455,13 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#d
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
 .gate-btn{width:100%;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.45em;color:#000;text-transform:uppercase;background:linear-gradient(135deg,#f5d98a,#e8b84b);padding:14px;border:none;cursor:pointer;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);transition:filter .3s}
 .gate-btn:hover{filter:brightness(1.1)}
+.gate-btn:disabled{opacity:.5;cursor:not-allowed;filter:none}
 .gate-err{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:#ee444488;text-transform:uppercase;margin-top:10px;min-height:18px}
+.gate-spinner{display:inline-block;width:14px;height:14px;border:2px solid #00000033;border-top-color:#000;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* logout button in header */
+#logoutBtn{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#e8b84b88;text-transform:uppercase;text-decoration:none;border:1px solid #e8b84b22;padding:7px 14px;cursor:pointer;background:transparent;transition:all .2s}
+#logoutBtn:hover{border-color:#ee444466;color:#ee7070}
 </style>
 </head>
 <body>
@@ -465,31 +471,121 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#d
   <div class="gate-box">
     <span class="gate-eyebrow">Practitioner Portal</span>
     <h1 class="gate-title">Royal Energy Alchemy</h1>
-    <p class="gate-sub">Enter your access code to continue</p>
-    <input type="password" id="gateInput" class="gate-input" placeholder="••••••••" autocomplete="off" onkeydown="if(event.key==='Enter')checkGate()"/>
-    <button class="gate-btn" onclick="checkGate()">Enter</button>
+    <p class="gate-sub">Sign in to continue</p>
+    <input type="email" id="gateEmail" class="gate-input" placeholder="Email" autocomplete="email" onkeydown="if(event.key==='Enter')document.getElementById('gatePass').focus()" style="margin-bottom:10px"/>
+    <input type="password" id="gatePass" class="gate-input" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/>
+    <button class="gate-btn" id="gateBtn" onclick="doLogin()">Sign In</button>
     <div class="gate-err" id="gateErr"></div>
   </div>
 </div>
-<script>
-(function(){
-  var PASS = 'daron@123';
-  var SESSION_KEY = 'rea_dash_auth';
-  if(sessionStorage.getItem(SESSION_KEY)==='1'){
-    document.getElementById('accessGate').classList.add('hidden');
+
+<!-- Supabase JS client (ESM via CDN, loaded as module) -->
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+const SUPABASE_URL  = 'https://pqlynrmacrorkfludmms.supabase.co';
+const SUPABASE_ANON = 'SUPABASE_ANON_PLACEHOLDER'; // injected by build.sh at deploy time
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON);
+
+// ── Expose login/logout globally so onclick handlers can reach them ──
+window._sb = sb;
+
+window.doLogin = async function() {
+  const email = document.getElementById('gateEmail').value.trim();
+  const pass  = document.getElementById('gatePass').value;
+  const btn   = document.getElementById('gateBtn');
+  const err   = document.getElementById('gateErr');
+
+  if (!email || !pass) {
+    showGateErr('Please enter your email and password.');
+    return;
   }
-  window.checkGate = function(){
-    var val = document.getElementById('gateInput').value;
-    if(val === PASS){
-      sessionStorage.setItem(SESSION_KEY,'1');
-      document.getElementById('accessGate').classList.add('hidden');
-    } else {
-      var inp = document.getElementById('gateInput');
-      inp.classList.add('error');
-      document.getElementById('gateErr').textContent = 'Incorrect code';
-      setTimeout(function(){ inp.classList.remove('error'); inp.value=''; }, 600);
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="gate-spinner"></span>Signing in…';
+  err.textContent = '';
+
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+
+  if (error) {
+    btn.disabled = false;
+    btn.textContent = 'Sign In';
+    showGateErr(friendlyAuthError(error.message));
+    ['gateEmail','gatePass'].forEach(id => {
+      const el = document.getElementById(id);
+      el.classList.add('error');
+      setTimeout(() => el.classList.remove('error'), 600);
+    });
+    return;
+  }
+
+  // Persist the session token
+  sessionStorage.setItem('rea_sb_token', data.session.access_token);
+  sessionStorage.setItem('rea_sb_refresh', data.session.refresh_token);
+  unlockDashboard(data.user);
+};
+
+window.doLogout = async function() {
+  await sb.auth.signOut();
+  sessionStorage.removeItem('rea_sb_token');
+  sessionStorage.removeItem('rea_sb_refresh');
+  // Re-show gate, clear fields
+  document.getElementById('accessGate').classList.remove('hidden');
+  document.getElementById('gateEmail').value = '';
+  document.getElementById('gatePass').value  = '';
+  document.getElementById('gateBtn').textContent = 'Sign In';
+  document.getElementById('gateErr').textContent = '';
+  document.getElementById('logoutBtn').style.display = 'none';
+};
+
+function unlockDashboard(user) {
+  document.getElementById('accessGate').classList.add('hidden');
+  // Show logout button and label with email
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (logoutBtn) {
+    logoutBtn.style.display = '';
+    logoutBtn.title = user.email;
+  }
+  // Fire dashboard init if it hasn't run yet
+  if (typeof window.initDashboard === 'function') window.initDashboard();
+}
+
+function showGateErr(msg) {
+  document.getElementById('gateErr').textContent = msg;
+}
+
+function friendlyAuthError(msg) {
+  if (!msg) return 'Sign in failed. Please try again.';
+  if (/invalid.*credentials|wrong.*password|invalid login/i.test(msg)) return 'Incorrect email or password.';
+  if (/email.*not.*confirmed/i.test(msg)) return 'Please confirm your email before signing in.';
+  if (/too many requests/i.test(msg)) return 'Too many attempts. Please wait a moment.';
+  if (/network/i.test(msg)) return 'Network error. Check your connection.';
+  return 'Sign in failed. Please try again.';
+}
+
+// ── On load: try to restore session ──
+(async function() {
+  const token   = sessionStorage.getItem('rea_sb_token');
+  const refresh = sessionStorage.getItem('rea_sb_refresh');
+
+  if (token && refresh) {
+    const { data, error } = await sb.auth.setSession({ access_token: token, refresh_token: refresh });
+    if (!error && data?.user) {
+      unlockDashboard(data.user);
+      return;
     }
-  };
+    // Token expired — clear and show gate
+    sessionStorage.removeItem('rea_sb_token');
+    sessionStorage.removeItem('rea_sb_refresh');
+  }
+
+  // Also check if Supabase already has an active session (e.g. tab reload)
+  const { data } = await sb.auth.getSession();
+  if (data?.session?.user) {
+    sessionStorage.setItem('rea_sb_token',   data.session.access_token);
+    sessionStorage.setItem('rea_sb_refresh', data.session.refresh_token);
+    unlockDashboard(data.session.user);
+  }
 })();
 </script>
 
@@ -503,6 +599,7 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#d
       <a class='nav-link' href='/session-log'>Log Session</a>
       <a class='nav-link' href='/waiver-esign'>Waiver</a>
       <a class='nav-link' href='/'>Live Site</a>
+      <button id="logoutBtn" onclick="doLogout()" style="display:none">Sign Out</button>
     </div>
   </div>
 
