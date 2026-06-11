@@ -6,10 +6,13 @@
   'use strict';
 
   // ── State ────────────────────────────────────────────────────────────────
-  var _clients     = [];
-  var _loaded      = false;
-  var _searchTimer = null;
-  var _tlClientId  = null;   // client currently open in timeline modal
+  var _clients      = [];
+  var _loaded       = false;
+  var _searchTimer  = null;
+  var _tlClientId   = null;   // client currently open in timeline modal
+  var _profileId    = null;   // client currently open in profile modal
+  var _recEditId    = null;   // recommendation being edited (null = create)
+  var _refEditId    = null;   // referral being edited (null = create)
 
   // ── API helper ───────────────────────────────────────────────────────────
   function token() { return sessionStorage.getItem('rea_sb_token') || ''; }
@@ -308,23 +311,29 @@
   // PROFILE MODAL
   // ═══════════════════════════════════════════════════════════════════════════
   window.crmOpenProfile = async function (id) {
+    _profileId = id;
     var modal = document.getElementById('crmProfileModal');
     var body  = document.getElementById('crmProfileBody');
     body.innerHTML = loadingHtml();
     modal.classList.add('open');
 
     try {
-      // Fetch client detail + full timeline in parallel
+      // Fetch client detail + timeline + recommendations + referrals in parallel
       var results = await Promise.all([
         api('/clients?id=' + id),
         api('/timeline?client_id=' + id),
+        api('/recommendations?client_id=' + id).catch(function() { return { recommendations: [] }; }),
+        api('/referrals?client_id=' + id).catch(function() { return { referrals: [] }; }),
       ]);
       var data     = results[0];
       var tlData   = results[1];
+      var recs     = results[2].recommendations || [];
+      var refs     = results[3].referrals       || [];
       var cl       = data.client;
       var sess     = data.sessions  || [];
       var ac       = data.aftercare || [];
       var tlEvents = tlData.timeline || [];
+      var tlStats  = tlData.stats   || {};
 
       // ── Derive status signals ───────────────────────────────────────
       var tags         = cl.tags || [];
@@ -453,14 +462,19 @@
         // ── Sessions table ──────────────────────────────────────────
         '<div style="font-family:\'Cinzel\',serif;font-size:10px;letter-spacing:.3em;text-transform:uppercase;' +
           'color:#e8b84baa;margin-bottom:10px">Sessions</div>' +
-        '<table style="width:100%;border-collapse:collapse;font-family:\'EB Garamond\',serif;font-size:14px">' +
-          '<thead><tr>' +
-            thCell('Date') + thCell('Service') + thCell('Status') + thCell('Amount') +
-          '</tr></thead>' +
+        '<table style="width:100%;border-collapse:collapse;font-family:\'EB Garamond\',serif;font-size:14px;margin-bottom:28px">' +
+          '<thead><tr>' + thCell('Date') + thCell('Service') + thCell('Status') + thCell('Amount') + '</tr></thead>' +
           '<tbody>' + sessRows + '</tbody>' +
         '</table>' +
 
-        '<div style="margin-top:22px;border-top:1px solid #e8b84b22;padding-top:16px;display:flex;gap:10px">' +
+        // ── Recommendations ─────────────────────────────────────────
+        buildRecsSection(recs, id) +
+
+        // ── Referrals ───────────────────────────────────────────────
+        buildRefsSection(refs, id) +
+
+        // ── Footer actions ──────────────────────────────────────────
+        '<div style="margin-top:22px;border-top:1px solid #e8b84b22;padding-top:16px;display:flex;gap:10px;flex-wrap:wrap">' +
           '<button class="action-btn view" style="border-color:#e8b84b66;color:#e8b84b" ' +
             'onclick="crmCloseProfileModal();crmOpenEdit(\'' + esc(id) + '\')">✎ Edit Client</button>' +
           '<button class="action-btn view" style="border-color:#9b7fe866;color:#b09ef8" ' +
@@ -470,6 +484,157 @@
       body.innerHTML = errorHtml('Failed to load profile: ' + e.message);
     }
   };
+
+  // ── Recommendations section builder ──────────────────────────────────────
+  var PRIORITY_CFG = { high: ['High','#ff5555'], medium: ['Medium','#f8a84b'], low: ['Low','#66b5f8'] };
+  var PURCHASED_CFG = { yes: ['Purchased','#22c98a'], no: ['Not Purchased','#f07070'], unknown: ['Status Unknown','#888888'] };
+  var CAT_LABELS = { supplement:'Supplement', crystal:'Crystal', essential_oil:'Essential Oil',
+    book:'Book', course:'Course', device:'Device', service:'Service', other:'Other' };
+
+  function buildRecsSection(recs, clientId) {
+    var active    = recs.filter(function(r) { return r.purchased === 'unknown'; }).length;
+    var completed = recs.filter(function(r) { return r.purchased === 'yes'; }).length;
+    var declined  = recs.filter(function(r) { return r.purchased === 'no'; }).length;
+
+    var outstanding = recs.filter(function(r) { return r.purchased === 'unknown'; });
+    var outstandingAlert = outstanding.length
+      ? '<div style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.25em;text-transform:uppercase;' +
+          'color:#f8a84b;margin-bottom:10px">⚠ ' + outstanding.length + ' recommendation' +
+          (outstanding.length > 1 ? 's' : '') + ' awaiting outcome</div>'
+      : '';
+
+    var recRows = recs.length
+      ? recs.map(function(r) { return buildRecRow(r, clientId); }).join('')
+      : '<div style="color:#dddaee55;font-family:\'EB Garamond\',serif;font-size:14px;' +
+          'font-style:italic;padding:10px 0">No recommendations yet.</div>';
+
+    return '<div style="margin-bottom:28px">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px">' +
+        '<div style="font-family:\'Cinzel\',serif;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:#e8b84baa">' +
+          'Recommendations & Products' +
+        '</div>' +
+        '<div style="display:flex;gap:8px;align-items:center">' +
+          recStatChip(recs.length + ' Total', '#dddaee99') +
+          recStatChip(active    + ' Active',    '#f8a84b') +
+          recStatChip(completed + ' Completed', '#22c98a') +
+          (declined ? recStatChip(declined + ' Declined', '#f07070') : '') +
+          '<button class="action-btn approve" style="padding:4px 14px;font-size:8px" ' +
+            'onclick="crmOpenRecForm(\'' + esc(clientId) + '\',null)">+ Add</button>' +
+        '</div>' +
+      '</div>' +
+      outstandingAlert +
+      recRows +
+    '</div>';
+  }
+
+  function buildRecRow(r, clientId) {
+    var prCfg  = PRIORITY_CFG[r.priority]  || PRIORITY_CFG.medium;
+    var puCfg  = PURCHASED_CFG[r.purchased] || PURCHASED_CFG.unknown;
+    var catLbl = CAT_LABELS[r.category]    || 'Other';
+    return '<div style="background:#0a0718;border:1px solid #e8b84b33;padding:12px 16px;margin-bottom:8px">' +
+      '<div style="display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap">' +
+        '<div style="flex:1;min-width:0">' +
+          '<div style="font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:.08em;color:#f0ecff;' +
+            'font-weight:600;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">' +
+            r.product_name +
+            complianceBadge(catLbl,      '#9b7fe8') +
+            complianceBadge(prCfg[0],    prCfg[1]) +
+            complianceBadge(puCfg[0],    puCfg[1]) +
+          '</div>' +
+          (r.reason ? '<div style="font-family:\'EB Garamond\',serif;font-size:14px;color:#dddaeecc;line-height:1.5;margin-bottom:3px">' + r.reason + '</div>' : '') +
+          (r.client_outcome ? '<div style="font-family:\'EB Garamond\',serif;font-size:13px;color:#22c98acc;font-style:italic">Outcome: ' + r.client_outcome + '</div>' : '') +
+          (r.practitioner_notes ? '<div style="font-family:\'EB Garamond\',serif;font-size:13px;color:#dddaee77;font-style:italic">Notes: ' + r.practitioner_notes + '</div>' : '') +
+          '<div style="font-family:\'Cinzel\',serif;font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:#e8b84b55;margin-top:4px">' +
+            fmtDate(r.recommended_at) +
+          '</div>' +
+        '</div>' +
+        '<div style="display:flex;gap:6px;flex-shrink:0">' +
+          '<button class="action-btn view" style="border-color:#e8b84b55;color:#e8b84b;padding:3px 10px;font-size:8px" ' +
+            'onclick="crmOpenRecForm(\'' + esc(clientId) + '\',\'' + esc(r.id) + '\')">Edit</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  // ── Referrals section builder ─────────────────────────────────────────────
+  var URGENCY_CFG = { urgent: ['Urgent','#ff5555'], soon: ['Soon','#f8a84b'], routine: ['Routine','#66b5f8'] };
+  var FOLLOWED_CFG = { yes: ['Followed Up','#22c98a'], no: ['Not Followed Up','#f07070'], unknown: ['Pending','#888888'] };
+  var PTYPE_LABELS = { pcp:'PCP', therapist:'Therapist', psychiatrist:'Psychiatrist',
+    nutritionist:'Nutritionist', functional_medicine:'Functional Med', neurologist:'Neurologist',
+    physical_therapist:'Physical Therapist', energy_practitioner:'Energy Practitioner', other:'Other' };
+
+  function buildRefsSection(refs, clientId) {
+    var pending   = refs.filter(function(r) { return r.followed_through === 'unknown'; }).length;
+    var completed = refs.filter(function(r) { return r.followed_through === 'yes'; }).length;
+
+    var staleAlert = '';
+    var thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
+    var stale = refs.filter(function(r) {
+      return r.followed_through === 'unknown' && r.referred_at < thirtyDaysAgo;
+    });
+    if (stale.length) {
+      staleAlert = '<div style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.25em;text-transform:uppercase;' +
+        'color:#ff8888;margin-bottom:10px">⚠ ' + stale.length + ' referral' +
+        (stale.length > 1 ? 's' : '') + ' older than 30 days — follow up needed</div>';
+    }
+
+    var refRows = refs.length
+      ? refs.map(function(r) { return buildRefRow(r, clientId); }).join('')
+      : '<div style="color:#dddaee55;font-family:\'EB Garamond\',serif;font-size:14px;' +
+          'font-style:italic;padding:10px 0">No referrals yet.</div>';
+
+    return '<div style="margin-bottom:28px">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px">' +
+        '<div style="font-family:\'Cinzel\',serif;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:#e8b84baa">' +
+          'Provider Referrals' +
+        '</div>' +
+        '<div style="display:flex;gap:8px;align-items:center">' +
+          recStatChip(refs.length  + ' Total',     '#dddaee99') +
+          recStatChip(pending      + ' Pending',    '#f8a84b') +
+          recStatChip(completed    + ' Completed',  '#22c98a') +
+          '<button class="action-btn approve" style="padding:4px 14px;font-size:8px" ' +
+            'onclick="crmOpenRefForm(\'' + esc(clientId) + '\',null)">+ Add</button>' +
+        '</div>' +
+      '</div>' +
+      staleAlert +
+      refRows +
+    '</div>';
+  }
+
+  function buildRefRow(r, clientId) {
+    var urgCfg = URGENCY_CFG[r.urgency]             || URGENCY_CFG.routine;
+    var flwCfg = FOLLOWED_CFG[r.followed_through]   || FOLLOWED_CFG.unknown;
+    var ptLbl  = PTYPE_LABELS[r.provider_type]      || 'Other';
+    return '<div style="background:#0a0718;border:1px solid #e8b84b33;padding:12px 16px;margin-bottom:8px">' +
+      '<div style="display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap">' +
+        '<div style="flex:1;min-width:0">' +
+          '<div style="font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:.08em;color:#f0ecff;' +
+            'font-weight:600;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">' +
+            r.provider_name +
+            complianceBadge(ptLbl,      '#9b7fe8') +
+            complianceBadge(urgCfg[0],  urgCfg[1]) +
+            complianceBadge(flwCfg[0],  flwCfg[1]) +
+          '</div>' +
+          (r.reason ? '<div style="font-family:\'EB Garamond\',serif;font-size:14px;color:#dddaeecc;line-height:1.5;margin-bottom:3px">' + r.reason + '</div>' : '') +
+          (r.contact_info ? '<div style="font-family:\'EB Garamond\',serif;font-size:13px;color:#66b5f8cc">' + r.contact_info + '</div>' : '') +
+          (r.outcome_notes ? '<div style="font-family:\'EB Garamond\',serif;font-size:13px;color:#22c98acc;font-style:italic;margin-top:2px">Outcome: ' + r.outcome_notes + '</div>' : '') +
+          '<div style="font-family:\'Cinzel\',serif;font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:#e8b84b55;margin-top:4px">' +
+            'Referred ' + fmtDate(r.referred_at) +
+          '</div>' +
+        '</div>' +
+        '<div style="display:flex;gap:6px;flex-shrink:0">' +
+          '<button class="action-btn view" style="border-color:#e8b84b55;color:#e8b84b;padding:3px 10px;font-size:8px" ' +
+            'onclick="crmOpenRefForm(\'' + esc(clientId) + '\',\'' + esc(r.id) + '\')">Edit</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function recStatChip(label, color) {
+    return '<span style="font-family:\'Cinzel\',serif;font-size:8px;letter-spacing:.2em;' +
+      'text-transform:uppercase;color:' + color + ';padding:3px 8px;' +
+      'border:1px solid ' + color + '44">' + label + '</span>';
+  }
 
   function complianceBadge(label, color) {
     return '<span style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.25em;' +
@@ -514,11 +679,13 @@
       document.getElementById('crmTimelineTitle').textContent = cl.full_name + ' — Timeline';
 
       var TYPE_CFG = {
-        session:   { icon: '✦',  label: 'Session',    color: '#9b7fe8' },
-        note:      { icon: '📝', label: 'Note',       color: '#e8b84b' },
-        payment:   { icon: '💳', label: 'Payment',    color: '#22c98a' },
-        aftercare: { icon: '💌', label: 'Follow-up',  color: '#66b5f8' },
-        intake:    { icon: '📋', label: 'Intake',     color: '#f8a84b' },
+        session:        { icon: '✦',  label: 'Session',        color: '#9b7fe8' },
+        note:           { icon: '📝', label: 'Note',           color: '#e8b84b' },
+        payment:        { icon: '💳', label: 'Payment',        color: '#22c98a' },
+        aftercare:      { icon: '💌', label: 'Follow-up',      color: '#66b5f8' },
+        intake:         { icon: '📋', label: 'Intake',         color: '#f8a84b' },
+        recommendation: { icon: '🌿', label: 'Recommendation', color: '#22c98a' },
+        referral:       { icon: '🔗', label: 'Referral',       color: '#b09ef8' },
       };
 
       var eventsHtml = events.length
@@ -537,7 +704,21 @@
             } else if (ev.type === 'aftercare') {
               detail = (d.message_type || '') + (d.status ? ' · ' + d.status : '');
             } else if (ev.type === 'intake') {
-              detail = 'Form submitted' + (d.service_interest ? ' · ' + d.service_interest : '');
+              detail = 'Form submitted' + (d.service_requested ? ' · ' + d.service_requested : '');
+            } else if (ev.type === 'recommendation') {
+              var prCfg = PRIORITY_CFG[d.priority] || PRIORITY_CFG.medium;
+              var puCfg = PURCHASED_CFG[d.purchased] || PURCHASED_CFG.unknown;
+              detail = (d.product_name || '') +
+                (d.category ? ' · ' + (CAT_LABELS[d.category] || d.category) : '') +
+                ' · ' + prCfg[0] + ' priority · ' + puCfg[0] +
+                (d.reason ? ' — ' + d.reason.slice(0, 80) : '');
+            } else if (ev.type === 'referral') {
+              var urgCfg = URGENCY_CFG[d.urgency] || URGENCY_CFG.routine;
+              var flwCfg = FOLLOWED_CFG[d.followed_through] || FOLLOWED_CFG.unknown;
+              detail = (d.provider_name || '') +
+                (d.provider_type ? ' · ' + (PTYPE_LABELS[d.provider_type] || d.provider_type) : '') +
+                ' · ' + urgCfg[0] + ' · ' + flwCfg[0] +
+                (d.reason ? ' — ' + d.reason.slice(0, 80) : '');
             }
             return '<div style="display:flex;gap:14px;padding:12px 0;border-bottom:1px solid #e8b84b14">' +
               '<div style="width:38px;height:38px;border-radius:50%;background:' + cfg.color + '22;' +
@@ -701,6 +882,358 @@
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
+  // RECOMMENDATION FORM MODAL
+  // ═══════════════════════════════════════════════════════════════════════════
+  window.crmOpenRecForm = async function (clientId, recId) {
+    _recEditId = recId || null;
+    var modal  = document.getElementById('crmRecModal');
+    var err    = document.getElementById('crmRecError');
+    if (!modal) return;
+    err.textContent = '';
+
+    // Reset form
+    document.getElementById('crmRecProductName').value      = '';
+    document.getElementById('crmRecCategory').value         = 'other';
+    document.getElementById('crmRecReason').value           = '';
+    document.getElementById('crmRecPriority').value         = 'medium';
+    document.getElementById('crmRecPractNotes').value       = '';
+    document.getElementById('crmRecPurchased').value        = 'unknown';
+    document.getElementById('crmRecClientOutcome').value    = '';
+    document.getElementById('crmRecDate').value             = todayISO();
+    document.getElementById('crmRecClientId').value         = clientId;
+    document.getElementById('crmRecModalTitle').textContent = recId ? 'Edit Recommendation' : 'Add Recommendation';
+
+    if (recId) {
+      try {
+        var d = await api('/recommendations?id=' + recId);
+        var r = d.recommendation;
+        document.getElementById('crmRecProductName').value   = r.product_name    || '';
+        document.getElementById('crmRecCategory').value      = r.category        || 'other';
+        document.getElementById('crmRecReason').value        = r.reason          || '';
+        document.getElementById('crmRecPriority').value      = r.priority        || 'medium';
+        document.getElementById('crmRecPractNotes').value    = r.practitioner_notes || '';
+        document.getElementById('crmRecPurchased').value     = r.purchased       || 'unknown';
+        document.getElementById('crmRecClientOutcome').value = r.client_outcome  || '';
+        document.getElementById('crmRecDate').value          = r.recommended_at  || todayISO();
+      } catch (_) {}
+    }
+    modal.classList.add('open');
+    document.getElementById('crmRecProductName').focus();
+  };
+
+  window.crmCloseRecModal = function (e) {
+    if (e && e.target !== document.getElementById('crmRecModal')) return;
+    document.getElementById('crmRecModal').classList.remove('open');
+  };
+
+  window.crmSaveRec = async function () {
+    var clientId = document.getElementById('crmRecClientId').value;
+    var name     = document.getElementById('crmRecProductName').value.trim();
+    var errEl    = document.getElementById('crmRecError');
+    var btn      = document.getElementById('crmRecSaveBtn');
+    if (!name) { errEl.textContent = 'Product name is required.'; return; }
+    errEl.textContent = '';
+    btn.disabled = true; btn.textContent = 'Saving…';
+
+    var payload = {
+      client_id:          clientId,
+      product_name:       name,
+      category:           document.getElementById('crmRecCategory').value      || 'other',
+      reason:             document.getElementById('crmRecReason').value.trim() || null,
+      priority:           document.getElementById('crmRecPriority').value      || 'medium',
+      practitioner_notes: document.getElementById('crmRecPractNotes').value.trim() || null,
+      purchased:          document.getElementById('crmRecPurchased').value     || 'unknown',
+      client_outcome:     document.getElementById('crmRecClientOutcome').value.trim() || null,
+      recommended_at:     document.getElementById('crmRecDate').value          || todayISO(),
+    };
+    try {
+      if (_recEditId) {
+        await api('/recommendations?id=' + _recEditId, { method: 'PATCH', body: JSON.stringify(payload) });
+      } else {
+        await api('/recommendations', { method: 'POST', body: JSON.stringify(payload) });
+      }
+      document.getElementById('crmRecModal').classList.remove('open');
+      if (_profileId) await window.crmOpenProfile(_profileId);
+    } catch (e) {
+      errEl.textContent = e.message;
+      btn.disabled = false; btn.textContent = 'Save';
+    }
+  };
+
+  function todayISO() { return new Date().toISOString().slice(0, 10); }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // REFERRAL FORM MODAL
+  // ═══════════════════════════════════════════════════════════════════════════
+  window.crmOpenRefForm = async function (clientId, refId) {
+    _refEditId = refId || null;
+    var modal  = document.getElementById('crmRefModal');
+    var err    = document.getElementById('crmRefError');
+    if (!modal) return;
+    err.textContent = '';
+
+    document.getElementById('crmRefProviderName').value  = '';
+    document.getElementById('crmRefProviderType').value  = 'other';
+    document.getElementById('crmRefContactInfo').value   = '';
+    document.getElementById('crmRefReason').value        = '';
+    document.getElementById('crmRefUrgency').value       = 'routine';
+    document.getElementById('crmRefDate').value          = todayISO();
+    document.getElementById('crmRefFollowed').value      = 'unknown';
+    document.getElementById('crmRefOutcome').value       = '';
+    document.getElementById('crmRefClientId').value      = clientId;
+    document.getElementById('crmRefModalTitle').textContent = refId ? 'Edit Referral' : 'Add Referral';
+
+    if (refId) {
+      try {
+        var d = await api('/referrals?id=' + refId);
+        var r = d.referral;
+        document.getElementById('crmRefProviderName').value = r.provider_name    || '';
+        document.getElementById('crmRefProviderType').value = r.provider_type    || 'other';
+        document.getElementById('crmRefContactInfo').value  = r.contact_info     || '';
+        document.getElementById('crmRefReason').value       = r.reason           || '';
+        document.getElementById('crmRefUrgency').value      = r.urgency          || 'routine';
+        document.getElementById('crmRefDate').value         = r.referred_at      || todayISO();
+        document.getElementById('crmRefFollowed').value     = r.followed_through || 'unknown';
+        document.getElementById('crmRefOutcome').value      = r.outcome_notes    || '';
+      } catch (_) {}
+    }
+    modal.classList.add('open');
+    document.getElementById('crmRefProviderName').focus();
+  };
+
+  window.crmCloseRefModal = function (e) {
+    if (e && e.target !== document.getElementById('crmRefModal')) return;
+    document.getElementById('crmRefModal').classList.remove('open');
+  };
+
+  window.crmSaveRef = async function () {
+    var clientId = document.getElementById('crmRefClientId').value;
+    var name     = document.getElementById('crmRefProviderName').value.trim();
+    var type     = document.getElementById('crmRefProviderType').value;
+    var errEl    = document.getElementById('crmRefError');
+    var btn      = document.getElementById('crmRefSaveBtn');
+    if (!name) { errEl.textContent = 'Provider name is required.'; return; }
+    errEl.textContent = '';
+    btn.disabled = true; btn.textContent = 'Saving…';
+
+    var payload = {
+      client_id:        clientId,
+      provider_name:    name,
+      provider_type:    type      || 'other',
+      contact_info:     document.getElementById('crmRefContactInfo').value.trim() || null,
+      reason:           document.getElementById('crmRefReason').value.trim()      || null,
+      urgency:          document.getElementById('crmRefUrgency').value            || 'routine',
+      referred_at:      document.getElementById('crmRefDate').value               || todayISO(),
+      followed_through: document.getElementById('crmRefFollowed').value           || 'unknown',
+      outcome_notes:    document.getElementById('crmRefOutcome').value.trim()     || null,
+    };
+    try {
+      if (_refEditId) {
+        await api('/referrals?id=' + _refEditId, { method: 'PATCH', body: JSON.stringify(payload) });
+      } else {
+        await api('/referrals', { method: 'POST', body: JSON.stringify(payload) });
+      }
+      document.getElementById('crmRefModal').classList.remove('open');
+      if (_profileId) await window.crmOpenProfile(_profileId);
+    } catch (e) {
+      errEl.textContent = e.message;
+      btn.disabled = false; btn.textContent = 'Save';
+    }
+  };
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // INJECT REC + REF MODALS
+  // ═══════════════════════════════════════════════════════════════════════════
+  function injectRecRefModals() {
+    // ── Recommendation modal ────────────────────────────────────────────────
+    if (!document.getElementById('crmRecModal')) {
+      var el = document.createElement('div');
+      el.id        = 'crmRecModal';
+      el.className = 'modal-overlay';
+      el.onclick   = window.crmCloseRecModal;
+      el.innerHTML =
+        '<div class="modal" style="max-width:560px" onclick="event.stopPropagation()">' +
+          '<button class="modal-close" onclick="crmCloseRecModal()">✕</button>' +
+          '<h2 id="crmRecModalTitle">Add Recommendation</h2>' +
+          '<div class="modal-sub">Product, supplement, or service for this client</div>' +
+          '<input type="hidden" id="crmRecClientId">' +
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px">' +
+
+            '<div style="grid-column:span 2">' +
+              recFormLabel('Product / Item Name *') +
+              '<input id="crmRecProductName" class="appt-input" placeholder="e.g. Black Tourmaline" ' +
+                'style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44">' +
+            '</div>' +
+
+            '<div>' +
+              recFormLabel('Category') +
+              '<select id="crmRecCategory" class="appt-input" ' +
+                'style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44">' +
+                '<option value="supplement">Supplement</option>' +
+                '<option value="crystal">Crystal</option>' +
+                '<option value="essential_oil">Essential Oil</option>' +
+                '<option value="book">Book</option>' +
+                '<option value="course">Course</option>' +
+                '<option value="device">Device</option>' +
+                '<option value="service">Service</option>' +
+                '<option value="other" selected>Other</option>' +
+              '</select>' +
+            '</div>' +
+
+            '<div>' +
+              recFormLabel('Priority') +
+              '<select id="crmRecPriority" class="appt-input" ' +
+                'style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44">' +
+                '<option value="high">High</option>' +
+                '<option value="medium" selected>Medium</option>' +
+                '<option value="low">Low</option>' +
+              '</select>' +
+            '</div>' +
+
+            '<div>' +
+              recFormLabel('Date Recommended') +
+              '<input id="crmRecDate" type="date" class="appt-input" ' +
+                'style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44;color-scheme:dark">' +
+            '</div>' +
+
+            '<div>' +
+              recFormLabel('Client Purchased?') +
+              '<select id="crmRecPurchased" class="appt-input" ' +
+                'style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44">' +
+                '<option value="unknown" selected>Unknown</option>' +
+                '<option value="yes">Yes</option>' +
+                '<option value="no">No</option>' +
+              '</select>' +
+            '</div>' +
+
+            '<div style="grid-column:span 2">' +
+              recFormLabel('Reason Recommended') +
+              '<textarea id="crmRecReason" class="modal-notes" ' +
+                'placeholder="e.g. Grounding and energetic boundary work…" ' +
+                'style="min-height:64px;margin-bottom:0;border-color:#e8b84b44"></textarea>' +
+            '</div>' +
+
+            '<div style="grid-column:span 2">' +
+              recFormLabel('Practitioner Notes') +
+              '<textarea id="crmRecPractNotes" class="modal-notes" ' +
+                'placeholder="Internal notes…" ' +
+                'style="min-height:48px;margin-bottom:0;border-color:#e8b84b44"></textarea>' +
+            '</div>' +
+
+            '<div style="grid-column:span 2">' +
+              recFormLabel('Client-Reported Outcome') +
+              '<input id="crmRecClientOutcome" class="appt-input" placeholder="e.g. Reports feeling more grounded…" ' +
+                'style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44">' +
+            '</div>' +
+
+          '</div>' +
+          '<div id="crmRecError" style="color:#ff7070;font-family:\'EB Garamond\',serif;font-size:14px;min-height:16px;margin-top:12px"></div>' +
+          '<div style="display:flex;gap:10px;margin-top:12px">' +
+            '<button id="crmRecSaveBtn" class="action-btn approve" onclick="crmSaveRec()" style="padding:8px 24px">Save</button>' +
+            '<button class="action-btn" onclick="crmCloseRecModal()">Cancel</button>' +
+          '</div>' +
+        '</div>';
+      document.body.appendChild(el);
+    }
+
+    // ── Referral modal ──────────────────────────────────────────────────────
+    if (!document.getElementById('crmRefModal')) {
+      var el2 = document.createElement('div');
+      el2.id        = 'crmRefModal';
+      el2.className = 'modal-overlay';
+      el2.onclick   = window.crmCloseRefModal;
+      el2.innerHTML =
+        '<div class="modal" style="max-width:560px" onclick="event.stopPropagation()">' +
+          '<button class="modal-close" onclick="crmCloseRefModal()">✕</button>' +
+          '<h2 id="crmRefModalTitle">Add Referral</h2>' +
+          '<div class="modal-sub">Refer this client to a provider</div>' +
+          '<input type="hidden" id="crmRefClientId">' +
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px">' +
+
+            '<div style="grid-column:span 2">' +
+              recFormLabel('Provider Name *') +
+              '<input id="crmRefProviderName" class="appt-input" placeholder="e.g. Dr. Smith – Neurology" ' +
+                'style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44">' +
+            '</div>' +
+
+            '<div>' +
+              recFormLabel('Provider Type') +
+              '<select id="crmRefProviderType" class="appt-input" ' +
+                'style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44">' +
+                '<option value="pcp">PCP</option>' +
+                '<option value="therapist">Therapist</option>' +
+                '<option value="psychiatrist">Psychiatrist</option>' +
+                '<option value="nutritionist">Nutritionist</option>' +
+                '<option value="functional_medicine">Functional Medicine</option>' +
+                '<option value="neurologist">Neurologist</option>' +
+                '<option value="physical_therapist">Physical Therapist</option>' +
+                '<option value="energy_practitioner">Energy Practitioner</option>' +
+                '<option value="other" selected>Other</option>' +
+              '</select>' +
+            '</div>' +
+
+            '<div>' +
+              recFormLabel('Urgency') +
+              '<select id="crmRefUrgency" class="appt-input" ' +
+                'style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44">' +
+                '<option value="urgent">Urgent</option>' +
+                '<option value="soon">Soon</option>' +
+                '<option value="routine" selected>Routine</option>' +
+              '</select>' +
+            '</div>' +
+
+            '<div>' +
+              recFormLabel('Referral Date') +
+              '<input id="crmRefDate" type="date" class="appt-input" ' +
+                'style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44;color-scheme:dark">' +
+            '</div>' +
+
+            '<div>' +
+              recFormLabel('Client Followed Through?') +
+              '<select id="crmRefFollowed" class="appt-input" ' +
+                'style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44">' +
+                '<option value="unknown" selected>Unknown / Pending</option>' +
+                '<option value="yes">Yes</option>' +
+                '<option value="no">No</option>' +
+              '</select>' +
+            '</div>' +
+
+            '<div style="grid-column:span 2">' +
+              recFormLabel('Contact Information') +
+              '<input id="crmRefContactInfo" class="appt-input" placeholder="Phone, address, website…" ' +
+                'style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44">' +
+            '</div>' +
+
+            '<div style="grid-column:span 2">' +
+              recFormLabel('Reason for Referral') +
+              '<textarea id="crmRefReason" class="modal-notes" ' +
+                'placeholder="e.g. Chronic tinnitus and sensory sensitivity…" ' +
+                'style="min-height:64px;margin-bottom:0;border-color:#e8b84b44"></textarea>' +
+            '</div>' +
+
+            '<div style="grid-column:span 2">' +
+              recFormLabel('Outcome Notes') +
+              '<input id="crmRefOutcome" class="appt-input" placeholder="e.g. Appointment scheduled for July…" ' +
+                'style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44">' +
+            '</div>' +
+
+          '</div>' +
+          '<div id="crmRefError" style="color:#ff7070;font-family:\'EB Garamond\',serif;font-size:14px;min-height:16px;margin-top:12px"></div>' +
+          '<div style="display:flex;gap:10px;margin-top:12px">' +
+            '<button id="crmRefSaveBtn" class="action-btn approve" onclick="crmSaveRef()" style="padding:8px 24px">Save</button>' +
+            '<button class="action-btn" onclick="crmCloseRefModal()">Cancel</button>' +
+          '</div>' +
+        '</div>';
+      document.body.appendChild(el2);
+    }
+  }
+
+  function recFormLabel(txt) {
+    return '<div style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.3em;' +
+      'text-transform:uppercase;color:#e8b84baa;margin-bottom:5px">' + txt + '</div>';
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
   // INIT
   // ═══════════════════════════════════════════════════════════════════════════
 
@@ -719,10 +1252,16 @@
     if (name === 'clients') window.renderClients();
   };
 
-  // Initial load if clients tab is already visible on page load
+  // Inject rec/ref modals + initial load
   document.addEventListener('DOMContentLoaded', function () {
+    injectRecRefModals();
     var active = document.querySelector('.tab-content.active');
     if (active && active.id === 'tab-clients') window.renderClients();
   });
+
+  // If DOM already ready (script loaded late)
+  if (document.readyState !== 'loading') {
+    injectRecRefModals();
+  }
 
 })();

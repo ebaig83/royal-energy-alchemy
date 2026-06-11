@@ -186,6 +186,52 @@ Each suite maps to one milestone. The agent runs only the suite(s) enabled in
 
 ---
 
+### Suite 4f — Recommendations & Referrals
+
+> Part of Session Notes / Client Profile milestone.
+
+#### Recommendations
+
+| # | Test | Pass condition |
+|---|---|---|
+| 4.33 | Create recommendation | `POST /recommendations` with `client_id`, `product_name`, `category` → 201 |
+| 4.34 | List by client | `GET /recommendations?client_id=<id>` returns array |
+| 4.35 | Fetch single | `GET /recommendations?id=<id>` returns record |
+| 4.36 | Edit recommendation | `PATCH /recommendations?id=<id>` with `purchased:"yes"`, `client_outcome` → 200 |
+| 4.37 | Recommendation appears in profile | Client profile shows rec row with product name, category, priority, purchased badges |
+| 4.38 | Recommendation appears in timeline | `GET /timeline?client_id=<id>` returns `type:"recommendation"` event |
+| 4.39 | Rec persists after refresh | Re-fetching profile shows same rec |
+| 4.40 | Outstanding alert shows | Profile shows "N recommendations awaiting outcome" when `purchased:"unknown"` recs exist |
+| 4.41 | Audit log entry | Written for create + patch |
+| 4.42 | RLS blocks anon | Anon client cannot SELECT from `recommendations` |
+
+#### Referrals
+
+| # | Test | Pass condition |
+|---|---|---|
+| 4.43 | Create referral | `POST /referrals` with `client_id`, `provider_name`, `provider_type` → 201 |
+| 4.44 | List by client | `GET /referrals?client_id=<id>` returns array |
+| 4.45 | Fetch single | `GET /referrals?id=<id>` returns record |
+| 4.46 | Edit referral | `PATCH /referrals?id=<id>` with `followed_through:"yes"`, `outcome_notes` → 200 |
+| 4.47 | Referral appears in profile | Client profile shows referral row with provider, type, urgency, followed-through badges |
+| 4.48 | Referral appears in timeline | `GET /timeline?client_id=<id>` returns `type:"referral"` event |
+| 4.49 | Referral follow-up tracking | Profile shows "N referrals pending follow-up" stat chip |
+| 4.50 | Stale referral alert | Referral older than 30 days with `followed_through:"unknown"` triggers red alert |
+| 4.51 | Referral persists after refresh | Re-fetching profile shows same referral |
+| 4.52 | Audit log entry | Written for create + patch |
+| 4.53 | RLS blocks anon | Anon client cannot SELECT from `referrals` |
+
+#### Timeline stats
+
+| # | Test | Pass condition |
+|---|---|---|
+| 4.54 | `stats.totalRecs` returned | Timeline response includes `stats.totalRecs` count |
+| 4.55 | `stats.activeRecs` returned | Count of recs with `purchased:"unknown"` |
+| 4.56 | `stats.totalReferrals` returned | Timeline response includes `stats.totalReferrals` |
+| 4.57 | `stats.pendingReferrals` returned | Count of referrals with `followed_through:"unknown"` |
+
+---
+
 ### Suite 5 — Aftercare
 
 > Milestone gate: Aftercare milestone.
@@ -275,7 +321,7 @@ Each suite maps to one milestone. The agent runs only the suite(s) enabled in
 [✅] Suite 1 — Authentication
 [✅] Suite 2 — Clients tab          ← passed 2026-06-11
 [✅] Suite 3 — Client Timeline      ← passed 2026-06-11 (manual retest)
-[🔲] Suite 4 — Session Notes + Compliance + Environment  ← NEXT
+[🔲] Suite 4 — Session Notes + Compliance + Env + Rec/Ref  ← NEXT
 [🔲] Suite 5 — Aftercare
 [🔲] Suite 6 — Payments
 [🔲] Suite 7 — Daily Briefing
