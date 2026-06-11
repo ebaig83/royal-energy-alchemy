@@ -232,6 +232,58 @@ Each suite maps to one milestone. The agent runs only the suite(s) enabled in
 
 ---
 
+### Suite 4g — Case File, Session-Linked Recs/Refs, and Action Plans
+
+> Part of Session Notes / Client Profile milestone.
+> **Do not advance to Suite 5 until 4g passes.**
+>
+> SQL prerequisite: `supabase/add_action_plans.sql` must be run before testing.
+
+#### Case File view
+
+| # | Test | Pass condition |
+|---|---|---|
+| 4.58 | Case file opens | `crmOpenProfile(id)` renders full case file modal without errors |
+| 4.59 | Action plans section renders | Case file shows "Action Plans" section with stat chips and "+ Add" button |
+| 4.60 | Stats bar shows 6 columns | Case file stats bar includes Active Recs and Pending Refs counts from `tlStats` |
+| 4.61 | Card button is "Case File" | Client card button reads "📋 Case File" (not "Profile") |
+
+#### Action Plans API
+
+| # | Test | Pass condition |
+|---|---|---|
+| 4.62 | Create action plan | `POST /action-plans` with `client_id`, any content field → 201 |
+| 4.63 | List by client | `GET /action-plans?client_id=<id>` returns array |
+| 4.64 | List by session | `GET /action-plans?session_id=<id>` returns plans for that session |
+| 4.65 | Fetch single | `GET /action-plans?id=<id>` returns record |
+| 4.66 | Edit plan | `PATCH /action-plans?id=<id>` with `status:"completed"` → 200 |
+| 4.67 | Plan appears in case file | Re-opening case file shows plan row with status/priority badges |
+| 4.68 | Plan appears in timeline | `GET /timeline?client_id=<id>` returns `type:"action_plan"` event |
+| 4.69 | `stats.totalActionPlans` returned | Timeline stats include `totalActionPlans` count |
+| 4.70 | `stats.activeActionPlans` returned | Count of plans with `status:"active"` |
+| 4.71 | Session action plan save | Filling action plan form in session notes modal and clicking Save calls `POST /action-plans` with `session_id` → 201 |
+| 4.72 | Audit log entry | Written for create + patch |
+| 4.73 | RLS blocks anon | Anon client cannot SELECT from `action_plans` |
+
+#### Session-linked recommendations and referrals
+
+| # | Test | Pass condition |
+|---|---|---|
+| 4.74 | Recs pre-populate in session notes | Opening session notes for a client who has recs shows active rec count and rec list in "Recommendations & Referrals" section |
+| 4.75 | Refs pre-populate in session notes | Opening session notes for a client with referrals shows pending ref count and ref list |
+| 4.76 | Quick-add rec from session | Clicking "+ Rec" in session notes modal shows inline form |
+| 4.77 | Quick-add rec saves with session_id | Completing quick-add rec form → `POST /recommendations` with `session_id` present → 201 |
+| 4.78 | New rec appears in session modal | After quick-add, rec count increments in session notes modal without full page reload |
+| 4.79 | New rec appears in client case file | Re-opening case file shows the newly added rec with "Linked to session" indicator |
+| 4.80 | Quick-add referral from session | Clicking "+ Referral" shows inline form |
+| 4.81 | Quick-add referral saves with session_id | Completing form → `POST /referrals` with `session_id` present → 201 |
+| 4.82 | New referral appears in session modal | After quick-add, ref count increments in session notes modal |
+| 4.83 | New referral appears in client case file | Re-opening case file shows referral with "Linked to session" indicator |
+| 4.84 | Session-linked rec/ref in timeline | Both appear as `type:"recommendation"` and `type:"referral"` in `/timeline` |
+| 4.85 | No permission errors on parallel fetch | Session notes modal fetches timeline + clients + recs + refs in parallel — all return 200 |
+
+---
+
 ### Suite 5 — Aftercare
 
 > Milestone gate: Aftercare milestone.
@@ -307,8 +359,8 @@ Each suite maps to one milestone. The agent runs only the suite(s) enabled in
 | 9.4 | Anon blocked on payments | Same |
 | 9.5 | Anon blocked on aftercare | Same |
 | 9.6 | Anon blocked on audit_logs | Same |
-| 9.7 | service_role can read all tables | Netlify function SELECT succeeds on all 9 tables |
-| 9.8 | service_role can write all tables | INSERT succeeds on all 9 tables |
+| 9.7 | service_role can read all tables | Netlify function SELECT succeeds on all 11 tables |
+| 9.8 | service_role can write all tables | INSERT succeeds on all 11 tables |
 | 9.9 | ANON_KEY never in Netlify function env | `process.env.SUPABASE_ANON_KEY` undefined in function context |
 | 9.10 | SERVICE_ROLE_KEY never in browser bundle | Key string absent from all `website/*.js` and `website/*.html` files |
 
@@ -321,7 +373,7 @@ Each suite maps to one milestone. The agent runs only the suite(s) enabled in
 [✅] Suite 1 — Authentication
 [✅] Suite 2 — Clients tab          ← passed 2026-06-11
 [✅] Suite 3 — Client Timeline      ← passed 2026-06-11 (manual retest)
-[🔲] Suite 4 — Session Notes + Compliance + Env + Rec/Ref  ← NEXT
+[🔲] Suite 4 — Session Notes + Compliance + Env + Rec/Ref + Case File + Action Plans  ← NEXT
 [🔲] Suite 5 — Aftercare
 [🔲] Suite 6 — Payments
 [🔲] Suite 7 — Daily Briefing

@@ -27,6 +27,7 @@ exports.handler = async function(event) {
     { data: intakes },
     { data: recs },
     { data: refs },
+    { data: plans },
   ] = await Promise.all([
     sb.from('clients').select('*').eq('id', id).single(),
     sb.from('sessions').select('*').eq('client_id', id).order('session_date', { ascending: false }),
@@ -36,6 +37,7 @@ exports.handler = async function(event) {
     sb.from('intake_submissions').select('*').eq('client_id', id).order('created_at', { ascending: false }),
     sb.from('recommendations').select('*').eq('client_id', id).order('recommended_at', { ascending: false }),
     sb.from('referrals').select('*').eq('client_id', id).order('referred_at', { ascending: false }),
+    sb.from('action_plans').select('*').eq('client_id', id).order('created_at', { ascending: false }),
   ]);
 
   if (!client) return respond(404, { error: 'Client not found.' });
@@ -49,6 +51,7 @@ exports.handler = async function(event) {
   (intakes  || []).forEach(i => events.push({ type: 'intake',         date: i.created_at,                    data: i }));
   (recs     || []).forEach(r => events.push({ type: 'recommendation', date: r.recommended_at || r.created_at, data: r }));
   (refs     || []).forEach(r => events.push({ type: 'referral',       date: r.referred_at   || r.created_at, data: r }));
+  (plans    || []).forEach(p => events.push({ type: 'action_plan',    date: p.created_at,                    data: p }));
 
   events.sort((a, b) => new Date(b.date) - new Date(a.date));
 
@@ -57,6 +60,7 @@ exports.handler = async function(event) {
   const pendingFollowUps   = (aftercareRows || []).filter(a => a.status === 'scheduled').length;
   const activeRecs         = (recs || []).filter(r => r.purchased === 'unknown').length;
   const pendingReferrals   = (refs || []).filter(r => r.followed_through === 'unknown').length;
+  const activeActionPlans  = (plans || []).filter(p => p.status === 'active').length;
 
   return respond(200, {
     client,
@@ -69,6 +73,8 @@ exports.handler = async function(event) {
       activeRecs,
       totalReferrals:    (refs || []).length,
       pendingReferrals,
+      totalActionPlans:  (plans || []).length,
+      activeActionPlans,
     },
     timeline: events,
   });

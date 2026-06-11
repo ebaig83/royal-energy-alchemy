@@ -1,6 +1,5 @@
 // clients-module.js
-// Live /clients API tab — overrides localStorage-based renderClients().
-// Loaded after dashboard.html inline scripts so these definitions win.
+// Full case file, recommendations, referrals, and action plans for each client.
 
 (function () {
   'use strict';
@@ -9,10 +8,11 @@
   var _clients      = [];
   var _loaded       = false;
   var _searchTimer  = null;
-  var _tlClientId   = null;   // client currently open in timeline modal
-  var _profileId    = null;   // client currently open in profile modal
-  var _recEditId    = null;   // recommendation being edited (null = create)
-  var _refEditId    = null;   // referral being edited (null = create)
+  var _tlClientId   = null;
+  var _profileId    = null;
+  var _recEditId    = null;
+  var _refEditId    = null;
+  var _apEditId     = null;
 
   // ── API helper ───────────────────────────────────────────────────────────
   function token() { return sessionStorage.getItem('rea_sb_token') || ''; }
@@ -41,12 +41,22 @@
     archived:              ['Archived',        '#aaaaaa'],
   };
 
+  var PRIORITY_CFG  = { high: ['High','#ff5555'], medium: ['Medium','#f8a84b'], low: ['Low','#66b5f8'] };
+  var PURCHASED_CFG = { yes: ['Purchased','#22c98a'], no: ['Not Purchased','#f07070'], unknown: ['Status Unknown','#888888'] };
+  var CAT_LABELS    = { supplement:'Supplement', crystal:'Crystal', essential_oil:'Essential Oil',
+    book:'Book', course:'Course', device:'Device', service:'Service', other:'Other' };
+  var URGENCY_CFG   = { urgent: ['Urgent','#ff5555'], soon: ['Soon','#f8a84b'], routine: ['Routine','#66b5f8'] };
+  var FOLLOWED_CFG  = { yes: ['Followed Up','#22c98a'], no: ['Not Followed Up','#f07070'], unknown: ['Pending','#888888'] };
+  var PTYPE_LABELS  = { pcp:'PCP', therapist:'Therapist', psychiatrist:'Psychiatrist',
+    nutritionist:'Nutritionist', functional_medicine:'Functional Med', neurologist:'Neurologist',
+    physical_therapist:'Physical Therapist', energy_practitioner:'Energy Practitioner', other:'Other' };
+  var AP_STATUS_CFG = { draft: ['Draft','#888888'], active: ['Active','#22c98a'], completed: ['Completed','#b09ef8'] };
+
   function statusBadge(status) {
     var pair  = STATUS_LABELS[status] || ['Active', '#22c98a'];
-    var label = pair[0], color = pair[1];
     return '<span style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.3em;' +
-      'color:' + color + ';background:' + color + '28;border:1px solid ' + color + '77;' +
-      'padding:2px 10px;border-radius:2px;text-transform:uppercase;white-space:nowrap">' + label + '</span>';
+      'color:' + pair[1] + ';background:' + pair[1] + '28;border:1px solid ' + pair[1] + '77;' +
+      'padding:2px 10px;border-radius:2px;text-transform:uppercase;white-space:nowrap">' + pair[0] + '</span>';
   }
 
   function fmtDate(d) {
@@ -76,8 +86,30 @@
       '</span><span class="stat-label">' + label + '</span></div>';
   }
 
-  function todayISO() {
-    return new Date().toISOString().slice(0, 10);
+  function todayISO() { return new Date().toISOString().slice(0, 10); }
+
+  function complianceBadge(label, color) {
+    return '<span style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.25em;' +
+      'text-transform:uppercase;color:' + color + ';background:' + color + '18;' +
+      'border:1px solid ' + color + '55;padding:4px 12px;border-radius:2px;white-space:nowrap">' +
+      label + '</span>';
+  }
+
+  function recStatChip(label, color) {
+    return '<span style="font-family:\'Cinzel\',serif;font-size:8px;letter-spacing:.2em;' +
+      'text-transform:uppercase;color:' + color + ';padding:3px 8px;' +
+      'border:1px solid ' + color + '44">' + label + '</span>';
+  }
+
+  function thCell(t) {
+    return '<th style="text-align:left;color:#e8b84baa;font-family:\'Cinzel\',serif;' +
+      'font-size:9px;letter-spacing:.25em;text-transform:uppercase;padding-bottom:8px;' +
+      'padding-right:8px">' + t + '</th>';
+  }
+
+  function sectionHeader(title) {
+    return '<div style="font-family:\'Cinzel\',serif;font-size:10px;letter-spacing:.3em;text-transform:uppercase;' +
+      'color:#e8b84baa;margin-bottom:10px;margin-top:4px">' + title + '</div>';
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -174,7 +206,7 @@
           '</div>' +
         '</div>' +
         '<div style="display:flex;gap:6px;align-items:flex-start;flex-wrap:wrap;flex-shrink:0;margin-left:12px">' +
-          '<button class="action-btn view" onclick="crmOpenProfile(\'' + esc(id) + '\')">👤 Profile</button>' +
+          '<button class="action-btn view" onclick="crmOpenProfile(\'' + esc(id) + '\')">📋 Case File</button>' +
           '<button class="action-btn view" style="border-color:#9b7fe866;color:#b09ef8" ' +
             'onclick="crmOpenTimeline(\'' + esc(id) + '\')">⏱ Timeline</button>' +
           '<button class="action-btn view" style="border-color:#e8b84b66;color:#e8b84b" ' +
@@ -215,7 +247,7 @@
   };
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // CREATE / EDIT MODAL
+  // CREATE / EDIT MODAL  (basic contact/demo fields only)
   // ═══════════════════════════════════════════════════════════════════════════
   window.crmOpenCreate = function () {
     document.getElementById('crmModalTitle').textContent    = 'New Client';
@@ -234,7 +266,7 @@
 
   window.crmOpenEdit = async function (id) {
     document.getElementById('crmModalTitle').textContent    = 'Edit Client';
-    document.getElementById('crmModalSubtitle').textContent = 'Update client details';
+    document.getElementById('crmModalSubtitle').textContent = 'Update contact & demographic details';
     document.getElementById('crmModalError').textContent    = '';
     document.getElementById('crmClientId').value = id;
 
@@ -308,7 +340,7 @@
   };
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // PROFILE MODAL
+  // CASE FILE / PROFILE MODAL
   // ═══════════════════════════════════════════════════════════════════════════
   window.crmOpenProfile = async function (id) {
     _profileId = id;
@@ -318,24 +350,23 @@
     modal.classList.add('open');
 
     try {
-      // Fetch client detail + timeline + recommendations + referrals in parallel
       var results = await Promise.all([
         api('/clients?id=' + id),
         api('/timeline?client_id=' + id),
         api('/recommendations?client_id=' + id).catch(function() { return { recommendations: [] }; }),
         api('/referrals?client_id=' + id).catch(function() { return { referrals: [] }; }),
+        api('/action-plans?client_id=' + id).catch(function() { return { action_plans: [] }; }),
       ]);
       var data     = results[0];
       var tlData   = results[1];
       var recs     = results[2].recommendations || [];
       var refs     = results[3].referrals       || [];
+      var plans    = results[4].action_plans    || [];
       var cl       = data.client;
       var sess     = data.sessions  || [];
-      var ac       = data.aftercare || [];
       var tlEvents = tlData.timeline || [];
       var tlStats  = tlData.stats   || {};
 
-      // ── Derive status signals ───────────────────────────────────────
       var tags         = cl.tags || [];
       var waiverSigned = tags.some(function(t) { return t.toLowerCase() === 'waiver'; });
       var intakeEvents = tlEvents.filter(function(e) { return e.type === 'intake'; });
@@ -343,19 +374,19 @@
       var intakeDate   = hasIntake ? intakeEvents[intakeEvents.length - 1].date : null;
       var latestIntake = hasIntake ? intakeEvents[0].data : null;
 
-      var completedSess   = sess.filter(function(s) { return s.status === 'completed'; });
-      var totalPaid       = (tlData.stats || {}).totalPaid || 0;
-      var pendingAC       = (tlData.stats || {}).pendingFollowUps || 0;
-      var hasNotes        = tlEvents.some(function(e) { return e.type === 'note'; });
-      var hasPayment      = totalPaid > 0;
+      var completedSess = sess.filter(function(s) { return s.status === 'completed'; });
+      var totalPaid     = tlStats.totalPaid   || 0;
+      var pendingAC     = tlStats.pendingFollowUps || 0;
+      var hasNotes      = tlEvents.some(function(e) { return e.type === 'note'; });
+      var hasPayment    = totalPaid > 0;
 
       // ── Missing requirements ────────────────────────────────────────
       var missing = [];
-      if (!waiverSigned)       missing.push({ icon: '⚠', label: 'Waiver not on file',       hint: 'Add tag "waiver" to client record once signed.' });
-      if (!hasIntake)          missing.push({ icon: '⚠', label: 'No intake form on file',    hint: 'Client has not submitted an intake/assessment.' });
-      if (!hasPayment && sess.length) missing.push({ icon: '○', label: 'No payment recorded', hint: 'No payments found across all sessions.' });
+      if (!waiverSigned)                    missing.push({ icon: '⚠', label: 'Waiver not on file',       hint: 'Add tag "waiver" once signed.' });
+      if (!hasIntake)                       missing.push({ icon: '⚠', label: 'No intake form on file',    hint: 'Client has not submitted an intake/assessment.' });
+      if (!hasPayment && sess.length)       missing.push({ icon: '○', label: 'No payment recorded',       hint: 'No payments found across all sessions.' });
       if (pendingAC === 0 && completedSess.length) missing.push({ icon: '○', label: 'No aftercare scheduled', hint: 'Mark a session Complete to auto-schedule aftercare.' });
-      if (!hasNotes)           missing.push({ icon: '○', label: 'No session notes yet',      hint: 'Open a session and add notes.' });
+      if (!hasNotes)                        missing.push({ icon: '○', label: 'No session notes yet',      hint: 'Open a session and add notes.' });
 
       var missingBox = missing.length
         ? '<div style="background:#ff70700d;border:1px solid #ff555533;padding:14px 16px;margin-bottom:20px">' +
@@ -367,8 +398,7 @@
                 '<div><div style="font-family:\'Cinzel\',serif;font-size:10px;letter-spacing:.15em;' +
                   'text-transform:uppercase;color:#ffaaaa">' + m.label + '</div>' +
                   '<div style="font-family:\'EB Garamond\',serif;font-size:13px;color:#dddaee77;margin-top:2px">' + m.hint + '</div>' +
-                '</div>' +
-              '</div>';
+                '</div></div>';
             }).join('') +
           '</div>'
         : '<div style="background:#22c98a0d;border:1px solid #22c98a33;padding:10px 16px;margin-bottom:20px;' +
@@ -376,11 +406,10 @@
             '✓ All requirements complete' +
           '</div>';
 
-      // ── Compliance badges ───────────────────────────────────────────
-      var waiverBadge  = waiverSigned
+      var waiverBadge = waiverSigned
         ? complianceBadge('✓ Waiver on File',   '#22c98a')
         : complianceBadge('⚠ Waiver Missing',   '#ff5555');
-      var intakeBadge  = hasIntake
+      var intakeBadge = hasIntake
         ? complianceBadge('✓ Intake Complete ' + (intakeDate ? '· ' + fmtDate(intakeDate) : ''), '#22c98a')
         : complianceBadge('⚠ Intake Missing',   '#f8a84b');
 
@@ -420,10 +449,12 @@
         : '<tr><td colspan="4" style="color:#dddaee66;font-style:italic;padding:14px 0">No sessions yet.</td></tr>';
 
       body.innerHTML =
-        // ── Missing requirements alert ──────────────────────────────
+        // ── Title ───────────────────────────────────────────────────
+        '<div style="font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:.35em;text-transform:uppercase;' +
+          'color:#e8b84b77;margin-bottom:20px">Full Case File</div>' +
+
         missingBox +
 
-        // ── Compliance badges row ───────────────────────────────────
         '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px">' +
           waiverBadge + intakeBadge +
         '</div>' +
@@ -448,49 +479,42 @@
           ? '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px">' + tags.map(tagChip).join('') + '</div>'
           : '') +
 
-        // ── Stats bar ───────────────────────────────────────────────
-        '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#e8b84b22;margin-bottom:24px">' +
+        // ── Stats bar (6-up) ────────────────────────────────────────
+        '<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:#e8b84b22;margin-bottom:24px">' +
           statBox('Sessions',        sess.length) +
           statBox('Completed',       completedSess.length) +
           statBox('Total Paid',      '$' + parseFloat(totalPaid).toFixed(2)) +
-          statBox('Pending Follow-ups', pendingAC) +
+          statBox('Follow-ups',      pendingAC) +
+          statBox('Active Recs',     tlStats.activeRecs || 0) +
+          statBox('Pending Refs',    tlStats.pendingReferrals || 0) +
         '</div>' +
 
-        // ── Intake summary ──────────────────────────────────────────
         intakeSummaryHtml +
 
         // ── Sessions table ──────────────────────────────────────────
-        '<div style="font-family:\'Cinzel\',serif;font-size:10px;letter-spacing:.3em;text-transform:uppercase;' +
-          'color:#e8b84baa;margin-bottom:10px">Sessions</div>' +
+        sectionHeader('Sessions') +
         '<table style="width:100%;border-collapse:collapse;font-family:\'EB Garamond\',serif;font-size:14px;margin-bottom:28px">' +
           '<thead><tr>' + thCell('Date') + thCell('Service') + thCell('Status') + thCell('Amount') + '</tr></thead>' +
           '<tbody>' + sessRows + '</tbody>' +
         '</table>' +
 
-        // ── Recommendations ─────────────────────────────────────────
         buildRecsSection(recs, id) +
-
-        // ── Referrals ───────────────────────────────────────────────
         buildRefsSection(refs, id) +
+        buildActionPlansSection(plans, id) +
 
         // ── Footer actions ──────────────────────────────────────────
         '<div style="margin-top:22px;border-top:1px solid #e8b84b22;padding-top:16px;display:flex;gap:10px;flex-wrap:wrap">' +
           '<button class="action-btn view" style="border-color:#e8b84b66;color:#e8b84b" ' +
-            'onclick="crmCloseProfileModal();crmOpenEdit(\'' + esc(id) + '\')">✎ Edit Client</button>' +
+            'onclick="crmCloseProfileModal();crmOpenEdit(\'' + esc(id) + '\')">✎ Edit Client Details</button>' +
           '<button class="action-btn view" style="border-color:#9b7fe866;color:#b09ef8" ' +
             'onclick="crmCloseProfileModal();crmOpenTimeline(\'' + esc(id) + '\')">⏱ Full Timeline</button>' +
         '</div>';
     } catch (e) {
-      body.innerHTML = errorHtml('Failed to load profile: ' + e.message);
+      body.innerHTML = errorHtml('Failed to load case file: ' + e.message);
     }
   };
 
   // ── Recommendations section builder ──────────────────────────────────────
-  var PRIORITY_CFG = { high: ['High','#ff5555'], medium: ['Medium','#f8a84b'], low: ['Low','#66b5f8'] };
-  var PURCHASED_CFG = { yes: ['Purchased','#22c98a'], no: ['Not Purchased','#f07070'], unknown: ['Status Unknown','#888888'] };
-  var CAT_LABELS = { supplement:'Supplement', crystal:'Crystal', essential_oil:'Essential Oil',
-    book:'Book', course:'Course', device:'Device', service:'Service', other:'Other' };
-
   function buildRecsSection(recs, clientId) {
     var active    = recs.filter(function(r) { return r.purchased === 'unknown'; }).length;
     var completed = recs.filter(function(r) { return r.purchased === 'yes'; }).length;
@@ -537,32 +561,25 @@
           '<div style="font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:.08em;color:#f0ecff;' +
             'font-weight:600;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">' +
             r.product_name +
-            complianceBadge(catLbl,      '#9b7fe8') +
-            complianceBadge(prCfg[0],    prCfg[1]) +
-            complianceBadge(puCfg[0],    puCfg[1]) +
+            complianceBadge(catLbl,   '#9b7fe8') +
+            complianceBadge(prCfg[0], prCfg[1]) +
+            complianceBadge(puCfg[0], puCfg[1]) +
           '</div>' +
           (r.reason ? '<div style="font-family:\'EB Garamond\',serif;font-size:14px;color:#dddaeecc;line-height:1.5;margin-bottom:3px">' + r.reason + '</div>' : '') +
           (r.client_outcome ? '<div style="font-family:\'EB Garamond\',serif;font-size:13px;color:#22c98acc;font-style:italic">Outcome: ' + r.client_outcome + '</div>' : '') +
           (r.practitioner_notes ? '<div style="font-family:\'EB Garamond\',serif;font-size:13px;color:#dddaee77;font-style:italic">Notes: ' + r.practitioner_notes + '</div>' : '') +
+          (r.session_id ? '<div style="font-family:\'Cinzel\',serif;font-size:8px;letter-spacing:.15em;text-transform:uppercase;color:#9b7fe855;margin-top:2px">Linked to session</div>' : '') +
           '<div style="font-family:\'Cinzel\',serif;font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:#e8b84b55;margin-top:4px">' +
             fmtDate(r.recommended_at) +
           '</div>' +
         '</div>' +
-        '<div style="display:flex;gap:6px;flex-shrink:0">' +
-          '<button class="action-btn view" style="border-color:#e8b84b55;color:#e8b84b;padding:3px 10px;font-size:8px" ' +
-            'onclick="crmOpenRecForm(\'' + esc(clientId) + '\',\'' + esc(r.id) + '\')">Edit</button>' +
-        '</div>' +
+        '<button class="action-btn view" style="border-color:#e8b84b55;color:#e8b84b;padding:3px 10px;font-size:8px;flex-shrink:0" ' +
+          'onclick="crmOpenRecForm(\'' + esc(clientId) + '\',\'' + esc(r.id) + '\')">Edit</button>' +
       '</div>' +
     '</div>';
   }
 
   // ── Referrals section builder ─────────────────────────────────────────────
-  var URGENCY_CFG = { urgent: ['Urgent','#ff5555'], soon: ['Soon','#f8a84b'], routine: ['Routine','#66b5f8'] };
-  var FOLLOWED_CFG = { yes: ['Followed Up','#22c98a'], no: ['Not Followed Up','#f07070'], unknown: ['Pending','#888888'] };
-  var PTYPE_LABELS = { pcp:'PCP', therapist:'Therapist', psychiatrist:'Psychiatrist',
-    nutritionist:'Nutritionist', functional_medicine:'Functional Med', neurologist:'Neurologist',
-    physical_therapist:'Physical Therapist', energy_practitioner:'Energy Practitioner', other:'Other' };
-
   function buildRefsSection(refs, clientId) {
     var pending   = refs.filter(function(r) { return r.followed_through === 'unknown'; }).length;
     var completed = refs.filter(function(r) { return r.followed_through === 'yes'; }).length;
@@ -589,9 +606,9 @@
           'Provider Referrals' +
         '</div>' +
         '<div style="display:flex;gap:8px;align-items:center">' +
-          recStatChip(refs.length  + ' Total',     '#dddaee99') +
-          recStatChip(pending      + ' Pending',    '#f8a84b') +
-          recStatChip(completed    + ' Completed',  '#22c98a') +
+          recStatChip(refs.length + ' Total',    '#dddaee99') +
+          recStatChip(pending     + ' Pending',   '#f8a84b') +
+          recStatChip(completed   + ' Completed', '#22c98a') +
           '<button class="action-btn approve" style="padding:4px 14px;font-size:8px" ' +
             'onclick="crmOpenRefForm(\'' + esc(clientId) + '\',null)">+ Add</button>' +
         '</div>' +
@@ -602,9 +619,9 @@
   }
 
   function buildRefRow(r, clientId) {
-    var urgCfg = URGENCY_CFG[r.urgency]             || URGENCY_CFG.routine;
-    var flwCfg = FOLLOWED_CFG[r.followed_through]   || FOLLOWED_CFG.unknown;
-    var ptLbl  = PTYPE_LABELS[r.provider_type]      || 'Other';
+    var urgCfg = URGENCY_CFG[r.urgency]           || URGENCY_CFG.routine;
+    var flwCfg = FOLLOWED_CFG[r.followed_through] || FOLLOWED_CFG.unknown;
+    var ptLbl  = PTYPE_LABELS[r.provider_type]    || 'Other';
     return '<div style="background:#0a0718;border:1px solid #e8b84b33;padding:12px 16px;margin-bottom:8px">' +
       '<div style="display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap">' +
         '<div style="flex:1;min-width:0">' +
@@ -618,35 +635,78 @@
           (r.reason ? '<div style="font-family:\'EB Garamond\',serif;font-size:14px;color:#dddaeecc;line-height:1.5;margin-bottom:3px">' + r.reason + '</div>' : '') +
           (r.contact_info ? '<div style="font-family:\'EB Garamond\',serif;font-size:13px;color:#66b5f8cc">' + r.contact_info + '</div>' : '') +
           (r.outcome_notes ? '<div style="font-family:\'EB Garamond\',serif;font-size:13px;color:#22c98acc;font-style:italic;margin-top:2px">Outcome: ' + r.outcome_notes + '</div>' : '') +
+          (r.session_id ? '<div style="font-family:\'Cinzel\',serif;font-size:8px;letter-spacing:.15em;text-transform:uppercase;color:#9b7fe855;margin-top:2px">Linked to session</div>' : '') +
           '<div style="font-family:\'Cinzel\',serif;font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:#e8b84b55;margin-top:4px">' +
             'Referred ' + fmtDate(r.referred_at) +
           '</div>' +
         '</div>' +
-        '<div style="display:flex;gap:6px;flex-shrink:0">' +
-          '<button class="action-btn view" style="border-color:#e8b84b55;color:#e8b84b;padding:3px 10px;font-size:8px" ' +
-            'onclick="crmOpenRefForm(\'' + esc(clientId) + '\',\'' + esc(r.id) + '\')">Edit</button>' +
-        '</div>' +
+        '<button class="action-btn view" style="border-color:#e8b84b55;color:#e8b84b;padding:3px 10px;font-size:8px;flex-shrink:0" ' +
+          'onclick="crmOpenRefForm(\'' + esc(clientId) + '\',\'' + esc(r.id) + '\')">Edit</button>' +
       '</div>' +
     '</div>';
   }
 
-  function recStatChip(label, color) {
-    return '<span style="font-family:\'Cinzel\',serif;font-size:8px;letter-spacing:.2em;' +
-      'text-transform:uppercase;color:' + color + ';padding:3px 8px;' +
-      'border:1px solid ' + color + '44">' + label + '</span>';
+  // ── Action Plans section builder ─────────────────────────────────────────
+  function buildActionPlansSection(plans, clientId) {
+    var active    = plans.filter(function(p) { return p.status === 'active'; }).length;
+    var completed = plans.filter(function(p) { return p.status === 'completed'; }).length;
+
+    var planRows = plans.length
+      ? plans.map(function(p) { return buildActionPlanRow(p, clientId); }).join('')
+      : '<div style="color:#dddaee55;font-family:\'EB Garamond\',serif;font-size:14px;' +
+          'font-style:italic;padding:10px 0">No action plans yet.</div>';
+
+    return '<div style="margin-bottom:28px">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px">' +
+        '<div style="font-family:\'Cinzel\',serif;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:#e8b84baa">' +
+          'Action Plans' +
+        '</div>' +
+        '<div style="display:flex;gap:8px;align-items:center">' +
+          recStatChip(plans.length + ' Total',    '#dddaee99') +
+          recStatChip(active       + ' Active',    '#22c98a') +
+          recStatChip(completed    + ' Completed', '#b09ef8') +
+          '<button class="action-btn approve" style="padding:4px 14px;font-size:8px" ' +
+            'onclick="crmOpenApForm(\'' + esc(clientId) + '\',null)">+ Add</button>' +
+        '</div>' +
+      '</div>' +
+      planRows +
+    '</div>';
   }
 
-  function complianceBadge(label, color) {
-    return '<span style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.25em;' +
-      'text-transform:uppercase;color:' + color + ';background:' + color + '18;' +
-      'border:1px solid ' + color + '55;padding:4px 12px;border-radius:2px;white-space:nowrap">' +
-      label + '</span>';
-  }
+  function buildActionPlanRow(p, clientId) {
+    var prCfg = PRIORITY_CFG[p.priority]    || PRIORITY_CFG.medium;
+    var stCfg = AP_STATUS_CFG[p.status]     || AP_STATUS_CFG.active;
+    var fields = [];
+    if (p.immediate_steps)       fields.push(['Immediate Steps',       p.immediate_steps]);
+    if (p.products_recommended)  fields.push(['Products Recommended',  p.products_recommended]);
+    if (p.provider_referrals)    fields.push(['Provider Referrals',    p.provider_referrals]);
+    if (p.environmental_actions) fields.push(['Environmental Actions', p.environmental_actions]);
+    if (p.aftercare_tasks)       fields.push(['Aftercare Tasks',       p.aftercare_tasks]);
 
-  function thCell(t) {
-    return '<th style="text-align:left;color:#e8b84baa;font-family:\'Cinzel\',serif;' +
-      'font-size:9px;letter-spacing:.25em;text-transform:uppercase;padding-bottom:8px;' +
-      'padding-right:8px">' + t + '</th>';
+    return '<div style="background:#0a0718;border:1px solid #e8b84b33;padding:12px 16px;margin-bottom:8px">' +
+      '<div style="display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap">' +
+        '<div style="flex:1;min-width:0">' +
+          '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">' +
+            complianceBadge(stCfg[0], stCfg[1]) +
+            complianceBadge(prCfg[0] + ' Priority', prCfg[1]) +
+            (p.due_date ? complianceBadge('Due ' + fmtDate(p.due_date), '#e8b84b') : '') +
+          '</div>' +
+          fields.map(function(f) {
+            return '<div style="margin-bottom:6px">' +
+              '<div style="font-family:\'Cinzel\',serif;font-size:8px;letter-spacing:.25em;text-transform:uppercase;' +
+                'color:#e8b84b77;margin-bottom:2px">' + f[0] + '</div>' +
+              '<div style="font-family:\'EB Garamond\',serif;font-size:14px;color:#e8e6f8;line-height:1.5">' + f[1] + '</div>' +
+            '</div>';
+          }).join('') +
+          (p.session_id ? '<div style="font-family:\'Cinzel\',serif;font-size:8px;letter-spacing:.15em;text-transform:uppercase;color:#9b7fe855;margin-top:4px">Linked to session</div>' : '') +
+          '<div style="font-family:\'Cinzel\',serif;font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:#e8b84b55;margin-top:6px">' +
+            fmtDate(p.created_at) +
+          '</div>' +
+        '</div>' +
+        '<button class="action-btn view" style="border-color:#e8b84b55;color:#e8b84b;padding:3px 10px;font-size:8px;flex-shrink:0" ' +
+          'onclick="crmOpenApForm(\'' + esc(clientId) + '\',\'' + esc(p.id) + '\')">Edit</button>' +
+      '</div>' +
+    '</div>';
   }
 
   window.crmCloseProfileModal = function (e) {
@@ -655,7 +715,7 @@
   };
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // TIMELINE MODAL  +  ADD EVENT
+  // TIMELINE MODAL
   // ═══════════════════════════════════════════════════════════════════════════
   window.crmOpenTimeline = async function (id) {
     _tlClientId = id;
@@ -686,6 +746,7 @@
         intake:         { icon: '📋', label: 'Intake',         color: '#f8a84b' },
         recommendation: { icon: '🌿', label: 'Recommendation', color: '#22c98a' },
         referral:       { icon: '🔗', label: 'Referral',       color: '#b09ef8' },
+        action_plan:    { icon: '📌', label: 'Action Plan',    color: '#e8b84b' },
       };
 
       var eventsHtml = events.length
@@ -706,19 +767,29 @@
             } else if (ev.type === 'intake') {
               detail = 'Form submitted' + (d.service_requested ? ' · ' + d.service_requested : '');
             } else if (ev.type === 'recommendation') {
-              var prCfg = PRIORITY_CFG[d.priority] || PRIORITY_CFG.medium;
-              var puCfg = PURCHASED_CFG[d.purchased] || PURCHASED_CFG.unknown;
+              var prCfgT = PRIORITY_CFG[d.priority] || PRIORITY_CFG.medium;
+              var puCfgT = PURCHASED_CFG[d.purchased] || PURCHASED_CFG.unknown;
               detail = (d.product_name || '') +
                 (d.category ? ' · ' + (CAT_LABELS[d.category] || d.category) : '') +
-                ' · ' + prCfg[0] + ' priority · ' + puCfg[0] +
+                ' · ' + prCfgT[0] + ' priority · ' + puCfgT[0] +
                 (d.reason ? ' — ' + d.reason.slice(0, 80) : '');
             } else if (ev.type === 'referral') {
-              var urgCfg = URGENCY_CFG[d.urgency] || URGENCY_CFG.routine;
-              var flwCfg = FOLLOWED_CFG[d.followed_through] || FOLLOWED_CFG.unknown;
+              var urgCfgT = URGENCY_CFG[d.urgency] || URGENCY_CFG.routine;
+              var flwCfgT = FOLLOWED_CFG[d.followed_through] || FOLLOWED_CFG.unknown;
               detail = (d.provider_name || '') +
                 (d.provider_type ? ' · ' + (PTYPE_LABELS[d.provider_type] || d.provider_type) : '') +
-                ' · ' + urgCfg[0] + ' · ' + flwCfg[0] +
+                ' · ' + urgCfgT[0] + ' · ' + flwCfgT[0] +
                 (d.reason ? ' — ' + d.reason.slice(0, 80) : '');
+            } else if (ev.type === 'action_plan') {
+              var prCfgAP = PRIORITY_CFG[d.priority] || PRIORITY_CFG.medium;
+              var stCfgAP = AP_STATUS_CFG[d.status]  || AP_STATUS_CFG.active;
+              var parts = [];
+              if (d.immediate_steps)      parts.push(d.immediate_steps.slice(0, 60));
+              if (d.products_recommended) parts.push('Products: ' + d.products_recommended.slice(0, 40));
+              if (d.provider_referrals)   parts.push('Refs: ' + d.provider_referrals.slice(0, 40));
+              detail = stCfgAP[0] + ' · ' + prCfgAP[0] + ' priority' +
+                (d.due_date ? ' · Due ' + fmtDate(d.due_date) : '') +
+                (parts.length ? ' — ' + parts.join(' · ') : '');
             }
             return '<div style="display:flex;gap:14px;padding:12px 0;border-bottom:1px solid #e8b84b14">' +
               '<div style="width:38px;height:38px;border-radius:50%;background:' + cfg.color + '22;' +
@@ -730,39 +801,30 @@
                     'text-transform:uppercase;color:' + cfg.color + ';font-weight:600">' + cfg.label + '</span>' +
                   '<span style="font-family:\'EB Garamond\',serif;font-size:13px;color:#dddaee99">' + fmtDate(ev.date) + '</span>' +
                 '</div>' +
-                (detail
-                  ? '<div style="font-family:\'EB Garamond\',serif;font-size:15px;color:#e8e6f8;' +
-                      'margin-top:3px;line-height:1.55">' + detail + '</div>'
-                  : '') +
+                (detail ? '<div style="font-family:\'EB Garamond\',serif;font-size:15px;color:#e8e6f8;margin-top:3px;line-height:1.55">' + detail + '</div>' : '') +
               '</div>' +
             '</div>';
           }).join('')
         : '<p style="color:#dddaee77;font-style:italic;padding:20px 0">No timeline events yet.</p>';
 
       body.innerHTML =
-        // Stats bar
-        '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;' +
-          'background:#e8b84b22;margin-bottom:22px">' +
+        '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#e8b84b22;margin-bottom:22px">' +
           statBox('Sessions',          stats.totalSessions     || 0) +
           statBox('Completed',         stats.completedSessions || 0) +
           statBox('Total Paid',        '$' + (stats.totalPaid  || 0).toFixed(2)) +
           statBox('Pending Follow-ups', stats.pendingFollowUps || 0) +
         '</div>' +
 
-        // Add event button + collapsible form
         '<div style="margin-bottom:20px">' +
           '<button onclick="crmToggleAddEvent()" id="crmAddEvtToggle" ' +
             'style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.3em;text-transform:uppercase;' +
-            'background:#e8b84b14;border:1px solid #e8b84b55;color:#e8b84b;padding:7px 18px;cursor:pointer;' +
-            'transition:background .2s">+ Add Timeline Event</button>' +
+            'background:#e8b84b14;border:1px solid #e8b84b55;color:#e8b84b;padding:7px 18px;cursor:pointer">+ Add Timeline Event</button>' +
 
-          '<div id="crmAddEvtForm" style="display:none;margin-top:14px;background:#0e0b1f;' +
-            'border:1px solid #e8b84b44;padding:20px">' +
+          '<div id="crmAddEvtForm" style="display:none;margin-top:14px;background:#0e0b1f;border:1px solid #e8b84b44;padding:20px">' +
             '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">' +
               '<div>' +
                 formLabel('Event Type') +
-                '<select id="crmEvtType" class="appt-input" ' +
-                  'style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44">' +
+                '<select id="crmEvtType" class="appt-input" style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44">' +
                   '<option value="note">Note</option>' +
                   '<option value="follow_up">Follow-up</option>' +
                   '<option value="intake">Intake</option>' +
@@ -772,27 +834,22 @@
               '<div>' +
                 formLabel('Date') +
                 '<input id="crmEvtDate" type="date" class="appt-input" value="' + todayISO() + '" ' +
-                  'style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44;' +
-                  'color-scheme:dark">' +
+                  'style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44;color-scheme:dark">' +
               '</div>' +
               '<div style="grid-column:span 2">' +
                 formLabel('Title / Notes') +
-                '<textarea id="crmEvtContent" class="modal-notes" ' +
-                  'placeholder="Describe what happened…" ' +
+                '<textarea id="crmEvtContent" class="modal-notes" placeholder="Describe what happened…" ' +
                   'style="min-height:72px;margin-bottom:0;border-color:#e8b84b44"></textarea>' +
               '</div>' +
             '</div>' +
-            '<div id="crmEvtError" style="color:#ff7070;font-family:\'EB Garamond\',serif;' +
-              'font-size:14px;min-height:18px;margin-bottom:8px"></div>' +
+            '<div id="crmEvtError" style="color:#ff7070;font-family:\'EB Garamond\',serif;font-size:14px;min-height:18px;margin-bottom:8px"></div>' +
             '<div style="display:flex;gap:10px">' +
-              '<button id="crmEvtSaveBtn" class="action-btn approve" ' +
-                'onclick="crmSaveTimelineEvent()" style="padding:8px 24px">Save Event</button>' +
+              '<button id="crmEvtSaveBtn" class="action-btn approve" onclick="crmSaveTimelineEvent()" style="padding:8px 24px">Save Event</button>' +
               '<button class="action-btn" onclick="crmToggleAddEvent()">Cancel</button>' +
             '</div>' +
           '</div>' +
         '</div>' +
 
-        // Events list
         '<div>' + eventsHtml + '</div>';
 
     } catch (e) {
@@ -800,7 +857,6 @@
     }
   }
 
-  // Toggle the add-event form open/closed
   window.crmToggleAddEvent = function () {
     var form = document.getElementById('crmAddEvtForm');
     var btn  = document.getElementById('crmAddEvtToggle');
@@ -809,7 +865,6 @@
     form.style.display = open ? 'none' : 'block';
     if (btn) btn.textContent = open ? '+ Add Timeline Event' : '✕ Cancel';
     if (!open) {
-      // Reset form
       var contentEl = document.getElementById('crmEvtContent');
       var errEl     = document.getElementById('crmEvtError');
       if (contentEl) contentEl.value = '';
@@ -820,7 +875,6 @@
     }
   };
 
-  // POST the new event to /session-notes
   window.crmSaveTimelineEvent = async function () {
     var id      = _tlClientId;
     var typeEl  = document.getElementById('crmEvtType');
@@ -830,16 +884,12 @@
     var saveBtn = document.getElementById('crmEvtSaveBtn');
 
     if (!id) { errEl.textContent = 'No client selected.'; return; }
-
     var noteType = typeEl ? typeEl.value : 'note';
     var date     = dateEl ? dateEl.value : todayISO();
     var rawText  = txtEl ? txtEl.value.trim() : '';
-
     if (!rawText) { errEl.textContent = 'Notes are required.'; return; }
 
-    // Prefix content with the selected date so it shows context in the timeline
     var content = '[' + date + '] ' + rawText;
-
     saveBtn.disabled    = true;
     saveBtn.textContent = 'Saving…';
     errEl.textContent   = '';
@@ -849,7 +899,6 @@
         method: 'POST',
         body:   JSON.stringify({ client_id: id, note_type: noteType, content: content }),
       });
-      // Reload the timeline
       await loadTimeline(id);
     } catch (e) {
       errEl.textContent = e.message;
@@ -872,11 +921,15 @@
   }
 
   function errorHtml(msg) {
-    return '<div style="color:#ff7070;font-family:\'EB Garamond\',serif;' +
-      'font-size:15px;padding:20px;line-height:1.6">' + msg + '</div>';
+    return '<div style="color:#ff7070;font-family:\'EB Garamond\',serif;font-size:15px;padding:20px;line-height:1.6">' + msg + '</div>';
   }
 
   function formLabel(txt) {
+    return '<div style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.3em;' +
+      'text-transform:uppercase;color:#e8b84baa;margin-bottom:5px">' + txt + '</div>';
+  }
+
+  function recFormLabel(txt) {
     return '<div style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.3em;' +
       'text-transform:uppercase;color:#e8b84baa;margin-bottom:5px">' + txt + '</div>';
   }
@@ -891,7 +944,6 @@
     if (!modal) return;
     err.textContent = '';
 
-    // Reset form
     document.getElementById('crmRecProductName').value      = '';
     document.getElementById('crmRecCategory').value         = 'other';
     document.getElementById('crmRecReason').value           = '';
@@ -960,8 +1012,6 @@
     }
   };
 
-  function todayISO() { return new Date().toISOString().slice(0, 10); }
-
   // ═══════════════════════════════════════════════════════════════════════════
   // REFERRAL FORM MODAL
   // ═══════════════════════════════════════════════════════════════════════════
@@ -1019,7 +1069,7 @@
     var payload = {
       client_id:        clientId,
       provider_name:    name,
-      provider_type:    type      || 'other',
+      provider_type:    type || 'other',
       contact_info:     document.getElementById('crmRefContactInfo').value.trim() || null,
       reason:           document.getElementById('crmRefReason').value.trim()      || null,
       urgency:          document.getElementById('crmRefUrgency').value            || 'routine',
@@ -1042,7 +1092,87 @@
   };
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // INJECT REC + REF MODALS
+  // ACTION PLAN FORM MODAL
+  // ═══════════════════════════════════════════════════════════════════════════
+  window.crmOpenApForm = async function (clientId, planId) {
+    _apEditId = planId || null;
+    var modal = document.getElementById('crmApModal');
+    var err   = document.getElementById('crmApError');
+    if (!modal) return;
+    err.textContent = '';
+
+    document.getElementById('crmApClientId').value   = clientId;
+    document.getElementById('crmApSteps').value      = '';
+    document.getElementById('crmApProducts').value   = '';
+    document.getElementById('crmApRefs').value        = '';
+    document.getElementById('crmApEnvAct').value     = '';
+    document.getElementById('crmApAftercare').value  = '';
+    document.getElementById('crmApPriority').value   = 'medium';
+    document.getElementById('crmApDueDate').value    = '';
+    document.getElementById('crmApStatus').value     = 'active';
+    document.getElementById('crmApModalTitle').textContent = planId ? 'Edit Action Plan' : 'New Action Plan';
+
+    if (planId) {
+      try {
+        var d = await api('/action-plans?id=' + planId);
+        var p = d.action_plan;
+        document.getElementById('crmApSteps').value     = p.immediate_steps       || '';
+        document.getElementById('crmApProducts').value  = p.products_recommended  || '';
+        document.getElementById('crmApRefs').value       = p.provider_referrals    || '';
+        document.getElementById('crmApEnvAct').value    = p.environmental_actions || '';
+        document.getElementById('crmApAftercare').value = p.aftercare_tasks       || '';
+        document.getElementById('crmApPriority').value  = p.priority              || 'medium';
+        document.getElementById('crmApDueDate').value   = p.due_date              || '';
+        document.getElementById('crmApStatus').value    = p.status                || 'active';
+      } catch (_) {}
+    }
+    modal.classList.add('open');
+    document.getElementById('crmApSteps').focus();
+  };
+
+  window.crmCloseApModal = function (e) {
+    if (e && e.target !== document.getElementById('crmApModal')) return;
+    document.getElementById('crmApModal').classList.remove('open');
+  };
+
+  window.crmSaveAp = async function () {
+    var clientId = document.getElementById('crmApClientId').value;
+    var errEl    = document.getElementById('crmApError');
+    var btn      = document.getElementById('crmApSaveBtn');
+
+    var steps = document.getElementById('crmApSteps').value.trim();
+    var prods = document.getElementById('crmApProducts').value.trim();
+    if (!steps && !prods) { errEl.textContent = 'Add at least one field.'; return; }
+    errEl.textContent = '';
+    btn.disabled = true; btn.textContent = 'Saving…';
+
+    var payload = {
+      client_id:             clientId,
+      immediate_steps:       steps || null,
+      products_recommended:  prods || null,
+      provider_referrals:    document.getElementById('crmApRefs').value.trim()      || null,
+      environmental_actions: document.getElementById('crmApEnvAct').value.trim()    || null,
+      aftercare_tasks:       document.getElementById('crmApAftercare').value.trim() || null,
+      priority:              document.getElementById('crmApPriority').value         || 'medium',
+      due_date:              document.getElementById('crmApDueDate').value          || null,
+      status:                document.getElementById('crmApStatus').value           || 'active',
+    };
+    try {
+      if (_apEditId) {
+        await api('/action-plans?id=' + _apEditId, { method: 'PATCH', body: JSON.stringify(payload) });
+      } else {
+        await api('/action-plans', { method: 'POST', body: JSON.stringify(payload) });
+      }
+      document.getElementById('crmApModal').classList.remove('open');
+      if (_profileId) await window.crmOpenProfile(_profileId);
+    } catch (e) {
+      errEl.textContent = e.message;
+      btn.disabled = false; btn.textContent = 'Save';
+    }
+  };
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // INJECT ALL MODALS
   // ═══════════════════════════════════════════════════════════════════════════
   function injectRecRefModals() {
     // ── Recommendation modal ────────────────────────────────────────────────
@@ -1058,74 +1188,47 @@
           '<div class="modal-sub">Product, supplement, or service for this client</div>' +
           '<input type="hidden" id="crmRecClientId">' +
           '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px">' +
-
             '<div style="grid-column:span 2">' +
               recFormLabel('Product / Item Name *') +
-              '<input id="crmRecProductName" class="appt-input" placeholder="e.g. Black Tourmaline" ' +
-                'style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44">' +
+              '<input id="crmRecProductName" class="appt-input" placeholder="e.g. Black Tourmaline" style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44">' +
             '</div>' +
-
             '<div>' +
               recFormLabel('Category') +
-              '<select id="crmRecCategory" class="appt-input" ' +
-                'style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44">' +
-                '<option value="supplement">Supplement</option>' +
-                '<option value="crystal">Crystal</option>' +
-                '<option value="essential_oil">Essential Oil</option>' +
-                '<option value="book">Book</option>' +
-                '<option value="course">Course</option>' +
-                '<option value="device">Device</option>' +
-                '<option value="service">Service</option>' +
-                '<option value="other" selected>Other</option>' +
+              '<select id="crmRecCategory" class="appt-input" style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44">' +
+                '<option value="supplement">Supplement</option><option value="crystal">Crystal</option>' +
+                '<option value="essential_oil">Essential Oil</option><option value="book">Book</option>' +
+                '<option value="course">Course</option><option value="device">Device</option>' +
+                '<option value="service">Service</option><option value="other" selected>Other</option>' +
               '</select>' +
             '</div>' +
-
             '<div>' +
               recFormLabel('Priority') +
-              '<select id="crmRecPriority" class="appt-input" ' +
-                'style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44">' +
-                '<option value="high">High</option>' +
-                '<option value="medium" selected>Medium</option>' +
-                '<option value="low">Low</option>' +
+              '<select id="crmRecPriority" class="appt-input" style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44">' +
+                '<option value="high">High</option><option value="medium" selected>Medium</option><option value="low">Low</option>' +
               '</select>' +
             '</div>' +
-
             '<div>' +
               recFormLabel('Date Recommended') +
-              '<input id="crmRecDate" type="date" class="appt-input" ' +
-                'style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44;color-scheme:dark">' +
+              '<input id="crmRecDate" type="date" class="appt-input" style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44;color-scheme:dark">' +
             '</div>' +
-
             '<div>' +
               recFormLabel('Client Purchased?') +
-              '<select id="crmRecPurchased" class="appt-input" ' +
-                'style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44">' +
-                '<option value="unknown" selected>Unknown</option>' +
-                '<option value="yes">Yes</option>' +
-                '<option value="no">No</option>' +
+              '<select id="crmRecPurchased" class="appt-input" style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44">' +
+                '<option value="unknown" selected>Unknown</option><option value="yes">Yes</option><option value="no">No</option>' +
               '</select>' +
             '</div>' +
-
             '<div style="grid-column:span 2">' +
               recFormLabel('Reason Recommended') +
-              '<textarea id="crmRecReason" class="modal-notes" ' +
-                'placeholder="e.g. Grounding and energetic boundary work…" ' +
-                'style="min-height:64px;margin-bottom:0;border-color:#e8b84b44"></textarea>' +
+              '<textarea id="crmRecReason" class="modal-notes" placeholder="e.g. Grounding and energetic boundary work…" style="min-height:64px;margin-bottom:0;border-color:#e8b84b44"></textarea>' +
             '</div>' +
-
             '<div style="grid-column:span 2">' +
               recFormLabel('Practitioner Notes') +
-              '<textarea id="crmRecPractNotes" class="modal-notes" ' +
-                'placeholder="Internal notes…" ' +
-                'style="min-height:48px;margin-bottom:0;border-color:#e8b84b44"></textarea>' +
+              '<textarea id="crmRecPractNotes" class="modal-notes" placeholder="Internal notes…" style="min-height:48px;margin-bottom:0;border-color:#e8b84b44"></textarea>' +
             '</div>' +
-
             '<div style="grid-column:span 2">' +
               recFormLabel('Client-Reported Outcome') +
-              '<input id="crmRecClientOutcome" class="appt-input" placeholder="e.g. Reports feeling more grounded…" ' +
-                'style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44">' +
+              '<input id="crmRecClientOutcome" class="appt-input" placeholder="e.g. Reports feeling more grounded…" style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44">' +
             '</div>' +
-
           '</div>' +
           '<div id="crmRecError" style="color:#ff7070;font-family:\'EB Garamond\',serif;font-size:14px;min-height:16px;margin-top:12px"></div>' +
           '<div style="display:flex;gap:10px;margin-top:12px">' +
@@ -1149,74 +1252,48 @@
           '<div class="modal-sub">Refer this client to a provider</div>' +
           '<input type="hidden" id="crmRefClientId">' +
           '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px">' +
-
             '<div style="grid-column:span 2">' +
               recFormLabel('Provider Name *') +
-              '<input id="crmRefProviderName" class="appt-input" placeholder="e.g. Dr. Smith – Neurology" ' +
-                'style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44">' +
+              '<input id="crmRefProviderName" class="appt-input" placeholder="e.g. Dr. Smith – Neurology" style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44">' +
             '</div>' +
-
             '<div>' +
               recFormLabel('Provider Type') +
-              '<select id="crmRefProviderType" class="appt-input" ' +
-                'style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44">' +
-                '<option value="pcp">PCP</option>' +
-                '<option value="therapist">Therapist</option>' +
-                '<option value="psychiatrist">Psychiatrist</option>' +
-                '<option value="nutritionist">Nutritionist</option>' +
-                '<option value="functional_medicine">Functional Medicine</option>' +
-                '<option value="neurologist">Neurologist</option>' +
-                '<option value="physical_therapist">Physical Therapist</option>' +
-                '<option value="energy_practitioner">Energy Practitioner</option>' +
+              '<select id="crmRefProviderType" class="appt-input" style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44">' +
+                '<option value="pcp">PCP</option><option value="therapist">Therapist</option>' +
+                '<option value="psychiatrist">Psychiatrist</option><option value="nutritionist">Nutritionist</option>' +
+                '<option value="functional_medicine">Functional Medicine</option><option value="neurologist">Neurologist</option>' +
+                '<option value="physical_therapist">Physical Therapist</option><option value="energy_practitioner">Energy Practitioner</option>' +
                 '<option value="other" selected>Other</option>' +
               '</select>' +
             '</div>' +
-
             '<div>' +
               recFormLabel('Urgency') +
-              '<select id="crmRefUrgency" class="appt-input" ' +
-                'style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44">' +
-                '<option value="urgent">Urgent</option>' +
-                '<option value="soon">Soon</option>' +
-                '<option value="routine" selected>Routine</option>' +
+              '<select id="crmRefUrgency" class="appt-input" style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44">' +
+                '<option value="urgent">Urgent</option><option value="soon">Soon</option><option value="routine" selected>Routine</option>' +
               '</select>' +
             '</div>' +
-
             '<div>' +
               recFormLabel('Referral Date') +
-              '<input id="crmRefDate" type="date" class="appt-input" ' +
-                'style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44;color-scheme:dark">' +
+              '<input id="crmRefDate" type="date" class="appt-input" style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44;color-scheme:dark">' +
             '</div>' +
-
             '<div>' +
               recFormLabel('Client Followed Through?') +
-              '<select id="crmRefFollowed" class="appt-input" ' +
-                'style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44">' +
-                '<option value="unknown" selected>Unknown / Pending</option>' +
-                '<option value="yes">Yes</option>' +
-                '<option value="no">No</option>' +
+              '<select id="crmRefFollowed" class="appt-input" style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44">' +
+                '<option value="unknown" selected>Unknown / Pending</option><option value="yes">Yes</option><option value="no">No</option>' +
               '</select>' +
             '</div>' +
-
             '<div style="grid-column:span 2">' +
               recFormLabel('Contact Information') +
-              '<input id="crmRefContactInfo" class="appt-input" placeholder="Phone, address, website…" ' +
-                'style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44">' +
+              '<input id="crmRefContactInfo" class="appt-input" placeholder="Phone, address, website…" style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44">' +
             '</div>' +
-
             '<div style="grid-column:span 2">' +
               recFormLabel('Reason for Referral') +
-              '<textarea id="crmRefReason" class="modal-notes" ' +
-                'placeholder="e.g. Chronic tinnitus and sensory sensitivity…" ' +
-                'style="min-height:64px;margin-bottom:0;border-color:#e8b84b44"></textarea>' +
+              '<textarea id="crmRefReason" class="modal-notes" placeholder="e.g. Chronic tinnitus and sensory sensitivity…" style="min-height:64px;margin-bottom:0;border-color:#e8b84b44"></textarea>' +
             '</div>' +
-
             '<div style="grid-column:span 2">' +
               recFormLabel('Outcome Notes') +
-              '<input id="crmRefOutcome" class="appt-input" placeholder="e.g. Appointment scheduled for July…" ' +
-                'style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44">' +
+              '<input id="crmRefOutcome" class="appt-input" placeholder="e.g. Appointment scheduled for July…" style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44">' +
             '</div>' +
-
           '</div>' +
           '<div id="crmRefError" style="color:#ff7070;font-family:\'EB Garamond\',serif;font-size:14px;min-height:16px;margin-top:12px"></div>' +
           '<div style="display:flex;gap:10px;margin-top:12px">' +
@@ -1226,18 +1303,71 @@
         '</div>';
       document.body.appendChild(el2);
     }
-  }
 
-  function recFormLabel(txt) {
-    return '<div style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.3em;' +
-      'text-transform:uppercase;color:#e8b84baa;margin-bottom:5px">' + txt + '</div>';
+    // ── Action Plan modal ───────────────────────────────────────────────────
+    if (!document.getElementById('crmApModal')) {
+      var el3 = document.createElement('div');
+      el3.id        = 'crmApModal';
+      el3.className = 'modal-overlay';
+      el3.onclick   = window.crmCloseApModal;
+      el3.innerHTML =
+        '<div class="modal" style="max-width:600px;max-height:85vh;overflow-y:auto" onclick="event.stopPropagation()">' +
+          '<button class="modal-close" onclick="crmCloseApModal()">✕</button>' +
+          '<h2 id="crmApModalTitle">New Action Plan</h2>' +
+          '<div class="modal-sub">Next steps, products, and aftercare for this client</div>' +
+          '<input type="hidden" id="crmApClientId">' +
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px">' +
+            '<div style="grid-column:span 2">' +
+              recFormLabel('Immediate Next Steps') +
+              '<textarea id="crmApSteps" class="modal-notes" placeholder="What should the client do right away?" style="min-height:70px;margin-bottom:0;border-color:#e8b84b44"></textarea>' +
+            '</div>' +
+            '<div>' +
+              recFormLabel('Products Recommended') +
+              '<input id="crmApProducts" class="appt-input" placeholder="e.g. Shungite, B12, Ashwagandha" style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44">' +
+            '</div>' +
+            '<div>' +
+              recFormLabel('Provider Referrals') +
+              '<input id="crmApRefs" class="appt-input" placeholder="e.g. Nutritionist, PCP" style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44">' +
+            '</div>' +
+            '<div>' +
+              recFormLabel('Environmental Actions') +
+              '<input id="crmApEnvAct" class="appt-input" placeholder="e.g. Reduce screen time, salt bath" style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44">' +
+            '</div>' +
+            '<div>' +
+              recFormLabel('Aftercare Tasks') +
+              '<input id="crmApAftercare" class="appt-input" placeholder="e.g. Follow-up in 3 weeks" style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44">' +
+            '</div>' +
+            '<div>' +
+              recFormLabel('Priority') +
+              '<select id="crmApPriority" class="appt-input" style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44">' +
+                '<option value="high">High</option><option value="medium" selected>Medium</option><option value="low">Low</option>' +
+              '</select>' +
+            '</div>' +
+            '<div>' +
+              recFormLabel('Due Date') +
+              '<input id="crmApDueDate" type="date" class="appt-input" style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44;color-scheme:dark">' +
+            '</div>' +
+            '<div>' +
+              recFormLabel('Status') +
+              '<select id="crmApStatus" class="appt-input" style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44">' +
+                '<option value="draft">Draft</option><option value="active" selected>Active</option><option value="completed">Completed</option>' +
+              '</select>' +
+            '</div>' +
+          '</div>' +
+          '<div id="crmApError" style="color:#ff7070;font-family:\'EB Garamond\',serif;font-size:14px;min-height:16px;margin-top:12px"></div>' +
+          '<div style="display:flex;gap:10px;margin-top:12px">' +
+            '<button id="crmApSaveBtn" class="action-btn approve" onclick="crmSaveAp()" style="padding:8px 24px">Save</button>' +
+            '<button class="action-btn" onclick="crmCloseApModal()">Cancel</button>' +
+          '</div>' +
+        '</div>';
+      document.body.appendChild(el3);
+    }
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
   // INIT
   // ═══════════════════════════════════════════════════════════════════════════
 
-  // Clear stale localStorage-rendered cards from initDashboard()
   (function () {
     var roster  = document.getElementById('clientRoster');
     var countEl = document.getElementById('clientCount');
@@ -1245,21 +1375,18 @@
     if (countEl) countEl.textContent = '';
   })();
 
-  // Patch showTab to auto-load when Clients tab opens
   var _origShowTab = window.showTab;
   window.showTab = function (name) {
     if (_origShowTab) _origShowTab(name);
     if (name === 'clients') window.renderClients();
   };
 
-  // Inject rec/ref modals + initial load
   document.addEventListener('DOMContentLoaded', function () {
     injectRecRefModals();
     var active = document.querySelector('.tab-content.active');
     if (active && active.id === 'tab-clients') window.renderClients();
   });
 
-  // If DOM already ready (script loaded late)
   if (document.readyState !== 'loading') {
     injectRecRefModals();
   }
