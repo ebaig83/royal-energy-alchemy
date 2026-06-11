@@ -5,3 +5,9 @@
 
 [functions]
   node_bundler = "esbuild"
+
+# SUPABASE_URL and SUPABASE_ANON_KEY are intentionally public frontend values
+# injected by build.sh. Exempt them from secret scanning.
+# SUPABASE_SERVICE_ROLE_KEY is NOT listed here — it must never appear in deploy artifacts.
+[secrets]
+  omit_variables = ["SUPABASE_URL", "SUPABASE_ANON_KEY"]
