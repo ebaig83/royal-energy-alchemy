@@ -52,6 +52,7 @@ exports.handler = async function(event) {
       energy_findings: body.energy_findings  || null,
       removals_done:   body.removals_done    || [],
       recommendations: body.recommendations  || null,
+      env_notes:       body.env_notes        || null,
       authored_by:     'daron',
     };
 
@@ -86,7 +87,7 @@ exports.handler = async function(event) {
     let body;
     try { body = JSON.parse(event.body || '{}'); } catch { return respond(400, { error: 'Invalid JSON.' }); }
 
-    const allowed = ['content','note_type','energy_findings','removals_done','recommendations','agent_enhanced'];
+    const allowed = ['content','note_type','energy_findings','removals_done','recommendations','agent_enhanced','env_notes'];
     const updates = {};
     allowed.forEach(k => { if (body[k] !== undefined) updates[k] = body[k]; });
 

@@ -314,28 +314,113 @@
     modal.classList.add('open');
 
     try {
-      var data = await api('/clients?id=' + id);
-      var cl   = data.client;
-      var sess = data.sessions  || [];
-      var ac   = data.aftercare || [];
+      // Fetch client detail + full timeline in parallel
+      var results = await Promise.all([
+        api('/clients?id=' + id),
+        api('/timeline?client_id=' + id),
+      ]);
+      var data     = results[0];
+      var tlData   = results[1];
+      var cl       = data.client;
+      var sess     = data.sessions  || [];
+      var ac       = data.aftercare || [];
+      var tlEvents = tlData.timeline || [];
 
-      var totalPaid = sess.reduce(function(sum, s) { return sum + (parseFloat(s.price) || 0); }, 0);
-      var completed = sess.filter(function(s) { return s.status === 'completed'; }).length;
-      var pendingAC = ac.filter(function(a)  { return a.status === 'scheduled'; }).length;
+      // ── Derive status signals ───────────────────────────────────────
+      var tags         = cl.tags || [];
+      var waiverSigned = tags.some(function(t) { return t.toLowerCase() === 'waiver'; });
+      var intakeEvents = tlEvents.filter(function(e) { return e.type === 'intake'; });
+      var hasIntake    = intakeEvents.length > 0;
+      var intakeDate   = hasIntake ? intakeEvents[intakeEvents.length - 1].date : null;
+      var latestIntake = hasIntake ? intakeEvents[0].data : null;
+
+      var completedSess   = sess.filter(function(s) { return s.status === 'completed'; });
+      var totalPaid       = (tlData.stats || {}).totalPaid || 0;
+      var pendingAC       = (tlData.stats || {}).pendingFollowUps || 0;
+      var hasNotes        = tlEvents.some(function(e) { return e.type === 'note'; });
+      var hasPayment      = totalPaid > 0;
+
+      // ── Missing requirements ────────────────────────────────────────
+      var missing = [];
+      if (!waiverSigned)       missing.push({ icon: '⚠', label: 'Waiver not on file',       hint: 'Add tag "waiver" to client record once signed.' });
+      if (!hasIntake)          missing.push({ icon: '⚠', label: 'No intake form on file',    hint: 'Client has not submitted an intake/assessment.' });
+      if (!hasPayment && sess.length) missing.push({ icon: '○', label: 'No payment recorded', hint: 'No payments found across all sessions.' });
+      if (pendingAC === 0 && completedSess.length) missing.push({ icon: '○', label: 'No aftercare scheduled', hint: 'Mark a session Complete to auto-schedule aftercare.' });
+      if (!hasNotes)           missing.push({ icon: '○', label: 'No session notes yet',      hint: 'Open a session and add notes.' });
+
+      var missingBox = missing.length
+        ? '<div style="background:#ff70700d;border:1px solid #ff555533;padding:14px 16px;margin-bottom:20px">' +
+            '<div style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.35em;text-transform:uppercase;' +
+              'color:#ff8888;margin-bottom:10px">Needs Completion</div>' +
+            missing.map(function(m) {
+              return '<div style="display:flex;gap:8px;align-items:baseline;margin-bottom:7px">' +
+                '<span style="color:#ff8888;font-size:12px;flex-shrink:0">' + m.icon + '</span>' +
+                '<div><div style="font-family:\'Cinzel\',serif;font-size:10px;letter-spacing:.15em;' +
+                  'text-transform:uppercase;color:#ffaaaa">' + m.label + '</div>' +
+                  '<div style="font-family:\'EB Garamond\',serif;font-size:13px;color:#dddaee77;margin-top:2px">' + m.hint + '</div>' +
+                '</div>' +
+              '</div>';
+            }).join('') +
+          '</div>'
+        : '<div style="background:#22c98a0d;border:1px solid #22c98a33;padding:10px 16px;margin-bottom:20px;' +
+            'font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.35em;text-transform:uppercase;color:#22c98a">' +
+            '✓ All requirements complete' +
+          '</div>';
+
+      // ── Compliance badges ───────────────────────────────────────────
+      var waiverBadge  = waiverSigned
+        ? complianceBadge('✓ Waiver on File',   '#22c98a')
+        : complianceBadge('⚠ Waiver Missing',   '#ff5555');
+      var intakeBadge  = hasIntake
+        ? complianceBadge('✓ Intake Complete ' + (intakeDate ? '· ' + fmtDate(intakeDate) : ''), '#22c98a')
+        : complianceBadge('⚠ Intake Missing',   '#f8a84b');
+
+      // ── Intake summary ──────────────────────────────────────────────
+      var intakeSummaryHtml = '';
+      if (latestIntake) {
+        var iFields = [];
+        if (latestIntake.service_requested) iFields.push(['Service Requested', latestIntake.service_requested]);
+        if (latestIntake.message)           iFields.push(['Message',           latestIntake.message]);
+        if (latestIntake.agent_summary)     iFields.push(['Assessment Summary', latestIntake.agent_summary]);
+        if (iFields.length) {
+          intakeSummaryHtml =
+            '<div style="background:#f8a84b0d;border:1px solid #f8a84b33;padding:14px 16px;margin-bottom:20px">' +
+              '<div style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.35em;text-transform:uppercase;' +
+                'color:#f8a84b;margin-bottom:10px">Intake / Assessment</div>' +
+              iFields.map(function(f) {
+                return '<div style="margin-bottom:8px">' +
+                  '<div style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.2em;text-transform:uppercase;' +
+                    'color:#e8b84baa;margin-bottom:3px">' + f[0] + '</div>' +
+                  '<div style="font-family:\'EB Garamond\',serif;font-size:15px;color:#e8e6f8;line-height:1.6">' + f[1] + '</div>' +
+                '</div>';
+              }).join('') +
+            '</div>';
+        }
+      }
 
       var sessRows = sess.length
         ? sess.map(function(s) {
             return '<tr>' +
               '<td style="padding:6px 8px 6px 0;color:#dddaee;border-bottom:1px solid #e8b84b0e">' + fmtDate(s.session_date) + '</td>' +
-              '<td style="padding:6px 8px;color:#e8b84b;border-bottom:1px solid #e8b84b0e">'        + (s.service_type || '—') + '</td>' +
+              '<td style="padding:6px 8px;color:#e8b84b;border-bottom:1px solid #e8b84b0e">'        + (s.service || s.service_type || '—') + '</td>' +
               '<td style="padding:6px 8px;color:#22c98a;border-bottom:1px solid #e8b84b0e">'        + (s.status || '—') + '</td>' +
-              '<td style="padding:6px 0 6px 8px;color:#f0ecff;border-bottom:1px solid #e8b84b0e">$' + parseFloat(s.price || 0).toFixed(2) + '</td>' +
+              '<td style="padding:6px 0 6px 8px;color:#f0ecff;border-bottom:1px solid #e8b84b0e">'  +
+                (s.amount_due ? '$' + parseFloat(s.amount_due).toFixed(2) : '—') + '</td>' +
             '</tr>';
           }).join('')
         : '<tr><td colspan="4" style="color:#dddaee66;font-style:italic;padding:14px 0">No sessions yet.</td></tr>';
 
       body.innerHTML =
-        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px">' +
+        // ── Missing requirements alert ──────────────────────────────
+        missingBox +
+
+        // ── Compliance badges row ───────────────────────────────────
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px">' +
+          waiverBadge + intakeBadge +
+        '</div>' +
+
+        // ── Core info grid ──────────────────────────────────────────
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px">' +
           profileRow('Full Name', cl.full_name) +
           profileRow('Email',     cl.email) +
           profileRow('Phone',     cl.phone) +
@@ -350,23 +435,27 @@
               cl.notes + '</div>'
           : '') +
 
-        ((cl.tags||[]).length
-          ? '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px">' +
-              (cl.tags||[]).map(tagChip).join('') + '</div>'
+        (tags.length
+          ? '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px">' + tags.map(tagChip).join('') + '</div>'
           : '') +
 
+        // ── Stats bar ───────────────────────────────────────────────
         '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#e8b84b22;margin-bottom:24px">' +
           statBox('Sessions',        sess.length) +
-          statBox('Completed',       completed) +
-          statBox('Total Paid',      '$' + totalPaid.toFixed(2)) +
+          statBox('Completed',       completedSess.length) +
+          statBox('Total Paid',      '$' + parseFloat(totalPaid).toFixed(2)) +
           statBox('Pending Follow-ups', pendingAC) +
         '</div>' +
 
+        // ── Intake summary ──────────────────────────────────────────
+        intakeSummaryHtml +
+
+        // ── Sessions table ──────────────────────────────────────────
         '<div style="font-family:\'Cinzel\',serif;font-size:10px;letter-spacing:.3em;text-transform:uppercase;' +
           'color:#e8b84baa;margin-bottom:10px">Sessions</div>' +
         '<table style="width:100%;border-collapse:collapse;font-family:\'EB Garamond\',serif;font-size:14px">' +
           '<thead><tr>' +
-            thCell('Date') + thCell('Service') + thCell('Status') + thCell('Price') +
+            thCell('Date') + thCell('Service') + thCell('Status') + thCell('Amount') +
           '</tr></thead>' +
           '<tbody>' + sessRows + '</tbody>' +
         '</table>' +
@@ -381,6 +470,13 @@
       body.innerHTML = errorHtml('Failed to load profile: ' + e.message);
     }
   };
+
+  function complianceBadge(label, color) {
+    return '<span style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.25em;' +
+      'text-transform:uppercase;color:' + color + ';background:' + color + '18;' +
+      'border:1px solid ' + color + '55;padding:4px 12px;border-radius:2px;white-space:nowrap">' +
+      label + '</span>';
+  }
 
   function thCell(t) {
     return '<th style="text-align:left;color:#e8b84baa;font-family:\'Cinzel\',serif;' +

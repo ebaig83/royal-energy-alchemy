@@ -123,9 +123,11 @@ Each suite maps to one milestone. The agent runs only the suite(s) enabled in
 
 ---
 
-### Suite 4 — Session Notes
+### Suite 4 — Session Notes + Compliance + Environment
 
 > Milestone gate: Session Notes milestone. **NEXT ACTIVE SUITE.**
+
+#### 4a — Session Notes API
 
 | # | Test | Pass condition |
 |---|---|---|
@@ -139,6 +141,48 @@ Each suite maps to one milestone. The agent runs only the suite(s) enabled in
 | 4.8 | Audit log entry | `audit_logs` row written for create + patch |
 | 4.9 | Agent enhancement skipped without key | POST with `enhance:true` but no `ANTHROPIC_API_KEY` → 201, no crash |
 | 4.10 | RLS blocks anon | Anon client cannot SELECT from `session_notes` |
+
+#### 4b — Waiver status visibility
+
+| # | Test | Pass condition |
+|---|---|---|
+| 4.11 | Waiver badge — missing | Client without `waiver` tag shows "⚠ Waiver Missing" badge in profile modal and session notes modal |
+| 4.12 | Waiver badge — on file | Client with `tags` including `"waiver"` shows "✓ Waiver on File" badge in both modals |
+| 4.13 | Waiver warning in missing requirements box | Profile modal shows "Waiver not on file" in Needs Completion block when tag absent |
+| 4.14 | Waiver tag roundtrip | PATCH `/clients?id=<id>` with `tags:["waiver"]` → 200; badge updates on next profile open |
+
+#### 4c — Assessment / Intake status visibility
+
+| # | Test | Pass condition |
+|---|---|---|
+| 4.15 | Intake badge — missing | Client with no `intake_submissions` row shows "⚠ Intake Missing" badge |
+| 4.16 | Intake badge — complete | Client with `intake_submissions` row shows "✓ Intake Complete · <date>" badge |
+| 4.17 | Intake summary visible | Profile modal and session notes modal show intake `service_requested` and `message` when intake exists |
+| 4.18 | Intake appears in timeline | `GET /timeline?client_id=<id>` returns `type:"intake"` event when submission exists |
+| 4.19 | Intake warning in missing requirements | Profile shows "No intake on file" in Needs Completion when no submission |
+
+#### 4d — Environmental data section
+
+| # | Test | Pass condition |
+|---|---|---|
+| 4.20 | Env section renders in session notes modal | Opening any session shows "Environmental Context" section with observational disclaimer |
+| 4.21 | Moon phase pill visible | When env log has data for session date, moon phase pill renders |
+| 4.22 | Schumann pill visible | When env log has Schumann data, pill renders with correct color per level |
+| 4.23 | Env notes textarea present | "Practitioner Environmental Notes" textarea renders and accepts input |
+| 4.24 | Client sensitivity field present | "Client-Reported Environmental Sensitivity" input renders |
+| 4.25 | Env notes save with note | POST `/session-notes` with `env_notes:{notes:"…"}` → 201; `env_notes` field in response |
+| 4.26 | Env notes display on saved notes | Previously saved note with `env_notes` shows 🌿 env summary line in notes list |
+| 4.27 | Env notes PATCH accepted | PATCH `/session-notes?id=<id>` with `{env_notes:{…}}` → 200 |
+| 4.28 | No causal language in UI | Environmental section label includes "observational only, not causal" disclaimer |
+
+#### 4e — Missing requirements alert
+
+| # | Test | Pass condition |
+|---|---|---|
+| 4.29 | Missing requirements box renders | Profile modal and session notes modal both show Needs Completion block when items missing |
+| 4.30 | Box clears when all complete | When waiver + intake + payment + notes all present, box is absent or shows "✓ All requirements complete" |
+| 4.31 | Missing payment surfaced | Session with no payment records shows "No payment recorded" in Needs Completion |
+| 4.32 | Missing notes surfaced | Session with no notes shows "No session notes yet" in Needs Completion |
 
 ---
 
@@ -231,7 +275,7 @@ Each suite maps to one milestone. The agent runs only the suite(s) enabled in
 [✅] Suite 1 — Authentication
 [✅] Suite 2 — Clients tab          ← passed 2026-06-11
 [✅] Suite 3 — Client Timeline      ← passed 2026-06-11 (manual retest)
-[🔲] Suite 4 — Session Notes        ← NEXT
+[🔲] Suite 4 — Session Notes + Compliance + Environment  ← NEXT
 [🔲] Suite 5 — Aftercare
 [🔲] Suite 6 — Payments
 [🔲] Suite 7 — Daily Briefing

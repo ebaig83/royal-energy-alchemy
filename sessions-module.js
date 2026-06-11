@@ -242,25 +242,144 @@
     if (!body) return;
 
     try {
-      var data = await api('/sessions?id=' + id);
-      var s    = data.session;
+      var data  = await api('/sessions?id=' + id);
+      var s     = data.session;
       var notes = s.session_notes || [];
       var pays  = s.payments      || [];
 
-      // Build status selector options
+      // ── Client compliance data (if client_id available) ───────────
+      var waiverSigned = false, hasIntake = false, intakeDate = null, latestIntake = null;
+      if (s.client_id) {
+        try {
+          var tlData   = await api('/timeline?client_id=' + s.client_id);
+          var clData   = await api('/clients?id=' + s.client_id);
+          var clTags   = (clData.client && clData.client.tags) || [];
+          waiverSigned = clTags.some(function(t) { return t.toLowerCase() === 'waiver'; });
+          var intakeEvs = (tlData.timeline || []).filter(function(e) { return e.type === 'intake'; });
+          hasIntake     = intakeEvs.length > 0;
+          intakeDate    = hasIntake ? intakeEvs[intakeEvs.length - 1].date : null;
+          latestIntake  = hasIntake ? intakeEvs[0].data : null;
+        } catch (_) { /* compliance data optional */ }
+      }
+
+      // ── Missing requirements ──────────────────────────────────────
+      var missing = [];
+      if (!waiverSigned)            missing.push({ icon: '⚠', label: 'Waiver not on file',    hint: 'Add tag "waiver" to client once signed.' });
+      if (!hasIntake)               missing.push({ icon: '⚠', label: 'No intake on file',      hint: 'Client has not submitted an intake form.' });
+      if (!pays.length)             missing.push({ icon: '○', label: 'No payment recorded',    hint: 'Log a payment for this session.' });
+      if (!notes.length)            missing.push({ icon: '○', label: 'No session notes yet',   hint: 'Add notes below.' });
+
+      var missingBox = missing.length
+        ? '<div style="background:#ff70700d;border:1px solid #ff555533;padding:12px 16px;margin-bottom:18px">' +
+            '<div style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.35em;text-transform:uppercase;' +
+              'color:#ff8888;margin-bottom:8px">Needs Completion</div>' +
+            missing.map(function(m) {
+              return '<div style="display:flex;gap:8px;align-items:baseline;margin-bottom:5px">' +
+                '<span style="color:#ff8888;font-size:11px;flex-shrink:0">' + m.icon + '</span>' +
+                '<span style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.15em;' +
+                  'text-transform:uppercase;color:#ffaaaa">' + m.label + '</span>' +
+                '<span style="font-family:\'EB Garamond\',serif;font-size:13px;color:#dddaee66">' + m.hint + '</span>' +
+              '</div>';
+            }).join('') +
+          '</div>'
+        : '';
+
+      // ── Compliance badges ─────────────────────────────────────────
+      var wBadge = snCompBadge(
+        waiverSigned ? '✓ Waiver on File' : '⚠ Waiver Missing',
+        waiverSigned ? '#22c98a' : '#ff5555'
+      );
+      var iBadge = snCompBadge(
+        hasIntake ? ('✓ Intake · ' + fmtDate(intakeDate)) : '⚠ Intake Missing',
+        hasIntake ? '#22c98a' : '#f8a84b'
+      );
+
+      // ── Intake summary ────────────────────────────────────────────
+      var intakeSummaryHtml = '';
+      if (latestIntake) {
+        var iLines = [];
+        if (latestIntake.service_requested) iLines.push(['Requested', latestIntake.service_requested]);
+        if (latestIntake.message)           iLines.push(['Message',   latestIntake.message]);
+        if (latestIntake.agent_summary)     iLines.push(['Summary',   latestIntake.agent_summary]);
+        if (iLines.length) {
+          intakeSummaryHtml =
+            '<div style="background:#f8a84b0d;border:1px solid #f8a84b33;padding:12px 16px;margin-bottom:18px">' +
+              '<div style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.3em;text-transform:uppercase;' +
+                'color:#f8a84b;margin-bottom:8px">Intake / Assessment</div>' +
+              iLines.map(function(fl) {
+                return '<div style="margin-bottom:6px">' +
+                  '<span style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.2em;text-transform:uppercase;' +
+                    'color:#e8b84baa">' + fl[0] + ': </span>' +
+                  '<span style="font-family:\'EB Garamond\',serif;font-size:14px;color:#e8e6f8">' + fl[1] + '</span>' +
+                '</div>';
+              }).join('') +
+            '</div>';
+        }
+      }
+
+      // ── Environmental context (from env log via getEnvForDate) ────
+      var envEntry = (s.session_date && typeof getEnvForDate === 'function')
+        ? getEnvForDate(s.session_date) : null;
+      var envPills = '';
+      if (envEntry) {
+        var pills = [];
+        if (envEntry.moon)       pills.push({ label: envEntry.moon,                 color: '#dddaee' });
+        if (envEntry.schumann)   pills.push({ label: 'Schumann: ' + envEntry.schumann + (envEntry.schumannVal ? ' (' + envEntry.schumannVal + ')' : ''), color: envEntry.schumann === 'Normal' ? '#22c98a' : envEntry.schumann === 'Elevated' ? '#f8e090' : envEntry.schumann === 'High' ? '#e8b84b' : '#ee7070' });
+        if (envEntry.solar)      pills.push({ label: 'Solar: ' + envEntry.solar,    color: '#f8a84b' });
+        if (envEntry.geo)        pills.push({ label: 'Geo: ' + envEntry.geo,        color: '#66b5f8' });
+        envPills = pills.map(function(p) {
+          return '<span style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.2em;text-transform:uppercase;' +
+            'color:' + p.color + ';border:1px solid ' + p.color + '44;padding:3px 10px;white-space:nowrap">' +
+            p.label + '</span>';
+        }).join('');
+      }
+
+      var envSection =
+        '<div style="background:#07051a;border:1px solid #9b7fe844;padding:14px 16px;margin-bottom:22px">' +
+          '<div style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.35em;text-transform:uppercase;' +
+            'color:#9b7fe8;margin-bottom:10px">Environmental Context ' +
+            '<span style="color:#dddaee44;font-size:8px;letter-spacing:.2em;font-weight:400">— observational only, not causal</span>' +
+          '</div>' +
+          (envPills
+            ? '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">' + envPills + '</div>'
+            : '<div style="font-family:\'EB Garamond\',serif;font-size:13px;color:#dddaee44;margin-bottom:12px;font-style:italic">' +
+                'No environmental data on file for this date. Visit the Environment tab to fetch live data.' +
+              '</div>') +
+          formLabel('Practitioner Environmental Notes') +
+          '<textarea id="snEnvNotes" class="modal-notes" ' +
+            'placeholder="e.g. Client reported high sensitivity, cloudy day, barometric drop noticed…" ' +
+            'style="min-height:54px;margin-bottom:8px;border-color:#9b7fe855"></textarea>' +
+          formLabel('Client-Reported Environmental Sensitivity') +
+          '<input id="snEnvSensitivity" type="text" class="appt-input" ' +
+            'placeholder="e.g. Had headache, felt energetically congested…" ' +
+            'style="width:100%;background:#04020e;color:#f0ecff;border-color:#9b7fe855">' +
+        '</div>';
+
+      // ── Status / payment options ──────────────────────────────────
       var statusOpts = Object.keys(STATUS_CFG).map(function(k) {
         var cfg = STATUS_CFG[k];
         return '<option value="' + k + '"' + (s.status === k ? ' selected' : '') + '>' + cfg[0] + '</option>';
       }).join('');
-
       var payOpts = Object.keys(PAY_CFG).map(function(k) {
         var cfg = PAY_CFG[k];
         return '<option value="' + k + '"' + (s.payment_status === k ? ' selected' : '') + '>' + cfg[0] + '</option>';
       }).join('');
 
-      // Notes list
+      // ── Notes list ────────────────────────────────────────────────
       var notesHtml = notes.length
         ? notes.map(function(n) {
+            var env = n.env_notes;
+            var envLine = '';
+            if (env) {
+              var parts = [];
+              if (env.moon)        parts.push(env.moon);
+              if (env.schumann)    parts.push('Schumann: ' + env.schumann);
+              if (env.solar)       parts.push('Solar: ' + env.solar);
+              if (env.notes)       parts.push(env.notes);
+              if (env.sensitivity) parts.push('Client: ' + env.sensitivity);
+              if (parts.length) envLine = '<div style="margin-top:6px;font-family:\'Cinzel\',serif;font-size:9px;' +
+                'letter-spacing:.2em;text-transform:uppercase;color:#9b7fe8aa">🌿 ' + parts.join(' · ') + '</div>';
+            }
             return '<div style="background:#07051a;border-left:2px solid #e8b84b44;padding:12px 16px;margin-bottom:10px">' +
               '<div style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.25em;text-transform:uppercase;' +
                 'color:#e8b84b88;margin-bottom:6px">' + (n.note_type || 'note') + ' · ' + fmtDate(n.created_at) + '</div>' +
@@ -270,65 +389,69 @@
                 'color:#b09ef8;font-style:italic">Energy: ' + n.energy_findings + '</div>' : '') +
               (n.recommendations ? '<div style="margin-top:4px;font-family:\'EB Garamond\',serif;font-size:14px;' +
                 'color:#66b5f8;font-style:italic">Recommendations: ' + n.recommendations + '</div>' : '') +
+              envLine +
             '</div>';
           }).join('')
-        : '<p style="color:#dddaee66;font-style:italic;font-family:\'EB Garamond\',serif;' +
-            'font-size:15px">No notes yet for this session.</p>';
+        : '<p style="color:#dddaee66;font-style:italic;font-family:\'EB Garamond\',serif;font-size:15px">No notes yet for this session.</p>';
 
-      // Payments list
+      // ── Payments list ─────────────────────────────────────────────
       var paysHtml = pays.length
         ? pays.map(function(p) {
-            return '<div style="display:flex;gap:10px;align-items:baseline;padding:6px 0;' +
-              'border-bottom:1px solid #e8b84b0e">' +
-              '<span style="font-family:\'Cinzel\',serif;font-size:12px;color:#22c98a">$' +
-                parseFloat(p.amount || 0).toFixed(2) + '</span>' +
-              '<span style="font-family:\'EB Garamond\',serif;font-size:14px;color:#dddaee99">' +
-                (p.method || '') + (p.notes ? ' — ' + p.notes : '') + '</span>' +
-              '<span style="font-family:\'EB Garamond\',serif;font-size:13px;color:#dddaee55;margin-left:auto">' +
-                fmtDate(p.paid_at) + '</span>' +
+            return '<div style="display:flex;gap:10px;align-items:baseline;padding:6px 0;border-bottom:1px solid #e8b84b0e">' +
+              '<span style="font-family:\'Cinzel\',serif;font-size:12px;color:#22c98a">$' + parseFloat(p.amount || 0).toFixed(2) + '</span>' +
+              '<span style="font-family:\'EB Garamond\',serif;font-size:14px;color:#dddaee99">' + (p.method || '') + (p.notes ? ' — ' + p.notes : '') + '</span>' +
+              '<span style="font-family:\'EB Garamond\',serif;font-size:13px;color:#dddaee55;margin-left:auto">' + fmtDate(p.paid_at) + '</span>' +
             '</div>';
           }).join('')
         : '<p style="color:#dddaee55;font-style:italic;font-family:\'EB Garamond\',serif;font-size:14px">No payments logged.</p>';
 
       body.innerHTML =
-        // ── Session header ────────────────────────────────────────
+        // ── Missing requirements ──────────────────────────────────
+        missingBox +
+
+        // ── Compliance badges ─────────────────────────────────────
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px">' + wBadge + iBadge + '</div>' +
+
+        // ── Intake summary ────────────────────────────────────────
+        intakeSummaryHtml +
+
+        // ── Session header grid ───────────────────────────────────
         '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">' +
-          infoCell('Client', s.client_name || '—') +
-          infoCell('Date', fmtDate(s.session_date) + (s.session_date ? ' · ' + fmtDay(s.session_date) : '')) +
-          infoCell('Service', s.service || '—') +
-          infoCell('Location', s.location_type === 'distance' ? 'Distance' : 'In Person') +
-          infoCell('Duration', s.duration_minutes ? s.duration_minutes + ' min' : '—') +
+          infoCell('Client',     s.client_name || '—') +
+          infoCell('Date',       fmtDate(s.session_date) + (s.session_date ? ' · ' + fmtDay(s.session_date) : '')) +
+          infoCell('Service',    s.service || '—') +
+          infoCell('Location',   s.location_type === 'distance' ? 'Distance' : 'In Person') +
+          infoCell('Duration',   s.duration_minutes ? s.duration_minutes + ' min' : '—') +
           infoCell('Amount Due', s.amount_due ? '$' + parseFloat(s.amount_due).toFixed(2) : '—') +
         '</div>' +
 
-        // ── Quick status / payment update row ─────────────────────
+        // ── Status / payment update row ───────────────────────────
         '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;' +
           'padding:14px;background:#07051a;border:1px solid #e8b84b22;margin-bottom:22px">' +
-
           '<div style="flex:1;min-width:160px">' +
             formLabel('Session Status') +
-            '<select id="snStatusSel" onchange="snUpdateSession()"' +
-              ' style="width:100%;background:#04020e;color:#f0ecff;border:1px solid #e8b84b44;' +
+            '<select id="snStatusSel" onchange="snUpdateSession()" ' +
+              'style="width:100%;background:#04020e;color:#f0ecff;border:1px solid #e8b84b44;' +
               'padding:7px 10px;font-family:\'Cinzel\',serif;font-size:10px;letter-spacing:.2em">' +
               statusOpts +
             '</select>' +
           '</div>' +
-
           '<div style="flex:1;min-width:160px">' +
             formLabel('Payment Status') +
-            '<select id="snPaySel" onchange="snUpdateSession()"' +
-              ' style="width:100%;background:#04020e;color:#f0ecff;border:1px solid #e8b84b44;' +
+            '<select id="snPaySel" onchange="snUpdateSession()" ' +
+              'style="width:100%;background:#04020e;color:#f0ecff;border:1px solid #e8b84b44;' +
               'padding:7px 10px;font-family:\'Cinzel\',serif;font-size:10px;letter-spacing:.2em">' +
               payOpts +
             '</select>' +
           '</div>' +
-
           '<div style="flex:0 0 auto;margin-top:18px">' +
             '<div id="snUpdateMsg" style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.25em;' +
               'color:#22c98a;text-transform:uppercase;min-height:16px"></div>' +
           '</div>' +
-
         '</div>' +
+
+        // ── Environmental context ─────────────────────────────────
+        envSection +
 
         // ── Add note form ─────────────────────────────────────────
         '<div style="font-family:\'Cinzel\',serif;font-size:10px;letter-spacing:.3em;text-transform:uppercase;' +
@@ -406,6 +529,12 @@
     }
   }
 
+  function snCompBadge(label, color) {
+    return '<span style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.25em;text-transform:uppercase;' +
+      'color:' + color + ';background:' + color + '18;border:1px solid ' + color + '55;' +
+      'padding:4px 12px;border-radius:2px;white-space:nowrap">' + label + '</span>';
+  }
+
   function infoCell(label, val) {
     return '<div>' +
       '<div style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.3em;text-transform:uppercase;' +
@@ -453,12 +582,39 @@
     if (!content.trim()) { if (errEl) errEl.textContent = 'Notes are required.'; return; }
     if (errEl) errEl.textContent = '';
 
+    // Collect environmental context fields
+    var envNotesText  = ((document.getElementById('snEnvNotes')        || {}).value || '').trim();
+    var envSensText   = ((document.getElementById('snEnvSensitivity')  || {}).value || '').trim();
+    var envEntry      = null;
+    if (_openSessId) {
+      // Try to get the session date from the header grid for env lookup
+      try {
+        var dateCell = document.querySelector('#snModalBody .session-date-cell');
+        var sessDate = dateCell ? dateCell.dataset.date : null;
+        if (sessDate && typeof getEnvForDate === 'function') envEntry = getEnvForDate(sessDate);
+      } catch (_) {}
+    }
+    var envPayload = null;
+    if (envNotesText || envSensText || envEntry) {
+      envPayload = {};
+      if (envEntry) {
+        if (envEntry.moon)       envPayload.moon       = envEntry.moon;
+        if (envEntry.schumann)   envPayload.schumann   = envEntry.schumann;
+        if (envEntry.schumannVal)envPayload.schumannVal= envEntry.schumannVal;
+        if (envEntry.solar)      envPayload.solar      = envEntry.solar;
+        if (envEntry.geo)        envPayload.geo        = envEntry.geo;
+      }
+      if (envNotesText) envPayload.notes       = envNotesText;
+      if (envSensText)  envPayload.sensitivity = envSensText;
+    }
+
     var payload = {
       session_id:      id,
       note_type:       noteType,
       content:         content.trim(),
       energy_findings: energy.trim() || null,
       recommendations: recs.trim()   || null,
+      env_notes:       envPayload,
       enhance:         enhance,
     };
 
