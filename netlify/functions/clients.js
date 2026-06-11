@@ -15,6 +15,10 @@ exports.handler = async function(event) {
   const auth = await requireAdmin(event);
   if (auth.error) return auth.error;
 
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return respond(500, { error: 'SUPABASE_SERVICE_ROLE_KEY is not set in Netlify environment variables.' });
+  }
+
   const sb     = getClient();
   const params = event.queryStringParameters || {};
   const ip     = event.headers['x-forwarded-for'] || '';
