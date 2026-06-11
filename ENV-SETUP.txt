@@ -1,0 +1,53 @@
+ROYAL ENERGY ALCHEMY — ENVIRONMENT VARIABLES
+Set all of these in Netlify → Site Configuration → Environment Variables
+
+──────────────────────────────────────────────────────────────────
+REQUIRED — Supabase
+──────────────────────────────────────────────────────────────────
+SUPABASE_URL
+  Where to find it: Supabase dashboard → Settings → API → Project URL
+  Example: https://abcdefghijklm.supabase.co
+
+SUPABASE_ANON_KEY
+  Where to find it: Supabase dashboard → Settings → API → Project API keys → anon public
+  Used by: auth verification only (not for data access)
+
+SUPABASE_SERVICE_ROLE_KEY
+  Where to find it: Supabase dashboard → Settings → API → Project API keys → service_role secret
+  Used by: all Netlify Functions for DB reads/writes
+  ⚠️  Never expose this in frontend code. Functions only.
+
+──────────────────────────────────────────────────────────────────
+REQUIRED — Auth
+──────────────────────────────────────────────────────────────────
+ADMIN_EMAIL
+  The email Daron uses to sign into Supabase Auth
+  Example: droyal168@gmail.com
+
+──────────────────────────────────────────────────────────────────
+OPTIONAL — AI Agents (set to enable agent summaries)
+──────────────────────────────────────────────────────────────────
+ANTHROPIC_API_KEY
+  Where to find it: console.anthropic.com → API Keys
+  Used by: intake-agent, session-notes-agent, aftercare-agent, daily-briefing-agent
+  If not set, all agents are skipped and data is still saved — just without AI summaries.
+
+──────────────────────────────────────────────────────────────────
+ALREADY SET (existing)
+──────────────────────────────────────────────────────────────────
+NETLIFY_ACCESS_TOKEN   — for netlify-forms-sync.js
+SQUARE_ACCESS_TOKEN    — for square-sync.js
+SQUARE_LOCATION_ID     — for square-sync.js (optional)
+
+──────────────────────────────────────────────────────────────────
+SUPABASE SETUP STEPS
+──────────────────────────────────────────────────────────────────
+1. Go to supabase.com → New project (name: royal-energy-alchemy)
+2. Wait for it to provision (~1 min)
+3. Go to SQL Editor → New query
+4. Paste the full contents of supabase/schema.sql → Run
+5. Go to Authentication → Users → Create a new user
+   Email: droyal168@gmail.com  (or whatever Daron uses)
+   Set a strong password
+6. Copy SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY
+7. Add all env vars to Netlify → redeploy
