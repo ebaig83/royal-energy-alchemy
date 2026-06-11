@@ -761,7 +761,10 @@ function friendlyAuthError(msg) {
   <div class="tab-content" id="tab-clients">
     <div class="section-title" style="justify-content:space-between">
       <span>Client Roster</span>
-      <span id="clientCount" style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#e8b84b88;text-transform:uppercase"></span>
+      <div style="display:flex;align-items:center;gap:12px">
+        <span id="clientCount" style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#e8b84b88;text-transform:uppercase"></span>
+        <button class="action-btn approve" onclick="crmOpenCreate()" style="padding:6px 18px;font-size:10px">+ New Client</button>
+      </div>
     </div>
 
     <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
@@ -1239,6 +1242,74 @@ function friendlyAuthError(msg) {
       <button class="btn-block"   onclick="submitFlag('blocked')">⊘ Block Client</button>
       <button class="btn-unblock" id="unblockBtn" onclick="submitUnblock()" style="display:none">✓ Remove Flag</button>
     </div>
+  </div>
+</div>
+
+<!-- ── CREATE / EDIT CLIENT MODAL ── -->
+<div class="modal-overlay" id="crmClientModal" onclick="crmCloseClientModal(event)">
+  <div class="modal" style="max-width:520px" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="document.getElementById('crmClientModal').classList.remove('open')">✕</button>
+    <h2 id="crmModalTitle">New Client</h2>
+    <div class="modal-sub" id="crmModalSubtitle">Add a new client to the database</div>
+    <input type="hidden" id="crmClientId">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px">
+      <div style="grid-column:span 2">
+        <label class="form-lbl">Full Name *</label>
+        <input id="crmFullName" class="appt-input" placeholder="e.g. Sarah Johnson" style="width:100%">
+      </div>
+      <div>
+        <label class="form-lbl">Email</label>
+        <input id="crmEmail" class="appt-input" type="email" placeholder="email@example.com" style="width:100%">
+      </div>
+      <div>
+        <label class="form-lbl">Phone</label>
+        <input id="crmPhone" class="appt-input" placeholder="814-555-0100" style="width:100%">
+      </div>
+      <div>
+        <label class="form-lbl">Source</label>
+        <select id="crmSource" class="appt-input" style="width:100%;background:#04020e;color:#f0ecff">
+          <option value="manual">Manual</option>
+          <option value="facebook">Facebook</option>
+          <option value="referral">Referral</option>
+          <option value="website">Website</option>
+          <option value="intake_form">Intake Form</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div>
+        <label class="form-lbl">Tags (comma-separated)</label>
+        <input id="crmTags" class="appt-input" placeholder="distance, vip, …" style="width:100%">
+      </div>
+      <div style="grid-column:span 2">
+        <label class="form-lbl">Notes</label>
+        <textarea id="crmNotes" class="modal-notes" placeholder="Internal notes about this client…" style="min-height:80px"></textarea>
+      </div>
+    </div>
+    <div id="crmModalError" style="color:#ee7070;font-family:'EB Garamond',serif;font-size:14px;margin-top:8px;min-height:18px"></div>
+    <div class="modal-actions" style="margin-top:16px">
+      <button id="crmSaveBtn" class="action-btn approve" onclick="crmSaveClient()" style="padding:10px 32px">Save</button>
+      <button class="action-btn" onclick="document.getElementById('crmClientModal').classList.remove('open')" style="margin-left:8px">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── CLIENT PROFILE MODAL ── -->
+<div class="modal-overlay" id="crmProfileModal" onclick="crmCloseProfileModal(event)">
+  <div class="modal" style="max-width:620px;max-height:85vh;overflow-y:auto" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="crmCloseProfileModal()">✕</button>
+    <h2>Client Profile</h2>
+    <div class="modal-sub">Full details and session history</div>
+    <div id="crmProfileBody" style="margin-top:16px"></div>
+  </div>
+</div>
+
+<!-- ── CLIENT TIMELINE MODAL ── -->
+<div class="modal-overlay" id="crmTimelineModal" onclick="crmCloseTimelineModal(event)">
+  <div class="modal" style="max-width:640px;max-height:85vh;overflow-y:auto" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="crmCloseTimelineModal()">✕</button>
+    <h2 id="crmTimelineTitle">Client Timeline</h2>
+    <div class="modal-sub">Chronological history across all tables</div>
+    <div id="crmTimelineBody" style="margin-top:16px"></div>
   </div>
 </div>
 
@@ -6191,6 +6262,7 @@ purgeTestEntries();
 (function(){var st=getSettings();if(st&&st.netlifyToken)setTimeout(pullNetlifySubmissions,1500);})();
 
 </script>
+<script src="clients-module.js"></script>
 </body>
 </html><div style="margin-bottom:18px">
               <label style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:#e8b84b88;text-transform:uppercase;display:block;margin-bottom:6px">GITHUB TOKEN (for slot sync)</label>
