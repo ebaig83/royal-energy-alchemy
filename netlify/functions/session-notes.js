@@ -41,11 +41,11 @@ exports.handler = async function(event) {
     let body;
     try { body = JSON.parse(event.body || '{}'); } catch { return respond(400, { error: 'Invalid JSON.' }); }
 
-    if (!body.session_id) return respond(400, { error: 'session_id is required.' });
+    if (!body.session_id && !body.client_id) return respond(400, { error: 'session_id or client_id is required.' });
     if (!body.content?.trim()) return respond(400, { error: 'content is required.' });
 
     const insert = {
-      session_id:      body.session_id,
+      session_id:      body.session_id      || null,
       client_id:       body.client_id       || null,
       note_type:       body.note_type        || 'session',
       content:         body.content.trim(),

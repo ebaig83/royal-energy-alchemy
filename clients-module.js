@@ -1,45 +1,49 @@
 // clients-module.js
-// Replaces the localStorage-based Clients tab with live /clients API calls.
-// Loaded after dashboard.html's inline scripts so these definitions win.
+// Live /clients API tab — overrides localStorage-based renderClients().
+// Loaded after dashboard.html inline scripts so these definitions win.
 
 (function () {
   'use strict';
 
-  // ── State ───────────────────────────────────────────────────────────────
-  let _clients   = [];
-  let _loaded    = false;
-  let _searching = false;
-  let _searchTimer = null;
+  // ── State ────────────────────────────────────────────────────────────────
+  var _clients     = [];
+  var _loaded      = false;
+  var _searchTimer = null;
+  var _tlClientId  = null;   // client currently open in timeline modal
 
-  // ── API helper ──────────────────────────────────────────────────────────
-  function token() {
-    return sessionStorage.getItem('rea_sb_token') || '';
-  }
+  // ── API helper ───────────────────────────────────────────────────────────
+  function token() { return sessionStorage.getItem('rea_sb_token') || ''; }
 
   async function api(path, opts) {
     opts = opts || {};
-    const res = await fetch('/.netlify/functions' + path, Object.assign({}, opts, {
-      headers: Object.assign({ 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token() }, opts.headers || {}),
+    var res = await fetch('/.netlify/functions' + path, Object.assign({}, opts, {
+      headers: Object.assign(
+        { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token() },
+        opts.headers || {}
+      ),
     }));
-    const data = await res.json();
+    var data = await res.json();
     if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
     return data;
   }
 
-  // ── Render helpers ───────────────────────────────────────────────────────
-  const STATUS_LABELS = {
-    active:                  ['Active',          '#22c98a'],
-    cancelled_appointment:   ['Cancelled',        '#ee7070'],
-    rescheduled:             ['Rescheduled',      '#9b7fe8'],
-    no_show:                 ['No-Show',          '#f8a84b'],
-    payment_issue:           ['Payment Issue',    '#f8e090'],
-    blocked:                 ['Blocked',          '#ee4444'],
-    archived:                ['Archived',         '#888888'],
+  // ── Shared helpers ───────────────────────────────────────────────────────
+  var STATUS_LABELS = {
+    active:                ['Active',         '#22c98a'],
+    cancelled_appointment: ['Cancelled',       '#f07070'],
+    rescheduled:           ['Rescheduled',     '#b09ef8'],
+    no_show:               ['No-Show',         '#f8a84b'],
+    payment_issue:         ['Payment Issue',   '#f8e060'],
+    blocked:               ['Blocked',         '#ff5555'],
+    archived:              ['Archived',        '#aaaaaa'],
   };
 
   function statusBadge(status) {
-    const [label, color] = STATUS_LABELS[status] || ['Active', '#22c98a'];
-    return `<span style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.3em;color:${color};background:${color}18;border:1px solid ${color}44;padding:2px 10px;border-radius:2px;text-transform:uppercase;white-space:nowrap">${label}</span>`;
+    var pair  = STATUS_LABELS[status] || ['Active', '#22c98a'];
+    var label = pair[0], color = pair[1];
+    return '<span style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.3em;' +
+      'color:' + color + ';background:' + color + '28;border:1px solid ' + color + '77;' +
+      'padding:2px 10px;border-radius:2px;text-transform:uppercase;white-space:nowrap">' + label + '</span>';
   }
 
   function fmtDate(d) {
@@ -47,48 +51,71 @@
     return new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
   }
 
-  function escAttr(s) {
-    return (s || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
-  }
+  function esc(s) { return (s || '').replace(/'/g, "\\'").replace(/"/g, '&quot;'); }
 
   function tagChip(t) {
-    return `<span style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.15em;text-transform:uppercase;background:#e8b84b12;border:1px solid #e8b84b33;color:#e8b84bcc;padding:2px 8px;border-radius:2px">${t}</span>`;
+    return '<span style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.15em;' +
+      'text-transform:uppercase;background:#e8b84b1c;border:1px solid #e8b84b55;' +
+      'color:#e8b84bdd;padding:2px 8px;border-radius:2px">' + t + '</span>';
   }
 
-  // ── renderClients — overrides the localStorage version ──────────────────
+  function profileRow(label, val, rawHtml) {
+    var display = rawHtml ? (val || '—') : (val || '—');
+    return '<div>' +
+      '<div style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.3em;' +
+        'text-transform:uppercase;color:#e8b84baa;margin-bottom:4px">' + label + '</div>' +
+      '<div style="font-family:\'EB Garamond\',serif;font-size:15px;color:#f0ecff">' + display + '</div>' +
+    '</div>';
+  }
+
+  function statBox(label, val) {
+    return '<div class="stat"><span class="stat-val">' + val +
+      '</span><span class="stat-label">' + label + '</span></div>';
+  }
+
+  function todayISO() {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // RENDER CLIENTS
+  // ═══════════════════════════════════════════════════════════════════════════
   window.renderClients = async function () {
-    const roster  = document.getElementById('clientRoster');
-    const countEl = document.getElementById('clientCount');
+    var roster  = document.getElementById('clientRoster');
+    var countEl = document.getElementById('clientCount');
     if (!roster) return;
 
-    const search = ((document.getElementById('clientSearch') || {}).value || '').trim();
-    const filter = (document.getElementById('clientFilter') || {}).value || 'all';
+    var search = ((document.getElementById('clientSearch') || {}).value || '').trim();
+    var filter = ((document.getElementById('clientFilter') || {}).value || 'all');
 
     if (!_loaded) {
-      roster.innerHTML = '<div style="padding:32px;text-align:center;color:#e8b84b88;font-family:\'Cinzel\',serif;font-size:12px;letter-spacing:.3em">LOADING CLIENTS…</div>';
+      roster.innerHTML = '<div style="padding:36px;text-align:center;color:#e8b84b99;' +
+        'font-family:\'Cinzel\',serif;font-size:12px;letter-spacing:.3em">LOADING CLIENTS…</div>';
     }
 
-    // Debounce only when the user is typing in the search box
     if (_searchTimer) { clearTimeout(_searchTimer); _searchTimer = null; }
 
-    const doLoad = async () => {
+    async function doLoad() {
       try {
-        const path = search ? '/clients?search=' + encodeURIComponent(search) : '/clients';
-        const data = await api(path);
+        var path = search ? '/clients?search=' + encodeURIComponent(search) : '/clients';
+        var data = await api(path);
         _clients = data.clients || [];
         _loaded  = true;
       } catch (e) {
-        roster.innerHTML = `<div style="padding:24px;color:#ee7070;font-family:'EB Garamond',serif">Failed to load clients: ${e.message}</div>`;
+        roster.innerHTML = '<div style="padding:24px;color:#ff7070;font-family:\'EB Garamond\',serif;' +
+          'font-size:16px">Failed to load clients: ' + e.message + '</div>';
         if (countEl) countEl.textContent = '';
         return;
       }
 
-      let list = _clients.slice();
-
-      const STATUS_FILTERS = ['active','cancelled_appointment','rescheduled','no_show','payment_issue','blocked','archived'];
-      if (filter === 'distance') list = list.filter(c => (c.tags || []).includes('distance'));
-      if (filter === 'inperson') list = list.filter(c => (c.tags || []).includes('in-person') || (c.tags || []).includes('inPerson'));
-      if (STATUS_FILTERS.includes(filter)) list = list.filter(c => c.status === filter);
+      var list = _clients.slice();
+      var STATUS_FILTERS = ['active','cancelled_appointment','rescheduled','no_show',
+                            'payment_issue','blocked','archived'];
+      if (filter === 'distance') list = list.filter(function(c) { return (c.tags||[]).includes('distance'); });
+      if (filter === 'inperson') list = list.filter(function(c) {
+        return (c.tags||[]).includes('in-person') || (c.tags||[]).includes('inPerson');
+      });
+      if (STATUS_FILTERS.includes(filter)) list = list.filter(function(c) { return c.status === filter; });
 
       if (countEl) countEl.textContent = list.length + ' client' + (list.length !== 1 ? 's' : '');
 
@@ -96,76 +123,99 @@
         roster.innerHTML = '<p style="color:#dddaeecc;font-style:italic;padding:24px 0">No clients match.</p>';
         return;
       }
-
-      roster.innerHTML = list.map(c => buildCard(c)).join('');
-    };
-
-    if (search) {
-      _searchTimer = setTimeout(doLoad, 280);
-    } else {
-      await doLoad();
+      roster.innerHTML = list.map(buildCard).join('');
     }
+
+    if (search) { _searchTimer = setTimeout(doLoad, 280); }
+    else        { await doLoad(); }
   };
 
+  // ── Client card ─────────────────────────────────────────────────────────
   function buildCard(c) {
-    const id        = c.id;
-    const name      = c.full_name || '(unnamed)';
-    const status    = c.status || 'active';
-    const tags      = c.tags || [];
-    const tagHtml   = tags.filter(t => t).map(tagChip).join(' ');
-    const isArchived = status === 'archived';
+    var id       = c.id;
+    var name     = c.full_name || '(unnamed)';
+    var status   = c.status || 'active';
+    var tags     = (c.tags || []).filter(Boolean);
+    var archived = status === 'archived';
 
-    const statusRow = Object.keys(STATUS_LABELS).map(s => {
-      const [lbl, col] = STATUS_LABELS[s];
-      const active = status === s ? `;border-color:${col};color:${col}` : '';
-      return `<button onclick="crmSetStatus('${escAttr(id)}','${s}')" style="font-family:'Cinzel',serif;font-size:8px;letter-spacing:.2em;text-transform:uppercase;padding:3px 8px;border:1px solid ${col}44;color:${col}88;background:${col}0d;cursor:pointer${active}">${lbl}</button>`;
+    var statusRow = Object.keys(STATUS_LABELS).map(function(s) {
+      var pair   = STATUS_LABELS[s];
+      var lbl    = pair[0], col = pair[1];
+      var isCur  = status === s;
+      return '<button onclick="crmSetStatus(\'' + esc(id) + '\',\'' + s + '\')" ' +
+        'style="font-family:\'Cinzel\',serif;font-size:8px;letter-spacing:.2em;text-transform:uppercase;' +
+        'padding:4px 10px;border:1px solid ' + col + (isCur ? '99' : '44') + ';' +
+        'color:' + col + (isCur ? '' : 'aa') + ';background:' + col + (isCur ? '22' : '0d') + ';' +
+        'cursor:pointer;font-weight:' + (isCur ? '700' : '400') + '">' + lbl + '</button>';
     }).join('');
 
-    return `<div class="client-card" style="${isArchived ? 'opacity:.5' : ''}">
-  <div class="card-head">
-    <div style="flex:1;min-width:0">
-      <div class="card-name" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-        ${name} ${statusBadge(status)}
-      </div>
-      ${c.email || c.phone ? `<div style="font-family:'EB Garamond',serif;font-size:14px;color:#dddaee77;margin-top:3px">${[c.email, c.phone].filter(Boolean).join(' · ')}</div>` : ''}
-      <div class="card-time" style="margin-top:2px">Added ${fmtDate(c.created_at)}${c.source && c.source !== 'manual' ? ' · ' + c.source : ''}</div>
-    </div>
-    <div style="display:flex;gap:6px;align-items:flex-start;flex-wrap:wrap;flex-shrink:0">
-      <button class="action-btn view" onclick="crmOpenProfile('${escAttr(id)}')">👤 Profile</button>
-      <button class="action-btn view" style="border-color:#9b7fe844;color:#9b7fe8cc" onclick="crmOpenTimeline('${escAttr(id)}')">⏱ Timeline</button>
-      <button class="action-btn view" style="border-color:#e8b84b44;color:#e8b84bcc" onclick="crmOpenEdit('${escAttr(id)}')">✎ Edit</button>
-      <button class="action-btn reject" onclick="crmConfirmArchive('${escAttr(id)}','${escAttr(name)}')">⊘ Archive</button>
-    </div>
-  </div>
-  ${tagHtml ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">${tagHtml}</div>` : ''}
-  <div style="display:flex;gap:6px;align-items:center;margin-top:10px;flex-wrap:wrap">
-    <span style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.3em;color:#e8b84b66;text-transform:uppercase">Set Status:</span>
-    ${statusRow}
-  </div>
-</div>`;
+    return '<div class="client-card" style="' +
+        'background:#0e0b1f;border:1px solid #e8b84b55;padding:22px;margin-bottom:16px;' +
+        (archived ? 'opacity:.55;' : '') + '">' +
+
+      '<div class="card-head">' +
+        '<div style="flex:1;min-width:0">' +
+          '<div style="font-family:\'Cinzel\',serif;font-size:13px;letter-spacing:.08em;color:#f0ecff;' +
+            'display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-weight:600">' +
+            name + ' ' + statusBadge(status) +
+          '</div>' +
+          (c.email || c.phone
+            ? '<div style="font-family:\'EB Garamond\',serif;font-size:14px;color:#dddaeeaa;margin-top:5px">' +
+                [c.email, c.phone].filter(Boolean).join(' · ') +
+              '</div>'
+            : '') +
+          '<div style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.2em;color:#e8b84b88;' +
+            'text-transform:uppercase;margin-top:5px">' +
+            'Added ' + fmtDate(c.created_at) +
+            (c.source && c.source !== 'manual' ? ' · ' + c.source : '') +
+          '</div>' +
+        '</div>' +
+        '<div style="display:flex;gap:6px;align-items:flex-start;flex-wrap:wrap;flex-shrink:0;margin-left:12px">' +
+          '<button class="action-btn view" onclick="crmOpenProfile(\'' + esc(id) + '\')">👤 Profile</button>' +
+          '<button class="action-btn view" style="border-color:#9b7fe866;color:#b09ef8" ' +
+            'onclick="crmOpenTimeline(\'' + esc(id) + '\')">⏱ Timeline</button>' +
+          '<button class="action-btn view" style="border-color:#e8b84b66;color:#e8b84b" ' +
+            'onclick="crmOpenEdit(\'' + esc(id) + '\')">✎ Edit</button>' +
+          '<button class="action-btn reject" style="border-color:#ff555566;color:#ff8888" ' +
+            'onclick="crmConfirmArchive(\'' + esc(id) + '\',\'' + esc(name) + '\')">⊘ Archive</button>' +
+        '</div>' +
+      '</div>' +
+
+      (tags.length
+        ? '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">' + tags.map(tagChip).join('') + '</div>'
+        : '') +
+
+      '<div style="display:flex;gap:6px;align-items:center;margin-top:12px;flex-wrap:wrap;' +
+        'padding-top:12px;border-top:1px solid #e8b84b1a">' +
+        '<span style="font-family:\'Cinzel\',serif;font-size:8px;letter-spacing:.3em;' +
+          'color:#e8b84b88;text-transform:uppercase">Status:</span>' +
+        statusRow +
+      '</div>' +
+    '</div>';
   }
 
   // ── Set status ───────────────────────────────────────────────────────────
   window.crmSetStatus = async function (id, status) {
     try {
-      await api('/clients?id=' + id, { method: 'PATCH', body: JSON.stringify({ status }) });
+      await api('/clients?id=' + id, { method: 'PATCH', body: JSON.stringify({ status: status }) });
+      _loaded = false;
       await window.renderClients();
-    } catch (e) {
-      alert('Could not update status: ' + e.message);
-    }
+    } catch (e) { alert('Could not update status: ' + e.message); }
   };
 
-  // ── Archive (soft-delete) ────────────────────────────────────────────────
+  // ── Archive ──────────────────────────────────────────────────────────────
   window.crmConfirmArchive = function (id, name) {
     if (!confirm('Archive ' + name + '?\n\nThey will be hidden from active views but never deleted.')) return;
     api('/clients?id=' + id, { method: 'PATCH', body: JSON.stringify({ status: 'archived' }) })
-      .then(() => window.renderClients())
-      .catch(e => alert('Archive failed: ' + e.message));
+      .then(function() { _loaded = false; return window.renderClients(); })
+      .catch(function(e) { alert('Archive failed: ' + e.message); });
   };
 
-  // ── Create / Edit modal ──────────────────────────────────────────────────
+  // ═══════════════════════════════════════════════════════════════════════════
+  // CREATE / EDIT MODAL
+  // ═══════════════════════════════════════════════════════════════════════════
   window.crmOpenCreate = function () {
-    document.getElementById('crmModalTitle').textContent   = 'New Client';
+    document.getElementById('crmModalTitle').textContent    = 'New Client';
     document.getElementById('crmModalSubtitle').textContent = 'Add a new client to the database';
     document.getElementById('crmClientId').value   = '';
     document.getElementById('crmFullName').value   = '';
@@ -180,60 +230,57 @@
   };
 
   window.crmOpenEdit = async function (id) {
-    document.getElementById('crmModalTitle').textContent   = 'Edit Client';
+    document.getElementById('crmModalTitle').textContent    = 'Edit Client';
     document.getElementById('crmModalSubtitle').textContent = 'Update client details';
-    document.getElementById('crmModalError').textContent   = '';
+    document.getElementById('crmModalError').textContent    = '';
     document.getElementById('crmClientId').value = id;
 
-    // Pre-populate with cached data while we fetch full record
-    const cached = _clients.find(c => c.id === id);
+    var cached = _clients.find(function(c) { return c.id === id; });
     if (cached) {
-      document.getElementById('crmFullName').value  = cached.full_name  || '';
-      document.getElementById('crmEmail').value     = cached.email      || '';
-      document.getElementById('crmPhone').value     = cached.phone      || '';
-      document.getElementById('crmSource').value    = cached.source     || 'manual';
-      document.getElementById('crmNotes').value     = cached.notes      || '';
-      document.getElementById('crmTags').value      = (cached.tags || []).join(', ');
+      document.getElementById('crmFullName').value = cached.full_name || '';
+      document.getElementById('crmEmail').value    = cached.email     || '';
+      document.getElementById('crmPhone').value    = cached.phone     || '';
+      document.getElementById('crmSource').value   = cached.source    || 'manual';
+      document.getElementById('crmNotes').value    = cached.notes     || '';
+      document.getElementById('crmTags').value     = (cached.tags || []).join(', ');
     }
-
     document.getElementById('crmClientModal').classList.add('open');
 
-    // Fetch full record to get notes field (not in list response)
     try {
-      const data = await api('/clients?id=' + id);
-      const cl = data.client;
-      document.getElementById('crmFullName').value  = cl.full_name  || '';
-      document.getElementById('crmEmail').value     = cl.email      || '';
-      document.getElementById('crmPhone').value     = cl.phone      || '';
-      document.getElementById('crmSource').value    = cl.source     || 'manual';
-      document.getElementById('crmNotes').value     = cl.notes      || '';
-      document.getElementById('crmTags').value      = (cl.tags || []).join(', ');
-    } catch (e) { /* use cached data */ }
+      var data = await api('/clients?id=' + id);
+      var cl   = data.client;
+      document.getElementById('crmFullName').value = cl.full_name || '';
+      document.getElementById('crmEmail').value    = cl.email     || '';
+      document.getElementById('crmPhone').value    = cl.phone     || '';
+      document.getElementById('crmSource').value   = cl.source    || 'manual';
+      document.getElementById('crmNotes').value    = cl.notes     || '';
+      document.getElementById('crmTags').value     = (cl.tags || []).join(', ');
+    } catch (e) { /* use cached */ }
   };
 
   window.crmSaveClient = async function () {
-    const id       = document.getElementById('crmClientId').value.trim();
-    const fullName = document.getElementById('crmFullName').value.trim();
-    const errEl    = document.getElementById('crmModalError');
-    const saveBtn  = document.getElementById('crmSaveBtn');
+    var id      = document.getElementById('crmClientId').value.trim();
+    var name    = document.getElementById('crmFullName').value.trim();
+    var errEl   = document.getElementById('crmModalError');
+    var saveBtn = document.getElementById('crmSaveBtn');
 
-    if (!fullName) { errEl.textContent = 'Full name is required.'; return; }
+    if (!name) { errEl.textContent = 'Full name is required.'; return; }
 
-    const tagsRaw = document.getElementById('crmTags').value;
-    const tags    = tagsRaw.split(',').map(t => t.trim()).filter(Boolean);
+    var tags = document.getElementById('crmTags').value
+      .split(',').map(function(t) { return t.trim(); }).filter(Boolean);
 
-    const payload = {
-      full_name: fullName,
-      email:     document.getElementById('crmEmail').value.trim() || null,
-      phone:     document.getElementById('crmPhone').value.trim() || null,
-      source:    document.getElementById('crmSource').value || 'manual',
-      notes:     document.getElementById('crmNotes').value.trim() || null,
-      tags,
+    var payload = {
+      full_name: name,
+      email:     document.getElementById('crmEmail').value.trim()  || null,
+      phone:     document.getElementById('crmPhone').value.trim()  || null,
+      source:    document.getElementById('crmSource').value        || 'manual',
+      notes:     document.getElementById('crmNotes').value.trim()  || null,
+      tags:      tags,
     };
 
-    saveBtn.disabled = true;
+    saveBtn.disabled    = true;
     saveBtn.textContent = 'Saving…';
-    errEl.textContent = '';
+    errEl.textContent   = '';
 
     try {
       if (id) {
@@ -247,7 +294,7 @@
     } catch (e) {
       errEl.textContent = e.message;
     } finally {
-      saveBtn.disabled = false;
+      saveBtn.disabled    = false;
       saveBtn.textContent = 'Save';
     }
   };
@@ -257,81 +304,88 @@
     document.getElementById('crmClientModal').classList.remove('open');
   };
 
-  // ── Profile modal ────────────────────────────────────────────────────────
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PROFILE MODAL
+  // ═══════════════════════════════════════════════════════════════════════════
   window.crmOpenProfile = async function (id) {
-    const modal = document.getElementById('crmProfileModal');
-    const body  = document.getElementById('crmProfileBody');
-    body.innerHTML = '<div style="padding:32px;text-align:center;color:#e8b84b88;font-family:\'Cinzel\',serif;font-size:12px;letter-spacing:.3em">LOADING…</div>';
+    var modal = document.getElementById('crmProfileModal');
+    var body  = document.getElementById('crmProfileBody');
+    body.innerHTML = loadingHtml();
     modal.classList.add('open');
 
     try {
-      const data = await api('/clients?id=' + id);
-      const cl   = data.client;
-      const sess = data.sessions || [];
-      const ac   = data.aftercare || [];
+      var data = await api('/clients?id=' + id);
+      var cl   = data.client;
+      var sess = data.sessions  || [];
+      var ac   = data.aftercare || [];
 
-      const totalPaid = sess.reduce((sum, s) => sum + (parseFloat(s.price) || 0), 0);
-      const completed = sess.filter(s => s.status === 'completed').length;
-      const pendingAC = ac.filter(a => a.status === 'scheduled').length;
+      var totalPaid = sess.reduce(function(sum, s) { return sum + (parseFloat(s.price) || 0); }, 0);
+      var completed = sess.filter(function(s) { return s.status === 'completed'; }).length;
+      var pendingAC = ac.filter(function(a)  { return a.status === 'scheduled'; }).length;
 
-      const sessRows = sess.length
-        ? sess.map(s => `<tr>
-            <td style="color:#dddaeecc">${fmtDate(s.session_date)}</td>
-            <td style="color:#e8b84bcc">${s.service_type || '—'}</td>
-            <td style="color:#22c98a">${s.status || '—'}</td>
-            <td style="color:#e8b84b">$${parseFloat(s.price || 0).toFixed(2)}</td>
-          </tr>`).join('')
-        : '<tr><td colspan="4" style="color:#dddaee55;font-style:italic;padding:12px 0">No sessions yet.</td></tr>';
+      var sessRows = sess.length
+        ? sess.map(function(s) {
+            return '<tr>' +
+              '<td style="padding:6px 8px 6px 0;color:#dddaee;border-bottom:1px solid #e8b84b0e">' + fmtDate(s.session_date) + '</td>' +
+              '<td style="padding:6px 8px;color:#e8b84b;border-bottom:1px solid #e8b84b0e">'        + (s.service_type || '—') + '</td>' +
+              '<td style="padding:6px 8px;color:#22c98a;border-bottom:1px solid #e8b84b0e">'        + (s.status || '—') + '</td>' +
+              '<td style="padding:6px 0 6px 8px;color:#f0ecff;border-bottom:1px solid #e8b84b0e">$' + parseFloat(s.price || 0).toFixed(2) + '</td>' +
+            '</tr>';
+          }).join('')
+        : '<tr><td colspan="4" style="color:#dddaee66;font-style:italic;padding:14px 0">No sessions yet.</td></tr>';
 
-      body.innerHTML = `
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">
-          ${row('Full Name',    cl.full_name)}
-          ${row('Email',        cl.email)}
-          ${row('Phone',        cl.phone)}
-          ${row('Source',       cl.source)}
-          ${row('Status',       statusBadge(cl.status || 'active'), true)}
-          ${row('Added',        fmtDate(cl.created_at))}
-        </div>
-        ${cl.notes ? `<div style="background:#e8b84b08;border-left:2px solid #e8b84b33;padding:10px 14px;margin-bottom:20px;font-family:'EB Garamond',serif;font-size:15px;color:#dddaee;line-height:1.7">${cl.notes}</div>` : ''}
-        ${(cl.tags||[]).length ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px">${(cl.tags||[]).map(tagChip).join('')}</div>` : ''}
+      body.innerHTML =
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px">' +
+          profileRow('Full Name', cl.full_name) +
+          profileRow('Email',     cl.email) +
+          profileRow('Phone',     cl.phone) +
+          profileRow('Source',    cl.source) +
+          profileRow('Status',    statusBadge(cl.status || 'active'), true) +
+          profileRow('Added',     fmtDate(cl.created_at)) +
+        '</div>' +
 
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:#e8b84b14;margin-bottom:20px">
-          ${stat('Total Sessions', sess.length)}
-          ${stat('Completed',      completed)}
-          ${stat('Total Paid',     '$' + totalPaid.toFixed(2))}
-          ${stat('Pending Follow-ups', pendingAC)}
-        </div>
+        (cl.notes
+          ? '<div style="background:#e8b84b0c;border-left:2px solid #e8b84b55;padding:12px 16px;' +
+              'margin-bottom:20px;font-family:\'EB Garamond\',serif;font-size:15px;color:#e8e6f8;line-height:1.7">' +
+              cl.notes + '</div>'
+          : '') +
 
-        <div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:#e8b84b88;margin-bottom:10px">Sessions</div>
-        <table style="width:100%;border-collapse:collapse;font-family:'EB Garamond',serif;font-size:14px">
-          <thead><tr>
-            <th style="text-align:left;color:#e8b84b66;font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;text-transform:uppercase;padding-bottom:6px">Date</th>
-            <th style="text-align:left;color:#e8b84b66;font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;text-transform:uppercase;padding-bottom:6px">Service</th>
-            <th style="text-align:left;color:#e8b84b66;font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;text-transform:uppercase;padding-bottom:6px">Status</th>
-            <th style="text-align:left;color:#e8b84b66;font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;text-transform:uppercase;padding-bottom:6px">Price</th>
-          </tr></thead>
-          <tbody>${sessRows}</tbody>
-        </table>
+        ((cl.tags||[]).length
+          ? '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px">' +
+              (cl.tags||[]).map(tagChip).join('') + '</div>'
+          : '') +
 
-        <div style="margin-top:20px;border-top:1px solid #e8b84b14;padding-top:16px">
-          <button class="action-btn view" style="border-color:#e8b84b44;color:#e8b84bcc" onclick="crmCloseProfileModal();crmOpenEdit('${id}')">✎ Edit This Client</button>
-          <button class="action-btn view" style="border-color:#9b7fe844;color:#9b7fe8cc;margin-left:8px" onclick="crmCloseProfileModal();crmOpenTimeline('${id}')">⏱ Full Timeline</button>
-        </div>`;
+        '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#e8b84b22;margin-bottom:24px">' +
+          statBox('Sessions',        sess.length) +
+          statBox('Completed',       completed) +
+          statBox('Total Paid',      '$' + totalPaid.toFixed(2)) +
+          statBox('Pending Follow-ups', pendingAC) +
+        '</div>' +
+
+        '<div style="font-family:\'Cinzel\',serif;font-size:10px;letter-spacing:.3em;text-transform:uppercase;' +
+          'color:#e8b84baa;margin-bottom:10px">Sessions</div>' +
+        '<table style="width:100%;border-collapse:collapse;font-family:\'EB Garamond\',serif;font-size:14px">' +
+          '<thead><tr>' +
+            thCell('Date') + thCell('Service') + thCell('Status') + thCell('Price') +
+          '</tr></thead>' +
+          '<tbody>' + sessRows + '</tbody>' +
+        '</table>' +
+
+        '<div style="margin-top:22px;border-top:1px solid #e8b84b22;padding-top:16px;display:flex;gap:10px">' +
+          '<button class="action-btn view" style="border-color:#e8b84b66;color:#e8b84b" ' +
+            'onclick="crmCloseProfileModal();crmOpenEdit(\'' + esc(id) + '\')">✎ Edit Client</button>' +
+          '<button class="action-btn view" style="border-color:#9b7fe866;color:#b09ef8" ' +
+            'onclick="crmCloseProfileModal();crmOpenTimeline(\'' + esc(id) + '\')">⏱ Full Timeline</button>' +
+        '</div>';
     } catch (e) {
-      body.innerHTML = `<div style="color:#ee7070;font-family:'EB Garamond',serif;padding:20px">Failed to load profile: ${e.message}</div>`;
+      body.innerHTML = errorHtml('Failed to load profile: ' + e.message);
     }
   };
 
-  function row(label, val, raw) {
-    const display = raw ? (val || '—') : (val || '—');
-    return `<div>
-      <div style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:#e8b84b66;margin-bottom:3px">${label}</div>
-      <div style="font-family:'EB Garamond',serif;font-size:15px;color:#dddaee">${display}</div>
-    </div>`;
-  }
-
-  function stat(label, val) {
-    return `<div class="stat"><span class="stat-val">${val}</span><span class="stat-label">${label}</span></div>`;
+  function thCell(t) {
+    return '<th style="text-align:left;color:#e8b84baa;font-family:\'Cinzel\',serif;' +
+      'font-size:9px;letter-spacing:.25em;text-transform:uppercase;padding-bottom:8px;' +
+      'padding-right:8px">' + t + '</th>';
   }
 
   window.crmCloseProfileModal = function (e) {
@@ -339,103 +393,240 @@
     document.getElementById('crmProfileModal').classList.remove('open');
   };
 
-  // ── Timeline modal ───────────────────────────────────────────────────────
+  // ═══════════════════════════════════════════════════════════════════════════
+  // TIMELINE MODAL  +  ADD EVENT
+  // ═══════════════════════════════════════════════════════════════════════════
   window.crmOpenTimeline = async function (id) {
-    const modal = document.getElementById('crmTimelineModal');
-    const body  = document.getElementById('crmTimelineBody');
-    body.innerHTML = '<div style="padding:32px;text-align:center;color:#e8b84b88;font-family:\'Cinzel\',serif;font-size:12px;letter-spacing:.3em">BUILDING TIMELINE…</div>';
+    _tlClientId = id;
+    var modal = document.getElementById('crmTimelineModal');
+    var body  = document.getElementById('crmTimelineBody');
+    body.innerHTML = loadingHtml('BUILDING TIMELINE…');
     modal.classList.add('open');
+    await loadTimeline(id);
+  };
+
+  async function loadTimeline(id) {
+    var body = document.getElementById('crmTimelineBody');
+    if (!body) return;
 
     try {
-      const data   = await api('/timeline?client_id=' + id);
-      const cl     = data.client;
-      const stats  = data.stats || {};
-      const events = data.timeline || [];
+      var data   = await api('/timeline?client_id=' + id);
+      var cl     = data.client;
+      var stats  = data.stats   || {};
+      var events = data.timeline || [];
 
       document.getElementById('crmTimelineTitle').textContent = cl.full_name + ' — Timeline';
 
-      const TYPE_CONFIG = {
-        session:  { icon: '✦', label: 'Session',     color: '#9b7fe8' },
-        note:     { icon: '📝', label: 'Note',        color: '#e8b84b' },
-        payment:  { icon: '💳', label: 'Payment',     color: '#22c98a' },
-        aftercare:{ icon: '💌', label: 'Follow-up',   color: '#66b5f8' },
-        intake:   { icon: '📋', label: 'Intake',      color: '#f8a84b' },
+      var TYPE_CFG = {
+        session:   { icon: '✦',  label: 'Session',    color: '#9b7fe8' },
+        note:      { icon: '📝', label: 'Note',       color: '#e8b84b' },
+        payment:   { icon: '💳', label: 'Payment',    color: '#22c98a' },
+        aftercare: { icon: '💌', label: 'Follow-up',  color: '#66b5f8' },
+        intake:    { icon: '📋', label: 'Intake',     color: '#f8a84b' },
       };
 
-      const eventHtml = events.length
-        ? events.map(ev => {
-            const cfg  = TYPE_CONFIG[ev.type] || { icon: '·', label: ev.type, color: '#888' };
-            const d    = ev.data || {};
-            let detail = '';
-
+      var eventsHtml = events.length
+        ? events.map(function(ev) {
+            var cfg    = TYPE_CFG[ev.type] || { icon: '·', label: ev.type, color: '#aaa' };
+            var d      = ev.data || {};
+            var detail = '';
             if (ev.type === 'session') {
               detail = [d.service_type, d.status, d.price ? '$' + parseFloat(d.price).toFixed(2) : ''].filter(Boolean).join(' · ');
             } else if (ev.type === 'note') {
-              detail = (d.content || d.raw_notes || '').slice(0, 160) + ((d.content || d.raw_notes || '').length > 160 ? '…' : '');
+              var txt = d.content || d.raw_notes || '';
+              detail = txt.slice(0, 200) + (txt.length > 200 ? '…' : '');
             } else if (ev.type === 'payment') {
-              detail = '$' + parseFloat(d.amount || 0).toFixed(2) + (d.method ? ' via ' + d.method : '') + (d.notes ? ' — ' + d.notes : '');
+              detail = '$' + parseFloat(d.amount || 0).toFixed(2) +
+                (d.method ? ' via ' + d.method : '') + (d.notes ? ' — ' + d.notes : '');
             } else if (ev.type === 'aftercare') {
-              detail = (d.message_type || '') + (d.status ? ' · ' + d.status : '') + (d.message_preview ? ' · ' + (d.message_preview||'').slice(0,100) : '');
+              detail = (d.message_type || '') + (d.status ? ' · ' + d.status : '');
             } else if (ev.type === 'intake') {
               detail = 'Form submitted' + (d.service_interest ? ' · ' + d.service_interest : '');
             }
-
-            return `<div style="display:flex;gap:14px;padding:10px 0;border-bottom:1px solid #e8b84b08">
-              <div style="width:36px;height:36px;border-radius:50%;background:${cfg.color}18;border:1px solid ${cfg.color}44;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;margin-top:2px">${cfg.icon}</div>
-              <div style="flex:1;min-width:0">
-                <div style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap">
-                  <span style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:${cfg.color}">${cfg.label}</span>
-                  <span style="font-family:'EB Garamond',serif;font-size:13px;color:#dddaee55">${fmtDate(ev.date)}</span>
-                </div>
-                ${detail ? `<div style="font-family:'EB Garamond',serif;font-size:14px;color:#dddaeecc;margin-top:2px;line-height:1.5">${detail}</div>` : ''}
-              </div>
-            </div>`;
+            return '<div style="display:flex;gap:14px;padding:12px 0;border-bottom:1px solid #e8b84b14">' +
+              '<div style="width:38px;height:38px;border-radius:50%;background:' + cfg.color + '22;' +
+                'border:1px solid ' + cfg.color + '55;display:flex;align-items:center;justify-content:center;' +
+                'font-size:15px;flex-shrink:0;margin-top:2px">' + cfg.icon + '</div>' +
+              '<div style="flex:1;min-width:0">' +
+                '<div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap">' +
+                  '<span style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.3em;' +
+                    'text-transform:uppercase;color:' + cfg.color + ';font-weight:600">' + cfg.label + '</span>' +
+                  '<span style="font-family:\'EB Garamond\',serif;font-size:13px;color:#dddaee99">' + fmtDate(ev.date) + '</span>' +
+                '</div>' +
+                (detail
+                  ? '<div style="font-family:\'EB Garamond\',serif;font-size:15px;color:#e8e6f8;' +
+                      'margin-top:3px;line-height:1.55">' + detail + '</div>'
+                  : '') +
+              '</div>' +
+            '</div>';
           }).join('')
-        : '<p style="color:#dddaee55;font-style:italic;padding:24px 0">No timeline events yet.</p>';
+        : '<p style="color:#dddaee77;font-style:italic;padding:20px 0">No timeline events yet.</p>';
 
-      body.innerHTML = `
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#e8b84b14;margin-bottom:24px">
-          ${stat('Sessions',       stats.totalSessions || 0)}
-          ${stat('Completed',      stats.completedSessions || 0)}
-          ${stat('Total Paid',     '$' + (stats.totalPaid || 0).toFixed(2))}
-          ${stat('Pending Follow-ups', stats.pendingFollowUps || 0)}
-        </div>
-        <div>${eventHtml}</div>`;
+      body.innerHTML =
+        // Stats bar
+        '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;' +
+          'background:#e8b84b22;margin-bottom:22px">' +
+          statBox('Sessions',          stats.totalSessions     || 0) +
+          statBox('Completed',         stats.completedSessions || 0) +
+          statBox('Total Paid',        '$' + (stats.totalPaid  || 0).toFixed(2)) +
+          statBox('Pending Follow-ups', stats.pendingFollowUps || 0) +
+        '</div>' +
+
+        // Add event button + collapsible form
+        '<div style="margin-bottom:20px">' +
+          '<button onclick="crmToggleAddEvent()" id="crmAddEvtToggle" ' +
+            'style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.3em;text-transform:uppercase;' +
+            'background:#e8b84b14;border:1px solid #e8b84b55;color:#e8b84b;padding:7px 18px;cursor:pointer;' +
+            'transition:background .2s">+ Add Timeline Event</button>' +
+
+          '<div id="crmAddEvtForm" style="display:none;margin-top:14px;background:#0e0b1f;' +
+            'border:1px solid #e8b84b44;padding:20px">' +
+            '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">' +
+              '<div>' +
+                formLabel('Event Type') +
+                '<select id="crmEvtType" class="appt-input" ' +
+                  'style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44">' +
+                  '<option value="note">Note</option>' +
+                  '<option value="follow_up">Follow-up</option>' +
+                  '<option value="intake">Intake</option>' +
+                  '<option value="manual_event">Manual Event</option>' +
+                '</select>' +
+              '</div>' +
+              '<div>' +
+                formLabel('Date') +
+                '<input id="crmEvtDate" type="date" class="appt-input" value="' + todayISO() + '" ' +
+                  'style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44;' +
+                  'color-scheme:dark">' +
+              '</div>' +
+              '<div style="grid-column:span 2">' +
+                formLabel('Title / Notes') +
+                '<textarea id="crmEvtContent" class="modal-notes" ' +
+                  'placeholder="Describe what happened…" ' +
+                  'style="min-height:72px;margin-bottom:0;border-color:#e8b84b44"></textarea>' +
+              '</div>' +
+            '</div>' +
+            '<div id="crmEvtError" style="color:#ff7070;font-family:\'EB Garamond\',serif;' +
+              'font-size:14px;min-height:18px;margin-bottom:8px"></div>' +
+            '<div style="display:flex;gap:10px">' +
+              '<button id="crmEvtSaveBtn" class="action-btn approve" ' +
+                'onclick="crmSaveTimelineEvent()" style="padding:8px 24px">Save Event</button>' +
+              '<button class="action-btn" onclick="crmToggleAddEvent()">Cancel</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+
+        // Events list
+        '<div>' + eventsHtml + '</div>';
+
     } catch (e) {
-      body.innerHTML = `<div style="color:#ee7070;font-family:'EB Garamond',serif;padding:20px">Failed to load timeline: ${e.message}</div>`;
+      body.innerHTML = errorHtml('Failed to load timeline: ' + e.message);
+    }
+  }
+
+  // Toggle the add-event form open/closed
+  window.crmToggleAddEvent = function () {
+    var form = document.getElementById('crmAddEvtForm');
+    var btn  = document.getElementById('crmAddEvtToggle');
+    if (!form) return;
+    var open = form.style.display !== 'none';
+    form.style.display = open ? 'none' : 'block';
+    if (btn) btn.textContent = open ? '+ Add Timeline Event' : '✕ Cancel';
+    if (!open) {
+      // Reset form
+      var contentEl = document.getElementById('crmEvtContent');
+      var errEl     = document.getElementById('crmEvtError');
+      if (contentEl) contentEl.value = '';
+      if (errEl)     errEl.textContent = '';
+      var dateEl = document.getElementById('crmEvtDate');
+      if (dateEl) dateEl.value = todayISO();
+      setTimeout(function() { if (contentEl) contentEl.focus(); }, 50);
+    }
+  };
+
+  // POST the new event to /session-notes
+  window.crmSaveTimelineEvent = async function () {
+    var id      = _tlClientId;
+    var typeEl  = document.getElementById('crmEvtType');
+    var dateEl  = document.getElementById('crmEvtDate');
+    var txtEl   = document.getElementById('crmEvtContent');
+    var errEl   = document.getElementById('crmEvtError');
+    var saveBtn = document.getElementById('crmEvtSaveBtn');
+
+    if (!id) { errEl.textContent = 'No client selected.'; return; }
+
+    var noteType = typeEl ? typeEl.value : 'note';
+    var date     = dateEl ? dateEl.value : todayISO();
+    var rawText  = txtEl ? txtEl.value.trim() : '';
+
+    if (!rawText) { errEl.textContent = 'Notes are required.'; return; }
+
+    // Prefix content with the selected date so it shows context in the timeline
+    var content = '[' + date + '] ' + rawText;
+
+    saveBtn.disabled    = true;
+    saveBtn.textContent = 'Saving…';
+    errEl.textContent   = '';
+
+    try {
+      await api('/session-notes', {
+        method: 'POST',
+        body:   JSON.stringify({ client_id: id, note_type: noteType, content: content }),
+      });
+      // Reload the timeline
+      await loadTimeline(id);
+    } catch (e) {
+      errEl.textContent = e.message;
+      saveBtn.disabled    = false;
+      saveBtn.textContent = 'Save Event';
     }
   };
 
   window.crmCloseTimelineModal = function (e) {
     if (e && e.target !== document.getElementById('crmTimelineModal')) return;
     document.getElementById('crmTimelineModal').classList.remove('open');
+    _tlClientId = null;
   };
 
-  // ── Clear any stale localStorage-rendered cards immediately ─────────────
-  // initDashboard() runs before this module and calls the old renderClients()
-  // which fills the roster from REA_DATA. Clear it so API data renders cleanly.
-  (function clearStaleRoster() {
-    var roster = document.getElementById('clientRoster');
-    if (roster) roster.innerHTML = '';
+  // ── UI micro-helpers ─────────────────────────────────────────────────────
+  function loadingHtml(msg) {
+    return '<div style="padding:36px;text-align:center;color:#e8b84b99;' +
+      'font-family:\'Cinzel\',serif;font-size:12px;letter-spacing:.3em">' +
+      (msg || 'LOADING…') + '</div>';
+  }
+
+  function errorHtml(msg) {
+    return '<div style="color:#ff7070;font-family:\'EB Garamond\',serif;' +
+      'font-size:15px;padding:20px;line-height:1.6">' + msg + '</div>';
+  }
+
+  function formLabel(txt) {
+    return '<div style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.3em;' +
+      'text-transform:uppercase;color:#e8b84baa;margin-bottom:5px">' + txt + '</div>';
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // INIT
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  // Clear stale localStorage-rendered cards from initDashboard()
+  (function () {
+    var roster  = document.getElementById('clientRoster');
     var countEl = document.getElementById('clientCount');
+    if (roster)  roster.innerHTML   = '';
     if (countEl) countEl.textContent = '';
   })();
 
-  // ── Patch showTab to auto-load clients ───────────────────────────────────
-  const _origShowTab = window.showTab;
+  // Patch showTab to auto-load when Clients tab opens
+  var _origShowTab = window.showTab;
   window.showTab = function (name) {
     if (_origShowTab) _origShowTab(name);
-    if (name === 'clients') {
-      window.renderClients();
-    }
+    if (name === 'clients') window.renderClients();
   };
 
-  // ── Initial load if clients tab is already active on page load ───────────
+  // Initial load if clients tab is already visible on page load
   document.addEventListener('DOMContentLoaded', function () {
-    const active = document.querySelector('.tab-content.active');
-    if (active && active.id === 'tab-clients') {
-      window.renderClients();
-    }
+    var active = document.querySelector('.tab-content.active');
+    if (active && active.id === 'tab-clients') window.renderClients();
   });
 
 })();
