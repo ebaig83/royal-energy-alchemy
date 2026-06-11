@@ -2,3 +2,4 @@ assets/(1) Facebook_files/
 assets/(1) Facebook.html
 *.zip
 .netlify/
+qa/.env

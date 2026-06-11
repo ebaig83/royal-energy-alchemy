@@ -2,6 +2,9 @@
   "name": "royal-energy-alchemy",
   "version": "1.0.0",
   "private": true,
+  "scripts": {
+    "qa": "node qa/qa-agent.js"
+  },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0"
   }
