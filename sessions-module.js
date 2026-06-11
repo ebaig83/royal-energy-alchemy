@@ -593,18 +593,14 @@
     if (!document.getElementById('snModal')) {
       var snModal = document.createElement('div');
       snModal.id        = 'snModal';
-      snModal.className = 'crm-modal';
+      snModal.className = 'modal-overlay';
       snModal.onclick   = window.snCloseModal;
       snModal.innerHTML =
-        '<div class="crm-modal-box" style="max-width:720px" onclick="event.stopPropagation()">' +
-          '<div class="crm-modal-header">' +
-            '<div>' +
-              '<div class="crm-modal-title" id="snModalTitle">Session</div>' +
-              '<div class="crm-modal-sub">Notes, status &amp; payment</div>' +
-            '</div>' +
-            '<button class="crm-modal-close" onclick="snCloseModal()">✕</button>' +
-          '</div>' +
-          '<div id="snModalBody" class="crm-modal-body" style="max-height:78vh;overflow-y:auto"></div>' +
+        '<div class="modal" style="max-width:720px;max-height:85vh;overflow-y:auto" onclick="event.stopPropagation()">' +
+          '<button class="modal-close" onclick="snCloseModal()">✕</button>' +
+          '<h2 id="snModalTitle">Session</h2>' +
+          '<div class="modal-sub">Notes, status &amp; payment</div>' +
+          '<div id="snModalBody" style="margin-top:16px"></div>' +
         '</div>';
       document.body.appendChild(snModal);
     }
@@ -613,18 +609,14 @@
     if (!document.getElementById('snCreateModal')) {
       var snCreate = document.createElement('div');
       snCreate.id        = 'snCreateModal';
-      snCreate.className = 'crm-modal';
+      snCreate.className = 'modal-overlay';
       snCreate.onclick   = window.snCloseCreateModal;
       snCreate.innerHTML =
-        '<div class="crm-modal-box" style="max-width:560px" onclick="event.stopPropagation()">' +
-          '<div class="crm-modal-header">' +
-            '<div>' +
-              '<div class="crm-modal-title">New Session</div>' +
-              '<div class="crm-modal-sub">Log a session manually</div>' +
-            '</div>' +
-            '<button class="crm-modal-close" onclick="snCloseCreateModal()">✕</button>' +
-          '</div>' +
-          '<div class="crm-modal-body">' +
+        '<div class="modal" style="max-width:560px" onclick="event.stopPropagation()">' +
+          '<button class="modal-close" onclick="snCloseCreateModal()">✕</button>' +
+          '<h2>New Session</h2>' +
+          '<div class="modal-sub">Log a session manually</div>' +
+          '<div style="margin-top:16px">' +
             '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">' +
 
               '<div style="grid-column:span 2">' +
