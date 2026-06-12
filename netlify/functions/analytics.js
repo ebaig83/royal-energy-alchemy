@@ -276,7 +276,7 @@ async function retentionIntelligence(sb) {
 // ── PHASE 5: CROSS-CLIENT INTELLIGENCE (NO PII) ──────────────────────────────
 async function crossClientIntelligence(sb) {
   const [sessRes, recRes, snRes, acRes] = await Promise.all([
-    sb.from('sessions').select('id, service, location_type, session_date, state_before, state_after, status, seller_notes, tags'),
+    sb.from('sessions').select('id, service, location_type, session_date, state_before, state_after, status, seller_notes'),
     sb.from('recommendations').select('id, product_name, category, outcome_status, recommended_at'),
     sb.from('session_notes').select('id, chief_concern, env_notes, snm_json'),
     sb.from('aftercare').select('id, followup_type, status'),
