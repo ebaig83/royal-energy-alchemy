@@ -1,9 +1,18 @@
 #!/usr/bin/env node
 'use strict';
 
+// Load .env from the qa/ directory if present
+const fs   = require('fs');
+const path = require('path');
+const envPath = path.join(__dirname, '.env');
+if (fs.existsSync(envPath)) {
+  fs.readFileSync(envPath, 'utf8').split('\n').forEach(line => {
+    const m = line.match(/^\s*([A-Z_][A-Z0-9_]*)\s*=\s*(.*)\s*$/);
+    if (m && !process.env[m[1]]) process.env[m[1]] = m[2].replace(/^['"]|['"]$/g, '');
+  });
+}
+
 const { chromium } = require('playwright');
-const fs           = require('fs');
-const path         = require('path');
 
 const PIN        = process.env.DASHBOARD_PIN;
 const BASE_URL   = (process.env.QA_URL || 'https://royal-energy-alchemy.netlify.app/dashboard.html')
