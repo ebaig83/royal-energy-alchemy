@@ -1,0 +1,13 @@
+{
+  "name": "rea-qa-agent",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Post-deploy QA agent for Royal Energy Alchemy dashboard",
+  "scripts": {
+    "test": "node qa-agent.js",
+    "test:headed": "QA_HEADLESS=false node qa-agent.js"
+  },
+  "dependencies": {
+    "playwright": "^1.45.0"
+  }
+}

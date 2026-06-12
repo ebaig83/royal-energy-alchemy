@@ -1,0 +1,59 @@
+﻿name: Post-Deploy QA
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      qa_url:
+        description: 'Dashboard URL to test (leave blank for production)'
+        required: false
+        default: ''
+
+jobs:
+  qa:
+    name: QA Agent
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: website/qa/package.json
+
+      - name: Install dependencies
+        working-directory: website/qa
+        run: npm install
+
+      - name: Install Playwright Chromium
+        working-directory: website/qa
+        run: npx playwright install chromium --with-deps
+
+      - name: Wait for Netlify deploy to settle
+        run: |
+          echo "Waiting 45 seconds for Netlify to finish publishing..."
+          sleep 45
+
+      - name: Run QA Agent
+        working-directory: website/qa
+        env:
+          DASHBOARD_PIN: ${{ secrets.DASHBOARD_PIN }}
+          QA_URL: ${{ github.event.inputs.qa_url || 'https://royal-energy-alchemy.netlify.app/dashboard.html' }}
+          QA_HEADLESS: 'true'
+          QA_TIMEOUT_MS: '25000'
+          QA_AI_TIMEOUT_MS: '40000'
+        run: node qa-agent.js
+
+      - name: Upload screenshots and report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-results-${{ github.sha }}
+          path: website/qa/qa-screenshots/
+          retention-days: 14

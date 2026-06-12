@@ -537,6 +537,80 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
 .ai-summary-output.visible{display:block}
 .ai-summary-status{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#9b7fe8aa;text-transform:uppercase;min-height:20px;margin-top:10px}
 .ai-sum-spinner{display:inline-block;width:12px;height:12px;border:2px solid #9b7fe833;border-top-color:#9b7fe8;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+/* ── OPERATIONS CENTER ── */
+.ops-section{margin-bottom:36px}
+.ops-section-title{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.45em;color:#e8b84b;text-transform:uppercase;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.ops-section-title::after{content:'';flex:1;height:1px;background:#e8b84b22}
+.ops-health-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:4px}
+@media(max-width:900px){.ops-health-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:600px){.ops-health-grid{grid-template-columns:1fr 1fr}}
+.ops-health-card{background:#09050f;border:1px solid #e8b84b18;padding:20px 18px;text-align:center;position:relative;overflow:hidden}
+.ops-health-card.ok   {border-color:#22c98a44}
+.ops-health-card.warn {border-color:#e8b84b55}
+.ops-health-card.error{border-color:#ee505055}
+.ops-health-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-bottom:10px}
+.ops-health-dot.ok   {background:#22c98a;box-shadow:0 0 8px #22c98a88}
+.ops-health-dot.warn {background:#e8b84b;box-shadow:0 0 8px #e8b84b88}
+.ops-health-dot.error{background:#ee5050;box-shadow:0 0 8px #ee505088}
+.ops-health-label{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.35em;color:#dddaee99;text-transform:uppercase;display:block;margin-bottom:6px}
+.ops-health-status{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.2em;text-transform:uppercase;display:block;margin-bottom:4px}
+.ops-health-status.ok   {color:#22c98a}
+.ops-health-status.warn {color:#e8b84b}
+.ops-health-status.error{color:#ee5050}
+.ops-health-detail{font-family:'EB Garamond',serif;font-size:13px;color:#9988ccaa;line-height:1.4}
+.ops-fn-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
+.ops-fn-row{background:#09050f;border:1px solid #e8b84b14;padding:12px 16px;display:flex;align-items:center;gap:12px;font-size:14px}
+.ops-fn-name{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.18em;color:#f0ecff;flex:1;text-transform:uppercase}
+.ops-fn-badge{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;text-transform:uppercase;padding:3px 8px;border:1px solid}
+.ops-fn-badge.ok     {color:#22c98a;border-color:#22c98a55}
+.ops-fn-badge.warn   {color:#e8b84b;border-color:#e8b84b55}
+.ops-fn-badge.missing{color:#ee5050;border-color:#ee505055}
+.ops-fn-badge.error  {color:#ee5050;border-color:#ee505055}
+.ops-fn-badge.timeout{color:#9988cc;border-color:#9988cc55}
+.ops-fn-badge.loading{color:#9988cc77;border-color:#9988cc22}
+.ops-fn-rt{font-family:'EB Garamond',serif;font-size:13px;color:#9988ccaa;min-width:54px;text-align:right}
+.ops-err-table{width:100%;border-collapse:collapse;font-size:14px}
+.ops-err-table th{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.35em;color:#e8b84b88;text-transform:uppercase;padding:8px 12px;border-bottom:1px solid #e8b84b22;text-align:left}
+.ops-err-table td{padding:10px 12px;border-bottom:1px solid #e8b84b0e;color:#dddaeecc;vertical-align:top;font-family:'EB Garamond',serif}
+.ops-err-table tr:hover td{background:#e8b84b05}
+.ops-sev-badge{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.2em;text-transform:uppercase;padding:2px 7px;border:1px solid}
+.ops-sev-badge.error   {color:#ee5050;border-color:#ee505066}
+.ops-sev-badge.warning {color:#e8b84b;border-color:#e8b84b66}
+.ops-sev-badge.critical{color:#ff2266;border-color:#ff226666}
+.ops-ai-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:700px){.ops-ai-grid{grid-template-columns:1fr}}
+.ops-ai-period{background:#09050f;border:1px solid #9b7fe833;padding:20px 22px}
+.ops-ai-period-label{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.4em;color:#9b7fe8;text-transform:uppercase;margin-bottom:14px}
+.ops-ai-stat{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:1px solid #9b7fe811}
+.ops-ai-stat:last-child{border-bottom:none}
+.ops-ai-stat-lbl{font-family:'EB Garamond',serif;font-size:15px;color:#dddaeecc}
+.ops-ai-stat-val{font-family:'Cinzel',serif;font-size:14px;color:#f0ecff}
+.ops-audit-table{width:100%;border-collapse:collapse;font-size:14px}
+.ops-audit-table th{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.35em;color:#e8b84b88;text-transform:uppercase;padding:8px 12px;border-bottom:1px solid #e8b84b22;text-align:left}
+.ops-audit-table td{padding:8px 12px;border-bottom:1px solid #e8b84b0e;color:#dddaeecc;font-family:'EB Garamond',serif;vertical-align:top}
+.ops-deploy-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.ops-deploy-item{background:#09050f;border:1px solid #e8b84b14;padding:16px 18px}
+.ops-deploy-lbl{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.35em;color:#e8b84b88;text-transform:uppercase;margin-bottom:6px}
+.ops-deploy-val{font-family:'EB Garamond',serif;font-size:15px;color:#f0ecff;word-break:break-all}
+.ops-qa-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+@media(max-width:600px){.ops-qa-summary{grid-template-columns:1fr 1fr}}
+.ops-qa-num{background:#09050f;border:1px solid #e8b84b14;padding:18px 14px;text-align:center}
+.ops-qa-num-val{font-family:'Cinzel',serif;font-size:36px;font-weight:700;display:block;margin-bottom:4px}
+.ops-qa-num-val.pass{color:#22c98a}
+.ops-qa-num-val.fail{color:#ee5050}
+.ops-qa-num-val.warn{color:#e8b84b}
+.ops-qa-num-val.skip{color:#9988cc}
+.ops-qa-num-lbl{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.35em;color:#dddaee88;text-transform:uppercase}
+.ops-empty{font-family:'EB Garamond',serif;font-size:16px;color:#9988ccaa;font-style:italic;padding:24px 0}
+.ops-btn{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;text-transform:uppercase;padding:8px 18px;border:1px solid #e8b84b44;background:transparent;color:#e8b84b;cursor:pointer;transition:all .2s}
+.ops-btn:hover{background:#e8b84b14;border-color:#e8b84b}
+.ops-btn:disabled{opacity:.4;cursor:not-allowed}
+.ops-btn.danger{border-color:#ee505044;color:#ee5050}
+.ops-btn.danger:hover{background:#ee50500e;border-color:#ee5050}
+.ops-shimmer{height:18px;background:linear-gradient(90deg,#e8b84b0a 25%,#e8b84b18 50%,#e8b84b0a 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:2px;margin-bottom:8px}
+.ops-error-banner{background:#ee50500e;border:1px solid #ee505033;padding:12px 16px;font-family:'EB Garamond',serif;font-size:15px;color:#ee7070;margin-bottom:12px}
+.ops-bottom-row{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media(max-width:800px){.ops-bottom-row{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -588,6 +662,7 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
     <button class="tab" onclick="showTab('analytics')">Analytics</button>
     <button class="tab" onclick="showTab('booking')">Booking</button>
     <button class="tab" onclick="showTab('environment')">Environment</button>
+    <button class="tab" onclick="showTab('operations')">Operations</button>
   </div>
 
   <!-- HOME TAB -->
@@ -1203,6 +1278,83 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
 
   </div>
 
+  <!-- OPERATIONS CENTER TAB -->
+  <div class="tab-content" id="tab-operations">
+
+    <!-- Section 1: System Health -->
+    <div class="ops-section">
+      <div class="ops-section-title">System Health<button class="ops-btn" id="opsRefreshBtn" onclick="renderOperationsCenter()" style="font-size:9px;padding:5px 14px;margin-left:16px">Refresh</button></div>
+      <div class="ops-health-grid" id="opsHealthGrid">
+        <div class="ops-health-card"><div class="ops-shimmer"></div><div class="ops-shimmer" style="height:12px;width:60%;margin:0 auto"></div></div>
+        <div class="ops-health-card"><div class="ops-shimmer"></div><div class="ops-shimmer" style="height:12px;width:60%;margin:0 auto"></div></div>
+        <div class="ops-health-card"><div class="ops-shimmer"></div><div class="ops-shimmer" style="height:12px;width:60%;margin:0 auto"></div></div>
+        <div class="ops-health-card"><div class="ops-shimmer"></div><div class="ops-shimmer" style="height:12px;width:60%;margin:0 auto"></div></div>
+        <div class="ops-health-card"><div class="ops-shimmer"></div><div class="ops-shimmer" style="height:12px;width:60%;margin:0 auto"></div></div>
+      </div>
+    </div>
+
+    <!-- Section 2: Function Status -->
+    <div class="ops-section">
+      <div class="ops-section-title">Function Status<button class="ops-btn" id="opsHealthCheckBtn" onclick="opsRunHealthCheck()" style="font-size:9px;padding:5px 14px;margin-left:16px">Run Health Check</button></div>
+      <div id="opsFnGrid" class="ops-fn-grid">
+        <div class="ops-fn-row"><span class="ops-fn-name"><span class="ops-shimmer" style="width:120px;display:inline-block;height:10px"></span></span></div>
+      </div>
+    </div>
+
+    <!-- Section 3: Recent Errors -->
+    <div class="ops-section">
+      <div class="ops-section-title">Recent Errors
+        <span style="display:flex;gap:8px;align-items:center;margin-left:16px">
+          <select id="opsErrFilter" class="appt-input" style="font-size:11px;padding:4px 10px;width:auto;font-family:'Cinzel',serif;letter-spacing:.15em" onchange="opsRenderErrors()">
+            <option value="all">All</option>
+            <option value="warning">Warning</option>
+            <option value="error">Error</option>
+            <option value="critical">Critical</option>
+            <option value="resolved">Resolved</option>
+          </select>
+        </span>
+      </div>
+      <div id="opsErrorsWrap"><div class="ops-shimmer"></div><div class="ops-shimmer" style="width:70%"></div></div>
+    </div>
+
+    <!-- Section 4: AI Usage -->
+    <div class="ops-section">
+      <div class="ops-section-title">AI Usage</div>
+      <div id="opsAiWrap" class="ops-ai-grid">
+        <div class="ops-ai-period"><div class="ops-shimmer"></div><div class="ops-shimmer" style="width:80%"></div></div>
+        <div class="ops-ai-period"><div class="ops-shimmer"></div><div class="ops-shimmer" style="width:80%"></div></div>
+        <div class="ops-ai-period"><div class="ops-shimmer"></div><div class="ops-shimmer" style="width:80%"></div></div>
+      </div>
+    </div>
+
+    <!-- Section 5: Audit Activity -->
+    <div class="ops-section">
+      <div class="ops-section-title">Audit Activity</div>
+      <div id="opsAuditWrap"><div class="ops-shimmer"></div><div class="ops-shimmer" style="width:85%"></div></div>
+    </div>
+
+    <!-- Section 6 + 7: Deployments & QA Results side by side on wide, stacked on narrow -->
+    <div class="ops-bottom-row" id="opsBottomRow">
+
+      <div class="ops-section" style="margin-bottom:0">
+        <div class="ops-section-title">Deployment</div>
+        <div id="opsDeployWrap"><div class="ops-shimmer"></div><div class="ops-shimmer" style="width:65%"></div></div>
+        <button class="ops-btn" id="opsCopyVersionBtn" onclick="opsCopyVersion()" style="margin-top:14px">Copy Version Info</button>
+      </div>
+
+      <div class="ops-section" style="margin-bottom:0">
+        <div class="ops-section-title">QA Results
+          <span style="display:flex;gap:8px;margin-left:16px">
+            <button class="ops-btn" id="opsQADownloadBtn" onclick="opsDownloadQAReport()" style="font-size:9px;padding:5px 14px" disabled>Download Report</button>
+          </span>
+        </div>
+        <div id="opsQAWrap"><div class="ops-shimmer"></div><div class="ops-shimmer" style="width:75%"></div></div>
+      </div>
+
+    </div>
+
+  </div><!-- /tab-operations -->
+
 </div>
 
 <footer><p>Royal Energy Alchemy LLC · Practitioner Portal · Private</p></footer>
@@ -1337,6 +1489,7 @@ function showTab(name) {
   if (name === 'home')        { try { renderHomeDashboard(); } catch(e){ console.error('renderHomeDashboard', e); } }
   if (name === 'environment') { try { renderTodayEnvCard(); } catch(e){} try { renderEnvLog(); } catch(e){} try { renderPatterns(); } catch(e){} }
   if (name === 'booking')     { try { renderCal(); renderUpcoming(); renderWaitlist(); updateCapacityStats(); renderCancellationLog(); renderBooking(); renderSyncLastRun(); } catch(e){} }
+  if (name === 'operations')  { try { renderOperationsCenter(); } catch(e){ console.error('renderOperationsCenter', e); } }
 }
 
 function approveReview(id) {
@@ -5352,6 +5505,296 @@ function _fetchHomeBriefing() {
     }
   });
 }
+
+// ══════════════════════════════════════════════════════════════════════════
+// OPERATIONS CENTER
+// ══════════════════════════════════════════════════════════════════════════
+
+// Cached payload from last fetch — refreshed each time tab opens
+var _opsData = null;
+var _opsErrors = []; // raw error list for filter
+
+function _opsToken() {
+  return sessionStorage.getItem('rea_api_token') || '';
+}
+
+function _opsFetch(section) {
+  var url = '/.netlify/functions/operations-health' + (section ? '?section=' + section : '');
+  return fetch(url, { headers: { 'X-Dashboard-Token': _opsToken() } })
+    .then(function(r) { return r.ok ? r.json() : Promise.reject('HTTP ' + r.status); });
+}
+
+function renderOperationsCenter() {
+  var btn = document.getElementById('opsRefreshBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Loading…'; }
+
+  _opsFetch('all')
+    .then(function(data) {
+      _opsData = data;
+      _opsErrors = data.errors || [];
+      _opsRenderHealth(data.system);
+      _opsRenderFunctions(data.functions);
+      opsRenderErrors();
+      _opsRenderAI(data.ai);
+      _opsRenderAudit(data.audit);
+      _opsRenderDeploy(data.deploy);
+      _opsRenderQA(data.qa);
+    })
+    .catch(function(err) {
+      var wrap = document.getElementById('opsHealthGrid');
+      if (wrap) wrap.innerHTML = '<div class="ops-error-banner" style="grid-column:1/-1">Could not load Operations Center data. ' + err + '</div>';
+    })
+    .finally(function() {
+      if (btn) { btn.disabled = false; btn.textContent = 'Refresh'; }
+    });
+}
+
+function _opsHealthCard(key, label, status, detail) {
+  var cls = status || 'warn';
+  return '<div class="ops-health-card ' + cls + '">' +
+    '<span class="ops-health-dot ' + cls + '"></span>' +
+    '<span class="ops-health-label">' + label + '</span>' +
+    '<span class="ops-health-status ' + cls + '">' + cls.toUpperCase() + '</span>' +
+    '<div class="ops-health-detail">' + (detail || '') + '</div>' +
+    '</div>';
+}
+
+function _opsRenderHealth(sys) {
+  var el = document.getElementById('opsHealthGrid');
+  if (!el) return;
+  if (!sys) { el.innerHTML = '<div class="ops-empty" style="grid-column:1/-1">Health data unavailable.</div>'; return; }
+  var cards = ['dashboard','api','database','ai','qa'].map(function(k) {
+    var s = sys[k] || {};
+    return _opsHealthCard(k, s.label || k, s.status || 'warn', s.detail || '');
+  });
+  if (sys.open_errors > 0) {
+    cards.push('<div class="ops-error-banner" style="grid-column:1/-1">' + sys.open_errors + ' unresolved error' + (sys.open_errors !== 1 ? 's' : '') + ' — see Recent Errors below.</div>');
+  }
+  el.innerHTML = cards.join('');
+}
+
+function _opsRenderFunctions(fns) {
+  var el = document.getElementById('opsFnGrid');
+  if (!el) return;
+  if (!fns || fns.error) {
+    el.innerHTML = '<div class="ops-empty">Function status unavailable — ' + ((fns && fns.error) || 'no data') + '</div>';
+    return;
+  }
+  el.innerHTML = fns.map(function(f) {
+    var badge = f.status === 'ok' ? 'ok' : f.status === 'missing' ? 'missing' : f.status === 'timeout' ? 'timeout' : 'error';
+    var label = f.status === 'ok' ? 'OK' : f.status === 'missing' ? 'NOT DEPLOYED' : f.status === 'timeout' ? 'TIMEOUT' : 'ERROR';
+    var rt    = f.response_time_ms ? f.response_time_ms + 'ms' : '—';
+    return '<div class="ops-fn-row">' +
+      '<span class="ops-fn-name">' + f.name + '</span>' +
+      '<span class="ops-fn-badge ' + badge + '">' + label + '</span>' +
+      '<span class="ops-fn-rt">' + rt + '</span>' +
+      '</div>';
+  }).join('');
+}
+
+function opsRenderErrors() {
+  var el     = document.getElementById('opsErrorsWrap');
+  if (!el) return;
+  var filter = (document.getElementById('opsErrFilter') || {}).value || 'all';
+  var rows   = (_opsErrors || []).filter(function(e) {
+    if (filter === 'resolved')  return e.resolved;
+    if (filter === 'all')       return !e.resolved;
+    return !e.resolved && e.severity === filter;
+  });
+  if (!rows.length) {
+    el.innerHTML = '<div class="ops-empty">' + (filter === 'resolved' ? 'No resolved errors.' : filter === 'all' ? 'No open errors. System is clean.' : 'No ' + filter + '-level errors.') + '</div>';
+    return;
+  }
+  el.innerHTML = '<table class="ops-err-table"><thead><tr>' +
+    '<th>Time</th><th>Sev</th><th>Source</th><th>Message</th><th>Function</th><th></th>' +
+    '</tr></thead><tbody>' +
+    rows.slice(0, 50).map(function(e) {
+      var ts  = e.created_at ? new Date(e.created_at).toLocaleString() : '—';
+      var msg = (e.message || '').slice(0, 120);
+      return '<tr>' +
+        '<td style="white-space:nowrap;color:#9988ccaa;font-size:12px">' + ts + '</td>' +
+        '<td><span class="ops-sev-badge ' + (e.severity || 'error') + '">' + (e.severity || 'error') + '</span></td>' +
+        '<td style="color:#e8b84baa">' + (e.source || '—') + '</td>' +
+        '<td>' + msg + (e.message && e.message.length > 120 ? '…' : '') + '</td>' +
+        '<td style="font-size:12px;color:#9988ccaa">' + (e.function_name || '—') + '</td>' +
+        '<td><button class="ops-btn danger" style="font-size:8px;padding:3px 8px" onclick="opsResolveError(\'' + e.id + '\',this)">' + (e.resolved ? 'Reopen' : 'Resolve') + '</button></td>' +
+        '</tr>';
+    }).join('') + '</tbody></table>';
+}
+
+function opsResolveError(id, btn) {
+  if (!id) return;
+  btn.disabled = true;
+  fetch('/.netlify/functions/log-system-error?id=' + id + '&action=resolve', {
+    method: 'PATCH',
+    headers: { 'X-Dashboard-Token': _opsToken(), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: id, resolved: true }),
+  }).catch(function() {});
+  // Optimistic update
+  _opsErrors = _opsErrors.map(function(e) { return e.id === id ? Object.assign({}, e, { resolved: true }) : e; });
+  opsRenderErrors();
+}
+
+function _opsRenderAI(ai) {
+  var el = document.getElementById('opsAiWrap');
+  if (!el) return;
+  if (!ai || ai.error) {
+    el.innerHTML = '<div class="ops-empty">AI usage data unavailable. Logs will appear after ai_usage_logs table is populated.</div>';
+    return;
+  }
+  function period(label, d) {
+    if (!d) return '';
+    var featureRows = Object.keys(d.by_feature || {}).map(function(k) {
+      return '<div class="ops-ai-stat"><span class="ops-ai-stat-lbl">' + k.replace(/_/g,' ') + '</span><span class="ops-ai-stat-val">' + d.by_feature[k] + '</span></div>';
+    }).join('') || '<div class="ops-ai-stat"><span class="ops-ai-stat-lbl" style="font-style:italic">No calls yet</span></div>';
+    return '<div class="ops-ai-period">' +
+      '<div class="ops-ai-period-label">' + label + '</div>' +
+      '<div class="ops-ai-stat"><span class="ops-ai-stat-lbl">Total calls</span><span class="ops-ai-stat-val">' + d.total + '</span></div>' +
+      '<div class="ops-ai-stat"><span class="ops-ai-stat-lbl">Success rate</span><span class="ops-ai-stat-val">' + d.success_rate + '%</span></div>' +
+      '<div class="ops-ai-stat"><span class="ops-ai-stat-lbl">Avg response</span><span class="ops-ai-stat-val">' + (d.avg_response_ms ? d.avg_response_ms + 'ms' : '—') + '</span></div>' +
+      '<div class="ops-ai-stat"><span class="ops-ai-stat-lbl">Failed</span><span class="ops-ai-stat-val">' + d.failed + '</span></div>' +
+      featureRows + '</div>';
+  }
+  el.innerHTML = period('Today', ai.today) + period('Last 7 Days', ai.day7) + period('Last 30 Days', ai.day30);
+}
+
+function _opsRenderAudit(logs) {
+  var el = document.getElementById('opsAuditWrap');
+  if (!el) return;
+  if (!logs || !logs.length) {
+    el.innerHTML = '<div class="ops-empty">No audit activity yet.</div>';
+    return;
+  }
+  el.innerHTML = '<table class="ops-audit-table"><thead><tr><th>Time</th><th>Action</th><th>Table</th><th>Context</th><th>Actor</th></tr></thead><tbody>' +
+    logs.map(function(e) {
+      var ts = e.created_at ? new Date(e.created_at).toLocaleString() : '—';
+      return '<tr>' +
+        '<td style="white-space:nowrap;font-size:12px;color:#9988ccaa">' + ts + '</td>' +
+        '<td style="color:#e8b84b">' + (e.action || '—') + '</td>' +
+        '<td style="color:#9988cccc">' + (e.table_name || '—') + '</td>' +
+        '<td>' + (e.context || '—') + '</td>' +
+        '<td style="font-size:12px;color:#9988ccaa">' + (e.actor || '—') + '</td>' +
+        '</tr>';
+    }).join('') + '</tbody></table>';
+}
+
+function _opsRenderDeploy(deploy) {
+  var el = document.getElementById('opsDeployWrap');
+  if (!el) return;
+  if (!deploy) { el.innerHTML = '<div class="ops-empty">Deploy info unavailable.</div>'; return; }
+  var items = [
+    { label: 'Environment',  val: deploy.context || 'production' },
+    { label: 'Branch',       val: deploy.branch  || 'main' },
+    { label: 'Commit',       val: deploy.commit_ref ? deploy.commit_ref.slice(0, 10) : 'unknown' },
+    { label: 'Deploy ID',    val: deploy.deploy_id ? deploy.deploy_id.slice(0, 14) : 'unknown' },
+    { label: 'Site URL',     val: deploy.site_url || '—' },
+  ];
+  el.innerHTML = '<div class="ops-deploy-grid">' + items.map(function(i) {
+    return '<div class="ops-deploy-item"><div class="ops-deploy-lbl">' + i.label + '</div><div class="ops-deploy-val">' + i.val + '</div></div>';
+  }).join('') + '</div>';
+}
+
+function _opsRenderQA(qaList) {
+  var el = document.getElementById('opsQAWrap');
+  if (!el) return;
+  var dl = document.getElementById('opsQADownloadBtn');
+  if (!qaList || !qaList.length) {
+    el.innerHTML = '<div class="ops-empty">No QA runs recorded yet. Run the QA agent and results will appear here.</div>';
+    return;
+  }
+  var last = qaList[0];
+  var s    = last.summary || {};
+  if (dl) dl.disabled = false;
+  var overall = last.overall || 'UNKNOWN';
+  var overallColor = overall === 'PASS' ? '#22c98a' : overall === 'WARN' ? '#e8b84b' : '#ee5050';
+  el.innerHTML =
+    '<div style="margin-bottom:14px;padding:10px 14px;border:1px solid ' + overallColor + '44;background:' + overallColor + '0a">' +
+    '<span style="font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:.35em;color:' + overallColor + ';text-transform:uppercase">Last Run: ' + overall + '</span>' +
+    '<span style="font-family:\'EB Garamond\',serif;font-size:14px;color:#9988ccaa;margin-left:16px">' + (last.run_at ? new Date(last.run_at).toLocaleString() : '') + '</span>' +
+    '</div>' +
+    '<div class="ops-qa-summary">' +
+    '<div class="ops-qa-num"><span class="ops-qa-num-val pass">' + (s.pass || 0) + '</span><span class="ops-qa-num-lbl">Pass</span></div>' +
+    '<div class="ops-qa-num"><span class="ops-qa-num-val fail">' + (s.fail || 0) + '</span><span class="ops-qa-num-lbl">Fail</span></div>' +
+    '<div class="ops-qa-num"><span class="ops-qa-num-val warn">' + (s.warn || 0) + '</span><span class="ops-qa-num-lbl">Warn</span></div>' +
+    '<div class="ops-qa-num"><span class="ops-qa-num-val skip">' + (s.skip || 0) + '</span><span class="ops-qa-num-lbl">Skip</span></div>' +
+    '</div>' +
+    (qaList.length > 1 ? '<div style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.25em;color:#9988ccaa;text-transform:uppercase">' + (qaList.length - 1) + ' previous run(s) in database</div>' : '');
+}
+
+function opsRunHealthCheck() {
+  var btn = document.getElementById('opsHealthCheckBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Checking…'; }
+  fetch('/.netlify/functions/health-check-functions', {
+    method: 'POST',
+    headers: { 'X-Dashboard-Token': _opsToken() },
+  })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      _opsRenderFunctions(data.results);
+      // Re-render health cards too since function status affects them
+      _opsFetch('system').then(function(d) { _opsRenderHealth(d.system); }).catch(function() {});
+    })
+    .catch(function(err) {
+      var el = document.getElementById('opsFnGrid');
+      if (el) el.insertAdjacentHTML('afterbegin', '<div class="ops-error-banner">Health check failed: ' + err + '</div>');
+    })
+    .finally(function() {
+      if (btn) { btn.disabled = false; btn.textContent = 'Run Health Check'; }
+    });
+}
+
+function opsCopyVersion() {
+  var deploy = (_opsData && _opsData.deploy) || {};
+  var text = [
+    'Royal Energy Alchemy — Version Info',
+    'Environment : ' + (deploy.context   || 'production'),
+    'Branch      : ' + (deploy.branch    || 'main'),
+    'Commit      : ' + (deploy.commit_ref || 'unknown'),
+    'Deploy ID   : ' + (deploy.deploy_id  || 'unknown'),
+    'Timestamp   : ' + new Date().toISOString(),
+  ].join('\n');
+  navigator.clipboard.writeText(text).then(function() {
+    var btn = document.getElementById('opsCopyVersionBtn');
+    if (btn) { btn.textContent = 'Copied!'; setTimeout(function() { btn.textContent = 'Copy Version Info'; }, 1800); }
+  }).catch(function() {});
+}
+
+function opsDownloadQAReport() {
+  var qaList = (_opsData && _opsData.qa) || [];
+  if (!qaList.length) return;
+  var blob = new Blob([JSON.stringify(qaList[0], null, 2)], { type: 'application/json' });
+  var a    = document.createElement('a');
+  a.href   = URL.createObjectURL(blob);
+  a.download = 'qa-report-' + new Date().toISOString().slice(0, 10) + '.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ── Global error capture — logs JS errors to system_errors ─────────────────
+(function() {
+  var _errSent = {};
+  function _sendErr(source, message, stack, url) {
+    if (!message) return;
+    var fp = (source + '|' + message).slice(0, 100);
+    if (_errSent[fp]) return;
+    _errSent[fp] = true;
+    fetch('/.netlify/functions/log-system-error', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ source: source, severity: 'error', message: message.slice(0, 500), stack: stack ? stack.slice(0, 1000) : null, url: url || window.location.href }),
+    }).catch(function() {});
+  }
+  window.onerror = function(msg, src, line, col, err) {
+    _sendErr('frontend', String(msg) + ' (' + src + ':' + line + ')', err ? err.stack : null, window.location.href);
+    return false;
+  };
+  window.addEventListener('unhandledrejection', function(e) {
+    var msg = e.reason ? (e.reason.message || String(e.reason)) : 'Unhandled promise rejection';
+    var stack = e.reason && e.reason.stack ? e.reason.stack : null;
+    _sendErr('frontend', msg, stack, window.location.href);
+  });
+})();
+
 
 function initDashboard() {
   if (!REA_DATA.computed) REA_DATA.compute();
