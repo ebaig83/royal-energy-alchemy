@@ -118,10 +118,14 @@ async function run() {
 
   await check('PIN unlock hides gate', async () => {
     await page.press('#gatePass', 'Enter');
+    // Wait for gate to be truly hidden — do NOT use !g.offsetParent because
+    // position:fixed elements always have offsetParent===null even when visible.
     await page.waitForFunction(() => {
       const g = document.getElementById('accessGate');
-      return !g || g.classList.contains('hidden') || g.style.display === 'none' || !g.offsetParent;
+      return !g || g.classList.contains('hidden') || g.style.display === 'none';
     }, { timeout: TIMEOUT });
+    // Give initDashboard() one event-loop tick to start rendering
+    await page.waitForTimeout(500);
     return {};
   }, page);
 
