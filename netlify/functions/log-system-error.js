@@ -1,4 +1,4 @@
-﻿// /.netlify/functions/log-system-error
+// /.netlify/functions/log-system-error
 // POST — stores a frontend JS error or function error in system_errors
 // No auth required (errors arrive before PIN) but rate-limited by fingerprint dedup
 

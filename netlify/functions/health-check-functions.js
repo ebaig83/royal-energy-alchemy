@@ -1,4 +1,4 @@
-﻿// /.netlify/functions/health-check-functions
+// /.netlify/functions/health-check-functions
 // POST — triggers a live health check of all critical functions, stores results
 // Protected: requires X-Dashboard-Token
 

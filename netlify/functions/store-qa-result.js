@@ -1,4 +1,4 @@
-﻿// /.netlify/functions/store-qa-result
+// /.netlify/functions/store-qa-result
 // POST — stores a qa-agent.js run result in qa_results table
 // Protected: requires X-Dashboard-Token
 

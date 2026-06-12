@@ -1,4 +1,4 @@
-﻿// /.netlify/functions/operations-health
+// /.netlify/functions/operations-health
 // GET  — returns aggregated Operations Center data
 // Protected: requires X-Dashboard-Token
 //
