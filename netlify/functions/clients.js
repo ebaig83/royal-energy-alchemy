@@ -9,6 +9,17 @@ const { requireAdmin, respond } = require('./lib/auth');
 const { getClient }             = require('./lib/supabase');
 const { log }                   = require('./lib/audit');
 
+// Strip QA/test seed clients from production responses unless ?include_qa=true
+function _filterQA(rows, params) {
+  if (!rows) return [];
+  if (params && params.include_qa === 'true') return rows;
+  const QA_TAGS = ['qa', 'test', 'seed', 'demo'];
+  return rows.filter(function(c) {
+    const tags = (c.tags || []).map(function(t) { return (t || '').toLowerCase(); });
+    return !QA_TAGS.some(function(q) { return tags.includes(q); });
+  });
+}
+
 exports.handler = async function(event) {
   if (event.httpMethod === 'OPTIONS') return respond(200, {});
 
@@ -51,24 +62,36 @@ exports.handler = async function(event) {
 
     if (params.search) {
       const q = `%${params.search}%`;
-      const { data, error } = await sb
+      let q2 = sb
         .from('clients')
         .select('*')
         .or(`full_name.ilike.${q},email.ilike.${q}`)
         .order('created_at', { ascending: false })
         .limit(50);
-
+      // Exclude archived unless caller explicitly requests it
+      if (params.include_archived !== 'true') q2 = q2.not('status', 'eq', 'archived');
+      const { data, error } = await q2;
       if (error) return respond(500, { error: error.message });
-      return respond(200, { clients: data });
+      return respond(200, { clients: _filterQA(data, params) });
     }
 
-    const { data, error } = await sb
+    // List all — exclude archived and QA/test clients by default
+    let query = sb
       .from('clients')
       .select('id, full_name, email, phone, status, source, tags, created_at')
       .order('created_at', { ascending: false });
 
+    // If a specific status filter is requested, apply it server-side
+    if (params.status && params.status !== 'all') {
+      query = query.eq('status', params.status);
+    } else if (params.include_archived !== 'true') {
+      // Default: hide archived
+      query = query.not('status', 'eq', 'archived');
+    }
+
+    const { data, error } = await query;
     if (error) return respond(500, { error: error.message });
-    return respond(200, { clients: data });
+    return respond(200, { clients: _filterQA(data, params) });
   }
 
   // ── POST ─────────────────────────────────────────────────────────

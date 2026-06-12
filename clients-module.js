@@ -138,14 +138,36 @@
     if (_searchTimer) { clearTimeout(_searchTimer); _searchTimer = null; }
 
     async function doLoad() {
+      // Build API path — pass status filter server-side to reduce payload
+      var path;
+      if (search) {
+        path = '/clients?search=' + encodeURIComponent(search);
+        if (filter === 'archived') path += '&include_archived=true';
+      } else if (filter === 'archived') {
+        path = '/clients?status=archived&include_archived=true';
+      } else {
+        path = '/clients';
+      }
+
       try {
-        var path = search ? '/clients?search=' + encodeURIComponent(search) : '/clients';
         var data = await api(path);
         _clients = data.clients || [];
+        window._crmClients = _clients; // expose for home dashboard pending-docs stat
         _loaded  = true;
       } catch (e) {
-        roster.innerHTML = '<div style="padding:24px;color:#ff7070;font-family:\'EB Garamond\',serif;' +
-          'font-size:16px">Failed to load clients: ' + e.message + '</div>';
+        var msg = e.message || 'Unknown error';
+        // Detect token-missing scenario and give a clearer prompt
+        var hint = msg.toLowerCase().includes('unauthorized') || msg.includes('401')
+          ? 'Session may have expired — try signing out and back in.'
+          : 'Check your network connection and Netlify function logs.';
+        roster.innerHTML = '<div style="padding:32px 24px;border:1px solid #ff555533;' +
+          'background:#ff05050a;margin-top:8px">' +
+          '<div style="font-family:\'Cinzel\',serif;font-size:13px;letter-spacing:.25em;' +
+          'color:#ff7070;text-transform:uppercase;margin-bottom:10px">Client Roster Unavailable</div>' +
+          '<div style="font-size:16px;color:#dddaeecc;margin-bottom:8px">' + msg + '</div>' +
+          '<div style="font-size:14px;color:#9988cc">' + hint + '</div>' +
+          '<button onclick="window.renderClients()" class="action-btn view" ' +
+          'style="margin-top:16px;font-size:11px">↻ Retry</button></div>';
         if (countEl) countEl.textContent = '';
         return;
       }
@@ -153,16 +175,26 @@
       var list = _clients.slice();
       var STATUS_FILTERS = ['active','cancelled_appointment','rescheduled','no_show',
                             'payment_issue','blocked','archived'];
+
+      // Client-side filters (server already excluded archived for the default case)
       if (filter === 'distance') list = list.filter(function(c) { return (c.tags||[]).includes('distance'); });
       if (filter === 'inperson') list = list.filter(function(c) {
         return (c.tags||[]).includes('in-person') || (c.tags||[]).includes('inPerson');
       });
+      if (filter === 'repeat') list = list.filter(function(c) { return (c.tags||[]).includes('repeat'); });
+      if (filter === 'first')  list = list.filter(function(c) { return !(c.tags||[]).includes('repeat'); });
       if (STATUS_FILTERS.includes(filter)) list = list.filter(function(c) { return c.status === filter; });
 
       if (countEl) countEl.textContent = list.length + ' client' + (list.length !== 1 ? 's' : '');
 
       if (!list.length) {
-        roster.innerHTML = '<p style="color:#dddaeecc;font-style:italic;padding:24px 0">No clients match.</p>';
+        var emptyMsg = filter === 'archived'
+          ? 'No archived clients.'
+          : search
+            ? 'No clients match "' + search + '".'
+            : 'No active clients found. Clients are added automatically when sessions are logged, or manually with + New Client.';
+        roster.innerHTML = '<div style="padding:32px 24px;text-align:center;color:#9988cc;' +
+          'font-style:italic;font-size:16px;border:1px solid #e8b84b11">' + emptyMsg + '</div>';
         return;
       }
       roster.innerHTML = list.map(buildCard).join('');

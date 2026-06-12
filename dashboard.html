@@ -714,8 +714,8 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
         Drank water, journaled, salt bath
       </div>
       <div class="actions" style="margin-top:14px">
-        <button class="action-btn view">View Full Response</button>
-        <button class="action-btn approve">Schedule Follow-Up</button>
+        <button class="action-btn view" onclick="viewCheckinResponse(this,'Jordan L.')">View Full Response</button>
+        <button class="action-btn approve" onclick="scheduleCheckinFollowUp('Jordan L.')">Schedule Follow-Up</button>
       </div>
     </div>
     <div class="card">
@@ -737,8 +737,8 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
         "The cord to my mother still feels present."
       </div>
       <div class="actions" style="margin-top:14px">
-        <button class="action-btn view">View Full Response</button>
-        <button class="action-btn approve">Schedule Follow-Up</button>
+        <button class="action-btn view" onclick="viewCheckinResponse(this,'Renee K.')">View Full Response</button>
+        <button class="action-btn approve" onclick="scheduleCheckinFollowUp('Renee K.')">Schedule Follow-Up</button>
       </div>
     </div>
   </div>
@@ -787,7 +787,7 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
         <option value="first">First-Time Only</option>
         <option value="distance">Distance</option>
         <option value="inperson">In Person</option>
-        <option value="active">Active</option>
+        <option value="active" selected>Active</option>
         <option value="cancelled_appointment">Cancelled</option>
         <option value="rescheduled">Rescheduled</option>
         <option value="no_show">No-Show</option>
@@ -1353,6 +1353,47 @@ function rejectReview(id) {
   card.style.opacity = '0.4';
   card.querySelector('.actions').innerHTML = '<span style="font-family:Cinzel,serif;font-size:11px;letter-spacing:.2em;color:#ee707099;text-transform:uppercase">Not published</span>';
   updateStats();
+}
+
+// ── Check-In Response handlers ────────────────────────────────
+function viewCheckinResponse(btn, clientName) {
+  // Expand: show a Netlify Forms link and confirm detail is visible
+  const card = btn.closest('.card');
+  const detail = card.querySelector('.checkin-detail');
+  if (!detail) return;
+  const expanded = detail.getAttribute('data-expanded') === 'true';
+  if (expanded) {
+    detail.style.maxHeight = '220px';
+    detail.style.overflow  = 'hidden';
+    detail.removeAttribute('data-expanded');
+    btn.textContent = 'View Full Response';
+  } else {
+    detail.style.maxHeight = 'none';
+    detail.style.overflow  = 'visible';
+    detail.setAttribute('data-expanded', 'true');
+    btn.textContent = 'Collapse';
+    // Append Netlify Forms link if not already present
+    if (!detail.querySelector('.checkin-forms-link')) {
+      const link = document.createElement('div');
+      link.className = 'checkin-forms-link';
+      link.style.cssText = 'margin-top:12px;padding-top:12px;border-top:1px solid #e8b84b22';
+      link.innerHTML = '<a href="https://app.netlify.com/projects/royal-energy-alchemy/forms" ' +
+        'target="_blank" style="font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:.25em;' +
+        'color:#e8b84b;text-transform:uppercase;text-decoration:none">' +
+        '↗ View All Form Submissions</a>';
+      detail.appendChild(link);
+    }
+  }
+}
+
+function scheduleCheckinFollowUp(clientName) {
+  // Navigate to Clients tab and search for the client to open their case file
+  showTab('clients');
+  const search = document.getElementById('clientSearch');
+  if (search) {
+    search.value = clientName.replace('Client: ', '');
+    if (typeof window.renderClients === 'function') window.renderClients();
+  }
 }
 
 function updateStats() {
