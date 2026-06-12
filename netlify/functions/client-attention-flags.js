@@ -314,9 +314,64 @@ exports.handler = async (event) => {
     }
 
     logAIUsage({ feature: 'client_attention_flags', model: 'claude-haiku-4-5-20251001', clientId: payload.clientId || null, success: true, responseTimeMs: Date.now() - start, tokensUsed: result?.usage?.output_tokens || null });
-    return { statusCode: 200, body: JSON.stringify({ flags: parsed.flags || [], source: 'ai' }) };
+    const merged = mergeFlags(buildFallbackFlags(payload), parsed.flags || []);
+    return { statusCode: 200, body: JSON.stringify({ flags: merged, source: 'merged' }) };
   } catch (err) {
     logAIUsage({ feature: 'client_attention_flags', model: 'claude-haiku-4-5-20251001', clientId: payload.clientId || null, success: false, responseTimeMs: Date.now() - start, errorMessage: err.message });
     return { statusCode: 200, body: JSON.stringify({ flags: buildFallbackFlags(payload), source: 'deterministic' }) };
   }
 };
+
+// Merge deterministic flags (always authoritative) with AI flags (additive).
+// Deterministic flags always appear. AI flags are added if they cover a concept
+// not already represented in the deterministic set (dedup by label similarity).
+function mergeFlags(deterministicFlags, aiFlags) {
+  // If only success flag from deterministic and AI has real flags, replace success
+  const detReal = deterministicFlags.filter(f => f.severity !== 'success');
+  const detSuccess = deterministicFlags.filter(f => f.severity === 'success');
+
+  // Normalize label for comparison: lowercase, strip spaces/punctuation
+  const normalize = label => (label || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
+  const detLabels = new Set(detReal.map(f => normalize(f.label)));
+
+  // Concepts already covered by deterministic flags (broader match)
+  const detConcepts = new Set();
+  detReal.forEach(f => {
+    const n = normalize(f.label);
+    // add each word as a concept signal for broader dedup
+    n.split('').forEach((_, i) => {
+      if (n.length >= 4) detConcepts.add(n.slice(0, Math.max(4, Math.round(n.length * 0.6))));
+    });
+    detConcepts.add(n);
+  });
+
+  // Add AI flags that don't duplicate deterministic concepts
+  const addedAI = [];
+  aiFlags.forEach(f => {
+    if (f.severity === 'success') return; // skip AI "up to date" if we have real flags
+    const n = normalize(f.label);
+    // Skip if exact label already present
+    if (detLabels.has(n)) return;
+    // Skip if a deterministic flag covers the same root concept (>60% char prefix overlap)
+    const isDup = detReal.some(det => {
+      const dn = normalize(det.label);
+      const minLen = Math.min(n.length, dn.length);
+      if (minLen < 4) return false;
+      const overlap = Math.round(minLen * 0.6);
+      return n.slice(0, overlap) === dn.slice(0, overlap);
+    });
+    if (!isDup) addedAI.push({ ...f, source: f.source || 'ai', _fromAI: true });
+  });
+
+  const merged = [...detReal, ...addedAI];
+
+  // If nothing at all, return success
+  if (merged.length === 0) return detSuccess.length ? detSuccess : aiFlags;
+
+  // Sort by severity: urgent → warning → info → success
+  const order = { urgent: 0, warning: 1, info: 2, success: 3 };
+  merged.sort((a, b) => (order[a.severity] ?? 2) - (order[b.severity] ?? 2));
+
+  return merged;
+}
