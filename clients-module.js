@@ -15,6 +15,8 @@
   var _apEditId          = null;
   var _prepBriefClientId = null;
   var _prepBriefPayload  = null;
+  var _prepBriefCache    = {};  // { clientId: { html, ts } }
+  var PREP_BRIEF_TTL     = 30 * 60 * 1000;
 
   // ── API helper ───────────────────────────────────────────────────────────
   function token() { return sessionStorage.getItem('rea_api_token') || ''; }
@@ -788,8 +790,8 @@
         caseSection('◈', 'Practitioner Snapshot', snapshotHtml, '#e8b84b') +
         needsAttentionHtml +
         activeTreatmentHtml +
-        '<div id="crmAttentionFlagsWrap">'      + _attentionFlagsLoadingHtml()  + '</div>' +
         '<div id="crmPrepBriefWrap">'           + _prepBriefLoadingHtml()       + '</div>' +
+        '<div id="crmAttentionFlagsWrap">'      + _attentionFlagsLoadingHtml()  + '</div>' +
         '<div id="crmPractitionerTimelineWrap">'+ _timelineLoadingHtml()        + '</div>' +
         sessionDocHtml +
         recsHtml +
@@ -844,10 +846,33 @@
       recRows;
   }
 
+  var OUTCOME_CFG = {
+    recommended: ['Recommended', '#888888'],
+    purchased:   ['Purchased',   '#22c98a'],
+    tried:       ['Tried',       '#66b5f8'],
+    helpful:     ['Helpful',     '#9b7fe8'],
+    not_helpful: ['Not Helpful', '#f07070'],
+    declined:    ['Declined',    '#ee7070'],
+  };
+
   function buildRecRow(r, clientId) {
     var prCfg  = PRIORITY_CFG[r.priority]  || PRIORITY_CFG.medium;
     var puCfg  = PURCHASED_CFG[r.purchased] || PURCHASED_CFG.unknown;
     var catLbl = CAT_LABELS[r.category]    || 'Other';
+    var outCfg = r.outcome_status ? (OUTCOME_CFG[r.outcome_status] || OUTCOME_CFG.recommended) : null;
+
+    // Outcome quick-action buttons — only show for non-terminal states
+    var terminalOutcomes = ['purchased','helpful','not_helpful','declined'];
+    var isTerminal = r.outcome_status && terminalOutcomes.includes(r.outcome_status);
+    var outcomeButtons = isTerminal ? '' :
+      '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">' +
+        _outcomeBtn(r.id, clientId, 'purchased',   '✓ Purchased',  '#22c98a') +
+        _outcomeBtn(r.id, clientId, 'tried',        '◎ Tried',      '#66b5f8') +
+        _outcomeBtn(r.id, clientId, 'helpful',      '✦ Helpful',    '#9b7fe8') +
+        _outcomeBtn(r.id, clientId, 'not_helpful',  '✗ Not Helpful','#f07070') +
+        _outcomeBtn(r.id, clientId, 'declined',     '— Declined',   '#888888') +
+      '</div>';
+
     return '<div style="background:#0a0718;border:1px solid #e8b84b22;padding:16px 20px;margin-bottom:10px;border-radius:2px">' +
       '<div style="display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap">' +
         '<div style="flex:1;min-width:0">' +
@@ -856,7 +881,7 @@
             r.product_name +
             complianceBadge(catLbl,   '#9b7fe8') +
             complianceBadge(prCfg[0], prCfg[1]) +
-            complianceBadge(puCfg[0], puCfg[1]) +
+            (outCfg ? complianceBadge(outCfg[0], outCfg[1]) : complianceBadge(puCfg[0], puCfg[1])) +
           '</div>' +
           (r.reason ? '<div style="font-family:\'EB Garamond\',serif;font-size:17px;color:#dddaeecc;line-height:1.55;margin-bottom:5px">' + r.reason + '</div>' : '') +
           (r.client_outcome ? '<div style="font-family:\'EB Garamond\',serif;font-size:16px;color:#22c98acc;font-style:italic">Outcome: ' + r.client_outcome + '</div>' : '') +
@@ -865,11 +890,21 @@
           '<div style="font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#e8b84b;margin-top:6px">' +
             fmtDate(r.recommended_at) +
           '</div>' +
+          outcomeButtons +
         '</div>' +
         '<button class="action-btn view" style="border-color:#e8b84b;color:#e8b84b;padding:5px 14px;font-size:11px;flex-shrink:0" ' +
           'onclick="crmOpenRecForm(\'' + esc(clientId) + '\',\'' + esc(r.id) + '\')">Edit</button>' +
       '</div>' +
     '</div>';
+  }
+
+  function _outcomeBtn(recId, clientId, outcome, label, color) {
+    return '<button onclick="crmUpdateRecOutcome(\'' + esc(recId) + '\',\'' + outcome + '\',\'' + esc(clientId) + '\')" ' +
+      'style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.2em;text-transform:uppercase;' +
+      'padding:5px 11px;border:1px solid ' + color + '55;color:' + color + ';background:transparent;' +
+      'cursor:pointer;border-radius:2px;transition:all .15s" ' +
+      'onmouseover="this.style.background=\'' + color + '18\'" onmouseout="this.style.background=\'transparent\'">' +
+      label + '</button>';
   }
 
   // ── Referrals section builder ─────────────────────────────────────────────
@@ -1984,6 +2019,13 @@
     var wrap = document.getElementById('crmPrepBriefWrap');
     if (!wrap) return;
 
+    // Serve from cache if fresh (30 min TTL)
+    var cached = _prepBriefCache[clientId];
+    if (cached && (Date.now() - cached.ts) < PREP_BRIEF_TTL) {
+      wrap.innerHTML = cached.html;
+      return;
+    }
+
     try {
       var res = await fetch('/.netlify/functions/session-prep-brief', {
         method:  'POST',
@@ -1994,7 +2036,9 @@
       var json = await res.json();
       if (!res.ok) throw new Error(json.error || ('HTTP ' + res.status));
 
-      wrap.innerHTML = _renderPrepBriefCard(json.brief, clientId);
+      var renderedHtml = _renderPrepBriefCard(json.brief, clientId);
+      _prepBriefCache[clientId] = { html: renderedHtml, ts: Date.now() };
+      wrap.innerHTML = renderedHtml;
     } catch (e) {
       wrap.innerHTML =
         '<div style="background:#0d0920;border:2px solid #9b7fe844;border-left:4px solid #ee707088;' +
@@ -2016,9 +2060,34 @@
     }
   }
 
+  window.crmUpdateRecOutcome = async function(recId, outcomeStatus, clientId) {
+    // Map outcome to purchased field
+    var purchasedMap = { purchased: 'yes', helpful: 'yes', not_helpful: 'no', declined: 'no' };
+    var body = {
+      outcome_status: outcomeStatus,
+      outcome_date:   new Date().toISOString().slice(0, 10),
+    };
+    if (purchasedMap[outcomeStatus]) body.purchased = purchasedMap[outcomeStatus];
+
+    try {
+      var res = await fetch('/.netlify/functions/recommendations?id=' + encodeURIComponent(recId), {
+        method:  'PATCH',
+        headers: { 'Content-Type': 'application/json', 'X-Dashboard-Token': token() },
+        body:    JSON.stringify(body),
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      // Refresh the client profile to show updated rec
+      var refreshId = clientId || _profileId;
+      if (refreshId && window.crmOpenProfile) await window.crmOpenProfile(refreshId);
+    } catch (e) {
+      alert('Could not update recommendation: ' + e.message);
+    }
+  };
+
   window.crmRegeneratePrepBrief = function(clientId) {
     var wrap = document.getElementById('crmPrepBriefWrap');
     if (!wrap) return;
+    delete _prepBriefCache[clientId];
     wrap.innerHTML = _prepBriefLoadingHtml();
     _loadPrepBrief(
       clientId,

@@ -71,6 +71,19 @@ async function buildBriefing({ sb, date, actor }) {
   const revenueDue  = (todaySessions || []).reduce((s, x) => s + (parseFloat(x.amount_due)  || 0), 0);
   const revenuePaid = (todaySessions || []).reduce((s, x) => s + (parseFloat(x.amount_paid) || 0), 0);
 
+  // Classify overdue aftercare by severity (7d=warning, 14d=urgent, 30d=critical)
+  const overdueSeverity = { warning: 0, urgent: 0, critical: 0 };
+  let maxSeverityLevel = 0;
+  (dueAftercare || []).forEach(a => {
+    const scheduledFor = a.scheduled_for ? a.scheduled_for.slice(0, 10) : null;
+    if (!scheduledFor || scheduledFor >= date) return;
+    const days = Math.floor((new Date(date) - new Date(scheduledFor)) / 86400000);
+    if (days >= 30)      { overdueSeverity.critical++; if (maxSeverityLevel < 3) maxSeverityLevel = 3; }
+    else if (days >= 14) { overdueSeverity.urgent++;   if (maxSeverityLevel < 2) maxSeverityLevel = 2; }
+    else                 { overdueSeverity.warning++;  if (maxSeverityLevel < 1) maxSeverityLevel = 1; }
+  });
+  const overdueSevLabel = ['none','warning','urgent','critical'][maxSeverityLevel];
+
   // Build issues list
   const issues = [];
   (dueAftercare || []).forEach(a => issues.push({
@@ -107,15 +120,18 @@ async function buildBriefing({ sb, date, actor }) {
   }
 
   const briefingRow = {
-    briefing_date:  date,
-    sessions_count: (todaySessions || []).length,
-    revenue_due:    revenueDue,
-    revenue_paid:   revenuePaid,
-    follow_ups_due: (dueAftercare || []).length,
-    new_intakes:    (newIntakes || []).length,
+    briefing_date:          date,
+    sessions_count:         (todaySessions || []).length,
+    revenue_due:            revenueDue,
+    revenue_paid:           revenuePaid,
+    follow_ups_due:         (dueAftercare || []).length,
+    due_aftercare_count:    (dueAftercare || []).length,
+    overdue_severity:       overdueSeverity,
+    overdue_max_severity:   overdueSevLabel,
+    new_intakes:            (newIntakes || []).length,
     issues,
-    summary_text:   summaryText,
-    raw_data:       rawData,
+    summary_text:           summaryText,
+    raw_data:               rawData,
   };
 
   const { data } = await sb

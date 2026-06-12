@@ -420,6 +420,9 @@ input::placeholder,textarea::placeholder{color:#dddaee55}
 /* Next appt btns */
 .snm-appt-btn{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.2em;text-transform:uppercase;padding:9px 16px;border:1px solid #e8b84b2a;color:#dddaeecc;cursor:pointer;border-radius:2px;background:transparent;transition:all .15s}
 .snm-appt-btn.active{background:#e8b84b18;border-color:#e8b84b77;color:#e8b84b}
+.snm-state-btn{font-family:'Cinzel',serif;font-size:13px;font-weight:600;width:38px;height:38px;border:1px solid #dddaee22;color:#dddaee55;cursor:pointer;border-radius:2px;background:transparent;transition:all .15s}
+.snm-state-before-btn.active{background:#9b7fe822;border-color:#9b7fe8;color:#9b7fe8}
+.snm-state-after-btn.active{background:#22c98a22;border-color:#22c98a;color:#22c98a}
 /* Footer */
 .snm-footer{padding:20px 32px;border-top:1px solid #e8b84b22;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;position:sticky;bottom:0;background:#06030f}
 .snm-save-confirm{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#22c98a;opacity:0;transition:opacity .4s}
@@ -5076,6 +5079,8 @@ function saveDayNote(date, val) {
 function renderPatterns() {
   const el = document.getElementById('patternAnalytics');
   if (!el || typeof REA_DATA === 'undefined') return;
+  if (typeof SYMPTOM_PATTERNS === 'undefined' || !SYMPTOM_PATTERNS ||
+      typeof BUSINESS_PATTERNS === 'undefined' || !BUSINESS_PATTERNS) return;
   const log = getEnvLog();
   // no minimum — day-of-week patterns work from session data alone
 
@@ -5450,15 +5455,55 @@ function _fetchHomeBriefing() {
       if (cls) el.className = 'action-stat-val ' + cls;
     }
 
-    var sessCount  = b.session_count   ?? (b.todaySessions   && b.todaySessions.length);
-    var intakeCount= b.new_intakes_count ?? (b.newIntakes      && b.newIntakes.length);
-    var followCount= b.due_aftercare_count ?? (b.dueAftercare  && b.dueAftercare.length);
-    var unpaidCount= b.unpaid_count    ?? (b.unpaidSessions  && b.unpaidSessions.length);
+    var sessCount  = b.session_count        ?? b.sessions_count ?? (b.todaySessions   && b.todaySessions.length);
+    var intakeCount= b.new_intakes_count    ?? b.new_intakes    ?? (b.newIntakes      && b.newIntakes.length);
+    var followCount= b.due_aftercare_count  ?? b.follow_ups_due ?? (b.dueAftercare    && b.dueAftercare.length);
+    var unpaidCount= b.unpaid_count         ?? (b.unpaidSessions && b.unpaidSessions.length);
+    var overdueSev = b.overdue_max_severity || 'none';
 
     if (sessCount   !== undefined) setStat('homeStatSessions',  sessCount,   sessCount  > 0 ? 'green' : '');
     if (intakeCount !== undefined) setStat('homeStatIntakes',   intakeCount, intakeCount > 0 ? 'amber' : 'green');
-    if (followCount !== undefined) setStat('homeStatFollowUps', followCount, followCount > 0 ? 'amber' : 'green');
+    if (followCount !== undefined) {
+      var followCls = overdueSev === 'critical' ? 'red' : overdueSev === 'urgent' ? 'red' : followCount > 0 ? 'amber' : 'green';
+      setStat('homeStatFollowUps', followCount, followCls);
+    }
     if (unpaidCount !== undefined) setStat('homeStatDocs',      unpaidCount, unpaidCount > 0 ? 'amber' : 'green');
+
+    // Prepend overdue aftercare items to homeFlags panel
+    if (b.raw_data && b.raw_data.dueAftercare && b.raw_data.dueAftercare.length) {
+      try {
+        var today = new Date().toISOString().slice(0, 10);
+        var overdueItems = b.raw_data.dueAftercare.filter(function(a) {
+          var sf = a.scheduled_for ? a.scheduled_for.slice(0, 10) : null;
+          return sf && sf < today;
+        }).map(function(a) {
+          var sf = a.scheduled_for.slice(0, 10);
+          var days = Math.floor((Date.now() - new Date(sf).getTime()) / 86400000);
+          var sev = days >= 30 ? 'critical' : days >= 14 ? 'urgent' : 'warning';
+          return { name: a.client_name || (a.sessions && a.sessions.client_name) || 'Unknown',
+                   days: days, sev: sev, type: a.followup_type || 'follow-up' };
+        }).sort(function(a, b) { return b.days - a.days; });
+
+        if (overdueItems.length) {
+          var flagsEl = document.getElementById('homeFlags');
+          if (flagsEl) {
+            var sevHtml = '<div style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.25em;' +
+              'text-transform:uppercase;color:#ee7070;margin-bottom:10px">Overdue Follow-Ups</div>' +
+              overdueItems.slice(0, 5).map(function(o) {
+                var icon = o.sev === 'critical' ? '🔴' : o.sev === 'urgent' ? '🟠' : '🟡';
+                return '<div class="flag-item">' +
+                  '<span class="flag-icon">' + icon + '</span>' +
+                  '<div><div class="flag-name">' + o.name + '</div>' +
+                  '<div class="flag-reason">' + o.days + ' day' + (o.days !== 1 ? 's' : '') +
+                  ' overdue — ' + o.type + '</div></div></div>';
+              }).join('');
+            var existing = flagsEl.innerHTML;
+            flagsEl.innerHTML = sevHtml +
+              (existing ? '<div style="margin-top:14px;padding-top:14px;border-top:1px solid #dddaee0d">' + existing + '</div>' : '');
+          }
+        }
+      } catch(_) {}
+    }
 
     // Render briefing panel rows
     var rows = [];
@@ -6147,9 +6192,37 @@ function saveClientProfile_form(id) {
         <input class="snm-input" id="snm_nextApptDate" type="date" placeholder="Next appointment date" style="margin-top:10px;max-width:220px">
       </div>
 
-      <!-- 12 Session Outcome -->
+      <!-- 12 Client State Before / After -->
       <div class="snm-section">
-        <div class="snm-section-label"><span class="snm-section-icon">✨</span>12 — Session Outcome (1–5)</div>
+        <div class="snm-section-label"><span class="snm-section-icon">⚖</span>12 — Client State Before / After (1=Very Poor · 5=Very Good)</div>
+        <div style="display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start">
+          <div>
+            <div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#9b7fe8aa;margin-bottom:8px">BEFORE SESSION</div>
+            <div style="display:flex;gap:5px">
+              <button class="snm-state-btn snm-state-before-btn" data-v="1" onclick="snmSetStateBefore(1)" title="1 — Very Poor">1</button>
+              <button class="snm-state-btn snm-state-before-btn" data-v="2" onclick="snmSetStateBefore(2)" title="2 — Poor">2</button>
+              <button class="snm-state-btn snm-state-before-btn" data-v="3" onclick="snmSetStateBefore(3)" title="3 — Neutral">3</button>
+              <button class="snm-state-btn snm-state-before-btn" data-v="4" onclick="snmSetStateBefore(4)" title="4 — Good">4</button>
+              <button class="snm-state-btn snm-state-before-btn" data-v="5" onclick="snmSetStateBefore(5)" title="5 — Very Good">5</button>
+            </div>
+          </div>
+          <div style="padding-top:26px;color:#dddaee33;font-size:20px">→</div>
+          <div>
+            <div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#22c98aaa;margin-bottom:8px">AFTER SESSION</div>
+            <div style="display:flex;gap:5px">
+              <button class="snm-state-btn snm-state-after-btn" data-v="1" onclick="snmSetStateAfter(1)" title="1 — Very Poor">1</button>
+              <button class="snm-state-btn snm-state-after-btn" data-v="2" onclick="snmSetStateAfter(2)" title="2 — Poor">2</button>
+              <button class="snm-state-btn snm-state-after-btn" data-v="3" onclick="snmSetStateAfter(3)" title="3 — Neutral">3</button>
+              <button class="snm-state-btn snm-state-after-btn" data-v="4" onclick="snmSetStateAfter(4)" title="4 — Good">4</button>
+              <button class="snm-state-btn snm-state-after-btn" data-v="5" onclick="snmSetStateAfter(5)" title="5 — Very Good">5</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 13 Session Outcome -->
+      <div class="snm-section">
+        <div class="snm-section-label"><span class="snm-section-icon">✨</span>13 — Session Outcome (1–5)</div>
         <div class="snm-rating" id="snm_ratingStars">
           <span class="snm-star" data-r="1" onclick="snmSetRating(1)">★</span>
           <span class="snm-star" data-r="2" onclick="snmSetRating(2)">★</span>
@@ -6180,8 +6253,10 @@ let _snmIdx     = null;
 let _snmClient  = null;
 let _snmPriority   = null;
 let _snmNextAppt   = null;
-let _snmRating     = 0;
-let _snmResCounter = 0;
+let _snmRating       = 0;
+let _snmStateBefore  = 0;
+let _snmStateAfter   = 0;
+let _snmResCounter   = 0;
 
 const SNM_CONCERNS   = ['Relationship issues','Sleep disruption','Anxiety / panic','Depression / low mood','Grief / loss','Trauma resurfacing','Spiritual attack / entity','Cord attachment','Financial blockage','Ancestral wound','House clearing needed','Physical pain','Fatigue / drain','Anger / resentment','Confusion / brain fog'];
 const SNM_WORK       = ['Cord cutting','Chakra balancing','Protection work','Entity removal','House clearing (remote)','Ancestral clearing','Trauma release','Sleep healing','Grief work','Grounding / root work','Aura repair','Soul retrieval','Mirror work','Water blessing','Prayer & intercession'];
@@ -6267,6 +6342,16 @@ function snmSetRating(r) {
   if (lbl) lbl.textContent = RATING_LABELS[r] || '';
 }
 
+function snmSetStateBefore(v) {
+  _snmStateBefore = v;
+  document.querySelectorAll('.snm-state-before-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.v) === v));
+}
+
+function snmSetStateAfter(v) {
+  _snmStateAfter = v;
+  document.querySelectorAll('.snm-state-after-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.v) === v));
+}
+
 function snmAddResource(prefill) {
   _snmResCounter++;
   const id = 'snmres_' + _snmResCounter;
@@ -6302,6 +6387,8 @@ function openSessNotesModal(dateStr, idx, clientName) {
   _snmPriority  = null;
   _snmNextAppt  = null;
   _snmRating    = 0;
+  _snmStateBefore = 0;
+  _snmStateAfter  = 0;
 
   // Set header
   document.getElementById('snmClientLabel').textContent =
@@ -6360,9 +6447,11 @@ function openSessNotesModal(dateStr, idx, clientName) {
     setVal('snm_riskNotes',     saved.riskNotes);
     setVal('snm_nextApptDate',  saved.nextApptDate);
     setVal('snm_outcomeNotes',  saved.outcomeNotes);
-    if (saved.priority)  snmSetPriority(saved.priority);
-    if (saved.nextAppt)  snmSetNextAppt(saved.nextAppt);
-    if (saved.rating)    snmSetRating(saved.rating);
+    if (saved.priority)     snmSetPriority(saved.priority);
+    if (saved.nextAppt)     snmSetNextAppt(saved.nextAppt);
+    if (saved.rating)       snmSetRating(saved.rating);
+    if (saved.stateBefore)  snmSetStateBefore(saved.stateBefore);
+    if (saved.stateAfter)   snmSetStateAfter(saved.stateAfter);
     snmLoadResources(saved.resources || []);
   } else {
     // Prefill session time from appointment if available
@@ -6419,6 +6508,8 @@ function saveSessNotesModal() {
     nextAppt:      _snmNextAppt,
     nextApptDate:  (document.getElementById('snm_nextApptDate')||{}).value || '',
     rating:        _snmRating,
+    stateBefore:   _snmStateBefore,
+    stateAfter:    _snmStateAfter,
     outcomeNotes:  (document.getElementById('snm_outcomeNotes')||{}).value || '',
   };
 

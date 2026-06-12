@@ -101,14 +101,23 @@ function buildPrompt(d) {
   const outstandingRecs = (d.recommendations || []).filter(r => r.purchased === 'unknown');
   lines.push(`OUTSTANDING RECOMMENDATIONS: ${outstandingRecs.length}`);
 
-  // Follow-ups
+  // Follow-ups with severity
   const pendingFollowUps = (d.followUps || []);
   if (pendingFollowUps.length) {
     const overdue = pendingFollowUps.filter(f => {
-      const dt = f.date || f.scheduled_for || '';
+      const dt = (f.date || f.scheduled_for || '').slice(0, 10);
       return dt && dt < today;
     });
-    lines.push(`PENDING FOLLOW-UPS: ${pendingFollowUps.length} (${overdue.length} overdue)`);
+    const criticalOverdue = overdue.filter(f => {
+      const dt = (f.date || f.scheduled_for || '').slice(0, 10);
+      return Math.floor((new Date(today) - new Date(dt)) / 86400000) >= 30;
+    });
+    const urgentOverdue = overdue.filter(f => {
+      const dt = (f.date || f.scheduled_for || '').slice(0, 10);
+      const days = Math.floor((new Date(today) - new Date(dt)) / 86400000);
+      return days >= 14 && days < 30;
+    });
+    lines.push(`PENDING FOLLOW-UPS: ${pendingFollowUps.length} (${overdue.length} overdue — ${criticalOverdue.length} critical 30d+, ${urgentOverdue.length} urgent 14–30d)`);
   } else {
     lines.push('PENDING FOLLOW-UPS: None');
   }
@@ -119,6 +128,14 @@ function buildPrompt(d) {
   // Plans
   const activePlans = (d.plans || []).filter(p => p.status === 'active');
   lines.push(`ACTIVE ACTION PLANS: ${activePlans.length}`);
+
+  // Recommendations with outcome_status
+  const pendingOutcome = (d.recommendations || []).filter(r =>
+    !r.outcome_status || r.outcome_status === 'recommended'
+  );
+  if (pendingOutcome.length !== (d.recommendations || []).filter(r => r.purchased === 'unknown').length) {
+    lines.push(`RECOMMENDATIONS WITH NO OUTCOME: ${pendingOutcome.length}`);
+  }
 
   // Environment
   if (d.recentEnvironment && d.recentEnvironment.length) {
@@ -183,17 +200,25 @@ function buildFallbackFlags(d) {
   }
 
   const overdue = (d.followUps || []).filter(f => {
-    const dt = f.date || f.scheduled_for || '';
+    const dt = (f.date || f.scheduled_for || '').slice(0, 10);
     return dt && dt < today;
   });
   if (overdue.length) {
-    flags.push({ label: 'Follow-Up Overdue', severity: 'warning',
-      reason: `${overdue.length} follow-up item(s) appear past their scheduled date.`,
+    const maxDays = Math.max(...overdue.map(f => {
+      const dt = (f.date || f.scheduled_for || '').slice(0, 10);
+      return Math.floor((new Date(today) - new Date(dt)) / 86400000);
+    }));
+    const sev = maxDays >= 30 ? 'urgent' : maxDays >= 14 ? 'urgent' : 'warning';
+    const sevLabel = maxDays >= 30 ? 'critical (30+ days)' : maxDays >= 14 ? 'urgent (14+ days)' : 'warning';
+    flags.push({ label: 'Follow-Up Overdue', severity: sev,
+      reason: `${overdue.length} follow-up item(s) past scheduled date — most overdue: ${maxDays} days (${sevLabel}).`,
       source: 'followups',
-      suggested_action: 'Review and update the follow-up status.' });
+      suggested_action: 'Review and update follow-up status immediately.' });
   }
 
-  const outstandingRecs = (d.recommendations || []).filter(r => r.purchased === 'unknown');
+  const outstandingRecs = (d.recommendations || []).filter(r =>
+    !r.outcome_status || r.outcome_status === 'recommended'
+  );
   if (outstandingRecs.length > 2) {
     flags.push({ label: 'Recommendations Pending', severity: 'info',
       reason: `${outstandingRecs.length} recommendations have no outcome recorded.`,
@@ -217,6 +242,7 @@ exports.handler = async (event) => {
   }
 
   const { requireAdmin } = require('./lib/auth');
+  const { logAIUsage } = require('./lib/ai-log');
   const auth = requireAdmin(event);
   if (auth.error) return auth.error;
 
@@ -228,11 +254,12 @@ exports.handler = async (event) => {
     return { statusCode: 400, body: JSON.stringify({ error: 'clientName required' }) };
   }
 
-  // If no API key, return deterministic flags
+  // If no API key, return deterministic flags without logging (no AI call was made)
   if (!process.env.ANTHROPIC_API_KEY) {
     return { statusCode: 200, body: JSON.stringify({ flags: buildFallbackFlags(payload), source: 'deterministic' }) };
   }
 
+  const start = Date.now();
   try {
     const result = await callClaude(payload);
     const text = result?.content?.[0]?.text;
@@ -243,13 +270,14 @@ exports.handler = async (event) => {
       const cleaned = text.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/, '').trim();
       parsed = JSON.parse(cleaned);
     } catch {
-      // AI response wasn't valid JSON — fall back to deterministic
+      logAIUsage({ feature: 'client_attention_flags', model: 'claude-haiku-4-5-20251001', clientId: payload.clientId || null, success: false, responseTimeMs: Date.now() - start, errorMessage: 'AI response was not valid JSON' });
       return { statusCode: 200, body: JSON.stringify({ flags: buildFallbackFlags(payload), source: 'deterministic' }) };
     }
 
+    logAIUsage({ feature: 'client_attention_flags', model: 'claude-haiku-4-5-20251001', clientId: payload.clientId || null, success: true, responseTimeMs: Date.now() - start, tokensUsed: result?.usage?.output_tokens || null });
     return { statusCode: 200, body: JSON.stringify({ flags: parsed.flags || [], source: 'ai' }) };
   } catch (err) {
-    // AI unavailable — return deterministic flags rather than an error
+    logAIUsage({ feature: 'client_attention_flags', model: 'claude-haiku-4-5-20251001', clientId: payload.clientId || null, success: false, responseTimeMs: Date.now() - start, errorMessage: err.message });
     return { statusCode: 200, body: JSON.stringify({ flags: buildFallbackFlags(payload), source: 'deterministic' }) };
   }
 };

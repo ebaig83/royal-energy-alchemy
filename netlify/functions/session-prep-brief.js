@@ -98,12 +98,15 @@ function buildPrompt(d) {
 
   // Recommendations
   if (d.recommendations && d.recommendations.length) {
-    const outstanding = d.recommendations.filter((r) => r.purchased === "unknown");
+    const outstanding = d.recommendations.filter((r) =>
+      !r.outcome_status || r.outcome_status === "recommended"
+    );
     if (outstanding.length) {
-      lines.push(`\nOUTSTANDING RECOMMENDATIONS (${outstanding.length} not yet purchased):`);
+      lines.push(`\nOUTSTANDING RECOMMENDATIONS (${outstanding.length} awaiting outcome):`);
       outstanding.slice(0, 6).forEach((r) => {
+        const status = r.outcome_status || (r.purchased === "yes" ? "purchased" : r.purchased === "no" ? "declined" : "recommended");
         lines.push(
-          `  - ${r.product_name} (${r.category || "other"}, ${r.priority || "medium"} priority)` +
+          `  - ${r.product_name} (${r.category || "other"}, ${r.priority || "medium"} priority, status: ${status})` +
           (r.reason ? ` — ${r.reason.slice(0, 100)}` : "")
         );
       });
@@ -159,6 +162,7 @@ exports.handler = async (event) => {
   }
 
   const { requireAdmin } = require("./lib/auth");
+  const { logAIUsage } = require("./lib/ai-log");
   const auth = requireAdmin(event);
   if (auth.error) return auth.error;
 
@@ -177,6 +181,7 @@ exports.handler = async (event) => {
     return { statusCode: 400, body: JSON.stringify({ error: "clientName required" }) };
   }
 
+  const start = Date.now();
   try {
     const result = await callClaude(payload);
     const text = result?.content?.[0]?.text;
@@ -190,8 +195,10 @@ exports.handler = async (event) => {
       throw new Error("Response was not valid JSON — try regenerating");
     }
 
+    logAIUsage({ feature: 'session_prep_brief', model: 'claude-haiku-4-5-20251001', clientId: payload.clientId || null, success: true, responseTimeMs: Date.now() - start, tokensUsed: result?.usage?.output_tokens || null });
     return { statusCode: 200, body: JSON.stringify({ brief }) };
   } catch (err) {
+    logAIUsage({ feature: 'session_prep_brief', model: 'claude-haiku-4-5-20251001', clientId: payload.clientId || null, success: false, responseTimeMs: Date.now() - start, errorMessage: err.message });
     return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
   }
 };

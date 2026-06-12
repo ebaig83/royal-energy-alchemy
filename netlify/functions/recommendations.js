@@ -8,9 +8,10 @@ const { requireAdmin, respond } = require('./lib/auth');
 const { getClient }             = require('./lib/supabase');
 const { log }                   = require('./lib/audit');
 
-const ALLOWED_CATEGORIES = ['supplement','crystal','essential_oil','book','course','device','service','other'];
-const ALLOWED_PRIORITIES = ['high','medium','low'];
-const ALLOWED_PURCHASED  = ['yes','no','unknown'];
+const ALLOWED_CATEGORIES     = ['supplement','crystal','essential_oil','book','course','device','service','other'];
+const ALLOWED_PRIORITIES     = ['high','medium','low'];
+const ALLOWED_PURCHASED      = ['yes','no','unknown'];
+const ALLOWED_OUTCOME_STATUS = ['recommended','purchased','tried','helpful','not_helpful','declined'];
 
 exports.handler = async function(event) {
   if (event.httpMethod === 'OPTIONS') return respond(200, {});
@@ -77,12 +78,14 @@ exports.handler = async function(event) {
     try { body = JSON.parse(event.body || '{}'); } catch { return respond(400, { error: 'Invalid JSON.' }); }
 
     const allowed = ['product_name','category','reason','priority','practitioner_notes',
-                     'purchased','client_outcome','recommended_at','session_id'];
+                     'purchased','client_outcome','recommended_at','session_id',
+                     'outcome_status','outcome_date'];
     const updates = {};
     allowed.forEach(k => { if (body[k] !== undefined) updates[k] = body[k]; });
-    if (updates.category  && !ALLOWED_CATEGORIES.includes(updates.category))  updates.category  = 'other';
-    if (updates.priority  && !ALLOWED_PRIORITIES.includes(updates.priority))  updates.priority  = 'medium';
-    if (updates.purchased && !ALLOWED_PURCHASED.includes(updates.purchased))  updates.purchased = 'unknown';
+    if (updates.category       && !ALLOWED_CATEGORIES.includes(updates.category))         updates.category       = 'other';
+    if (updates.priority       && !ALLOWED_PRIORITIES.includes(updates.priority))         updates.priority       = 'medium';
+    if (updates.purchased      && !ALLOWED_PURCHASED.includes(updates.purchased))         updates.purchased      = 'unknown';
+    if (updates.outcome_status && !ALLOWED_OUTCOME_STATUS.includes(updates.outcome_status)) delete updates.outcome_status;
 
     const { data, error } = await sb.from('recommendations').update(updates).eq('id', params.id).select().single();
     if (error) return respond(500, { error: error.message });
