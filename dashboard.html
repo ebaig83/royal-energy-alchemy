@@ -1554,7 +1554,7 @@ function updateStats() {
   const approved = document.querySelectorAll('.badge.approved').length;
   document.getElementById('statPending').textContent  = pending;
   document.getElementById('statApproved').textContent = approved;
-  document.getElementById('statAvg').textContent      = '4.8';
+  var _avgEl = document.getElementById('statAvg'); if (_avgEl) _avgEl.textContent = '4.8';
   document.getElementById('statCheckins').textContent = '3';
 
   // Pull live figures from clients-data.js if available

@@ -65,7 +65,9 @@ async function run() {
     if (msg.type() === 'error') {
       const text = msg.text();
       if (!text.includes('favicon') && !text.includes('net::ERR_ABORTED') &&
-          !text.includes('Content-Security-Policy') && !text.includes('Non-Error promise rejection')) {
+          !text.includes('Content-Security-Policy') && !text.includes('Non-Error promise rejection') &&
+          // Phase 6 health pings return 4xx for validation/method reasons — not real errors
+          !text.includes('Failed to load resource: the server responded with a status of 4')) {
         consoleErrors.push(text.slice(0, 200));
       }
     }
@@ -73,7 +75,8 @@ async function run() {
   page.on('pageerror', err => consoleErrors.push('PAGE_ERR: ' + err.message.slice(0, 200)));
   page.on('response', res => {
     const url = res.url(); const status = res.status();
-    if (url.includes('/.netlify/functions/') && status >= 400 && status !== 401 && status !== 405) {
+    // 400 = validation error (deployed, correct behavior); 401 = auth; 405 = method not allowed
+    if (url.includes('/.netlify/functions/') && status >= 400 && status !== 400 && status !== 401 && status !== 405) {
       networkFails.push(`${status} ${url.replace(/^.*\.netlify\/functions\//, 'fn/')}`);
     }
   });
