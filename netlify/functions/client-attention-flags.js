@@ -226,6 +226,45 @@ function buildFallbackFlags(d) {
       suggested_action: 'Follow up on recommendation status at next session.' });
   }
 
+  // No measurable improvement flag
+  const sessionsWithState = (d.sessions || [])
+    .filter(s => s.state_before != null && s.state_after != null)
+    .sort((a, b) => (b.session_date || '') > (a.session_date || '') ? 1 : -1);
+  if (sessionsWithState.length >= 2) {
+    const recent = sessionsWithState.slice(0, 3);
+    const noImprovement = recent.every(s => s.state_after <= s.state_before);
+    if (noImprovement) {
+      flags.push({ label: 'No Measurable Improvement', severity: 'warning',
+        reason: `Records indicate state_after has not exceeded state_before in the last ${recent.length} tracked sessions.`,
+        source: 'sessions',
+        suggested_action: 'Consider reviewing session approach or checking in on client experience.' });
+    }
+  }
+
+  // Recommendation feedback gap: purchased but no outcome after 14 days
+  const purchasedNoOutcome = (d.recommendations || []).filter(r => {
+    if (r.purchased !== 'yes' && r.outcome_status !== 'purchased') return false;
+    if (r.outcome_status && r.outcome_status !== 'purchased') return false;
+    const recDate = (r.recommended_at || r.created_at || '').slice(0, 10);
+    if (!recDate) return false;
+    const daysSince = Math.floor((new Date(today) - new Date(recDate)) / 86400000);
+    return daysSince >= 14;
+  });
+  if (purchasedNoOutcome.length > 0) {
+    flags.push({ label: 'Recommendation Feedback Gap', severity: 'warning',
+      reason: `${purchasedNoOutcome.length} purchased recommendation(s) have no outcome recorded after 14+ days.`,
+      source: 'recommendations',
+      suggested_action: 'Ask client about their experience with the recommended product at next session.' });
+  }
+
+  // Follow-up risk flag: 3+ overdue for same client
+  if (overdue.length >= 3) {
+    flags.push({ label: 'Follow-Up Risk', severity: 'urgent',
+      reason: `${overdue.length} follow-up items are overdue — pattern suggests follow-up process may need review.`,
+      source: 'followups',
+      suggested_action: 'Review all overdue follow-ups in the Follow-Up Center and complete or skip each one.' });
+  }
+
   if (!flags.length) {
     flags.push({ label: 'Up To Date', severity: 'success',
       reason: 'No immediate attention items found from the available record.',

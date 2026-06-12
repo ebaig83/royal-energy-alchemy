@@ -499,6 +499,75 @@ input::placeholder,textarea::placeholder{color:#dddaee55}
 footer{text-align:center;padding:36px;border-top:1px solid #e8b84b22;margin-top:52px}
 footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#dddaee88;text-transform:uppercase}
 @media(max-width:600px){.wrap{padding:22px 16px}.header{flex-direction:column;gap:16px;align-items:flex-start}.nav-links{flex-wrap:wrap}}
+/* ── Quick Actions ────────────────────────────────────────────── */
+.qa-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:22px}
+.qa-btn{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;text-transform:uppercase;padding:11px 22px;border:1px solid;cursor:pointer;border-radius:2px;background:transparent;transition:all .2s;display:flex;align-items:center;gap:8px}
+.qa-btn-primary{border-color:#e8b84b66;color:#e8b84b}
+.qa-btn-primary:hover{background:#e8b84b14;border-color:#e8b84b}
+.qa-btn-secondary{border-color:#9b7fe866;color:#9b7fe8}
+.qa-btn-secondary:hover{background:#9b7fe814;border-color:#9b7fe8}
+/* ── Quick Log Modal ──────────────────────────────────────────── */
+#quickLogModal{position:fixed;inset:0;z-index:9100;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.88);padding:24px 16px}
+#quickLogModal.open{display:flex}
+.ql-wrap{width:100%;max-width:560px;background:#06030f;border:1px solid #e8b84b55;border-radius:3px;padding:0}
+.ql-header{padding:22px 28px 18px;border-bottom:1px solid #e8b84b22;display:flex;align-items:center;justify-content:space-between}
+.ql-title{font-family:'Cinzel',serif;font-size:20px;letter-spacing:.08em;color:#fff}
+.ql-body{padding:24px 28px}
+.ql-field{margin-bottom:18px}
+.ql-lbl{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#e8b84b;text-transform:uppercase;display:block;margin-bottom:7px}
+.ql-input{width:100%;background:#04020e;border:1px solid #e8b84b2a;color:#f0ecff;font-family:'EB Garamond',serif;font-size:17px;padding:11px 14px;border-radius:2px;box-sizing:border-box;transition:border-color .2s}
+.ql-input:focus{outline:none;border-color:#e8b84b77}
+.ql-state-row{display:flex;gap:6px}
+.ql-state-btn{font-family:'Cinzel',serif;font-size:13px;font-weight:600;width:40px;height:40px;border:1px solid #dddaee22;color:#dddaee55;cursor:pointer;border-radius:2px;background:transparent;transition:all .15s}
+.ql-state-before-btn.active{background:#9b7fe822;border-color:#9b7fe8;color:#9b7fe8}
+.ql-state-after-btn.active{background:#22c98a22;border-color:#22c98a;color:#22c98a}
+.ql-footer{padding:16px 28px;border-top:1px solid #e8b84b22;display:flex;gap:10px;justify-content:flex-end}
+.ql-save-btn{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;text-transform:uppercase;padding:11px 28px;background:#e8b84b14;border:1px solid #e8b84b66;color:#e8b84b;cursor:pointer;border-radius:2px;transition:all .2s}
+.ql-save-btn:hover{background:#e8b84b22}
+.ql-save-btn:disabled{opacity:.4;cursor:default}
+.ql-msg{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.2em;color:#22c98a;margin-right:auto;align-self:center;opacity:0;transition:opacity .4s}
+/* ── Follow-Up Center ─────────────────────────────────────────── */
+.fuc-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;align-items:center}
+.fuc-search{background:#04020e;border:1px solid #e8b84b22;padding:8px 14px;font-family:'EB Garamond',serif;font-size:15px;color:#f0ecff;outline:none;flex:1;min-width:160px;transition:border-color .2s}
+.fuc-search:focus{border-color:#e8b84b66}
+.fuc-filter{background:#04020e;border:1px solid #e8b84b22;padding:8px 14px;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.2em;color:#e8b84bcc;text-transform:uppercase;outline:none;cursor:pointer}
+.fuc-stats{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:20px}
+.fuc-stat{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;text-transform:uppercase;padding:7px 16px;border:1px solid;border-radius:2px;cursor:pointer;transition:all .2s}
+.fuc-stat-overdue{color:#ee7070;border-color:#ee707066;background:#ee70700a}
+.fuc-stat-overdue:hover,.fuc-stat-overdue.active{background:#ee707018}
+.fuc-stat-due{color:#e8b84b;border-color:#e8b84b66;background:#e8b84b0a}
+.fuc-stat-due:hover,.fuc-stat-due.active{background:#e8b84b18}
+.fuc-stat-upcoming{color:#9b7fe8;border-color:#9b7fe866;background:#9b7fe80a}
+.fuc-stat-upcoming:hover,.fuc-stat-upcoming.active{background:#9b7fe818}
+.fuc-stat-done{color:#22c98a;border-color:#22c98a66;background:#22c98a0a}
+.fuc-stat-done:hover,.fuc-stat-done.active{background:#22c98a18}
+.fuc-group-title{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.4em;text-transform:uppercase;color:#e8b84b88;padding:10px 0 8px;border-bottom:1px solid #e8b84b18;margin-bottom:12px;display:flex;align-items:center;gap:10px}
+.fuc-item{background:#09050f;border:1px solid #e8b84b18;border-radius:2px;padding:14px 18px;margin-bottom:8px;display:flex;align-items:center;gap:14px;transition:border-color .15s}
+.fuc-item:hover{border-color:#e8b84b44}
+.fuc-item.sev-critical{border-left:3px solid #ee7070}
+.fuc-item.sev-urgent{border-left:3px solid #e8b84b}
+.fuc-item.sev-warning{border-left:3px solid #9b7fe8}
+.fuc-item.sev-done{border-left:3px solid #22c98a;opacity:.65}
+.fuc-info{flex:1;min-width:0}
+.fuc-client{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.15em;color:#f0ecff;margin-bottom:3px;cursor:pointer}
+.fuc-client:hover{color:#e8b84b}
+.fuc-meta{font-family:'EB Garamond',serif;font-size:14px;color:#dddaee88}
+.fuc-sev{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;text-transform:uppercase;padding:3px 8px;border:1px solid;border-radius:2px;flex-shrink:0}
+.fuc-sev-critical{color:#ee7070;border-color:#ee707066;background:#ee70700d}
+.fuc-sev-urgent{color:#e8b84b;border-color:#e8b84b66;background:#e8b84b0d}
+.fuc-sev-warning{color:#9b7fe8;border-color:#9b7fe866;background:#9b7fe80d}
+.fuc-sev-done{color:#22c98a;border-color:#22c98a66;background:#22c98a0d}
+.fuc-actions{display:flex;gap:6px;flex-shrink:0}
+.fuc-act-btn{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.2em;text-transform:uppercase;padding:5px 12px;border:1px solid #dddaee22;color:#dddaeecc;cursor:pointer;border-radius:2px;background:transparent;transition:all .15s}
+.fuc-act-btn:hover{border-color:#e8b84b55;color:#e8b84b}
+.fuc-act-btn.done-btn{border-color:#22c98a55;color:#22c98acc}
+.fuc-act-btn.done-btn:hover{background:#22c98a14}
+.fuc-empty{font-family:'EB Garamond',serif;font-size:16px;color:#dddaee66;padding:32px 0;text-align:center;font-style:italic}
+/* ── SNM Supabase sync indicator ─────────────────────────────── */
+.snm-sync-dot{width:8px;height:8px;border-radius:50%;background:#dddaee44;display:inline-block;margin-left:8px;transition:background .4s;vertical-align:middle}
+.snm-sync-dot.syncing{background:#e8b84b}
+.snm-sync-dot.synced{background:#22c98a}
+.snm-sync-dot.error{background:#ee7070}
 </style>
 <style>
 /* ── ACCESS GATE ── */
@@ -661,6 +730,7 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
     <button class="tab" onclick="showTab('ratings')">Ratings & Reviews</button>
     <button class="tab" onclick="showTab('checkins')">Check-In Responses</button>
     <button class="tab" onclick="showTab('sessions')">Session Log</button>
+    <button class="tab" onclick="showTab('followups')">Follow-Ups</button>
     <button class="tab" onclick="showTab('clients')">Clients</button>
     <button class="tab" onclick="showTab('analytics')">Analytics</button>
     <button class="tab" onclick="showTab('booking')">Booking</button>
@@ -670,6 +740,12 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
 
   <!-- HOME TAB -->
   <div class="tab-content active" id="tab-home" style="display:block">
+
+    <!-- Quick Actions -->
+    <div class="qa-row">
+      <button class="qa-btn qa-btn-primary" onclick="openQuickLogModal()">✦ Quick Log Session</button>
+      <button class="qa-btn qa-btn-secondary" onclick="showTab('followups')">◎ View Follow-Ups <span id="qaFollowUpBadge" style="display:none;background:#ee7070;color:#fff;border-radius:10px;padding:1px 7px;font-size:9px;margin-left:2px"></span></button>
+    </div>
 
     <!-- Row 2: Schedule | Briefing | Flags -->
     <div class="home-row home-row-3">
@@ -842,6 +918,40 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
       </select>
     </div>
     <div id="sessionLog"></div>
+  </div>
+
+  <!-- FOLLOW-UPS TAB -->
+  <div class="tab-content" id="tab-followups">
+    <div class="section-title" style="justify-content:space-between">
+      <span>Follow-Up Center</span>
+      <div style="display:flex;gap:8px">
+        <button onclick="openCreateFollowUpModal()" style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.3em;text-transform:uppercase;padding:5px 14px;background:#22c98a11;border:1px solid #22c98a55;color:#22c98a;cursor:pointer;border-radius:2px">+ Create</button>
+        <button onclick="loadFollowUps(true)" style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.3em;text-transform:uppercase;padding:5px 14px;background:transparent;border:1px solid #e8b84b44;color:#e8b84b88;cursor:pointer;border-radius:2px">Refresh</button>
+      </div>
+    </div>
+
+    <!-- Stats bar -->
+    <div class="fuc-stats" id="fucStats">
+      <div class="fuc-stat fuc-stat-overdue" id="fucStatOverdue" onclick="fucSetFilter('overdue')">— Critical / Overdue</div>
+      <div class="fuc-stat fuc-stat-due" id="fucStatDue" onclick="fucSetFilter('due_today')">— Due Today</div>
+      <div class="fuc-stat fuc-stat-upcoming" id="fucStatUpcoming" onclick="fucSetFilter('upcoming')">— Upcoming</div>
+      <div class="fuc-stat fuc-stat-done" id="fucStatDone" onclick="fucSetFilter('done')">— Completed</div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="fuc-toolbar">
+      <input class="fuc-search" id="fucSearch" type="text" placeholder="Search by client name…" oninput="fucRender()">
+      <select class="fuc-filter" id="fucTypeFilter" onchange="fucRender()">
+        <option value="all">All Types</option>
+        <option value="24h">24-Hour</option>
+        <option value="48h">48-Hour</option>
+        <option value="72h">72-Hour</option>
+        <option value="1mo">1-Month</option>
+        <option value="3mo">3-Month</option>
+      </select>
+    </div>
+
+    <div id="fucBody"><div class="fuc-empty">Loading follow-ups…</div></div>
   </div>
 
   <!-- CLIENTS TAB -->
@@ -1493,6 +1603,7 @@ function showTab(name) {
   if (name === 'environment') { try { renderTodayEnvCard(); } catch(e){} try { renderEnvLog(); } catch(e){} try { renderPatterns(); } catch(e){} }
   if (name === 'booking')     { try { renderCal(); renderUpcoming(); renderWaitlist(); updateCapacityStats(); renderCancellationLog(); renderBooking(); renderSyncLastRun(); } catch(e){} }
   if (name === 'operations')  { try { renderOperationsCenter(); } catch(e){ console.error('renderOperationsCenter', e); } }
+  if (name === 'followups')   { try { loadFollowUps(); } catch(e){ console.error('loadFollowUps', e); } }
 }
 
 function approveReview(id) {
@@ -3077,6 +3188,7 @@ function renderClients() {
         <button class="action-btn view" style="border-color:#9b7fe844;color:#9b7fe8cc" onclick="toggleClientTimeline('${c.name.replace(/'/g,"\\'")}')">⏱ Timeline</button>
         <button class="action-btn view" style="border-color:#e8b84b44;color:#e8b84bcc" onclick="toggleClientVerification('${c.name.replace(/'/g,"\\'")}')">✎ Info</button>
         <button class="action-btn view" style="border-color:#22c98a44;color:#22c98acc" onclick="toggleProductRecsPanel('${c.name.replace(/'/g,"\\'")}')">🛒 Products</button>
+        <button class="action-btn view" style="border-color:#22c98a44;color:#22c98acc" onclick="toggleSbRecsPanel('${c.name.replace(/'/g,"\\'")}')">◎ Outcomes</button>
         <button class="action-btn view" style="border-color:#9b7fe844;color:#c4b0ff" onclick="toggleAISummary('${c.name.replace(/'/g,"\\'")}')">✦ AI Summary</button>
         <button class="action-btn reject" onclick="openModal('${c.name.replace(/'/g,"\\'")}','')">⚑ Flag</button>
         ${flagBadgeHtml}
@@ -3112,6 +3224,9 @@ function renderClients() {
 
     <!-- Product recommendations panel -->
     <div id="prodrecs_${c.name.replace(/[^a-z0-9]/gi,'_')}" style="display:none;margin-top:6px"></div>
+
+    <!-- Supabase recommendation outcomes panel -->
+    <div id="sbrecs_${c.name.replace(/[^a-z0-9]/gi,'_')}" style="display:none;margin-top:6px"></div>
 
     <!-- AI Summary panel -->
     <div id="aisummary_${c.name.replace(/[^a-z0-9]/gi,'_')}" style="display:none">
@@ -6014,6 +6129,143 @@ function saveClientProfile_form(id) {
 <!-- ══════════════════════════════════════════════════════════════════════
      STRUCTURED SESSION NOTES MODAL
      ══════════════════════════════════════════════════════════════════════ -->
+<!-- QUICK LOG SESSION MODAL -->
+<div id="quickLogModal" onclick="if(event.target===this)closeQuickLogModal()">
+  <div class="ql-wrap">
+    <div class="ql-header">
+      <div class="ql-title">✦ Quick Log Session</div>
+      <button onclick="closeQuickLogModal()" style="background:none;border:1px solid #dddaee44;color:#dddaee;font-size:18px;cursor:pointer;padding:5px 12px;font-family:'Cinzel',serif;border-radius:2px">✕</button>
+    </div>
+    <div class="ql-body">
+      <div class="ql-field">
+        <label class="ql-lbl">Client</label>
+        <input class="ql-input" id="qlClient" list="qlClientList" placeholder="Client name…" autocomplete="off">
+        <datalist id="qlClientList"></datalist>
+      </div>
+      <div class="ql-field">
+        <label class="ql-lbl">Service</label>
+        <input class="ql-input" id="qlService" list="qlServiceList" placeholder="Distance Reiki, House Clearing…" autocomplete="off">
+        <datalist id="qlServiceList">
+          <option value="Distance Reiki">
+          <option value="Remote House Clearing">
+          <option value="Chakra Balancing">
+          <option value="Energetic Parasite Removal">
+          <option value="Ancestral Clearing">
+          <option value="Cord Cutting">
+          <option value="Soul Retrieval">
+          <option value="Protection Work">
+          <option value="Tarot Reading">
+          <option value="Spiritual Consultation">
+        </datalist>
+      </div>
+      <div class="ql-field">
+        <label class="ql-lbl">Session Date</label>
+        <input class="ql-input" id="qlDate" type="date">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div class="ql-field" style="margin-bottom:0">
+          <label class="ql-lbl">Amount ($)</label>
+          <input class="ql-input" id="qlAmount" type="number" min="0" placeholder="111">
+        </div>
+        <div class="ql-field" style="margin-bottom:0">
+          <label class="ql-lbl">Payment</label>
+          <select class="ql-input" id="qlPayment">
+            <option value="paid">Paid</option>
+            <option value="unpaid">Unpaid</option>
+            <option value="exchange">Exchange</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px">
+        <div class="ql-field" style="margin-bottom:0">
+          <label class="ql-lbl" style="margin-bottom:9px">State Before <span style="opacity:.55;font-size:10px">(1=poor · 5=good)</span></label>
+          <div class="ql-state-row">
+            <button class="ql-state-btn ql-state-before-btn" data-v="1" onclick="qlSetBefore(1)">1</button>
+            <button class="ql-state-btn ql-state-before-btn" data-v="2" onclick="qlSetBefore(2)">2</button>
+            <button class="ql-state-btn ql-state-before-btn" data-v="3" onclick="qlSetBefore(3)">3</button>
+            <button class="ql-state-btn ql-state-before-btn" data-v="4" onclick="qlSetBefore(4)">4</button>
+            <button class="ql-state-btn ql-state-before-btn" data-v="5" onclick="qlSetBefore(5)">5</button>
+          </div>
+        </div>
+        <div class="ql-field" style="margin-bottom:0">
+          <label class="ql-lbl" style="margin-bottom:9px">State After <span style="opacity:.55;font-size:10px">(1=poor · 5=good)</span></label>
+          <div class="ql-state-row">
+            <button class="ql-state-btn ql-state-after-btn" data-v="1" onclick="qlSetAfter(1)">1</button>
+            <button class="ql-state-btn ql-state-after-btn" data-v="2" onclick="qlSetAfter(2)">2</button>
+            <button class="ql-state-btn ql-state-after-btn" data-v="3" onclick="qlSetAfter(3)">3</button>
+            <button class="ql-state-btn ql-state-after-btn" data-v="4" onclick="qlSetAfter(4)">4</button>
+            <button class="ql-state-btn ql-state-after-btn" data-v="5" onclick="qlSetAfter(5)">5</button>
+          </div>
+        </div>
+      </div>
+      <div class="ql-field" style="margin-top:18px">
+        <label class="ql-lbl">Quick Notes <span style="opacity:.55;font-size:10px">(optional)</span></label>
+        <textarea class="ql-input" id="qlNotes" rows="3" placeholder="Key observations, work performed…" style="resize:vertical;min-height:70px"></textarea>
+      </div>
+    </div>
+    <div class="ql-footer">
+      <span class="ql-msg" id="qlMsg"></span>
+      <button class="ql-save-btn" id="qlSaveBtn" onclick="saveQuickLog()">Save Session</button>
+    </div>
+  </div>
+</div>
+
+<!-- CREATE FOLLOW-UP MODAL -->
+<div id="createFuModal" onclick="if(event.target===this)closeCreateFollowUpModal()" style="position:fixed;inset:0;z-index:9200;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.88);padding:24px 16px">
+  <div style="background:#07040f;border:1px solid #22c98a33;border-radius:3px;padding:28px 24px;width:100%;max-width:460px;position:relative">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <div style="font-family:'Cinzel',serif;font-size:13px;letter-spacing:.3em;color:#22c98a;text-transform:uppercase">Create Follow-Up</div>
+      <button onclick="closeCreateFollowUpModal()" style="background:none;border:1px solid #dddaee33;color:#dddaee;font-size:16px;cursor:pointer;padding:4px 10px;font-family:'Cinzel',serif;border-radius:2px">✕</button>
+    </div>
+    <div style="display:grid;gap:12px">
+      <div>
+        <label style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.3em;color:#e8b84b88;text-transform:uppercase;display:block;margin-bottom:5px">Client *</label>
+        <input id="cfuClient" list="cfuClientList" placeholder="Client name…" autocomplete="off"
+          style="width:100%;box-sizing:border-box;background:#0a0612;border:1px solid #e8b84b22;color:#f0ecff;font-family:'EB Garamond',serif;font-size:15px;padding:9px 12px;border-radius:2px">
+        <datalist id="cfuClientList"></datalist>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <label style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.3em;color:#e8b84b88;text-transform:uppercase;display:block;margin-bottom:5px">Type *</label>
+          <select id="cfuType" style="width:100%;background:#0a0612;border:1px solid #e8b84b22;color:#f0ecff;font-family:'Cinzel',serif;font-size:11px;padding:9px 10px;border-radius:2px">
+            <option value="24h">24-Hour Check-in</option>
+            <option value="48h">48-Hour Check-in</option>
+            <option value="72h">72-Hour Check-in</option>
+            <option value="1mo">1-Month Follow-Up</option>
+            <option value="3mo">3-Month Follow-Up</option>
+            <option value="custom">Custom</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.3em;color:#e8b84b88;text-transform:uppercase;display:block;margin-bottom:5px">Priority</label>
+          <select id="cfuPriority" style="width:100%;background:#0a0612;border:1px solid #e8b84b22;color:#f0ecff;font-family:'Cinzel',serif;font-size:11px;padding:9px 10px;border-radius:2px">
+            <option value="low">Low</option>
+            <option value="medium" selected>Medium</option>
+            <option value="high">High</option>
+            <option value="critical">Critical</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.3em;color:#e8b84b88;text-transform:uppercase;display:block;margin-bottom:5px">Due Date *</label>
+        <input id="cfuDate" type="date" style="width:100%;box-sizing:border-box;background:#0a0612;border:1px solid #e8b84b22;color:#f0ecff;font-family:'Cinzel',serif;font-size:13px;padding:9px 12px;border-radius:2px">
+      </div>
+      <div>
+        <label style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.3em;color:#e8b84b88;text-transform:uppercase;display:block;margin-bottom:5px">Notes</label>
+        <textarea id="cfuNotes" placeholder="What needs to happen…" rows="3"
+          style="width:100%;box-sizing:border-box;background:#0a0612;border:1px solid #e8b84b22;color:#f0ecff;font-family:'EB Garamond',serif;font-size:14px;padding:9px 12px;border-radius:2px;resize:vertical"></textarea>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
+        <span id="cfuMsg" style="font-size:12px;color:#ee7070"></span>
+        <button onclick="saveCreateFollowUp()" style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;text-transform:uppercase;padding:10px 22px;background:#22c98a;color:#04020e;border:none;cursor:pointer;border-radius:2px;font-weight:700">Save Follow-Up</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST NOTIFICATION -->
+<div id="toastNotif" style="position:fixed;bottom:28px;right:24px;z-index:9999;display:none;align-items:center;gap:10px;padding:12px 20px;background:#22c98a;color:#04020e;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.2em;border-radius:3px;box-shadow:0 4px 20px #00000066;max-width:340px"></div>
+
 <div id="sessNotesModal" role="dialog" aria-modal="true" aria-labelledby="snmTitle" onclick="if(event.target===this)closeSessNotesModal()">
   <div class="snm-wrap">
     <div class="snm-header">
@@ -6022,6 +6274,12 @@ function saveClientProfile_form(id) {
         <div class="snm-client" id="snmClientLabel">—</div>
       </div>
       <button class="snm-close" onclick="closeSessNotesModal()">✕ Close</button>
+    </div>
+
+    <!-- Loading banner — shown while Supabase fetch is in progress -->
+    <div id="snm_loadingBanner" style="display:none;align-items:center;gap:10px;padding:10px 18px;background:#e8b84b11;border-bottom:1px solid #e8b84b33;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.15em;color:#e8b84bcc">
+      <span style="animation:spin 1s linear infinite;display:inline-block">⟳</span>
+      Loading session notes from Supabase…
     </div>
 
     <div class="snm-body">
@@ -6240,6 +6498,7 @@ function saveClientProfile_form(id) {
       <div>
         <button onclick="saveSessNotesModal()" style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;text-transform:uppercase;padding:10px 28px;background:#e8b84b14;border:1px solid #e8b84b66;color:#e8b84b;cursor:pointer;border-radius:2px;transition:all .2s" onmouseover="this.style.background='#e8b84b22'" onmouseout="this.style.background='#e8b84b14'">Save Notes</button>
         <span class="snm-save-confirm" id="snm_saveConfirm">✓ Notes saved</span>
+        <span class="snm-sync-dot" id="snm_syncDot" title="Supabase sync status"></span>
       </div>
       <button onclick="closeSessNotesModal()" style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;text-transform:uppercase;padding:8px 18px;background:transparent;border:1px solid #dddaee22;color:#dddaee66;cursor:pointer;border-radius:2px;transition:all .2s">Discard</button>
     </div>
@@ -6248,15 +6507,18 @@ function saveClientProfile_form(id) {
 
 <script>
 // ── Session Notes Modal State ───────────────────────────────────────────
-let _snmDateStr = null;
-let _snmIdx     = null;
-let _snmClient  = null;
+let _snmDateStr    = null;
+let _snmIdx        = null;
+let _snmClient     = null;
 let _snmPriority   = null;
 let _snmNextAppt   = null;
 let _snmRating       = 0;
 let _snmStateBefore  = 0;
 let _snmStateAfter   = 0;
 let _snmResCounter   = 0;
+let _snmSessionId  = null;  // Supabase session UUID
+let _snmClientId   = null;  // Supabase client UUID
+let _snmNoteId     = null;  // Supabase session_note UUID (null = not yet saved)
 
 const SNM_CONCERNS   = ['Relationship issues','Sleep disruption','Anxiety / panic','Depression / low mood','Grief / loss','Trauma resurfacing','Spiritual attack / entity','Cord attachment','Financial blockage','Ancestral wound','House clearing needed','Physical pain','Fatigue / drain','Anger / resentment','Confusion / brain fog'];
 const SNM_WORK       = ['Cord cutting','Chakra balancing','Protection work','Entity removal','House clearing (remote)','Ancestral clearing','Trauma release','Sleep healing','Grief work','Grounding / root work','Aura repair','Soul retrieval','Mirror work','Water blessing','Prayer & intercession'];
@@ -6380,15 +6642,57 @@ function snmLoadResources(arr) {
   (arr || []).forEach(r => snmAddResource(r));
 }
 
-function openSessNotesModal(dateStr, idx, clientName) {
-  _snmDateStr = dateStr;
-  _snmIdx     = idx;
-  _snmClient  = clientName;
-  _snmPriority  = null;
-  _snmNextAppt  = null;
-  _snmRating    = 0;
+// Apply a saved-data object (from localStorage OR Supabase snm_json) into the SNM fields
+function snmApplySavedData(saved) {
+  if (!saved) return;
+  snmSetChecked('snm_concerns',      saved.concerns      || []);
+  snmSetChecked('snm_workPerformed', saved.workPerformed || []);
+  snmSetChecked('snm_response',      saved.response      || []);
+  snmSetChecked('snm_homework',      saved.homework      || []);
+  snmSetChecked('snm_documents',     saved.documents     || []);
+  const setVal = (id, v) => { const el=document.getElementById(id); if(el&&v!==undefined&&v!==null) el.value=v; };
+  setVal('snm_concernsOther', saved.concernsOther);
+  setVal('snm_patterns',      saved.patterns);
+  setVal('snm_workOther',     saved.workOther);
+  setVal('snm_hwNotes',       saved.hwNotes);
+  setVal('snm_fuStatus',      saved.fuStatus);
+  setVal('snm_fuReport',      saved.fuReport);
+  setVal('snm_fuNotes',       saved.fuNotes);
+  setVal('snm_moonPhase',     saved.moonPhase);
+  setVal('snm_weather',       saved.weather);
+  setVal('snm_solar',         saved.solar);
+  setVal('snm_mercury',       saved.mercury);
+  setVal('snm_sessionTime',   saved.sessionTime);
+  setVal('snm_riskNotes',     saved.riskNotes);
+  setVal('snm_nextApptDate',  saved.nextApptDate);
+  setVal('snm_outcomeNotes',  saved.outcomeNotes);
+  if (saved.priority)    snmSetPriority(saved.priority);
+  if (saved.nextAppt)    snmSetNextAppt(saved.nextAppt);
+  if (saved.rating)      snmSetRating(saved.rating);
+  if (saved.stateBefore) snmSetStateBefore(saved.stateBefore);
+  if (saved.stateAfter)  snmSetStateAfter(saved.stateAfter);
+  snmLoadResources(saved.resources || []);
+}
+
+function snmSetSyncDot(state) { // 'idle' | 'syncing' | 'synced' | 'error'
+  const dot = document.getElementById('snm_syncDot');
+  if (!dot) return;
+  dot.className = 'snm-sync-dot' + (state !== 'idle' ? ' ' + state : '');
+  dot.title = { idle:'Not linked to Supabase session', syncing:'Saving to database…', synced:'Saved to database ✓', error:'Database save failed — stored locally' }[state] || '';
+}
+
+async function openSessNotesModal(dateStr, idx, clientName) {
+  _snmDateStr    = dateStr;
+  _snmIdx        = idx;
+  _snmClient     = clientName;
+  _snmPriority   = null;
+  _snmNextAppt   = null;
+  _snmRating     = 0;
   _snmStateBefore = 0;
   _snmStateAfter  = 0;
+  _snmSessionId  = null;
+  _snmClientId   = null;
+  _snmNoteId     = null;
 
   // Set header
   document.getElementById('snmClientLabel').textContent =
@@ -6406,69 +6710,93 @@ function openSessNotesModal(dateStr, idx, clientName) {
   const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   document.getElementById('snm_dayOfWeek').value = days[d.getDay()];
   document.getElementById('snm_season').value    = getSeason(dateStr);
-  const autoMoon = getMoonPhase(dateStr);
-  document.getElementById('snm_moonPhase').value = autoMoon;
+  document.getElementById('snm_moonPhase').value = getMoonPhase(dateStr);
 
-  // Clear all fields first
+  // Clear all fields
   ['snm_concernsOther','snm_patterns','snm_workOther','snm_hwNotes','snm_fuNotes','snm_riskNotes','snm_outcomeNotes'].forEach(id => {
     const el = document.getElementById(id); if(el) el.value = '';
   });
-  ['snm_fuStatus','snm_fuReport','snm_weather','snm_solar','snm_mercury','snm_nextApptDate'].forEach(id => {
-    const el = document.getElementById(id); if(el) el.value = el.tagName==='SELECT' ? '' : '';
+  ['snm_fuStatus','snm_fuReport','snm_weather','snm_solar','snm_nextApptDate'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.value = '';
   });
   document.getElementById('snm_mercury').value = 'no';
   snmSetRating(0);
   document.querySelectorAll('.snm-pri-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.snm-appt-btn').forEach(b => b.classList.remove('active'));
   snmLoadResources([]);
+  snmSetSyncDot('idle');
 
-  // Load saved data
-  const key = 'rea_session_data_' + dateStr + '_' + idx;
-  const saved = JSON.parse(localStorage.getItem(key) || 'null');
-  if (saved) {
-    snmSetChecked('snm_concerns',      saved.concerns      || []);
-    snmSetChecked('snm_workPerformed', saved.workPerformed || []);
-    snmSetChecked('snm_response',      saved.response      || []);
-    snmSetChecked('snm_homework',      saved.homework      || []);
-    snmSetChecked('snm_documents',     saved.documents     || []);
-    const setVal = (id, v) => { const el=document.getElementById(id); if(el&&v!==undefined&&v!==null) el.value=v; };
-    setVal('snm_concernsOther', saved.concernsOther);
-    setVal('snm_patterns',      saved.patterns);
-    setVal('snm_workOther',     saved.workOther);
-    setVal('snm_hwNotes',       saved.hwNotes);
-    setVal('snm_fuStatus',      saved.fuStatus);
-    setVal('snm_fuReport',      saved.fuReport);
-    setVal('snm_fuNotes',       saved.fuNotes);
-    setVal('snm_moonPhase',     saved.moonPhase);
-    setVal('snm_weather',       saved.weather);
-    setVal('snm_solar',         saved.solar);
-    setVal('snm_mercury',       saved.mercury);
-    setVal('snm_sessionTime',   saved.sessionTime);
-    setVal('snm_riskNotes',     saved.riskNotes);
-    setVal('snm_nextApptDate',  saved.nextApptDate);
-    setVal('snm_outcomeNotes',  saved.outcomeNotes);
-    if (saved.priority)     snmSetPriority(saved.priority);
-    if (saved.nextAppt)     snmSetNextAppt(saved.nextAppt);
-    if (saved.rating)       snmSetRating(saved.rating);
-    if (saved.stateBefore)  snmSetStateBefore(saved.stateBefore);
-    if (saved.stateAfter)   snmSetStateAfter(saved.stateAfter);
-    snmLoadResources(saved.resources || []);
+  // Load from localStorage first (instant)
+  const lsKey = 'rea_session_data_' + dateStr + '_' + idx;
+  const lsSaved = JSON.parse(localStorage.getItem(lsKey) || 'null');
+  if (lsSaved) {
+    snmApplySavedData(lsSaved);
   } else {
-    // Prefill session time from appointment if available
     const appts = JSON.parse(localStorage.getItem('rea_appointments') || '[]');
     const match = appts.find(a => a.date === dateStr && (a.client||'').toLowerCase().replace(/\s+/g,'_') === (clientName||'').toLowerCase().replace(/\s+/g,'_'));
     if (match && match.time) document.getElementById('snm_sessionTime').value = match.time;
   }
 
-  // Show modal
+  // Show modal immediately — Supabase lookup runs in background
   const modal = document.getElementById('sessNotesModal');
   modal.classList.add('open');
   modal.scrollTop = 0;
   document.body.style.overflow = 'hidden';
-
-  // Hide save confirm
   const conf = document.getElementById('snm_saveConfirm');
-  if (conf) { conf.style.opacity='0'; }
+  if (conf) conf.style.opacity = '0';
+
+  // Background: find Supabase session_id by date + client, then load note
+  const tok = sessionStorage.getItem('rea_api_token') || '';
+  if (tok && dateStr) {
+    snmSetSyncDot('syncing');
+    snmSetLoadingBanner(true);
+    try {
+      const sr = await fetch('/.netlify/functions/sessions?date=' + dateStr, { headers: { 'X-Dashboard-Token': tok } });
+      if (sr.ok) {
+        const sd = await sr.json();
+        const norm = s => (s||'').toLowerCase().replace(/\s*\[.*?\]/g,'').trim();
+        const matched = (sd.sessions || []).find(s => {
+          const sn = norm(s.client_name), cn = norm(clientName);
+          return sn === cn || sn.includes(cn) || cn.includes(sn);
+        });
+        if (matched) {
+          _snmSessionId = matched.id;
+          _snmClientId  = matched.client_id;
+          // Load note from Supabase
+          const nr = await fetch('/.netlify/functions/session-notes?session_id=' + _snmSessionId, { headers: { 'X-Dashboard-Token': tok } });
+          if (nr.ok) {
+            const nd = await nr.json();
+            const note = (nd.notes || [])[0];
+            if (note) {
+              _snmNoteId = note.id;
+              if (note.snm_json) {
+                snmApplySavedData(note.snm_json); // Supabase wins over localStorage
+              }
+              snmSetSyncDot('synced');
+            } else {
+              snmSetSyncDot('idle'); // session found, no note yet
+            }
+          } else {
+            snmSetSyncDot('idle');
+          }
+        } else {
+          snmSetSyncDot('idle'); // no matching session in Supabase yet
+        }
+      } else {
+        snmSetSyncDot('idle');
+      }
+    } catch(e) {
+      snmSetSyncDot('idle');
+    } finally {
+      snmSetLoadingBanner(false);
+    }
+  }
+}
+
+function snmSetLoadingBanner(visible) {
+  let banner = document.getElementById('snm_loadingBanner');
+  if (!banner) return;
+  banner.style.display = visible ? 'flex' : 'none';
 }
 
 function closeSessNotesModal() {
@@ -6546,7 +6874,7 @@ function saveSessNotesModal() {
     } catch(e) {}
   }
 
-  // Show confirm flash
+  // Show confirm flash (local save is instant)
   const conf = document.getElementById('snm_saveConfirm');
   if (conf) {
     conf.style.opacity = '1';
@@ -6556,6 +6884,86 @@ function saveSessNotesModal() {
   // Refresh calendar if visible
   if (typeof renderCalendar === 'function') {
     try { renderCalendar(); } catch(e) {}
+  }
+
+  // Async: persist to Supabase (non-blocking — localStorage is already saved above)
+  snmPersistToSupabase(data);
+}
+
+async function snmPersistToSupabase(data) {
+  const tok = sessionStorage.getItem('rea_api_token') || '';
+  if (!tok) return;
+
+  snmSetSyncDot('syncing');
+
+  try {
+    // 1. Sync state_before / state_after to sessions table
+    if (_snmSessionId && (data.stateBefore || data.stateAfter)) {
+      const stateBody = {};
+      if (data.stateBefore) stateBody.state_before = data.stateBefore;
+      if (data.stateAfter)  stateBody.state_after  = data.stateAfter;
+      if (data.patterns)    stateBody.seller_notes  = data.patterns;
+      await fetch('/.netlify/functions/sessions?id=' + _snmSessionId, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'X-Dashboard-Token': tok },
+        body: JSON.stringify(stateBody),
+      });
+    }
+
+    // 2. Build plain-text content for AI readability
+    const content = [
+      data.concerns.length     ? 'Concerns: ' + data.concerns.join(', ') : '',
+      data.concernsOther       ? 'Other concerns: ' + data.concernsOther : '',
+      data.patterns            ? 'Observed patterns: ' + data.patterns : '',
+      data.workPerformed.length? 'Work performed: ' + data.workPerformed.join(', ') : '',
+      data.workOther           ? 'Additional work: ' + data.workOther : '',
+      data.response.length     ? 'Client response: ' + data.response.join(', ') : '',
+      data.homework.length     ? 'Homework assigned: ' + data.homework.join(', ') : '',
+      data.outcomeNotes        ? 'Outcome notes: ' + data.outcomeNotes : '',
+      data.riskNotes           ? 'Risk notes: ' + data.riskNotes : '',
+      data.stateBefore         ? 'State before session: ' + data.stateBefore + '/5' : '',
+      data.stateAfter          ? 'State after session: ' + data.stateAfter + '/5' : '',
+      data.priority            ? 'Priority flag: ' + data.priority : '',
+    ].filter(Boolean).join('\n');
+
+    if (!content.trim()) { snmSetSyncDot('idle'); return; }
+
+    const noteBody = {
+      session_id:      _snmSessionId || null,
+      client_id:       _snmClientId  || null,
+      note_type:       'session',
+      content,
+      energy_findings: data.patterns || null,
+      removals_done:   data.workPerformed || [],
+      env_notes:       JSON.stringify({ moon: data.moonPhase, weather: data.weather, solar: data.solar, mercury: data.mercury, season: data.season }),
+      snm_json:        data,
+    };
+
+    let resp;
+    if (_snmNoteId) {
+      // Update existing note
+      resp = await fetch('/.netlify/functions/session-notes?id=' + _snmNoteId, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'X-Dashboard-Token': tok },
+        body: JSON.stringify(noteBody),
+      });
+    } else {
+      // Create new note (requires session_id or client_id)
+      if (!noteBody.session_id && !noteBody.client_id) { snmSetSyncDot('idle'); return; }
+      resp = await fetch('/.netlify/functions/session-notes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Dashboard-Token': tok },
+        body: JSON.stringify(noteBody),
+      });
+      if (resp.ok) {
+        const rd = await resp.json();
+        _snmNoteId = rd.note?.id || null;
+      }
+    }
+
+    snmSetSyncDot(resp && resp.ok ? 'synced' : 'error');
+  } catch(e) {
+    snmSetSyncDot('error');
   }
 }
 
@@ -6576,6 +6984,571 @@ function getSessNoteBadges(dateStr, idx) {
   }
   if (!parts.length) parts.push('<span class="sess-badge outcome" style="opacity:.5">Notes Saved</span>');
   return `<div class="sess-badge-strip">${parts.join('')}</div>`;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// FOLLOW-UP CENTER
+// ══════════════════════════════════════════════════════════════════
+let _fucData       = [];   // all loaded follow-ups
+let _fucFilter     = 'all'; // current pill filter
+const TODAY_STR    = new Date().toISOString().slice(0, 10);
+
+async function loadFollowUps(force) {
+  const body = document.getElementById('fucBody');
+  if (!body) return;
+  body.innerHTML = '<div class="fuc-empty">Loading…</div>';
+
+  const tok = sessionStorage.getItem('rea_api_token') || '';
+  try {
+    const r = await fetch('/.netlify/functions/aftercare?all=1', { headers: { 'X-Dashboard-Token': tok } });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const d = await r.json();
+    _fucData = d.aftercare || [];
+  } catch(e) {
+    body.innerHTML = '<div class="fuc-empty">Failed to load follow-ups. ' + e.message + '</div>';
+    return;
+  }
+
+  fucUpdateStats();
+  fucRender();
+
+  // Update Home tab badge
+  const overdue = _fucData.filter(f => f.status === 'scheduled' && (f.scheduled_for||'').slice(0,10) < TODAY_STR);
+  const badge = document.getElementById('qaFollowUpBadge');
+  if (badge) {
+    if (overdue.length) { badge.textContent = overdue.length; badge.style.display = 'inline'; }
+    else { badge.style.display = 'none'; }
+  }
+}
+
+function fucUpdateStats() {
+  const now = new Date();
+  const today = TODAY_STR;
+  const todayEnd = today + 'T23:59:59';
+
+  const overdue    = _fucData.filter(f => f.status === 'scheduled' && (f.scheduled_for||'') < now.toISOString());
+  const dueToday   = _fucData.filter(f => f.status === 'scheduled' && (f.scheduled_for||'').slice(0,10) === today);
+  const upcoming   = _fucData.filter(f => f.status === 'scheduled' && (f.scheduled_for||'') > todayEnd);
+  const done       = _fucData.filter(f => f.status === 'sent' || f.status === 'skipped');
+
+  const set = (id, n, label) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = n + ' ' + label;
+  };
+  set('fucStatOverdue',  overdue.length,  'Critical / Overdue');
+  set('fucStatDue',      dueToday.length, 'Due Today');
+  set('fucStatUpcoming', upcoming.length, 'Upcoming');
+  set('fucStatDone',     done.length,     'Completed');
+
+  // Highlight active filter stat
+  ['fucStatOverdue','fucStatDue','fucStatUpcoming','fucStatDone'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('active',
+      (id === 'fucStatOverdue'  && _fucFilter === 'overdue') ||
+      (id === 'fucStatDue'      && _fucFilter === 'due_today') ||
+      (id === 'fucStatUpcoming' && _fucFilter === 'upcoming') ||
+      (id === 'fucStatDone'     && _fucFilter === 'done')
+    );
+  });
+}
+
+function fucSetFilter(f) {
+  _fucFilter = (_fucFilter === f) ? 'all' : f;  // toggle off if already selected
+  fucUpdateStats();
+  fucRender();
+}
+
+function fucSeverity(item) {
+  if (item.status === 'sent' || item.status === 'skipped') return 'done';
+  const sched = (item.scheduled_for || '').slice(0, 10);
+  if (!sched) return 'warning';
+  const days = Math.floor((new Date(TODAY_STR) - new Date(sched)) / 86400000);
+  if (days >= 30) return 'critical';
+  if (days > 0)   return 'urgent';
+  if (sched === TODAY_STR) return 'urgent';
+  return 'warning';
+}
+
+function fucRender() {
+  const body   = document.getElementById('fucBody');
+  const search = ((document.getElementById('fucSearch') || {}).value || '').toLowerCase();
+  const typeF  = ((document.getElementById('fucTypeFilter') || {}).value || 'all');
+  if (!body) return;
+
+  let items = [..._fucData];
+
+  // Apply search
+  if (search) items = items.filter(f => (f.client_name || '').toLowerCase().includes(search));
+
+  // Apply type filter
+  if (typeF !== 'all') items = items.filter(f => (f.followup_type || '') === typeF);
+
+  // Apply pill filter
+  const todayStr = TODAY_STR;
+  const nowIso   = new Date().toISOString();
+  if (_fucFilter === 'overdue')   items = items.filter(f => f.status === 'scheduled' && (f.scheduled_for || '') < nowIso);
+  if (_fucFilter === 'due_today') items = items.filter(f => f.status === 'scheduled' && (f.scheduled_for || '').slice(0,10) === todayStr);
+  if (_fucFilter === 'upcoming')  items = items.filter(f => f.status === 'scheduled' && (f.scheduled_for || '') > todayStr + 'T23:59:59');
+  if (_fucFilter === 'done')      items = items.filter(f => f.status === 'sent' || f.status === 'skipped');
+
+  if (!items.length) {
+    body.innerHTML = '<div class="fuc-empty">No follow-ups match the current filter.</div>';
+    return;
+  }
+
+  // Sort: overdue first (oldest first), then upcoming (soonest first)
+  items.sort((a, b) => (a.scheduled_for || '').localeCompare(b.scheduled_for || ''));
+
+  // Group by severity
+  const groups = { critical: [], urgent: [], warning: [], done: [] };
+  items.forEach(f => groups[fucSeverity(f)].push(f));
+
+  const groupLabels = {
+    critical: '🔴 Critical — 30+ Days Overdue',
+    urgent:   '🟠 Urgent — Overdue / Due Today',
+    warning:  '🟡 Upcoming',
+    done:     '✓ Completed',
+  };
+
+  let html = '';
+  ['critical','urgent','warning','done'].forEach(sev => {
+    if (!groups[sev].length) return;
+    html += `<div class="fuc-group-title">${groupLabels[sev]} <span style="font-size:10px;color:#dddaee44">(${groups[sev].length})</span></div>`;
+    groups[sev].forEach(f => { html += fucItemHtml(f, sev); });
+  });
+
+  body.innerHTML = html;
+}
+
+function fucItemHtml(f, sev) {
+  const schedDate  = (f.scheduled_for || '').slice(0, 10);
+  const daysAgo    = schedDate ? Math.floor((new Date(TODAY_STR) - new Date(schedDate)) / 86400000) : null;
+  const timeStr    = daysAgo === null ? '' : daysAgo > 0 ? daysAgo + 'd overdue' : daysAgo === 0 ? 'due today' : Math.abs(daysAgo) + 'd away';
+  const typeLabel  = { '24h':'24-Hour','48h':'48-Hour','72h':'72-Hour','1mo':'1-Month','3mo':'3-Month' }[f.followup_type] || f.followup_type;
+  const statusBadge = f.status === 'sent' ? '✓ Sent' : f.status === 'skipped' ? '– Skipped' : 'Pending';
+  const clientName = (f.client_name || 'Unknown').replace(/\s*\[.*?\]/g, '').trim();
+  const service    = f.sessions ? (f.sessions.service || '') : '';
+
+  const sevLabel = { critical:'critical', urgent:'urgent', warning:'upcoming', done:'done' }[sev] || sev;
+  const isDone   = sev === 'done';
+
+  return `<div class="fuc-item sev-${sev}">
+    <div class="fuc-info">
+      <div class="fuc-client" onclick="window.crmOpenProfile && window.crmOpenProfile('${f.client_id || ''}',true)">${clientName}</div>
+      <div class="fuc-meta">${typeLabel} check-in${service ? ' · ' + service : ''}${timeStr ? ' · ' + timeStr : ''} · ${schedDate || '—'}</div>
+      ${f.client_response ? '<div class="fuc-meta" style="margin-top:3px;color:#22c98acc">Client: "' + f.client_response.slice(0,80) + '"</div>' : ''}
+    </div>
+    <span class="fuc-sev fuc-sev-${sevLabel}">${statusBadge}</span>
+    <div class="fuc-actions">
+      ${!isDone ? `<button class="fuc-act-btn done-btn" onclick="fucMarkSent('${f.id}')">✓ Mark Sent</button>` : ''}
+      ${!isDone ? `<button class="fuc-act-btn" onclick="fucMarkSkipped('${f.id}')">Skip</button>` : ''}
+      ${f.client_id ? `<button class="fuc-act-btn" onclick="showTab('clients');window.crmOpenProfile&&window.crmOpenProfile('${f.client_id}',true)">Open Client</button>` : ''}
+    </div>
+  </div>`;
+}
+
+async function fucMarkSent(id) {
+  const tok = sessionStorage.getItem('rea_api_token') || '';
+  try {
+    const r = await fetch('/.netlify/functions/aftercare?id=' + id, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'X-Dashboard-Token': tok },
+      body: JSON.stringify({ status: 'sent' }),
+    });
+    if (r.ok) {
+      const idx = _fucData.findIndex(f => f.id === id);
+      if (idx > -1) { _fucData[idx].status = 'sent'; _fucData[idx].sent_at = new Date().toISOString(); }
+      fucUpdateStats(); fucRender();
+    }
+  } catch(e) {}
+}
+
+async function fucMarkSkipped(id) {
+  const tok = sessionStorage.getItem('rea_api_token') || '';
+  try {
+    const r = await fetch('/.netlify/functions/aftercare?id=' + id, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'X-Dashboard-Token': tok },
+      body: JSON.stringify({ status: 'skipped' }),
+    });
+    if (r.ok) {
+      const idx = _fucData.findIndex(f => f.id === id);
+      if (idx > -1) _fucData[idx].status = 'skipped';
+      fucUpdateStats(); fucRender();
+    }
+  } catch(e) {}
+}
+
+// ══════════════════════════════════════════════════════════════════
+// TOAST NOTIFICATION
+// ══════════════════════════════════════════════════════════════════
+function showToast(msg, color) {
+  const el = document.getElementById('toastNotif');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.background = color || '#22c98a';
+  el.style.color = color === '#ee7070' ? '#fff' : '#04020e';
+  el.style.display = 'flex';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.style.display = 'none'; }, 3000);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// CREATE FOLLOW-UP MODAL (Priority 2)
+// ══════════════════════════════════════════════════════════════════
+function openCreateFollowUpModal() {
+  document.getElementById('cfuClient').value   = '';
+  document.getElementById('cfuDate').value     = new Date().toISOString().slice(0, 10);
+  document.getElementById('cfuType').value     = '24h';
+  document.getElementById('cfuPriority').value = 'medium';
+  document.getElementById('cfuNotes').value    = '';
+  document.getElementById('cfuMsg').textContent = '';
+  // Populate client datalist from Supabase clients
+  const tok = sessionStorage.getItem('rea_api_token') || '';
+  if (tok) {
+    fetch('/.netlify/functions/clients', { headers: { 'X-Dashboard-Token': tok } })
+      .then(r => r.json())
+      .then(d => {
+        const dl = document.getElementById('cfuClientList');
+        if (dl) dl.innerHTML = (d.clients || []).map(c => `<option value="${c.full_name}">`).join('');
+      }).catch(() => {});
+  }
+  document.getElementById('createFuModal').style.display = 'flex';
+}
+
+function closeCreateFollowUpModal() {
+  document.getElementById('createFuModal').style.display = 'none';
+}
+
+async function saveCreateFollowUp() {
+  const tok      = sessionStorage.getItem('rea_api_token') || '';
+  const client   = document.getElementById('cfuClient').value.trim();
+  const date     = document.getElementById('cfuDate').value;
+  const type     = document.getElementById('cfuType').value;
+  const priority = document.getElementById('cfuPriority').value;
+  const notes    = document.getElementById('cfuNotes').value.trim();
+  const msgEl    = document.getElementById('cfuMsg');
+
+  if (!client) { msgEl.textContent = 'Client name is required.'; return; }
+  if (!date)   { msgEl.textContent = 'Due date is required.'; return; }
+
+  const btn = document.querySelector('#createFuModal button[onclick="saveCreateFollowUp()"]');
+  if (btn) btn.textContent = 'Saving…';
+
+  try {
+    const r = await fetch('/.netlify/functions/aftercare', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Dashboard-Token': tok },
+      body: JSON.stringify({
+        client_name:   client,
+        scheduled_for: date + 'T12:00:00.000Z',
+        followup_type: type,
+        priority,
+        notes,
+        channel: 'text',
+        source:  'manual',
+      }),
+    });
+    const d = await r.json();
+    if (r.ok && d.aftercare) {
+      closeCreateFollowUpModal();
+      showToast('Follow-up created for ' + client);
+      // Optimistically add to _fucData and re-render
+      if (Array.isArray(window._fucData)) {
+        window._fucData.unshift(d.aftercare);
+        fucUpdateStats();
+        fucRender();
+      } else {
+        loadFollowUps(true);
+      }
+    } else {
+      msgEl.textContent = d.error || 'Save failed.';
+    }
+  } catch(e) {
+    msgEl.textContent = 'Network error.';
+  } finally {
+    if (btn) btn.textContent = 'Save Follow-Up';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// SUPABASE RECOMMENDATION OUTCOMES PANEL (Priority 3)
+// ══════════════════════════════════════════════════════════════════
+const _sbRecCache = {}; // clientName → [{...rec}]
+const _sbClientIdCache = {}; // clientName → uuid
+
+async function _getSbClientId(clientName) {
+  if (_sbClientIdCache[clientName]) return _sbClientIdCache[clientName];
+  const tok = sessionStorage.getItem('rea_api_token') || '';
+  try {
+    const r = await fetch('/.netlify/functions/clients', { headers: { 'X-Dashboard-Token': tok } });
+    if (!r.ok) return null;
+    const d = await r.json();
+    (d.clients || []).forEach(c => {
+      _sbClientIdCache[c.full_name] = c.id;
+      _sbClientIdCache[(c.full_name||'').toLowerCase()] = c.id;
+    });
+  } catch(_) {}
+  const norm = n => (n||'').toLowerCase().replace(/\s*\[.*?\]/g,'').trim();
+  return _sbClientIdCache[clientName] || _sbClientIdCache[norm(clientName)] || null;
+}
+
+async function toggleSbRecsPanel(clientName) {
+  const safeId  = clientName.replace(/[^a-z0-9]/gi,'_');
+  const panel   = document.getElementById('sbrecs_' + safeId);
+  if (!panel) return;
+  if (panel.style.display !== 'none') { panel.style.display = 'none'; return; }
+  panel.style.display = 'block';
+  panel.innerHTML = '<div style="padding:14px;font-family:\'EB Garamond\',serif;font-size:13px;color:#dddaee44">Loading outcomes…</div>';
+  await loadSbRecs(clientName, safeId);
+}
+
+async function loadSbRecs(clientName, safeId) {
+  const tok      = sessionStorage.getItem('rea_api_token') || '';
+  const clientId = await _getSbClientId(clientName);
+  const panel    = document.getElementById('sbrecs_' + safeId);
+  if (!panel) return;
+
+  if (!clientId) {
+    panel.innerHTML = '<div style="padding:14px;font-size:13px;color:#dddaee44;font-style:italic">No Supabase client record found for this client. Create one via Quick Log or Intake.</div>';
+    return;
+  }
+
+  try {
+    const r = await fetch('/.netlify/functions/recommendations?client_id=' + clientId, { headers: { 'X-Dashboard-Token': tok } });
+    const d = await r.json();
+    const recs = d.recommendations || [];
+    _sbRecCache[clientName] = recs;
+    renderSbRecsPanel(clientName, safeId, recs, clientId);
+  } catch(e) {
+    if (panel) panel.innerHTML = '<div style="padding:14px;font-size:13px;color:#ee7070">Failed to load recommendations.</div>';
+  }
+}
+
+function renderSbRecsPanel(clientName, safeId, recs, clientId) {
+  const panel = document.getElementById('sbrecs_' + safeId);
+  if (!panel) return;
+
+  const OUTCOMES = [
+    { key: 'purchased',   label: 'Purchased', color: '#22c98a' },
+    { key: 'tried',       label: 'Tried',     color: '#9b7fe8' },
+    { key: 'helpful',     label: 'Helpful',   color: '#22c98a' },
+    { key: 'not_helpful', label: 'Not Helpful', color: '#e8b84b' },
+    { key: 'declined',    label: 'Declined',  color: '#ee7070' },
+  ];
+
+  const addRecBtn = `<button onclick="openAddRecModal('${clientName.replace(/'/g,"\\'")}','${clientId}','${safeId}')"
+    style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;text-transform:uppercase;padding:4px 12px;background:#9b7fe811;border:1px solid #9b7fe844;color:#9b7fe8;cursor:pointer;border-radius:2px">
+    + Add Recommendation</button>`;
+
+  if (!recs.length) {
+    panel.innerHTML = `<div style="padding:16px 18px;background:#0a0618;border:1px solid #22c98a1a;margin-top:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.35em;color:#22c98a99;text-transform:uppercase">Recommendation Outcomes</div>
+        ${addRecBtn}
+      </div>
+      <div style="font-size:13px;color:#dddaee44;font-style:italic">No recommendations on record. Use "+ Add" to create one.</div>
+    </div>`;
+    return;
+  }
+
+  const rows = recs.map(rec => {
+    const current = rec.outcome_status || 'recommended';
+    const btns = OUTCOMES.map(o => {
+      const active = current === o.key;
+      return `<button onclick="setRecOutcome('${rec.id}','${o.key}','${clientName.replace(/'/g,"\\'")}','${safeId}')"
+        style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.15em;text-transform:uppercase;padding:3px 9px;border:1px solid ${o.color}${active?'':'33'};color:${o.color}${active?'':'88'};background:${o.color}${active?'1a':'08'};cursor:pointer;border-radius:2px;transition:all .15s"
+        ${active?'data-active="1"':''}>${o.label}</button>`;
+    }).join('');
+    const dateStr = rec.outcome_date ? ` · ${rec.outcome_date}` : '';
+    return `<div id="sbrec_row_${rec.id}" style="padding:10px 12px;background:#04020e;border:1px solid #22c98a11;margin-bottom:4px;border-left:3px solid ${current==='helpful'?'#22c98a':current==='not_helpful'?'#e8b84b':current==='declined'?'#ee7070':'#22c98a33'}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:8px">
+        <div>
+          <div style="font-family:'Cinzel',serif;font-size:11px;color:#f0ecff">${rec.product_name}</div>
+          ${rec.reason ? `<div style="font-size:12px;color:#dddaee55;margin-top:2px">${rec.reason}</div>` : ''}
+        </div>
+        <div style="font-size:10px;color:#dddaee33;white-space:nowrap;flex-shrink:0">${rec.priority||'medium'}${dateStr}</div>
+      </div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap">${btns}</div>
+    </div>`;
+  }).join('');
+
+  panel.innerHTML = `<div style="padding:16px 18px;background:#0a0618;border:1px solid #22c98a1a;margin-top:8px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.35em;color:#22c98a99;text-transform:uppercase">Recommendation Outcomes (${recs.length})</div>
+      ${addRecBtn}
+    </div>
+    ${rows}
+  </div>`;
+}
+
+async function setRecOutcome(recId, outcome, clientName, safeId) {
+  const tok = sessionStorage.getItem('rea_api_token') || '';
+
+  // Optimistic update — change button states immediately
+  const rowEl = document.getElementById('sbrec_row_' + recId);
+  if (rowEl) {
+    rowEl.querySelectorAll('button').forEach(btn => {
+      const isTarget = btn.textContent.trim().toLowerCase().replace(/\s+/g,'_') === outcome ||
+                       btn.textContent.trim().toLowerCase() === outcome.replace(/_/g,' ');
+      btn.style.opacity = isTarget ? '1' : '0.5';
+    });
+  }
+
+  try {
+    const r = await fetch('/.netlify/functions/recommendations?id=' + recId, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'X-Dashboard-Token': tok },
+      body: JSON.stringify({ outcome_status: outcome, outcome_date: new Date().toISOString().slice(0, 10) }),
+    });
+    const d = await r.json();
+    if (r.ok && d.recommendation) {
+      // Update cache
+      const cache = _sbRecCache[clientName];
+      if (cache) {
+        const idx = cache.findIndex(r => r.id === recId);
+        if (idx > -1) cache[idx] = d.recommendation;
+      }
+      showToast('Outcome: ' + outcome.replace(/_/g, ' '));
+      // Re-render panel with updated data
+      renderSbRecsPanel(clientName, safeId, _sbRecCache[clientName] || [], _sbClientIdCache[clientName] || '');
+    } else {
+      showToast('Save failed — rolling back', '#ee7070');
+      // Rollback: re-render from cache
+      renderSbRecsPanel(clientName, safeId, _sbRecCache[clientName] || [], _sbClientIdCache[clientName] || '');
+    }
+  } catch(e) {
+    showToast('Network error — rolled back', '#ee7070');
+    renderSbRecsPanel(clientName, safeId, _sbRecCache[clientName] || [], _sbClientIdCache[clientName] || '');
+  }
+}
+
+function openAddRecModal(clientName, clientId, safeId) {
+  const product = prompt('Product name:');
+  if (!product || !product.trim()) return;
+  const reason  = prompt('Reason (optional):') || '';
+  const tok     = sessionStorage.getItem('rea_api_token') || '';
+  fetch('/.netlify/functions/recommendations', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Dashboard-Token': tok },
+    body: JSON.stringify({ client_id: clientId, client_name: clientName, product_name: product.trim(), category: 'other', reason: reason.trim(), priority: 'medium' }),
+  }).then(r => r.json()).then(d => {
+    if (d.recommendation) {
+      if (!_sbRecCache[clientName]) _sbRecCache[clientName] = [];
+      _sbRecCache[clientName].unshift(d.recommendation);
+      renderSbRecsPanel(clientName, safeId, _sbRecCache[clientName], clientId);
+      showToast('Recommendation added');
+    } else {
+      showToast('Failed to add: ' + (d.error || 'unknown'), '#ee7070');
+    }
+  }).catch(() => showToast('Network error', '#ee7070'));
+}
+
+// ══════════════════════════════════════════════════════════════════
+// QUICK LOG SESSION
+// ══════════════════════════════════════════════════════════════════
+let _qlStateBefore = 0;
+let _qlStateAfter  = 0;
+
+function openQuickLogModal() {
+  _qlStateBefore = 0;
+  _qlStateAfter  = 0;
+  document.getElementById('qlClient').value  = '';
+  document.getElementById('qlService').value = '';
+  document.getElementById('qlDate').value    = new Date().toISOString().slice(0, 10);
+  document.getElementById('qlAmount').value  = '';
+  document.getElementById('qlPayment').value = 'paid';
+  document.getElementById('qlNotes').value   = '';
+  document.getElementById('qlMsg').style.opacity = '0';
+  document.getElementById('qlSaveBtn').disabled  = false;
+  document.querySelectorAll('.ql-state-before-btn,.ql-state-after-btn').forEach(b => b.classList.remove('active'));
+
+  // Populate client datalist
+  const tok = sessionStorage.getItem('rea_api_token') || '';
+  fetch('/.netlify/functions/clients', { headers: { 'X-Dashboard-Token': tok } })
+    .then(r => r.json())
+    .then(d => {
+      const dl = document.getElementById('qlClientList');
+      if (dl) dl.innerHTML = (d.clients || []).map(c => `<option value="${c.full_name}">`).join('');
+    }).catch(() => {});
+
+  document.getElementById('quickLogModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => document.getElementById('qlClient').focus(), 50);
+}
+
+function closeQuickLogModal() {
+  document.getElementById('quickLogModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function qlSetBefore(v) {
+  _qlStateBefore = v;
+  document.querySelectorAll('.ql-state-before-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.v) === v));
+}
+
+function qlSetAfter(v) {
+  _qlStateAfter = v;
+  document.querySelectorAll('.ql-state-after-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.v) === v));
+}
+
+async function saveQuickLog() {
+  const client  = (document.getElementById('qlClient').value || '').trim();
+  const service = (document.getElementById('qlService').value || '').trim();
+  const date    = document.getElementById('qlDate').value;
+  const amount  = parseFloat(document.getElementById('qlAmount').value) || null;
+  const payment = document.getElementById('qlPayment').value;
+  const notes   = (document.getElementById('qlNotes').value || '').trim();
+
+  if (!client) { document.getElementById('qlClient').focus(); return; }
+  if (!date)   { document.getElementById('qlDate').focus();   return; }
+
+  const btn = document.getElementById('qlSaveBtn');
+  const msg = document.getElementById('qlMsg');
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+  msg.style.opacity = '0';
+
+  const tok = sessionStorage.getItem('rea_api_token') || '';
+  try {
+    const r = await fetch('/.netlify/functions/sessions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Dashboard-Token': tok },
+      body: JSON.stringify({
+        client_name:    client,
+        service:        service || null,
+        session_date:   date,
+        status:         'completed',
+        payment_status: payment,
+        amount_due:     amount,
+        amount_paid:    payment === 'paid' ? amount : null,
+        seller_notes:   notes || null,
+        state_before:   _qlStateBefore || null,
+        state_after:    _qlStateAfter  || null,
+        source:         'quick_log',
+      }),
+    });
+
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+
+    msg.textContent    = '✓ Session saved';
+    msg.style.opacity  = '1';
+    btn.textContent    = 'Save Session';
+    btn.disabled       = false;
+
+    setTimeout(() => {
+      closeQuickLogModal();
+      // Refresh home dashboard stat counts
+      try { renderHomeDashboard(); } catch(e) {}
+    }, 1200);
+
+  } catch(e) {
+    msg.textContent    = '✗ Save failed — try again';
+    msg.style.color    = '#ee7070';
+    msg.style.opacity  = '1';
+    btn.textContent    = 'Save Session';
+    btn.disabled       = false;
+  }
 }
 
 /* ── AVAILABLE BOOKING SLOTS — Calendar UI ── */

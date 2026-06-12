@@ -16,10 +16,12 @@ Rules you must follow without exception:
 - Return ONLY valid JSON with exactly this structure. No markdown. No prose outside the JSON:
 {
   "lastSessionDate": "string describing last session date and service, or null",
+  "lastSessionOutcome": "string in format 'State: X → Y (±Z net)' using state_before/state_after, or null if no state data",
+  "improvementTrend": "Improving | Stable | Declining | Insufficient Data — based on state arc across sessions",
   "primaryConcerns": ["up to 4 short strings from intake or session notes"],
   "outstandingRecs": ["short string per unpurchased recommendation, up to 5"],
   "followUpItems": ["short string per pending follow-up or aftercare item, up to 5"],
-  "environmentalStatus": "one sentence on recent environmental conditions, or null",
+  "environmentalStatus": "one sentence on env conditions from session notes (moon phase, weather, season), or null if no env_notes available",
   "discussionTopics": ["3 to 5 suggested practitioner discussion topics based on the record"]
 }`;
 
@@ -63,14 +65,36 @@ function buildPrompt(d) {
   const lines = [];
   lines.push(`CLIENT: ${d.clientName} | Status: ${d.status || "active"}`);
 
-  // Sessions
+  // Sessions + state tracking
   if (d.sessions && d.sessions.length) {
     const sorted = [...d.sessions].sort((a, b) =>
       (b.session_date || "") > (a.session_date || "") ? 1 : -1
     );
     const last = sorted[0];
     lines.push(`\nLAST SESSION: ${last.session_date || "—"} | Service: ${last.service || last.service_type || "—"} | Status: ${last.status || "—"}`);
+    if (last.state_before != null && last.state_after != null) {
+      const net = last.state_after - last.state_before;
+      lines.push(`LAST SESSION STATE: Before=${last.state_before} → After=${last.state_after} | Net change: ${net >= 0 ? '+' : ''}${net}`);
+    }
     lines.push(`TOTAL SESSIONS: ${d.sessions.length} (${d.sessions.filter(s => s.status === "completed").length} completed)`);
+
+    // Improvement trend from state data
+    const withState = sorted.filter(s => s.state_before != null && s.state_after != null);
+    if (withState.length >= 2) {
+      const nets = withState.map(s => s.state_after - s.state_before);
+      const avgNet = nets.reduce((a, b) => a + b, 0) / nets.length;
+      const trend = avgNet > 0.3 ? 'Improving' : avgNet < -0.3 ? 'Declining' : 'Stable';
+      lines.push(`STATE TREND (${withState.length} sessions with data): avg net change ${avgNet >= 0 ? '+' : ''}${avgNet.toFixed(1)} → ${trend}`);
+      // No-improvement flag
+      const noImprovement = withState.slice(0, 3).every(s => s.state_after <= s.state_before);
+      if (noImprovement && withState.length >= 2) {
+        lines.push(`FLAG: Last ${Math.min(3, withState.length)} sessions show no measurable improvement (state_after <= state_before each time)`);
+      }
+    } else if (withState.length === 1) {
+      lines.push(`STATE TREND: Insufficient data (only 1 session with state tracking)`);
+    } else {
+      lines.push(`STATE TREND: No state tracking data available`);
+    }
   } else {
     lines.push(`\nSESSIONS: None on record`);
   }
@@ -87,12 +111,22 @@ function buildPrompt(d) {
     });
   }
 
-  // Session notes
+  // Session notes + env_notes extraction
   if (d.notes && d.notes.length) {
     lines.push(`\nSESSION NOTES (most recent first):`);
     d.notes.slice(0, 4).forEach((n) => {
       const txt = (n.content || n.raw_notes || "").slice(0, 250);
       if (txt) lines.push(`  [${(n.created_at || "—").slice(0, 10)}] ${txt}`);
+      if (n.env_notes) {
+        try {
+          const env = typeof n.env_notes === 'string' ? JSON.parse(n.env_notes) : n.env_notes;
+          const parts = [];
+          if (env.moon)    parts.push(`Moon: ${env.moon}`);
+          if (env.weather) parts.push(`Weather: ${env.weather}`);
+          if (env.season)  parts.push(`Season: ${env.season}`);
+          if (parts.length) lines.push(`  ENV [${(n.created_at || "—").slice(0, 10)}]: ${parts.join(', ')}`);
+        } catch (_) { /* ignore malformed env_notes */ }
+      }
     });
   }
 

@@ -228,6 +228,7 @@ exports.handler = async (event) => {
   }
 
   const { requireAdmin } = require('./lib/auth');
+  const { logAIUsage } = require('./lib/ai-log');
   const auth = requireAdmin(event);
   if (auth.error) return auth.error;
 
@@ -243,6 +244,7 @@ exports.handler = async (event) => {
     return { statusCode: 200, body: JSON.stringify({ items: buildFallbackTimeline(payload), source: 'deterministic' }) };
   }
 
+  const start = Date.now();
   try {
     const result = await callClaude(payload);
     const text = result?.content?.[0]?.text;
@@ -253,11 +255,14 @@ exports.handler = async (event) => {
       const cleaned = text.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/, '').trim();
       parsed = JSON.parse(cleaned);
     } catch {
+      logAIUsage({ feature: 'client_practitioner_timeline', model: 'claude-haiku-4-5-20251001', clientId: payload.clientId || null, success: false, responseTimeMs: Date.now() - start, errorMessage: 'AI response was not valid JSON' });
       return { statusCode: 200, body: JSON.stringify({ items: buildFallbackTimeline(payload), source: 'deterministic' }) };
     }
 
+    logAIUsage({ feature: 'client_practitioner_timeline', model: 'claude-haiku-4-5-20251001', clientId: payload.clientId || null, success: true, responseTimeMs: Date.now() - start, tokensUsed: result?.usage?.output_tokens || null });
     return { statusCode: 200, body: JSON.stringify({ items: parsed.items || [], source: 'ai' }) };
   } catch (err) {
+    logAIUsage({ feature: 'client_practitioner_timeline', model: 'claude-haiku-4-5-20251001', clientId: payload.clientId || null, success: false, responseTimeMs: Date.now() - start, errorMessage: err.message });
     return { statusCode: 200, body: JSON.stringify({ items: buildFallbackTimeline(payload), source: 'deterministic' }) };
   }
 };

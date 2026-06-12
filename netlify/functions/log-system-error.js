@@ -1,9 +1,9 @@
 // /.netlify/functions/log-system-error
-// POST — stores a frontend JS error or function error in system_errors
-// No auth required (errors arrive before PIN) but rate-limited by fingerprint dedup
+// POST  — stores a frontend JS error or function error in system_errors
+// PATCH — marks an error resolved (or reopens it); requires X-Dashboard-Token
 
-const { respond }   = require('./lib/auth');
-const { getClient } = require('./lib/supabase');
+const { respond, requireAdmin } = require('./lib/auth');
+const { getClient }             = require('./lib/supabase');
 
 // Simple fingerprint: hash-like concat of source+message truncated
 function fingerprint(source, message) {
@@ -12,7 +12,32 @@ function fingerprint(source, message) {
 
 exports.handler = async function(event) {
   if (event.httpMethod === 'OPTIONS') return respond(200, {});
-  if (event.httpMethod !== 'POST')    return respond(405, { error: 'POST only.' });
+
+  // ── PATCH — resolve or reopen an error ─────────────────────────────────────
+  if (event.httpMethod === 'PATCH') {
+    const auth = await requireAdmin(event);
+    if (auth.error) return auth.error;
+
+    const id = (event.queryStringParameters || {}).id;
+    if (!id) return respond(400, { error: 'id is required.' });
+
+    let body;
+    try { body = JSON.parse(event.body || '{}'); } catch { return respond(400, { error: 'Invalid JSON.' }); }
+
+    const resolved = body.resolved !== false; // default to resolving
+    try {
+      const sb = getClient();
+      await sb.from('system_errors').update({
+        resolved,
+        resolved_at: resolved ? new Date().toISOString() : null,
+      }).eq('id', id);
+      return respond(200, { status: 'updated' });
+    } catch (err) {
+      return respond(500, { error: err.message });
+    }
+  }
+
+  if (event.httpMethod !== 'POST') return respond(405, { error: 'POST or PATCH only.' });
 
   let body;
   try { body = JSON.parse(event.body || '{}'); } catch { return respond(400, { error: 'Invalid JSON.' }); }

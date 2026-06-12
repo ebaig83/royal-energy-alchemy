@@ -98,10 +98,14 @@ exports.handler = async function(event) {
     let body;
     try { body = JSON.parse(event.body || '{}'); } catch { return respond(400, { error: 'Invalid JSON.' }); }
 
-    const allowed = ['processed','client_id','session_id','agent_summary','spam_suspect'];
+    const allowed = ['processed','client_id','session_id','agent_summary','spam_suspect','match_status','matched_at'];
     const updates = {};
     allowed.forEach(k => { if (body[k] !== undefined) updates[k] = body[k]; });
     if (updates.processed) updates.processed_at = new Date().toISOString();
+    if (updates.client_id && !updates.match_status) {
+      updates.match_status = 'matched';
+      updates.matched_at   = new Date().toISOString();
+    }
 
     const { data, error } = await sb
       .from('intake_submissions')

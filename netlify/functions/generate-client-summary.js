@@ -122,6 +122,7 @@ exports.handler = async (event) => {
   }
 
   const { requireAdmin, respond } = require("./lib/auth");
+  const { logAIUsage } = require("./lib/ai-log");
   const auth = requireAdmin(event);
   if (auth.error) return auth.error;
 
@@ -140,12 +141,15 @@ exports.handler = async (event) => {
     return { statusCode: 400, body: JSON.stringify({ error: "clientName required" }) };
   }
 
+  const start = Date.now();
   try {
     const result = await callClaude(payload);
     const summary = result?.content?.[0]?.text;
     if (!summary) throw new Error("Empty response from Claude");
+    logAIUsage({ feature: 'generate_client_summary', model: 'claude-haiku-4-5-20251001', clientId: payload.clientId || null, success: true, responseTimeMs: Date.now() - start, tokensUsed: result?.usage?.output_tokens || null });
     return { statusCode: 200, body: JSON.stringify({ summary }) };
   } catch (err) {
+    logAIUsage({ feature: 'generate_client_summary', model: 'claude-haiku-4-5-20251001', clientId: payload.clientId || null, success: false, responseTimeMs: Date.now() - start, errorMessage: err.message });
     return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
   }
 };

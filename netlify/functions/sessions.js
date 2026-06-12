@@ -79,6 +79,8 @@ exports.handler = async function(event) {
       square_booking_id: body.square_booking_id  || null,
       source:            body.source             || 'manual',
       seller_notes:      body.seller_notes       || null,
+      state_before:      body.state_before       || null,
+      state_after:       body.state_after        || null,
     };
 
     const { data, error } = await sb.from('sessions').insert(insert).select().single();
@@ -103,7 +105,7 @@ exports.handler = async function(event) {
 
     const { data: old } = await sb.from('sessions').select('*').eq('id', params.id).single();
 
-    const allowed = ['status','payment_status','amount_due','amount_paid','session_date','session_time','service','location_type','seller_notes','square_booking_id'];
+    const allowed = ['status','payment_status','amount_due','amount_paid','session_date','session_time','service','location_type','seller_notes','square_booking_id','state_before','state_after'];
     const updates = {};
     allowed.forEach(k => { if (body[k] !== undefined) updates[k] = body[k]; });
 

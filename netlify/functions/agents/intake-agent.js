@@ -8,30 +8,38 @@
 async function runIntakeAgent({ submission, sb, ip }) {
   const { full_name, email, phone, service_requested, preferred_window_1, preferred_window_2, message } = submission;
 
-  // ── 1. Find existing client by email, then by name ────────────────
-  let clientId = null;
+  // ── 1. Match existing client: email → phone → needs_review ──────────────────
+  let clientId    = null;
+  let matchStatus = 'unmatched';
+  const candidates = new Set();
 
   if (email) {
-    const { data } = await sb
-      .from('clients')
-      .select('id')
-      .eq('email', email.toLowerCase())
-      .limit(1)
-      .single();
-    if (data) clientId = data.id;
+    const { data: rows } = await sb
+      .from('clients').select('id').eq('email', email.toLowerCase());
+    (rows || []).forEach(r => candidates.add(r.id));
   }
 
-  if (!clientId && full_name) {
-    const { data } = await sb
-      .from('clients')
-      .select('id')
-      .ilike('full_name', full_name.trim())
-      .limit(1)
-      .single();
-    if (data) clientId = data.id;
+  if (phone) {
+    const normalised = phone.replace(/\D/g, '');
+    if (normalised.length >= 7) {
+      const { data: rows } = await sb
+        .from('clients').select('id, phone');
+      (rows || []).forEach(r => {
+        if (r.phone && r.phone.replace(/\D/g, '') === normalised) candidates.add(r.id);
+      });
+    }
   }
 
-  // ── 2. Create client if not found ─────────────────────────────────
+  if (candidates.size === 1) {
+    clientId    = [...candidates][0];
+    matchStatus = 'matched';
+  } else if (candidates.size > 1) {
+    // Multiple possible matches — flag for manual review, use first
+    clientId    = [...candidates][0];
+    matchStatus = 'needs_review';
+  }
+
+  // ── 2. Create client if not found ──────────────────────────────────────────
   if (!clientId) {
     const { data: newClient, error } = await sb
       .from('clients')
@@ -46,7 +54,8 @@ async function runIntakeAgent({ submission, sb, ip }) {
       .single();
 
     if (error) throw new Error(`Could not create client: ${error.message}`);
-    clientId = newClient.id;
+    clientId    = newClient.id;
+    matchStatus = 'unmatched'; // new client, no prior record
   }
 
   // ── 3. Create a pending session ───────────────────────────────────
@@ -80,13 +89,25 @@ async function runIntakeAgent({ submission, sb, ip }) {
   }
 
   // ── 5. Mark submission processed ─────────────────────────────────
-  await sb.from('intake_submissions').update({
+  const coreUpdate = {
     processed:     true,
     processed_at:  new Date().toISOString(),
     client_id:     clientId,
     session_id:    session.id,
     agent_summary: agentSummary,
-  }).eq('id', submission.id);
+    match_status:  matchStatus,
+    matched_at:    matchStatus === 'matched' || matchStatus === 'needs_review'
+                     ? new Date().toISOString() : null,
+  };
+  const { error: updateErr } = await sb.from('intake_submissions').update(coreUpdate).eq('id', submission.id);
+  // If Sprint 2 migration not yet run, retry without new columns so processed=true is always saved
+  if (updateErr && (updateErr.message.includes('column') || updateErr.code === '42703')) {
+    const { match_status: _ms, matched_at: _ma, ...baseUpdate } = coreUpdate;
+    const { error: fallbackErr } = await sb.from('intake_submissions').update(baseUpdate).eq('id', submission.id);
+    if (fallbackErr) console.error('[intake-agent] Failed to mark submission processed:', fallbackErr.message);
+  } else if (updateErr) {
+    console.error('[intake-agent] Unexpected update error:', updateErr.message);
+  }
 
   return { clientId, sessionId: session.id, agentSummary };
 }
