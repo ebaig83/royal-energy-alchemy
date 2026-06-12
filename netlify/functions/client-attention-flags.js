@@ -159,14 +159,16 @@ function buildFallbackFlags(d) {
     flags.push({ label: 'Waiver Missing', severity: 'urgent',
       reason: 'No waiver tag found on the client record.',
       source: 'documents',
-      suggested_action: 'Collect a signed waiver before the next session.' });
+      suggested_action: 'Collect a signed waiver before the next session.',
+      sources: ['deterministic'] });
   }
 
   if (!d.intake || !d.intake.length) {
     flags.push({ label: 'Intake Missing', severity: 'urgent',
       reason: 'No intake submission found for this client.',
       source: 'intake',
-      suggested_action: 'Request intake form completion before the next session.' });
+      suggested_action: 'Request intake form completion before the next session.',
+      sources: ['deterministic'] });
   }
 
   if (d.sessions && d.sessions.length) {
@@ -180,7 +182,8 @@ function buildFallbackFlags(d) {
         flags.push({ label: 'No Session in 60 Days', severity: 'warning',
           reason: `Records indicate no session in the past ${days} days.`,
           source: 'sessions',
-          suggested_action: 'Consider a check-in or outreach message.' });
+          suggested_action: 'Consider a check-in or outreach message.',
+          sources: ['deterministic'] });
       }
     }
     const unpaid = d.sessions.filter(s =>
@@ -190,13 +193,15 @@ function buildFallbackFlags(d) {
       flags.push({ label: 'Unpaid Sessions', severity: 'warning',
         reason: `${unpaid.length} completed session(s) show no payment recorded.`,
         source: 'sessions',
-        suggested_action: 'Reconcile payment status in session log.' });
+        suggested_action: 'Reconcile payment status in session log.',
+        sources: ['deterministic'] });
     }
   } else {
     flags.push({ label: 'No Sessions Recorded', severity: 'info',
       reason: 'No session records found for this client.',
       source: 'sessions',
-      suggested_action: 'Add a session record after the first appointment.' });
+      suggested_action: 'Add a session record after the first appointment.',
+      sources: ['deterministic'] });
   }
 
   const overdue = (d.followUps || []).filter(f => {
@@ -208,12 +213,13 @@ function buildFallbackFlags(d) {
       const dt = (f.date || f.scheduled_for || '').slice(0, 10);
       return Math.floor((new Date(today) - new Date(dt)) / 86400000);
     }));
-    const sev = maxDays >= 30 ? 'urgent' : maxDays >= 14 ? 'urgent' : 'warning';
-    const sevLabel = maxDays >= 30 ? 'critical (30+ days)' : maxDays >= 14 ? 'urgent (14+ days)' : 'warning';
+    const sev = maxDays >= 30 ? 'urgent' : 'warning';
+    const sevLabel = maxDays >= 30 ? 'critical (30+ days)' : maxDays >= 14 ? 'urgent (14+ days)' : '';
     flags.push({ label: 'Follow-Up Overdue', severity: sev,
-      reason: `${overdue.length} follow-up item(s) past scheduled date — most overdue: ${maxDays} days (${sevLabel}).`,
+      reason: `${overdue.length} follow-up item(s) past scheduled date — most overdue: ${maxDays} days${sevLabel ? ' (' + sevLabel + ')' : ''}.`,
       source: 'followups',
-      suggested_action: 'Review and update follow-up status immediately.' });
+      suggested_action: 'Review and update follow-up status immediately.',
+      sources: ['deterministic'] });
   }
 
   const outstandingRecs = (d.recommendations || []).filter(r =>
@@ -223,56 +229,65 @@ function buildFallbackFlags(d) {
     flags.push({ label: 'Recommendations Pending', severity: 'info',
       reason: `${outstandingRecs.length} recommendations have no outcome recorded.`,
       source: 'recommendations',
-      suggested_action: 'Follow up on recommendation status at next session.' });
+      suggested_action: 'Follow up on recommendation status at next session.',
+      sources: ['deterministic'] });
   }
 
-  // No measurable improvement flag
+  // Risk: No Improvement — requires 3 sessions with valid state data where state_after <= state_before
+  // Severity: urgent (high risk per spec)
   const sessionsWithState = (d.sessions || [])
-    .filter(s => s.state_before != null && s.state_after != null)
+    .filter(s => s.state_before != null && s.state_after != null &&
+                 s.state_before >= 1 && s.state_before <= 5 &&
+                 s.state_after  >= 1 && s.state_after  <= 5)
     .sort((a, b) => (b.session_date || '') > (a.session_date || '') ? 1 : -1);
-  if (sessionsWithState.length >= 2) {
+  if (sessionsWithState.length >= 3) {
     const recent = sessionsWithState.slice(0, 3);
-    const noImprovement = recent.every(s => s.state_after <= s.state_before);
-    if (noImprovement) {
-      flags.push({ label: 'No Measurable Improvement', severity: 'warning',
-        reason: `Records indicate state_after has not exceeded state_before in the last ${recent.length} tracked sessions.`,
+    if (recent.every(s => s.state_after <= s.state_before)) {
+      flags.push({ label: 'No Measurable Improvement', severity: 'urgent',
+        reason: `Records indicate state_after has not exceeded state_before across the last 3 tracked sessions.`,
         source: 'sessions',
-        suggested_action: 'Consider reviewing session approach or checking in on client experience.' });
+        suggested_action: 'Consider reviewing session approach or checking in on client experience.',
+        sources: ['deterministic'] });
     }
   }
 
-  // Recommendation feedback gap: purchased but no outcome after 14 days
+  // Risk: Recommendation Feedback Gap — purchased OR tried with no further outcome after 14 days
+  // Severity: warning (medium risk per spec)
   const purchasedNoOutcome = (d.recommendations || []).filter(r => {
-    if (r.purchased !== 'yes' && r.outcome_status !== 'purchased') return false;
-    if (r.outcome_status && r.outcome_status !== 'purchased') return false;
+    const status = r.outcome_status || '';
+    if (status !== 'purchased' && status !== 'tried') return false;
     const recDate = (r.recommended_at || r.created_at || '').slice(0, 10);
     if (!recDate) return false;
-    const daysSince = Math.floor((new Date(today) - new Date(recDate)) / 86400000);
-    return daysSince >= 14;
+    return Math.floor((new Date(today) - new Date(recDate)) / 86400000) >= 14;
   });
   if (purchasedNoOutcome.length > 0) {
     flags.push({ label: 'Recommendation Feedback Gap', severity: 'warning',
-      reason: `${purchasedNoOutcome.length} purchased recommendation(s) have no outcome recorded after 14+ days.`,
+      reason: `${purchasedNoOutcome.length} recommendation(s) marked purchased or tried have no outcome recorded after 14+ days.`,
       source: 'recommendations',
-      suggested_action: 'Ask client about their experience with the recommended product at next session.' });
+      suggested_action: 'Ask client about their experience with the recommended product at next session.',
+      sources: ['deterministic'] });
   }
 
-  // Follow-up risk flag: 3+ overdue for same client
-  if (overdue.length >= 3) {
-    flags.push({ label: 'Follow-Up Risk', severity: 'urgent',
-      reason: `${overdue.length} follow-up items are overdue — pattern suggests follow-up process may need review.`,
+  // Risk: Follow-Up Risk — 2+ overdue follow-ups
+  // Severity: warning (medium risk per spec)
+  if (overdue.length >= 2) {
+    flags.push({ label: 'Follow-Up Risk', severity: 'warning',
+      reason: `${overdue.length} follow-up items are overdue — pattern suggests follow-up process may need attention.`,
       source: 'followups',
-      suggested_action: 'Review all overdue follow-ups in the Follow-Up Center and complete or skip each one.' });
+      suggested_action: 'Review all overdue follow-ups in the Follow-Up Center and complete or skip each one.',
+      sources: ['deterministic'] });
   }
 
   if (!flags.length) {
     flags.push({ label: 'Up To Date', severity: 'success',
       reason: 'No immediate attention items found from the available record.',
       source: 'all',
-      suggested_action: '' });
+      suggested_action: '',
+      sources: ['deterministic'] });
   }
 
-  return flags;
+  // Ensure all flags have sources array
+  return flags.map(f => f.sources ? f : { ...f, sources: ['deterministic'] });
 }
 
 exports.handler = async (event) => {
@@ -323,53 +338,57 @@ exports.handler = async (event) => {
 };
 
 // Merge deterministic flags (always authoritative) with AI flags (additive).
-// Deterministic flags always appear. AI flags are added if they cover a concept
-// not already represented in the deterministic set (dedup by label similarity).
+//
+// Rules:
+//   1. All deterministic flags always appear with sources:['deterministic']
+//   2. When an AI flag covers the same concept as a deterministic flag,
+//      add 'ai' to that flag's sources array — do not create a duplicate entry
+//   3. AI flags covering genuinely new concepts are appended with sources:['ai']
+//   4. AI-only "Up To Date" / success flags are ignored when real flags exist
+//   5. Severity from the deterministic flag is authoritative; it is never overridden by AI
+//
+// Output shape per flag:
+//   { label, severity, reason, source, suggested_action, sources: ['deterministic'|'ai', ...] }
 function mergeFlags(deterministicFlags, aiFlags) {
-  // If only success flag from deterministic and AI has real flags, replace success
-  const detReal = deterministicFlags.filter(f => f.severity !== 'success');
-  const detSuccess = deterministicFlags.filter(f => f.severity === 'success');
-
-  // Normalize label for comparison: lowercase, strip spaces/punctuation
   const normalize = label => (label || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 
-  const detLabels = new Set(detReal.map(f => normalize(f.label)));
+  // Start with all deterministic flags (already have sources:['deterministic'])
+  const merged = deterministicFlags.map(f => ({ ...f, sources: f.sources || ['deterministic'] }));
 
-  // Concepts already covered by deterministic flags (broader match)
-  const detConcepts = new Set();
-  detReal.forEach(f => {
-    const n = normalize(f.label);
-    // add each word as a concept signal for broader dedup
-    n.split('').forEach((_, i) => {
-      if (n.length >= 4) detConcepts.add(n.slice(0, Math.max(4, Math.round(n.length * 0.6))));
-    });
-    detConcepts.add(n);
-  });
+  const detReal = merged.filter(f => f.severity !== 'success');
 
-  // Add AI flags that don't duplicate deterministic concepts
-  const addedAI = [];
-  aiFlags.forEach(f => {
-    if (f.severity === 'success') return; // skip AI "up to date" if we have real flags
-    const n = normalize(f.label);
-    // Skip if exact label already present
-    if (detLabels.has(n)) return;
-    // Skip if a deterministic flag covers the same root concept (>60% char prefix overlap)
-    const isDup = detReal.some(det => {
-      const dn = normalize(det.label);
-      const minLen = Math.min(n.length, dn.length);
-      if (minLen < 4) return false;
+  // Concept match: two labels are the "same concept" when one normalised form
+  // contains at least 60% of the other's characters as a prefix, or shares a
+  // key root word (follow, improvement, recommendation, waiver, intake, unpaid).
+  const ROOT_WORDS = ['follow', 'improvement', 'overdue', 'recommendation', 'waiver', 'intake', 'unpaid', 'session'];
+  function sameConcept(labelA, labelB) {
+    const a = normalize(labelA);
+    const b = normalize(labelB);
+    if (a === b) return true;
+    const minLen = Math.min(a.length, b.length);
+    if (minLen >= 4) {
       const overlap = Math.round(minLen * 0.6);
-      return n.slice(0, overlap) === dn.slice(0, overlap);
-    });
-    if (!isDup) addedAI.push({ ...f, source: f.source || 'ai', _fromAI: true });
+      if (a.slice(0, overlap) === b.slice(0, overlap)) return true;
+    }
+    return ROOT_WORDS.some(w => a.includes(w) && b.includes(w));
+  }
+
+  aiFlags.forEach(af => {
+    // Ignore AI success flags when real deterministic flags exist
+    if (af.severity === 'success' && detReal.length > 0) return;
+
+    // Find matching deterministic flag
+    const match = detReal.find(df => sameConcept(df.label, af.label));
+    if (match) {
+      // Merge: add 'ai' to sources, keep deterministic label and severity
+      if (!match.sources.includes('ai')) match.sources.push('ai');
+    } else {
+      // New concept from AI — append with sources:['ai']
+      merged.push({ ...af, sources: ['ai'] });
+    }
   });
 
-  const merged = [...detReal, ...addedAI];
-
-  // If nothing at all, return success
-  if (merged.length === 0) return detSuccess.length ? detSuccess : aiFlags;
-
-  // Sort by severity: urgent → warning → info → success
+  // Sort: urgent → warning → info → success
   const order = { urgent: 0, warning: 1, info: 2, success: 3 };
   merged.sort((a, b) => (order[a.severity] ?? 2) - (order[b.severity] ?? 2));
 

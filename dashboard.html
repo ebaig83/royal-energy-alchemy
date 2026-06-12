@@ -2047,37 +2047,48 @@ async function loadAnalyticsIntelligence() {
     const rec = recRes.ok  ? await recRes.json()  : null;
     const out = outRes.ok  ? await outRes.json()  : null;
 
+    function isInsufficient(data) { return data && data.status === 'insufficient_data'; }
+    function insufficientSub(data, noun) {
+      if (!data || !isInsufficient(data)) return null;
+      return `Need ${data.minimumRequired} ${noun || 'records'} (have ${data.currentCount})`;
+    }
+
     // Metric 1: Avg Session Improvement
-    const avgImp = out?.avgImprovement != null ? (out.avgImprovement > 0 ? '+' : '') + out.avgImprovement : null;
-    const impColor = out?.avgImprovement > 0 ? '#22c98a' : out?.avgImprovement < 0 ? '#ff6b6b' : '#dddaee';
-    const impSub = out?.sessionsWithStateData ? `from ${out.sessionsWithStateData} tracked sessions` : null;
+    const outInsuf = isInsufficient(out);
+    const avgImp     = outInsuf ? null : (out?.avgImprovement != null ? (out.avgImprovement > 0 ? '+' : '') + out.avgImprovement : null);
+    const impColor   = out?.avgImprovement > 0 ? '#22c98a' : out?.avgImprovement < 0 ? '#ff6b6b' : '#dddaee';
+    const impSub     = outInsuf ? insufficientSub(out, 'scored sessions') : (out?.sessionsWithStateData ? `from ${out.sessionsWithStateData} tracked sessions` : null);
 
     // Metric 2: Repeat Client %
+    const retInsuf   = isInsufficient(ret);
     const repeatRate = ret?.repeatRate != null ? ret.repeatRate + '%' : null;
-    const repeatSub = ret?.repeatClients != null ? `${ret.repeatClients} of ${ret.totalClients} clients` : null;
+    const repeatSub  = ret?.repeatClients != null ? `${ret.repeatClients} of ${ret.totalClients} clients` : null;
 
     // Metric 3: Follow-Up Completion %
     const followComp = ret?.followUpCompletion != null ? ret.followUpCompletion + '%' : null;
 
     // Metric 4: Top Recommendation
-    const topRec = rec?.topRecommendations?.[0]?.name || null;
-    const topRecSub = rec?.topRecommendations?.[0] ? `${rec.topRecommendations[0].recommendedCount}× recommended` : null;
+    const recInsuf   = isInsufficient(rec);
+    const topRec     = recInsuf ? null : (rec?.topRecommendations?.[0]?.name || null);
+    const topRecSub  = recInsuf ? insufficientSub(rec, 'recommendations with outcomes') : (rec?.topRecommendations?.[0] ? `${rec.topRecommendations[0].recommendedCount}× recommended` : null);
 
     // Metric 5: Recommendation Success Rate (helpful / purchased across all)
     let recSuccessRate = null, recSuccessSub = null;
-    if (rec?.topRecommendations?.length) {
+    if (recInsuf) {
+      recSuccessSub = insufficientSub(rec, 'recommendations with outcomes');
+    } else if (rec?.topRecommendations?.length) {
       const totalPurchased = rec.topRecommendations.reduce((s, r) => s + (r.purchased || 0), 0);
       const totalHelpful   = rec.topRecommendations.reduce((s, r) => s + (r.helpful || 0), 0);
       if (totalPurchased > 0) {
         recSuccessRate = Math.round((totalHelpful / totalPurchased) * 100) + '%';
-        recSuccessSub = `${totalHelpful} helpful of ${totalPurchased} purchased`;
+        recSuccessSub  = `${totalHelpful} helpful of ${totalPurchased} purchased`;
       }
     }
 
     // Metric 6: Most Effective Service
-    const topSvc = out?.servicePerformance?.[0];
+    const topSvc    = outInsuf ? null : out?.servicePerformance?.[0];
     const topSvcVal = topSvc ? topSvc.service : null;
-    const topSvcSub = topSvc ? `avg +${topSvc.avgImprovement} improvement` : null;
+    const topSvcSub = topSvc ? `avg +${topSvc.avgImprovement} improvement` : (outInsuf ? insufficientSub(out, 'scored sessions') : null);
 
     container.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px">
       ${cardVal('Avg Session Improvement', avgImp, impSub, impColor)}

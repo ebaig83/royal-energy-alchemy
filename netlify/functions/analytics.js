@@ -3,9 +3,22 @@
 // GET ?section=outcomes          — Outcome Intelligence (state_before/state_after)
 // GET ?section=retention         — Retention Intelligence
 // GET ?section=cross-client      — Cross-Client Intelligence (NO PII)
+// GET ?section=data-quality      — Data Quality Audit
 
 const { requireAdmin, respond } = require('./lib/auth');
 const { getClient }             = require('./lib/supabase');
+
+// Minimum sample sizes — never calculate metrics below these thresholds
+const MIN = {
+  OUTCOME_SESSIONS:    3,  // completed sessions with state_before + state_after
+  REC_WITH_OUTCOME:    3,  // recommendations with a non-pending outcome_status
+  RETENTION_CLIENTS:   3,  // clients with 2+ completed sessions
+  CROSS_CLIENT_RECORDS: 5, // aggregate records for cross-client intelligence
+};
+
+function insufficientData(minimumRequired, currentCount, context) {
+  return { status: 'insufficient_data', minimumRequired, currentCount, context };
+}
 
 exports.handler = async function(event) {
   if (event.httpMethod === 'OPTIONS') return respond(200, {});
@@ -18,7 +31,7 @@ exports.handler = async function(event) {
   const section = (event.queryStringParameters || {}).section;
 
   if (!section) {
-    return respond(400, { error: 'section is required: recommendations | outcomes | retention | cross-client' });
+    return respond(400, { error: 'section is required: recommendations | outcomes | retention | cross-client | data-quality' });
   }
 
   try {
@@ -26,6 +39,7 @@ exports.handler = async function(event) {
     if (section === 'outcomes')        return respond(200, await outcomeIntelligence(sb));
     if (section === 'retention')       return respond(200, await retentionIntelligence(sb));
     if (section === 'cross-client')    return respond(200, await crossClientIntelligence(sb));
+    if (section === 'data-quality')    return respond(200, await dataQualityAudit(sb));
     return respond(400, { error: `Unknown section: ${section}` });
   } catch (err) {
     console.error('[analytics] Error in section', section, err.message);
@@ -42,7 +56,14 @@ async function recommendationIntelligence(sb) {
 
   if (error) throw new Error(error.message);
   if (!recs || recs.length === 0) {
-    return { topRecommendations: [], conversionRates: {}, successRates: {}, trendData: [] };
+    return insufficientData(MIN.REC_WITH_OUTCOME, 0, 'No recommendations found');
+  }
+
+  // Count recommendations with a meaningful (non-pending) outcome
+  const ALLOWED_OUTCOMES = ['purchased', 'tried', 'helpful', 'not_helpful', 'declined'];
+  const recsWithOutcome = recs.filter(r => ALLOWED_OUTCOMES.includes(r.outcome_status));
+  if (recsWithOutcome.length < MIN.REC_WITH_OUTCOME) {
+    return insufficientData(MIN.REC_WITH_OUTCOME, recsWithOutcome.length, 'Recommendations with recorded outcomes');
   }
 
   // Top recommendations by frequency
@@ -67,7 +88,7 @@ async function recommendationIntelligence(sb) {
       const notHelpful = o.not_helpful || 0;
       const declined   = o.declined   || 0;
       const convRate   = count > 0 ? Math.round((purchased / count) * 100) : 0;
-      const successRate = purchased > 0 ? Math.round(((helpful) / purchased) * 100) : null;
+      const successRate = purchased > 0 ? Math.round((helpful / purchased) * 100) : null;
       return { name, recommendedCount: count, purchased, helpful, notHelpful, declined, conversionRate: convRate, successRate };
     });
 
@@ -90,35 +111,30 @@ async function recommendationIntelligence(sb) {
 
   // Trend: recommendations per week (last 8 weeks)
   const now = Date.now();
-  const weekBuckets = Array.from({ length: 8 }, (_, i) => {
+  const trendData = Array.from({ length: 8 }, (_, i) => {
     const end   = now - i * 7 * 86400000;
     const start = end - 7 * 86400000;
-    const label = new Date(start).toISOString().slice(0, 10);
     const count = recs.filter(r => {
       const t = new Date(r.recommended_at || r.created_at).getTime();
       return t >= start && t < end;
     }).length;
-    return { week: label, count };
+    return { week: new Date(start).toISOString().slice(0, 10), count };
   }).reverse();
 
-  // Most/least helpful and most declined
   const mostPurchased = topRecommendations.slice().sort((a, b) => b.purchased - a.purchased)[0]?.name || null;
   const mostHelpful   = topRecommendations.slice().sort((a, b) => b.helpful - a.helpful)[0]?.name || null;
   const mostDeclined  = topRecommendations.slice().sort((a, b) => b.declined - a.declined)[0]?.name || null;
 
-  // Avg days to outcome (for items that have outcome_date and recommended_at)
   const withDays = recs.filter(r => r.outcome_date && r.recommended_at);
   const avgDaysToOutcome = withDays.length > 0
-    ? Math.round(withDays.reduce((sum, r) => {
-        return sum + (new Date(r.outcome_date) - new Date(r.recommended_at)) / 86400000;
-      }, 0) / withDays.length)
+    ? Math.round(withDays.reduce((sum, r) => sum + (new Date(r.outcome_date) - new Date(r.recommended_at)) / 86400000, 0) / withDays.length)
     : null;
 
   return {
     topRecommendations,
     conversionRates,
     successRates,
-    trendData: weekBuckets,
+    trendData,
     summary: { mostPurchased, mostHelpful, mostDeclined, avgDaysToOutcome, totalRecommendations: recs.length },
   };
 }
@@ -132,18 +148,28 @@ async function outcomeIntelligence(sb) {
     .order('session_date', { ascending: false });
 
   if (error) throw new Error(error.message);
-  if (!sessions || sessions.length === 0) {
-    return { avgImprovement: null, servicePerformance: [], locationPerformance: [], trends: [] };
+
+  const totalCompleted = (sessions || []).length;
+  // Only valid if both state values are present and in range 1-5
+  const withState = (sessions || []).filter(s =>
+    s.state_before != null && s.state_after != null &&
+    s.state_before >= 1 && s.state_before <= 5 &&
+    s.state_after  >= 1 && s.state_after  <= 5
+  );
+
+  if (withState.length < MIN.OUTCOME_SESSIONS) {
+    return {
+      ...insufficientData(MIN.OUTCOME_SESSIONS, withState.length, 'Completed sessions with both pre- and post-session state scores'),
+      totalCompleted,
+      message: 'Outcome analytics will become available after 3 completed sessions contain both pre-session and post-session state scores.',
+    };
   }
 
-  const withState = sessions.filter(s => s.state_before != null && s.state_after != null);
+  const avgImprovement = Math.round(
+    (withState.reduce((sum, s) => sum + (s.state_after - s.state_before), 0) / withState.length) * 100
+  ) / 100;
 
-  // Overall avg improvement
-  const avgImprovement = withState.length > 0
-    ? Math.round((withState.reduce((sum, s) => sum + (s.state_after - s.state_before), 0) / withState.length) * 100) / 100
-    : null;
-
-  // Service performance
+  // Service performance — only include services with ≥ 1 valid session
   const serviceMap = {};
   withState.forEach(s => {
     const svc = s.service || 'General';
@@ -176,12 +202,11 @@ async function outcomeIntelligence(sb) {
     avgImprovement: Math.round((s.improvementSum / s.total) * 100) / 100,
   }));
 
-  // Improvement trend over last 8 weeks (avg delta per week)
+  // Weekly improvement trend (only weeks with data contribute)
   const now = Date.now();
   const trends = Array.from({ length: 8 }, (_, i) => {
     const end   = now - i * 7 * 86400000;
     const start = end - 7 * 86400000;
-    const week  = new Date(start).toISOString().slice(0, 10);
     const inWindow = withState.filter(s => {
       const t = new Date(s.session_date).getTime();
       return t >= start && t < end;
@@ -189,15 +214,14 @@ async function outcomeIntelligence(sb) {
     const avg = inWindow.length > 0
       ? Math.round((inWindow.reduce((sum, s) => sum + (s.state_after - s.state_before), 0) / inWindow.length) * 100) / 100
       : null;
-    return { week, sessions: inWindow.length, avgImprovement: avg };
+    return { week: new Date(start).toISOString().slice(0, 10), sessions: inWindow.length, avgImprovement: avg };
   }).reverse();
 
-  return { avgImprovement, servicePerformance, locationPerformance, trends, sessionsWithStateData: withState.length, totalCompleted: sessions.length };
+  return { avgImprovement, servicePerformance, locationPerformance, trends, sessionsWithStateData: withState.length, totalCompleted };
 }
 
 // ── PHASE 4: RETENTION INTELLIGENCE ─────────────────────────────────────────
 async function retentionIntelligence(sb) {
-  // Sessions and aftercare in parallel
   const [sessRes, acRes] = await Promise.all([
     sb.from('sessions').select('id, client_id, session_date, status').order('session_date', { ascending: true }),
     sb.from('aftercare').select('id, client_id, status, scheduled_for, followup_type'),
@@ -209,11 +233,7 @@ async function retentionIntelligence(sb) {
   const sessions = (sessRes.data || []).filter(s => s.status === 'completed');
   const aftercare = acRes.data || [];
 
-  if (sessions.length === 0) {
-    return { repeatRate: 0, avgSessions: 0, followUpCompletion: 0, rebookingRate: null, retentionScores: [] };
-  }
-
-  // Client session counts
+  // Client session map
   const clientSessions = {};
   sessions.forEach(s => {
     if (!s.client_id) return;
@@ -221,28 +241,44 @@ async function retentionIntelligence(sb) {
     clientSessions[s.client_id].push(s.session_date);
   });
 
-  const clientIds      = Object.keys(clientSessions);
-  const repeatClients  = clientIds.filter(id => clientSessions[id].length > 1).length;
-  const repeatRate     = clientIds.length > 0 ? Math.round((repeatClients / clientIds.length) * 100) : 0;
-  const avgSessions    = clientIds.length > 0 ? Math.round((sessions.length / clientIds.length) * 10) / 10 : 0;
+  const clientIds     = Object.keys(clientSessions);
+  const repeatClients = clientIds.filter(id => clientSessions[id].length > 1).length;
+  const totalClients  = clientIds.length;
 
-  // Avg days between sessions per client
+  // Follow-up completion — can be computed regardless of session count
+  const sent               = aftercare.filter(a => a.status === 'sent');
+  const followUpCompletion = aftercare.length > 0 ? Math.round((sent.length / aftercare.length) * 100) : 0;
+
+  // Basic metrics always available if any sessions exist
+  const repeatRate  = totalClients > 0 ? Math.round((repeatClients / totalClients) * 100) : 0;
+  const avgSessions = totalClients > 0 ? Math.round((sessions.length / totalClients) * 10) / 10 : 0;
+
+  // Guard: retention scores require MIN.RETENTION_CLIENTS clients with 2+ sessions
+  if (repeatClients < MIN.RETENTION_CLIENTS) {
+    return {
+      repeatRate,
+      avgSessions,
+      followUpCompletion,
+      rebookingRate: null,
+      retentionScores: insufficientData(MIN.RETENTION_CLIENTS, repeatClients, 'Clients with 2+ completed sessions for retention scoring'),
+      totalClients,
+      repeatClients,
+    };
+  }
+
+  // Avg days between sessions
   const allGaps = [];
   clientIds.forEach(id => {
     const dates = clientSessions[id].sort();
     for (let i = 1; i < dates.length; i++) {
-      const gap = (new Date(dates[i]) - new Date(dates[i - 1])) / 86400000;
-      allGaps.push(gap);
+      allGaps.push((new Date(dates[i]) - new Date(dates[i - 1])) / 86400000);
     }
   });
-  const avgDaysBetweenSessions = allGaps.length > 0 ? Math.round(allGaps.reduce((a, b) => a + b, 0) / allGaps.length) : null;
+  const avgDaysBetweenSessions = allGaps.length > 0
+    ? Math.round(allGaps.reduce((a, b) => a + b, 0) / allGaps.length)
+    : null;
 
-  // Follow-up completion rate
-  const nonSkipped       = aftercare.filter(a => a.status !== 'scheduled'); // sent or skipped
-  const sent             = aftercare.filter(a => a.status === 'sent');
-  const followUpCompletion = aftercare.length > 0 ? Math.round((sent.length / aftercare.length) * 100) : 0;
-
-  // Rebook rate: clients who had a follow-up sent and then booked another session
+  // Rebook rate
   const clientsWithSentFollowUp = new Set(sent.map(a => a.client_id).filter(Boolean));
   let rebookCount = 0;
   clientsWithSentFollowUp.forEach(clientId => {
@@ -255,7 +291,6 @@ async function retentionIntelligence(sb) {
     ? Math.round((rebookCount / clientsWithSentFollowUp.size) * 100)
     : null;
 
-  // Retention scores per client (simple: sessions completed / days since first session)
   const retentionScores = clientIds
     .filter(id => clientSessions[id].length >= 2)
     .map(id => {
@@ -264,13 +299,13 @@ async function retentionIntelligence(sb) {
       const lastDate  = new Date(dates[dates.length - 1]);
       const span      = Math.max(1, (lastDate - firstDate) / 86400000);
       const sessCount = dates.length;
-      const score     = Math.round((sessCount / (span / 30)) * 10) / 10; // sessions per month
+      const score     = Math.round((sessCount / (span / 30)) * 10) / 10;
       return { client_id: id, sessionCount: sessCount, spanDays: Math.round(span), sessionsPerMonth: score };
     })
     .sort((a, b) => b.sessionsPerMonth - a.sessionsPerMonth)
     .slice(0, 20);
 
-  return { repeatRate, avgSessions, avgDaysBetweenSessions, followUpCompletion, rebookingRate, retentionScores, totalClients: clientIds.length, repeatClients };
+  return { repeatRate, avgSessions, avgDaysBetweenSessions, followUpCompletion, rebookingRate, retentionScores, totalClients, repeatClients };
 }
 
 // ── PHASE 5: CROSS-CLIENT INTELLIGENCE (NO PII) ──────────────────────────────
@@ -285,19 +320,24 @@ async function crossClientIntelligence(sb) {
   if (sessRes.error) throw new Error(sessRes.error.message);
   if (recRes.error)  throw new Error(recRes.error.message);
 
-  const sessions       = sessRes.data || [];
-  const recs           = recRes.data  || [];
-  const notes          = snRes.data   || [];
-  const aftercare      = acRes.data   || [];
+  const sessions  = sessRes.data || [];
+  const recs      = recRes.data  || [];
+  const notes     = snRes.data   || [];
+  const aftercare = acRes.data   || [];
 
-  // Top concerns from chief_concern field (session_notes)
+  // Guard: need MIN.CROSS_CLIENT_RECORDS aggregate service records
+  const serviceSet = new Set(sessions.map(s => s.service).filter(Boolean));
+  if (sessions.length < MIN.CROSS_CLIENT_RECORDS) {
+    return insufficientData(MIN.CROSS_CLIENT_RECORDS, sessions.length, 'Total session records for cross-client analysis');
+  }
+
+  // Top concerns — from chief_concern and snm_json.concerns
   const concernCounts = {};
   notes.forEach(n => {
     if (!n.chief_concern) return;
     const concern = n.chief_concern.trim().toLowerCase();
     concernCounts[concern] = (concernCounts[concern] || 0) + 1;
   });
-  // Also extract from snm_json.concerns array if present
   notes.forEach(n => {
     if (!n.snm_json) return;
     let snm = n.snm_json;
@@ -325,7 +365,7 @@ async function crossClientIntelligence(sb) {
     .slice(0, 10)
     .map(([service, count]) => ({ service, count }));
 
-  // Top recommendations (by name, no client data)
+  // Top recommendations (aggregate only — no client_id exposed)
   const recCounts = {};
   recs.forEach(r => {
     const name = r.product_name || 'Unknown';
@@ -336,8 +376,13 @@ async function crossClientIntelligence(sb) {
     .slice(0, 10)
     .map(([name, count]) => ({ name, count }));
 
-  // Effectiveness metrics — service vs improvement
-  const withState = sessions.filter(s => s.state_before != null && s.state_after != null && s.status === 'completed');
+  // Effectiveness: only include services with ≥ 1 session with valid state data
+  const withState = sessions.filter(s =>
+    s.state_before != null && s.state_after != null &&
+    s.state_before >= 1 && s.state_before <= 5 &&
+    s.state_after  >= 1 && s.state_after  <= 5 &&
+    s.status === 'completed'
+  );
   const serviceEffectiveness = {};
   withState.forEach(s => {
     const svc = s.service || 'General';
@@ -347,12 +392,14 @@ async function crossClientIntelligence(sb) {
     serviceEffectiveness[svc].sum += delta;
     if (delta > 0) serviceEffectiveness[svc].positive++;
   });
-  const effectivenessMetrics = Object.entries(serviceEffectiveness).map(([service, s]) => ({
-    service,
-    measuredSessions: s.count,
-    avgImprovement: Math.round((s.sum / s.count) * 100) / 100,
-    positiveOutcomeRate: Math.round((s.positive / s.count) * 100),
-  })).sort((a, b) => b.avgImprovement - a.avgImprovement);
+  const effectivenessMetrics = Object.entries(serviceEffectiveness)
+    .map(([service, s]) => ({
+      service,
+      measuredSessions: s.count,
+      avgImprovement: Math.round((s.sum / s.count) * 100) / 100,
+      positiveOutcomeRate: Math.round((s.positive / s.count) * 100),
+    }))
+    .sort((a, b) => b.avgImprovement - a.avgImprovement);
 
   // Follow-up type distribution (no PII)
   const followupTypes = {};
@@ -362,4 +409,141 @@ async function crossClientIntelligence(sb) {
   });
 
   return { topConcerns, topServices, topRecommendations, effectivenessMetrics, followupTypeDistribution: followupTypes };
+}
+
+// ── PHASE 8: DATA QUALITY AUDIT ─────────────────────────────────────────────
+async function dataQualityAudit(sb) {
+  const issues = [];
+  const exclusions = [];
+  let auditedAt = new Date().toISOString();
+
+  const [sessRes, recRes, clientRes, acRes] = await Promise.all([
+    sb.from('sessions').select('id, client_id, session_date, status, state_before, state_after, payment_status'),
+    sb.from('recommendations').select('id, client_id, product_name, outcome_status, recommended_at, created_at'),
+    sb.from('clients').select('id, email, phone, status, created_at'),
+    sb.from('aftercare').select('id, client_id, session_id, status, scheduled_for'),
+  ]);
+
+  if (sessRes.error)   throw new Error('sessions: ' + sessRes.error.message);
+  if (recRes.error)    throw new Error('recommendations: ' + recRes.error.message);
+  if (clientRes.error) throw new Error('clients: ' + clientRes.error.message);
+  if (acRes.error)     throw new Error('aftercare: ' + acRes.error.message);
+
+  const sessions    = sessRes.data   || [];
+  const recs        = recRes.data    || [];
+  const clients     = clientRes.data || [];
+  const aftercare   = acRes.data     || [];
+
+  const clientIdSet   = new Set(clients.map(c => c.id));
+  const sessionIdSet  = new Set(sessions.map(s => s.id));
+  const VALID_OUTCOMES = ['recommended', 'purchased', 'tried', 'helpful', 'not_helpful', 'declined'];
+  const now = new Date();
+  const staleThreshold = 90 * 86400000; // 90 days
+
+  // ── Sessions ─────────────────────────────────────────────────────
+  const completedSessions = sessions.filter(s => s.status === 'completed');
+  const missingStateScores = completedSessions.filter(s => s.state_before == null || s.state_after == null);
+  if (missingStateScores.length > 0) {
+    issues.push({ severity: 'High', table: 'sessions', issue: 'Missing state scores', count: missingStateScores.length, detail: `${missingStateScores.length} completed session(s) lack pre- or post-session state scores. These are excluded from outcome analytics.` });
+    missingStateScores.forEach(s => exclusions.push({ table: 'sessions', id: s.id, reason: 'Missing state_before or state_after' }));
+  }
+
+  const invalidState = sessions.filter(s =>
+    (s.state_before != null && (s.state_before < 1 || s.state_before > 5)) ||
+    (s.state_after  != null && (s.state_after  < 1 || s.state_after  > 5))
+  );
+  if (invalidState.length > 0) {
+    issues.push({ severity: 'Critical', table: 'sessions', issue: 'Invalid state score range', count: invalidState.length, detail: `${invalidState.length} session(s) have state scores outside the 1–5 scale. Excluded from all analytics.` });
+    invalidState.forEach(s => exclusions.push({ table: 'sessions', id: s.id, reason: 'State score out of 1-5 range' }));
+  }
+
+  const orphanedSessions = sessions.filter(s => s.client_id && !clientIdSet.has(s.client_id));
+  if (orphanedSessions.length > 0) {
+    issues.push({ severity: 'Critical', table: 'sessions', issue: 'Orphaned sessions (no client record)', count: orphanedSessions.length, detail: `${orphanedSessions.length} session(s) reference a client_id that does not exist.` });
+  }
+
+  const stalePending = sessions.filter(s => s.status === 'pending' && (now - new Date(s.session_date)) > staleThreshold);
+  if (stalePending.length > 0) {
+    issues.push({ severity: 'Medium', table: 'sessions', issue: 'Stale pending sessions (90+ days)', count: stalePending.length, detail: `${stalePending.length} session(s) in "pending" status older than 90 days.` });
+  }
+
+  // Duplicate sessions: same client_id + session_date
+  const sessionKeys = {};
+  sessions.forEach(s => {
+    const key = `${s.client_id}::${s.session_date}`;
+    sessionKeys[key] = (sessionKeys[key] || 0) + 1;
+  });
+  const dupSessionCount = Object.values(sessionKeys).filter(c => c > 1).length;
+  if (dupSessionCount > 0) {
+    issues.push({ severity: 'High', table: 'sessions', issue: 'Duplicate session entries', count: dupSessionCount, detail: `${dupSessionCount} client+date combination(s) appear more than once.` });
+  }
+
+  // ── Recommendations ──────────────────────────────────────────────
+  const invalidOutcomes = recs.filter(r => r.outcome_status && !VALID_OUTCOMES.includes(r.outcome_status));
+  if (invalidOutcomes.length > 0) {
+    issues.push({ severity: 'High', table: 'recommendations', issue: 'Invalid outcome_status values', count: invalidOutcomes.length, detail: `${invalidOutcomes.length} recommendation(s) have outcome_status values not in the allowed set.` });
+    invalidOutcomes.forEach(r => exclusions.push({ table: 'recommendations', id: r.id, reason: 'Invalid outcome_status: ' + r.outcome_status }));
+  }
+
+  const orphanedRecs = recs.filter(r => r.client_id && !clientIdSet.has(r.client_id));
+  if (orphanedRecs.length > 0) {
+    issues.push({ severity: 'Critical', table: 'recommendations', issue: 'Orphaned recommendations (no client record)', count: orphanedRecs.length, detail: `${orphanedRecs.length} recommendation(s) reference a client_id that does not exist.` });
+  }
+
+  // Purchased/tried with no further outcome after 30 days
+  const feedbackGap = recs.filter(r => {
+    if (r.outcome_status !== 'purchased' && r.outcome_status !== 'tried') return false;
+    const age = (now - new Date(r.recommended_at || r.created_at)) / 86400000;
+    return age > 30;
+  });
+  if (feedbackGap.length > 0) {
+    issues.push({ severity: 'Low', table: 'recommendations', issue: 'Purchased/tried without outcome follow-up (30+ days)', count: feedbackGap.length, detail: `${feedbackGap.length} recommendation(s) remain at "purchased" or "tried" status for 30+ days without a helpful/not_helpful outcome.` });
+  }
+
+  // ── Clients ──────────────────────────────────────────────────────
+  // Duplicate emails
+  const emailMap = {};
+  clients.forEach(c => { if (c.email) emailMap[c.email] = (emailMap[c.email] || 0) + 1; });
+  const dupEmails = Object.values(emailMap).filter(c => c > 1).length;
+  if (dupEmails > 0) {
+    issues.push({ severity: 'High', table: 'clients', issue: 'Duplicate client emails', count: dupEmails, detail: `${dupEmails} email address(es) appear on more than one client record.` });
+  }
+
+  // Duplicate phones
+  const phoneMap = {};
+  clients.forEach(c => {
+    if (!c.phone) return;
+    const norm = c.phone.replace(/\D/g, '');
+    if (norm.length >= 7) phoneMap[norm] = (phoneMap[norm] || 0) + 1;
+  });
+  const dupPhones = Object.values(phoneMap).filter(c => c > 1).length;
+  if (dupPhones > 0) {
+    issues.push({ severity: 'Medium', table: 'clients', issue: 'Duplicate client phone numbers', count: dupPhones, detail: `${dupPhones} phone number(s) appear on more than one client record.` });
+  }
+
+  // ── Aftercare ────────────────────────────────────────────────────
+  const orphanedAftercate = aftercare.filter(a => a.client_id && !clientIdSet.has(a.client_id));
+  if (orphanedAftercate.length > 0) {
+    issues.push({ severity: 'Critical', table: 'aftercare', issue: 'Orphaned follow-ups (no client record)', count: orphanedAftercate.length, detail: `${orphanedAftercate.length} follow-up(s) reference a client_id that does not exist.` });
+  }
+
+  const brokenSessionRefs = aftercare.filter(a => a.session_id && !sessionIdSet.has(a.session_id));
+  if (brokenSessionRefs.length > 0) {
+    issues.push({ severity: 'Medium', table: 'aftercare', issue: 'Broken session references', count: brokenSessionRefs.length, detail: `${brokenSessionRefs.length} follow-up(s) reference a session_id that does not exist.` });
+  }
+
+  // Sort by severity
+  const sevOrder = { Critical: 0, High: 1, Medium: 2, Low: 3 };
+  issues.sort((a, b) => (sevOrder[a.severity] ?? 4) - (sevOrder[b.severity] ?? 4));
+
+  const counts = { Critical: 0, High: 0, Medium: 0, Low: 0 };
+  issues.forEach(i => { if (counts[i.severity] !== undefined) counts[i.severity]++; });
+
+  return {
+    auditedAt,
+    summary: { totalIssues: issues.length, ...counts },
+    issues,
+    exclusions: { totalExcluded: exclusions.length, records: exclusions },
+    status: issues.length === 0 ? 'clean' : counts.Critical > 0 ? 'critical' : counts.High > 0 ? 'degraded' : 'acceptable',
+  };
 }
