@@ -1,38 +1,26 @@
 // Auth middleware for Netlify Functions.
-// Verifies the Supabase JWT sent in the Authorization header.
-// Every admin-only function calls requireAdmin(event) first.
+// Verifies the X-Dashboard-Token header against DASHBOARD_API_SECRET.
+// The token is issued by verify-pin on successful PIN entry and stored
+// client-side in sessionStorage (rea_api_token). DASHBOARD_API_SECRET
+// never leaves the server — the PIN never appears in API requests.
 
-const { createClient } = require('@supabase/supabase-js');
-
-async function requireAdmin(event) {
-  const authHeader = event.headers['authorization'] || event.headers['Authorization'] || '';
-  const token = authHeader.replace(/^Bearer\s+/i, '').trim();
-
-  if (!token) {
-    return { error: respond(401, { error: 'No authorization token provided.' }) };
+function requireAdmin(event) {
+  const secret = process.env.DASHBOARD_API_SECRET;
+  if (!secret) {
+    return { error: respond(500, { error: 'DASHBOARD_API_SECRET is not configured.' }) };
   }
 
-  const url = process.env.SUPABASE_URL;
-  const anonKey = process.env.SUPABASE_ANON_KEY;
-  if (!url || !anonKey) {
-    return { error: respond(500, { error: 'Auth configuration missing.' }) };
+  const token = (
+    event.headers['x-dashboard-token'] ||
+    event.headers['X-Dashboard-Token'] ||
+    ''
+  ).trim();
+
+  if (!token || token !== secret) {
+    return { error: respond(401, { error: 'Unauthorized.' }) };
   }
 
-  // Use the anon key client just to verify the JWT — not to query data
-  const client = createClient(url, anonKey, { auth: { persistSession: false } });
-  const { data, error } = await client.auth.getUser(token);
-
-  if (error || !data?.user) {
-    return { error: respond(401, { error: 'Invalid or expired session. Please log in again.' }) };
-  }
-
-  // Only allow the admin email (Daron's account)
-  const adminEmail = process.env.ADMIN_EMAIL || 'droyal168@gmail.com';
-  if (data.user.email !== adminEmail) {
-    return { error: respond(403, { error: 'Access denied.' }) };
-  }
-
-  return { user: data.user };
+  return { user: { email: process.env.ADMIN_EMAIL || 'droyal168@gmail.com' } };
 }
 
 function respond(status, body) {

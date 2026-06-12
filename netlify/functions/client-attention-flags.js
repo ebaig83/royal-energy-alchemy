@@ -1,0 +1,255 @@
+// /.netlify/functions/client-attention-flags
+// Evaluates existing client data and returns structured attention flags.
+// Never diagnoses. Uses only supplied data. Returns JSON only.
+
+const https = require('https');
+
+const SYSTEM_PROMPT = `You are a documentation assistant for a holistic energy healing practitioner. Evaluate the client record below and return structured attention flags.
+
+Rules you must follow without exception:
+- Use only the data provided. Do not invent, infer, or speculate.
+- Never diagnose or suggest any medical, psychological, or clinical condition.
+- Use practitioner-safe language: "client reports," "records indicate," "documentation appears missing," "follow-up may be useful," "recommendation appears incomplete."
+- Write in third person.
+- Return ONLY valid JSON — no markdown, no prose outside the JSON.
+
+Severity levels:
+- "urgent": missing required documentation, overdue critical items
+- "warning": pending items, no recent contact, incomplete follow-through
+- "info": optional improvements, low-priority notices
+- "success": only use when no issues exist at all — label "Up To Date"
+
+Return this exact structure:
+{
+  "flags": [
+    {
+      "label": "string (short, 2-5 words)",
+      "severity": "urgent | warning | info | success",
+      "reason": "one sentence using practitioner-safe language",
+      "source": "intake | sessions | recommendations | followups | documents | environment | timeline | all",
+      "suggested_action": "one sentence or empty string if success"
+    }
+  ]
+}
+
+If no issues are found, return exactly:
+{
+  "flags": [{ "label": "Up To Date", "severity": "success", "reason": "No immediate attention items found from the available record.", "source": "all", "suggested_action": "" }]
+}`;
+
+function callClaude(payload) {
+  return new Promise((resolve, reject) => {
+    const body = JSON.stringify({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 900,
+      system: SYSTEM_PROMPT,
+      messages: [{ role: 'user', content: buildPrompt(payload) }]
+    });
+
+    const req = https.request(
+      {
+        hostname: 'api.anthropic.com',
+        path: '/v1/messages',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.ANTHROPIC_API_KEY,
+          'anthropic-version': '2023-06-01',
+          'Content-Length': Buffer.byteLength(body)
+        }
+      },
+      (res) => {
+        let data = '';
+        res.on('data', chunk => data += chunk);
+        res.on('end', () => {
+          try { resolve(JSON.parse(data)); }
+          catch (e) { reject(new Error('Failed to parse Claude response')); }
+        });
+      }
+    );
+    req.on('error', reject);
+    req.write(body);
+    req.end();
+  });
+}
+
+function buildPrompt(d) {
+  const lines = [];
+  const today = d.today || new Date().toISOString().slice(0, 10);
+
+  lines.push(`CLIENT: ${d.clientName} | Status: ${d.status || 'active'} | Today: ${today}`);
+  lines.push(`TAGS: ${(d.clientTags || []).join(', ') || 'none'}`);
+
+  // Waiver / intake presence
+  const hasWaiver = (d.clientTags || []).some(t => t.toLowerCase() === 'waiver');
+  lines.push(`WAIVER ON FILE: ${hasWaiver ? 'yes' : 'no'}`);
+  lines.push(`INTAKE SUBMISSIONS: ${(d.intake || []).length}`);
+
+  // Sessions
+  if (d.sessions && d.sessions.length) {
+    const sorted = [...d.sessions].sort((a, b) =>
+      (b.session_date || '') > (a.session_date || '') ? 1 : -1
+    );
+    const last = sorted[0];
+    lines.push(`LAST SESSION: ${last.session_date || 'unknown'} | Status: ${last.status || '—'}`);
+    lines.push(`UNPAID SESSIONS: ${d.sessions.filter(s => s.status === 'completed' && s.payment_status !== 'paid' && s.payment_status !== 'exchange').length}`);
+  } else {
+    lines.push('SESSIONS: None recorded');
+  }
+
+  // Recommendations
+  const outstandingRecs = (d.recommendations || []).filter(r => r.purchased === 'unknown');
+  lines.push(`OUTSTANDING RECOMMENDATIONS: ${outstandingRecs.length}`);
+
+  // Follow-ups
+  const pendingFollowUps = (d.followUps || []);
+  if (pendingFollowUps.length) {
+    const overdue = pendingFollowUps.filter(f => {
+      const dt = f.date || f.scheduled_for || '';
+      return dt && dt < today;
+    });
+    lines.push(`PENDING FOLLOW-UPS: ${pendingFollowUps.length} (${overdue.length} overdue)`);
+  } else {
+    lines.push('PENDING FOLLOW-UPS: None');
+  }
+
+  // Notes presence
+  lines.push(`SESSION NOTES ON FILE: ${(d.notes || []).length}`);
+
+  // Plans
+  const activePlans = (d.plans || []).filter(p => p.status === 'active');
+  lines.push(`ACTIVE ACTION PLANS: ${activePlans.length}`);
+
+  // Environment
+  if (d.recentEnvironment && d.recentEnvironment.length) {
+    const latest = d.recentEnvironment[0];
+    lines.push(`MOST RECENT ENV ENTRY: ${latest.date || 'unknown'}`);
+  } else {
+    lines.push('ENVIRONMENTAL RECORDS: None');
+  }
+
+  lines.push('\nBased only on the data above, return the JSON attention flags. Return only JSON.');
+  return lines.join('\n');
+}
+
+// Deterministic fallback — used if AI call fails
+function buildFallbackFlags(d) {
+  const today = d.today || new Date().toISOString().slice(0, 10);
+  const flags = [];
+
+  const hasWaiver = (d.clientTags || []).some(t => t.toLowerCase() === 'waiver');
+  if (!hasWaiver) {
+    flags.push({ label: 'Waiver Missing', severity: 'urgent',
+      reason: 'No waiver tag found on the client record.',
+      source: 'documents',
+      suggested_action: 'Collect a signed waiver before the next session.' });
+  }
+
+  if (!d.intake || !d.intake.length) {
+    flags.push({ label: 'Intake Missing', severity: 'urgent',
+      reason: 'No intake submission found for this client.',
+      source: 'intake',
+      suggested_action: 'Request intake form completion before the next session.' });
+  }
+
+  if (d.sessions && d.sessions.length) {
+    const sorted = [...d.sessions].sort((a, b) =>
+      (b.session_date || '') > (a.session_date || '') ? 1 : -1
+    );
+    const lastDate = sorted[0].session_date;
+    if (lastDate) {
+      const days = Math.floor((Date.now() - new Date(lastDate).getTime()) / 86400000);
+      if (days > 60) {
+        flags.push({ label: 'No Session in 60 Days', severity: 'warning',
+          reason: `Records indicate no session in the past ${days} days.`,
+          source: 'sessions',
+          suggested_action: 'Consider a check-in or outreach message.' });
+      }
+    }
+    const unpaid = d.sessions.filter(s =>
+      s.status === 'completed' && s.payment_status !== 'paid' && s.payment_status !== 'exchange'
+    );
+    if (unpaid.length) {
+      flags.push({ label: 'Unpaid Sessions', severity: 'warning',
+        reason: `${unpaid.length} completed session(s) show no payment recorded.`,
+        source: 'sessions',
+        suggested_action: 'Reconcile payment status in session log.' });
+    }
+  } else {
+    flags.push({ label: 'No Sessions Recorded', severity: 'info',
+      reason: 'No session records found for this client.',
+      source: 'sessions',
+      suggested_action: 'Add a session record after the first appointment.' });
+  }
+
+  const overdue = (d.followUps || []).filter(f => {
+    const dt = f.date || f.scheduled_for || '';
+    return dt && dt < today;
+  });
+  if (overdue.length) {
+    flags.push({ label: 'Follow-Up Overdue', severity: 'warning',
+      reason: `${overdue.length} follow-up item(s) appear past their scheduled date.`,
+      source: 'followups',
+      suggested_action: 'Review and update the follow-up status.' });
+  }
+
+  const outstandingRecs = (d.recommendations || []).filter(r => r.purchased === 'unknown');
+  if (outstandingRecs.length > 2) {
+    flags.push({ label: 'Recommendations Pending', severity: 'info',
+      reason: `${outstandingRecs.length} recommendations have no outcome recorded.`,
+      source: 'recommendations',
+      suggested_action: 'Follow up on recommendation status at next session.' });
+  }
+
+  if (!flags.length) {
+    flags.push({ label: 'Up To Date', severity: 'success',
+      reason: 'No immediate attention items found from the available record.',
+      source: 'all',
+      suggested_action: '' });
+  }
+
+  return flags;
+}
+
+exports.handler = async (event) => {
+  if (event.httpMethod !== 'POST') {
+    return { statusCode: 405, body: JSON.stringify({ error: 'Method not allowed' }) };
+  }
+
+  const { requireAdmin } = require('./lib/auth');
+  const auth = requireAdmin(event);
+  if (auth.error) return auth.error;
+
+  let payload;
+  try { payload = JSON.parse(event.body || '{}'); }
+  catch { return { statusCode: 400, body: JSON.stringify({ error: 'Invalid request body' }) }; }
+
+  if (!payload.clientName) {
+    return { statusCode: 400, body: JSON.stringify({ error: 'clientName required' }) };
+  }
+
+  // If no API key, return deterministic flags
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return { statusCode: 200, body: JSON.stringify({ flags: buildFallbackFlags(payload), source: 'deterministic' }) };
+  }
+
+  try {
+    const result = await callClaude(payload);
+    const text = result?.content?.[0]?.text;
+    if (!text) throw new Error('Empty response');
+
+    let parsed;
+    try {
+      const cleaned = text.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/, '').trim();
+      parsed = JSON.parse(cleaned);
+    } catch {
+      // AI response wasn't valid JSON — fall back to deterministic
+      return { statusCode: 200, body: JSON.stringify({ flags: buildFallbackFlags(payload), source: 'deterministic' }) };
+    }
+
+    return { statusCode: 200, body: JSON.stringify({ flags: parsed.flags || [], source: 'ai' }) };
+  } catch (err) {
+    // AI unavailable — return deterministic flags rather than an error
+    return { statusCode: 200, body: JSON.stringify({ flags: buildFallbackFlags(payload), source: 'deterministic' }) };
+  }
+};

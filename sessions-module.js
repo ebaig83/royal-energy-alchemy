@@ -14,13 +14,13 @@
   var _openClientId = null;  // client_id of that session
 
   // ── API helper ────────────────────────────────────────────────────────────
-  function token() { return sessionStorage.getItem('rea_sb_token') || ''; }
+  function token() { return sessionStorage.getItem('rea_api_token') || ''; }
 
   async function api(path, opts) {
     opts = opts || {};
     var res = await fetch('/.netlify/functions' + path, Object.assign({}, opts, {
       headers: Object.assign(
-        { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token() },
+        { 'Content-Type': 'application/json', 'X-Dashboard-Token': token() },
         opts.headers || {}
       ),
     }));
@@ -59,9 +59,9 @@
 
   // ── Shared helpers ────────────────────────────────────────────────────────
   function badge(label, color) {
-    return '<span style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.3em;' +
+    return '<span style="font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:.25em;' +
       'text-transform:uppercase;color:' + color + ';background:' + color + '28;' +
-      'border:1px solid ' + color + '66;padding:2px 10px;border-radius:2px;white-space:nowrap">' +
+      'border:1px solid ' + color + ';padding:3px 12px;border-radius:2px;white-space:nowrap">' +
       label + '</span>';
   }
 
@@ -76,14 +76,14 @@
   }
 
   function snCompBadge(label, color) {
-    return '<span style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.25em;text-transform:uppercase;' +
-      'color:' + color + ';background:' + color + '18;border:1px solid ' + color + '55;' +
-      'padding:4px 12px;border-radius:2px;white-space:nowrap">' + label + '</span>';
+    return '<span style="font-family:\'Cinzel\',serif;font-size:12px;letter-spacing:.2em;text-transform:uppercase;' +
+      'color:' + color + ';background:' + color + '18;border:1px solid ' + color + ';' +
+      'padding:5px 14px;border-radius:2px;white-space:nowrap">' + label + '</span>';
   }
 
   function snMiniTag(label, color) {
-    return '<span style="font-family:\'Cinzel\',serif;font-size:8px;letter-spacing:.2em;text-transform:uppercase;' +
-      'color:' + color + ';border:1px solid ' + color + '44;padding:2px 7px;white-space:nowrap">' + label + '</span>';
+    return '<span style="font-family:\'Cinzel\',serif;font-size:10px;letter-spacing:.18em;text-transform:uppercase;' +
+      'color:' + color + ';border:1px solid ' + color + '66;padding:3px 9px;white-space:nowrap">' + label + '</span>';
   }
 
   function fmtDate(d) {
@@ -99,15 +99,15 @@
   function esc(s) { return (s || '').replace(/'/g, "\\'").replace(/"/g, '&quot;'); }
 
   function formLabel(txt) {
-    return '<div style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.3em;' +
-      'text-transform:uppercase;color:#e8b84baa;margin-bottom:5px">' + txt + '</div>';
+    return '<div style="font-family:\'Cinzel\',serif;font-size:13px;letter-spacing:.25em;' +
+      'text-transform:uppercase;color:#e8b84b;margin-bottom:7px">' + txt + '</div>';
   }
 
   function infoCell(label, val) {
     return '<div>' +
-      '<div style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.3em;text-transform:uppercase;' +
-        'color:#e8b84baa;margin-bottom:4px">' + label + '</div>' +
-      '<div style="font-family:\'EB Garamond\',serif;font-size:15px;color:#f0ecff">' + (val || '—') + '</div>' +
+      '<div style="font-family:\'Cinzel\',serif;font-size:12px;letter-spacing:.25em;text-transform:uppercase;' +
+        'color:#e8b84b;margin-bottom:5px">' + label + '</div>' +
+      '<div style="font-family:\'EB Garamond\',serif;font-size:18px;color:#f0ecff">' + (val || '—') + '</div>' +
     '</div>';
   }
 
@@ -195,34 +195,34 @@
       amtStr += ' (paid $' + parseFloat(s.amount_paid).toFixed(2) + ')';
     }
 
-    return '<div style="background:#0e0b1f;border:1px solid #e8b84b44;padding:18px 22px;' +
-      'margin-bottom:14px;cursor:pointer;transition:border-color .15s;' + dim + '"' +
-      ' onmouseover="this.style.borderColor=\'#e8b84b88\'" onmouseout="this.style.borderColor=\'#e8b84b44\'"' +
+    return '<div style="background:#0e0b1f;border:1px solid #e8b84b44;padding:22px 26px;' +
+      'margin-bottom:12px;cursor:pointer;transition:border-color .15s;' + dim + '"' +
+      ' onmouseover="this.style.borderColor=\'#e8b84b\'" onmouseout="this.style.borderColor=\'#e8b84b44\'"' +
       ' onclick="snOpenSession(\'' + esc(id) + '\')">' +
 
-      '<div style="display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap">' +
+      '<div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap">' +
         '<div style="flex:1;min-width:0">' +
-          '<div style="font-family:\'Cinzel\',serif;font-size:13px;letter-spacing:.06em;' +
-            'color:#f0ecff;font-weight:600;display:flex;align-items:center;gap:8px;flex-wrap:wrap">' +
+          '<div style="font-family:\'Cinzel\',serif;font-size:18px;letter-spacing:.05em;' +
+            'color:#fff;font-weight:600;display:flex;align-items:center;gap:10px;flex-wrap:wrap">' +
             name + ' ' + statusBadge(status) + ' ' + payBadge(pay) +
           '</div>' +
-          '<div style="font-family:\'EB Garamond\',serif;font-size:14px;color:#e8b84baa;margin-top:5px">' +
+          '<div style="font-family:\'EB Garamond\',serif;font-size:17px;color:#e8b84b;margin-top:7px">' +
             (s.session_date ? fmtDate(s.session_date) + ' · ' + fmtDay(s.session_date) : '(no date)') +
             (s.session_time ? ' · ' + s.session_time.slice(0,5) : '') +
             (s.service ? ' · ' + s.service : '') +
             (s.location_type ? ' · ' + (s.location_type === 'distance' ? 'Distance' : 'In Person') : '') +
           '</div>' +
-          (amtStr ? '<div style="font-family:\'EB Garamond\',serif;font-size:14px;color:#22c98acc;margin-top:3px">' + amtStr + '</div>' : '') +
+          (amtStr ? '<div style="font-family:\'EB Garamond\',serif;font-size:17px;color:#22c98a;margin-top:4px">' + amtStr + '</div>' : '') +
         '</div>' +
-        '<div style="display:flex;gap:6px;align-items:flex-start;flex-shrink:0">' +
+        '<div style="display:flex;gap:8px;align-items:flex-start;flex-shrink:0">' +
           (status !== 'completed'
             ? '<button onclick="event.stopPropagation();snMarkComplete(\'' + esc(id) + '\')" ' +
-                'style="font-family:\'Cinzel\',serif;font-size:8px;letter-spacing:.2em;text-transform:uppercase;' +
-                'background:#22c98a1a;border:1px solid #22c98a66;color:#22c98a;padding:5px 12px;cursor:pointer">✓ Complete</button>'
+                'style="font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;' +
+                'background:#22c98a1a;border:1px solid #22c98a;color:#22c98a;padding:7px 14px;cursor:pointer">✓ Complete</button>'
             : '') +
           '<button onclick="event.stopPropagation();snOpenSession(\'' + esc(id) + '\')" ' +
-            'style="font-family:\'Cinzel\',serif;font-size:8px;letter-spacing:.2em;text-transform:uppercase;' +
-            'background:#e8b84b0d;border:1px solid #e8b84b55;color:#e8b84b;padding:5px 12px;cursor:pointer">📝 Notes</button>' +
+            'style="font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;' +
+            'background:#e8b84b0d;border:1px solid #e8b84b;color:#e8b84b;padding:7px 14px;cursor:pointer">📝 Notes</button>' +
         '</div>' +
       '</div>' +
     '</div>';
@@ -295,13 +295,13 @@
       if (!notes.length) missing.push({ icon: '○', label: 'No session notes yet', hint: 'Add notes below.' });
 
       var missingBox = missing.length
-        ? '<div style="background:#ff70700d;border:1px solid #ff555533;padding:12px 16px;margin-bottom:18px">' +
-            '<div style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.35em;text-transform:uppercase;color:#ff8888;margin-bottom:8px">Needs Completion</div>' +
+        ? '<div style="background:#ff70700d;border:1px solid #ff555544;padding:18px 22px;margin-bottom:22px;border-radius:2px">' +
+            '<div style="font-family:\'Cinzel\',serif;font-size:13px;letter-spacing:.3em;text-transform:uppercase;color:#ff8888;margin-bottom:12px">Needs Completion</div>' +
             missing.map(function(m) {
-              return '<div style="display:flex;gap:8px;align-items:baseline;margin-bottom:5px">' +
-                '<span style="color:#ff8888;font-size:11px;flex-shrink:0">' + m.icon + '</span>' +
-                '<span style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:#ffaaaa">' + m.label + '</span>' +
-                '<span style="font-family:\'EB Garamond\',serif;font-size:13px;color:#dddaee66">' + m.hint + '</span>' +
+              return '<div style="display:flex;gap:10px;align-items:baseline;margin-bottom:9px">' +
+                '<span style="color:#ff8888;font-size:15px;flex-shrink:0">' + m.icon + '</span>' +
+                '<span style="font-family:\'Cinzel\',serif;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:#ffaaaa">' + m.label + '</span>' +
+                '<span style="font-family:\'EB Garamond\',serif;font-size:16px;color:#dddaeeaa">' + m.hint + '</span>' +
               '</div>';
             }).join('') +
           '</div>'
@@ -320,12 +320,12 @@
         if (latestIntake.agent_summary)     iLines.push(['Summary',   latestIntake.agent_summary]);
         if (iLines.length) {
           intakeSummaryHtml =
-            '<div style="background:#f8a84b0d;border:1px solid #f8a84b33;padding:12px 16px;margin-bottom:18px">' +
-              '<div style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:#f8a84b;margin-bottom:8px">Intake / Assessment</div>' +
+            '<div style="background:#f8a84b0d;border:1px solid #f8a84b33;padding:20px 24px;margin-bottom:22px;border-radius:2px">' +
+              '<div style="font-family:\'Cinzel\',serif;font-size:14px;letter-spacing:.28em;text-transform:uppercase;color:#f8a84b;margin-bottom:14px">Intake / Assessment</div>' +
               iLines.map(function(fl) {
-                return '<div style="margin-bottom:6px">' +
-                  '<span style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#e8b84baa">' + fl[0] + ': </span>' +
-                  '<span style="font-family:\'EB Garamond\',serif;font-size:14px;color:#e8e6f8">' + fl[1] + '</span>' +
+                return '<div style="margin-bottom:10px">' +
+                  '<div style="font-family:\'Cinzel\',serif;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:#e8b84b;margin-bottom:3px">' + fl[0] + '</div>' +
+                  '<div style="font-family:\'EB Garamond\',serif;font-size:18px;color:#e8e6f8;line-height:1.6">' + fl[1] + '</div>' +
                 '</div>';
               }).join('') +
             '</div>';
@@ -344,25 +344,25 @@
         if (envEntry.solar)    pills.push({ label: 'Solar: ' + envEntry.solar, color: '#f8a84b' });
         if (envEntry.geo)      pills.push({ label: 'Geo: ' + envEntry.geo, color: '#66b5f8' });
         envPills = pills.map(function(p) {
-          return '<span style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.2em;text-transform:uppercase;' +
-            'color:' + p.color + ';border:1px solid ' + p.color + '44;padding:3px 10px;white-space:nowrap">' + p.label + '</span>';
+          return '<span style="font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;' +
+            'color:' + p.color + ';border:1px solid ' + p.color + '66;padding:5px 12px;white-space:nowrap">' + p.label + '</span>';
         }).join('');
       }
 
       var envSection =
-        '<div style="background:#07051a;border:1px solid #9b7fe844;padding:14px 16px;margin-bottom:22px">' +
-          '<div style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.35em;text-transform:uppercase;color:#9b7fe8;margin-bottom:10px">' +
+        '<div style="background:#07051a;border:1px solid #9b7fe855;padding:20px 24px;margin-bottom:24px;border-radius:2px">' +
+          '<div style="font-family:\'Cinzel\',serif;font-size:14px;letter-spacing:.3em;text-transform:uppercase;color:#9b7fe8;margin-bottom:14px">' +
             'Environmental Context <span style="color:#dddaee44;font-size:8px;letter-spacing:.2em;font-weight:400">— observational only, not causal</span>' +
           '</div>' +
           (envPills
-            ? '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">' + envPills + '</div>'
-            : '<div style="font-family:\'EB Garamond\',serif;font-size:13px;color:#dddaee44;margin-bottom:12px;font-style:italic">' +
+            ? '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">' + envPills + '</div>'
+            : '<div style="font-family:\'EB Garamond\',serif;font-size:16px;color:#dddaeeaa;margin-bottom:16px;font-style:italic">' +
                 'No environmental data on file for this date. Visit the Environment tab to fetch live data.' +
               '</div>') +
           formLabel('Practitioner Environmental Notes') +
-          '<textarea id="snEnvNotes" class="modal-notes" placeholder="e.g. Client reported high sensitivity, cloudy day, barometric drop noticed…" style="min-height:54px;margin-bottom:8px;border-color:#9b7fe855"></textarea>' +
+          '<textarea id="snEnvNotes" class="modal-notes" placeholder="e.g. Client reported high sensitivity, cloudy day, barometric drop noticed…" style="min-height:70px;margin-bottom:12px;border-color:#9b7fe866"></textarea>' +
           formLabel('Client-Reported Environmental Sensitivity') +
-          '<input id="snEnvSensitivity" type="text" class="appt-input" placeholder="e.g. Had headache, felt energetically congested…" style="width:100%;background:#04020e;color:#f0ecff;border-color:#9b7fe855">' +
+          '<input id="snEnvSensitivity" type="text" class="appt-input" placeholder="e.g. Had headache, felt energetically congested…" style="width:100%;background:#04020e;color:#f0ecff;border-color:#9b7fe866">' +
         '</div>';
 
       // ── Recommendations & Referrals section ───────────────────────
@@ -373,56 +373,56 @@
         ? activeRecs.map(function(r) {
             var prCfg  = PRIORITY_CFG[r.priority] || PRIORITY_CFG.medium;
             var catLbl = CAT_LABELS[r.category]   || 'Other';
-            return '<div style="display:flex;gap:8px;align-items:center;padding:6px 10px;' +
-              'background:#0a0718;border:1px solid #22c98a22;margin-bottom:4px;flex-wrap:wrap">' +
-              '<span style="font-family:\'EB Garamond\',serif;font-size:14px;color:#f0ecff;flex:1;min-width:100px">' + r.product_name + '</span>' +
+            return '<div style="display:flex;gap:10px;align-items:center;padding:10px 14px;' +
+              'background:#0a0718;border:1px solid #22c98a22;margin-bottom:6px;flex-wrap:wrap">' +
+              '<span style="font-family:\'EB Garamond\',serif;font-size:17px;color:#f0ecff;flex:1;min-width:100px">' + r.product_name + '</span>' +
               snMiniTag(catLbl, '#9b7fe8') + ' ' + snMiniTag(prCfg[0], prCfg[1]) +
             '</div>';
           }).join('')
-        : '<div style="font-family:\'EB Garamond\',serif;font-size:13px;color:#dddaee33;font-style:italic;padding:4px 0">No active recommendations.</div>';
+        : '<div style="font-family:\'EB Garamond\',serif;font-size:16px;color:#dddaeeaa;font-style:italic;padding:8px 0">No active recommendations.</div>';
 
       var refListHtml = pendingRefs.length
         ? pendingRefs.map(function(r) {
             var urgCfg = URGENCY_CFG[r.urgency]        || URGENCY_CFG.routine;
             var ptLbl  = PTYPE_LABELS[r.provider_type] || 'Other';
-            return '<div style="display:flex;gap:8px;align-items:center;padding:6px 10px;' +
-              'background:#0a0718;border:1px solid #b09ef822;margin-bottom:4px;flex-wrap:wrap">' +
-              '<span style="font-family:\'EB Garamond\',serif;font-size:14px;color:#f0ecff;flex:1;min-width:100px">' + r.provider_name + '</span>' +
+            return '<div style="display:flex;gap:10px;align-items:center;padding:10px 14px;' +
+              'background:#0a0718;border:1px solid #b09ef822;margin-bottom:6px;flex-wrap:wrap">' +
+              '<span style="font-family:\'EB Garamond\',serif;font-size:17px;color:#f0ecff;flex:1;min-width:100px">' + r.provider_name + '</span>' +
               snMiniTag(ptLbl, '#9b7fe8') + ' ' + snMiniTag(urgCfg[0], urgCfg[1]) +
             '</div>';
           }).join('')
-        : '<div style="font-family:\'EB Garamond\',serif;font-size:13px;color:#dddaee33;font-style:italic;padding:4px 0">No pending referrals.</div>';
+        : '<div style="font-family:\'EB Garamond\',serif;font-size:16px;color:#dddaeeaa;font-style:italic;padding:8px 0">No pending referrals.</div>';
 
       var recsRefsSection =
-        '<div style="background:#07051a;border:1px solid #22c98a33;padding:16px;margin-bottom:22px">' +
-          '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px">' +
-            '<div style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.35em;text-transform:uppercase;color:#22c98acc">' +
+        '<div style="background:#07051a;border:1px solid #22c98a44;padding:20px 24px;margin-bottom:24px;border-radius:2px">' +
+          '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:16px">' +
+            '<div style="font-family:\'Cinzel\',serif;font-size:14px;letter-spacing:.3em;text-transform:uppercase;color:#22c98a">' +
               'Recommendations & Referrals' +
             '</div>' +
             '<div style="display:flex;gap:8px">' +
-              '<button onclick="snToggleQuickRec()" style="font-family:\'Cinzel\',serif;font-size:8px;letter-spacing:.2em;text-transform:uppercase;' +
-                'background:#22c98a14;border:1px solid #22c98a55;color:#22c98a;padding:4px 12px;cursor:pointer">+ Rec</button>' +
-              '<button onclick="snToggleQuickRef()" style="font-family:\'Cinzel\',serif;font-size:8px;letter-spacing:.2em;text-transform:uppercase;' +
-                'background:#b09ef814;border:1px solid #b09ef855;color:#b09ef8;padding:4px 12px;cursor:pointer">+ Referral</button>' +
+              '<button onclick="snToggleQuickRec()" style="font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;' +
+                'background:#22c98a14;border:1px solid #22c98a;color:#22c98a;padding:7px 14px;cursor:pointer">+ Rec</button>' +
+              '<button onclick="snToggleQuickRef()" style="font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;' +
+                'background:#b09ef814;border:1px solid #b09ef8;color:#b09ef8;padding:7px 14px;cursor:pointer">+ Referral</button>' +
             '</div>' +
           '</div>' +
 
-          '<div style="margin-bottom:12px">' +
-            '<div style="font-family:\'Cinzel\',serif;font-size:8px;letter-spacing:.3em;text-transform:uppercase;' +
-              'color:#22c98a88;margin-bottom:6px">Active Recommendations (' + activeRecs.length + '/' + clientRecs.length + ')</div>' +
+          '<div style="margin-bottom:16px">' +
+            '<div style="font-family:\'Cinzel\',serif;font-size:12px;letter-spacing:.25em;text-transform:uppercase;' +
+              'color:#22c98a;margin-bottom:8px">Active Recommendations (' + activeRecs.length + '/' + clientRecs.length + ')</div>' +
             recListHtml +
           '</div>' +
 
-          '<div style="margin-bottom:14px">' +
-            '<div style="font-family:\'Cinzel\',serif;font-size:8px;letter-spacing:.3em;text-transform:uppercase;' +
-              'color:#b09ef888;margin-bottom:6px">Pending Referrals (' + pendingRefs.length + '/' + clientRefs.length + ')</div>' +
+          '<div style="margin-bottom:16px">' +
+            '<div style="font-family:\'Cinzel\',serif;font-size:12px;letter-spacing:.25em;text-transform:uppercase;' +
+              'color:#b09ef8;margin-bottom:8px">Pending Referrals (' + pendingRefs.length + '/' + clientRefs.length + ')</div>' +
             refListHtml +
           '</div>' +
 
           // Quick-add recommendation form (hidden by default)
-          '<div id="snQuickRecForm" style="display:none;background:#04020e;border:1px solid #22c98a44;padding:14px;margin-bottom:10px">' +
-            '<div style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:#22c98a;margin-bottom:10px">Quick Add Recommendation</div>' +
-            '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">' +
+          '<div id="snQuickRecForm" style="display:none;background:#04020e;border:1px solid #22c98a44;padding:16px;margin-bottom:12px">' +
+            '<div style="font-family:\'Cinzel\',serif;font-size:13px;letter-spacing:.25em;text-transform:uppercase;color:#22c98a;margin-bottom:12px">Quick Add Recommendation</div>' +
+            '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">' +
               '<div style="grid-column:span 2">' +
                 formLabel('Product / Item Name *') +
                 '<input id="snQRecName" class="appt-input" placeholder="e.g. Black Tourmaline" style="width:100%;background:#0a0718;color:#f0ecff;border-color:#22c98a44">' +
@@ -447,17 +447,17 @@
                 '<input id="snQRecReason" class="appt-input" placeholder="Why recommended?" style="width:100%;background:#0a0718;color:#f0ecff;border-color:#22c98a44">' +
               '</div>' +
             '</div>' +
-            '<div id="snQRecError" style="color:#ff7070;font-family:\'EB Garamond\',serif;font-size:13px;min-height:14px;margin-bottom:6px"></div>' +
+            '<div id="snQRecError" style="color:#ff7070;font-family:\'EB Garamond\',serif;font-size:15px;min-height:16px;margin-bottom:8px"></div>' +
             '<div style="display:flex;gap:8px">' +
-              '<button id="snQRecSaveBtn" class="action-btn approve" onclick="snSaveQuickRec()" style="padding:5px 16px;font-size:9px">Save Recommendation</button>' +
-              '<button class="action-btn" onclick="snToggleQuickRec()" style="font-size:9px">Cancel</button>' +
+              '<button id="snQRecSaveBtn" class="action-btn approve" onclick="snSaveQuickRec()" style="padding:7px 18px;font-size:11px">Save Recommendation</button>' +
+              '<button class="action-btn" onclick="snToggleQuickRec()" style="font-size:11px">Cancel</button>' +
             '</div>' +
           '</div>' +
 
           // Quick-add referral form (hidden by default)
-          '<div id="snQuickRefForm" style="display:none;background:#04020e;border:1px solid #b09ef844;padding:14px">' +
-            '<div style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:#b09ef8;margin-bottom:10px">Quick Add Referral</div>' +
-            '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">' +
+          '<div id="snQuickRefForm" style="display:none;background:#04020e;border:1px solid #b09ef844;padding:16px">' +
+            '<div style="font-family:\'Cinzel\',serif;font-size:13px;letter-spacing:.25em;text-transform:uppercase;color:#b09ef8;margin-bottom:12px">Quick Add Referral</div>' +
+            '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">' +
               '<div style="grid-column:span 2">' +
                 formLabel('Provider Name *') +
                 '<input id="snQRefName" class="appt-input" placeholder="e.g. Dr. Smith – Neurology" style="width:100%;background:#0a0718;color:#f0ecff;border-color:#b09ef844">' +
@@ -483,10 +483,10 @@
                 '<input id="snQRefReason" class="appt-input" placeholder="Why is this referral needed?" style="width:100%;background:#0a0718;color:#f0ecff;border-color:#b09ef844">' +
               '</div>' +
             '</div>' +
-            '<div id="snQRefError" style="color:#ff7070;font-family:\'EB Garamond\',serif;font-size:13px;min-height:14px;margin-bottom:6px"></div>' +
+            '<div id="snQRefError" style="color:#ff7070;font-family:\'EB Garamond\',serif;font-size:15px;min-height:16px;margin-bottom:8px"></div>' +
             '<div style="display:flex;gap:8px">' +
-              '<button id="snQRefSaveBtn" class="action-btn approve" onclick="snSaveQuickRef()" style="padding:5px 16px;font-size:9px">Save Referral</button>' +
-              '<button class="action-btn" onclick="snToggleQuickRef()" style="font-size:9px">Cancel</button>' +
+              '<button id="snQRefSaveBtn" class="action-btn approve" onclick="snSaveQuickRef()" style="padding:7px 18px;font-size:11px">Save Referral</button>' +
+              '<button class="action-btn" onclick="snToggleQuickRef()" style="font-size:11px">Cancel</button>' +
             '</div>' +
           '</div>' +
 
@@ -494,11 +494,11 @@
 
       // ── Action Plan section ───────────────────────────────────────
       var actionPlanSection =
-        '<div style="background:#07051a;border:1px solid #e8b84b33;padding:16px;margin-bottom:22px">' +
-          '<div style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.35em;text-transform:uppercase;' +
-            'color:#e8b84bcc;margin-bottom:14px">Action Plan</div>' +
+        '<div style="background:#07051a;border:1px solid #e8b84b44;padding:20px 24px;margin-bottom:24px;border-radius:2px">' +
+          '<div style="font-family:\'Cinzel\',serif;font-size:14px;letter-spacing:.3em;text-transform:uppercase;' +
+            'color:#e8b84b;margin-bottom:16px">Action Plan</div>' +
 
-          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">' +
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">' +
             '<div style="grid-column:span 2">' +
               formLabel('Immediate Next Steps') +
               '<textarea id="snApSteps" class="modal-notes" placeholder="What should the client do right away?" ' +
@@ -532,8 +532,8 @@
             '</div>' +
           '</div>' +
 
-          '<div id="snApError" style="color:#ff7070;font-family:\'EB Garamond\',serif;font-size:13px;min-height:14px;margin-bottom:8px"></div>' +
-          '<button id="snApSaveBtn" class="action-btn approve" onclick="snSaveActionPlan()" style="padding:7px 20px;font-size:9px">Save Action Plan</button>' +
+          '<div id="snApError" style="color:#ff7070;font-family:\'EB Garamond\',serif;font-size:15px;min-height:16px;margin-bottom:10px"></div>' +
+          '<button id="snApSaveBtn" class="action-btn approve" onclick="snSaveActionPlan()" style="padding:9px 24px;font-size:12px">Save Action Plan</button>' +
         '</div>';
 
       // ── Status / payment options ──────────────────────────────────
@@ -556,30 +556,30 @@
               if (env.solar)       parts.push('Solar: ' + env.solar);
               if (env.notes)       parts.push(env.notes);
               if (env.sensitivity) parts.push('Client: ' + env.sensitivity);
-              if (parts.length) envLine = '<div style="margin-top:6px;font-family:\'Cinzel\',serif;font-size:9px;' +
-                'letter-spacing:.2em;text-transform:uppercase;color:#9b7fe8aa">🌿 ' + parts.join(' · ') + '</div>';
+              if (parts.length) envLine = '<div style="margin-top:8px;font-family:\'Cinzel\',serif;font-size:11px;' +
+                'letter-spacing:.18em;text-transform:uppercase;color:#9b7fe8">🌿 ' + parts.join(' · ') + '</div>';
             }
-            return '<div style="background:#07051a;border-left:2px solid #e8b84b44;padding:12px 16px;margin-bottom:10px">' +
-              '<div style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.25em;text-transform:uppercase;' +
-                'color:#e8b84b88;margin-bottom:6px">' + (n.note_type || 'note') + ' · ' + fmtDate(n.created_at) + '</div>' +
-              '<div style="font-family:\'EB Garamond\',serif;font-size:15px;color:#e8e6f8;line-height:1.65;white-space:pre-wrap">' + (n.content || '') + '</div>' +
-              (n.energy_findings ? '<div style="margin-top:8px;font-family:\'EB Garamond\',serif;font-size:14px;color:#b09ef8;font-style:italic">Energy: ' + n.energy_findings + '</div>' : '') +
-              (n.recommendations ? '<div style="margin-top:4px;font-family:\'EB Garamond\',serif;font-size:14px;color:#66b5f8;font-style:italic">Recommendations: ' + n.recommendations + '</div>' : '') +
+            return '<div style="background:#07051a;border-left:3px solid #e8b84b;padding:16px 20px;margin-bottom:12px;border-radius:0 2px 2px 0">' +
+              '<div style="font-family:\'Cinzel\',serif;font-size:12px;letter-spacing:.22em;text-transform:uppercase;' +
+                'color:#e8b84b;margin-bottom:8px">' + (n.note_type || 'note') + ' · ' + fmtDate(n.created_at) + '</div>' +
+              '<div style="font-family:\'EB Garamond\',serif;font-size:18px;color:#e8e6f8;line-height:1.65;white-space:pre-wrap">' + (n.content || '') + '</div>' +
+              (n.energy_findings ? '<div style="margin-top:10px;font-family:\'EB Garamond\',serif;font-size:17px;color:#b09ef8;font-style:italic">Energy: ' + n.energy_findings + '</div>' : '') +
+              (n.recommendations ? '<div style="margin-top:6px;font-family:\'EB Garamond\',serif;font-size:17px;color:#66b5f8;font-style:italic">Recommendations: ' + n.recommendations + '</div>' : '') +
               envLine +
             '</div>';
           }).join('')
-        : '<p style="color:#dddaee66;font-style:italic;font-family:\'EB Garamond\',serif;font-size:15px">No notes yet for this session.</p>';
+        : '<p style="color:#dddaeeaa;font-style:italic;font-family:\'EB Garamond\',serif;font-size:17px">No notes yet for this session.</p>';
 
       // ── Payments list ─────────────────────────────────────────────
       var paysHtml = pays.length
         ? pays.map(function(p) {
-            return '<div style="display:flex;gap:10px;align-items:baseline;padding:6px 0;border-bottom:1px solid #e8b84b0e">' +
-              '<span style="font-family:\'Cinzel\',serif;font-size:12px;color:#22c98a">$' + parseFloat(p.amount || 0).toFixed(2) + '</span>' +
-              '<span style="font-family:\'EB Garamond\',serif;font-size:14px;color:#dddaee99">' + (p.method || '') + (p.notes ? ' — ' + p.notes : '') + '</span>' +
-              '<span style="font-family:\'EB Garamond\',serif;font-size:13px;color:#dddaee55;margin-left:auto">' + fmtDate(p.paid_at) + '</span>' +
+            return '<div style="display:flex;gap:12px;align-items:baseline;padding:10px 0;border-bottom:1px solid #e8b84b18">' +
+              '<span style="font-family:\'Cinzel\',serif;font-size:16px;color:#22c98a">$' + parseFloat(p.amount || 0).toFixed(2) + '</span>' +
+              '<span style="font-family:\'EB Garamond\',serif;font-size:17px;color:#dddaeecc">' + (p.method || '') + (p.notes ? ' — ' + p.notes : '') + '</span>' +
+              '<span style="font-family:\'EB Garamond\',serif;font-size:15px;color:#dddaeeaa;margin-left:auto">' + fmtDate(p.paid_at) + '</span>' +
             '</div>';
           }).join('')
-        : '<p style="color:#dddaee55;font-style:italic;font-family:\'EB Garamond\',serif;font-size:14px">No payments logged.</p>';
+        : '<p style="color:#dddaeeaa;font-style:italic;font-family:\'EB Garamond\',serif;font-size:17px">No payments logged.</p>';
 
       // ── Assemble body ─────────────────────────────────────────────
       body.innerHTML =
@@ -589,7 +589,7 @@
 
         intakeSummaryHtml +
 
-        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px">' +
           infoCell('Client',     s.client_name || '—') +
           infoCell('Date',       fmtDate(s.session_date) + (s.session_date ? ' · ' + fmtDay(s.session_date) : '')) +
           infoCell('Service',    s.service || '—') +
@@ -625,10 +625,10 @@
         recsRefsSection +
         actionPlanSection +
 
-        '<div style="font-family:\'Cinzel\',serif;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:#e8b84bcc;margin-bottom:12px">Add Session Note</div>' +
+        '<div style="font-family:\'Cinzel\',serif;font-size:14px;letter-spacing:.3em;text-transform:uppercase;color:#e8b84b;margin-bottom:14px">Add Session Note</div>' +
 
-        '<div style="background:#07051a;border:1px solid #e8b84b33;padding:18px;margin-bottom:22px">' +
-          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">' +
+        '<div style="background:#07051a;border:1px solid #e8b84b44;padding:22px 26px;margin-bottom:24px;border-radius:2px">' +
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">' +
             '<div>' +
               formLabel('Note Type') +
               '<select id="snNoteType" style="width:100%;background:#04020e;color:#f0ecff;border:1px solid #e8b84b44;padding:7px 10px;font-family:\'Cinzel\',serif;font-size:10px;letter-spacing:.2em">' +
@@ -649,33 +649,33 @@
           '<textarea id="snNoteContent" class="modal-notes" placeholder="What happened in this session? What was cleared? Client response, energetic findings, guidance received…" style="min-height:100px;margin-bottom:10px;border-color:#e8b84b44"></textarea>' +
           formLabel('Recommendations (optional)') +
           '<input id="snRecommendations" type="text" placeholder="e.g. Follow-up in 3 weeks, crystal work…" class="appt-input" style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44;margin-bottom:14px">' +
-          '<div id="snNoteError" style="color:#ff7070;font-family:\'EB Garamond\',serif;font-size:14px;min-height:16px;margin-bottom:8px"></div>' +
-          '<div style="display:flex;gap:10px;align-items:center">' +
-            '<button id="snSaveNoteBtn" class="action-btn approve" onclick="snSaveNote()" style="padding:8px 24px">Save Note</button>' +
-            '<label style="display:flex;align-items:center;gap:6px;font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#e8b84b99;cursor:pointer">' +
+          '<div id="snNoteError" style="color:#ff7070;font-family:\'EB Garamond\',serif;font-size:16px;min-height:18px;margin-bottom:10px"></div>' +
+          '<div style="display:flex;gap:12px;align-items:center">' +
+            '<button id="snSaveNoteBtn" class="action-btn approve" onclick="snSaveNote()" style="padding:9px 26px">Save Note</button>' +
+            '<label style="display:flex;align-items:center;gap:7px;font-family:\'Cinzel\',serif;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:#e8b84b;cursor:pointer">' +
               '<input type="checkbox" id="snEnhance" style="accent-color:#e8b84b"> Enhance with AI' +
             '</label>' +
           '</div>' +
         '</div>' +
 
-        '<div style="font-family:\'Cinzel\',serif;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:#e8b84bcc;margin-bottom:12px">Session Notes (' + notes.length + ')</div>' +
+        '<div style="font-family:\'Cinzel\',serif;font-size:14px;letter-spacing:.3em;text-transform:uppercase;color:#e8b84b;margin-bottom:14px">Session Notes (' + notes.length + ')</div>' +
         '<div id="snNotesList">' + notesHtml + '</div>' +
 
-        '<div style="margin-top:22px;border-top:1px solid #e8b84b1a;padding-top:16px">' +
-          '<div style="font-family:\'Cinzel\',serif;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:#e8b84bcc;margin-bottom:10px">Payments</div>' +
+        '<div style="margin-top:28px;border-top:1px solid #e8b84b22;padding-top:20px">' +
+          '<div style="font-family:\'Cinzel\',serif;font-size:14px;letter-spacing:.3em;text-transform:uppercase;color:#e8b84b;margin-bottom:14px">Payments</div>' +
           paysHtml +
         '</div>' +
 
-        '<div style="margin-top:22px;border-top:1px solid #e8b84b22;padding-top:16px;display:flex;gap:10px;flex-wrap:wrap">' +
+        '<div style="margin-top:28px;border-top:1px solid #e8b84b22;padding-top:20px;display:flex;gap:12px;flex-wrap:wrap">' +
           (s.client_id
-            ? '<button class="action-btn view" style="border-color:#9b7fe866;color:#b09ef8" ' +
+            ? '<button class="action-btn view" style="border-color:#9b7fe899;color:#b09ef8" ' +
                 'onclick="snCloseModal();crmOpenProfile(\'' + esc(s.client_id) + '\')">📋 Case File</button>' +
-              '<button class="action-btn view" style="border-color:#9b7fe866;color:#b09ef8" ' +
+              '<button class="action-btn view" style="border-color:#9b7fe899;color:#b09ef8" ' +
                 'onclick="snCloseModal();crmOpenTimeline(\'' + esc(s.client_id) + '\')">⏱ Timeline</button>'
             : '') +
           (s.status !== 'completed'
-            ? '<button class="action-btn approve" onclick="snMarkComplete(\'' + esc(s.id) + '\')" style="border-color:#22c98a66">✓ Mark Complete</button>'
-            : '<span style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:#22c98a;padding:8px 0">✓ Session Completed</span>') +
+            ? '<button class="action-btn approve" onclick="snMarkComplete(\'' + esc(s.id) + '\')" style="border-color:#22c98a">✓ Mark Complete</button>'
+            : '<span style="font-family:\'Cinzel\',serif;font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:#22c98a;padding:8px 0">✓ Session Completed</span>') +
         '</div>';
 
     } catch (e) {
