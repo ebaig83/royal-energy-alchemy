@@ -3,7 +3,8 @@
 // GET ?section=outcomes          — Outcome Intelligence (state_before/state_after)
 // GET ?section=retention         — Retention Intelligence
 // GET ?section=cross-client      — Cross-Client Intelligence (NO PII)
-// GET ?section=data-quality      — Data Quality Audit
+// GET ?section=data-quality      — Data Quality Audit (counts + severity)
+// GET ?section=audit-detail      — Full record-level audit data for investigation
 
 const { requireAdmin, respond } = require('./lib/auth');
 const { getClient }             = require('./lib/supabase');
@@ -40,6 +41,7 @@ exports.handler = async function(event) {
     if (section === 'retention')       return respond(200, await retentionIntelligence(sb));
     if (section === 'cross-client')    return respond(200, await crossClientIntelligence(sb));
     if (section === 'data-quality')    return respond(200, await dataQualityAudit(sb));
+    if (section === 'audit-detail')    return respond(200, await auditDetail(sb));
     return respond(400, { error: `Unknown section: ${section}` });
   } catch (err) {
     console.error('[analytics] Error in section', section, err.message);
@@ -545,5 +547,223 @@ async function dataQualityAudit(sb) {
     issues,
     exclusions: { totalExcluded: exclusions.length, records: exclusions },
     status: issues.length === 0 ? 'clean' : counts.Critical > 0 ? 'critical' : counts.High > 0 ? 'degraded' : 'acceptable',
+  };
+}
+
+// ── AUDIT DETAIL — full record-level data for investigation scripts ──────────
+// Returns raw records needed to classify duplicates, stale sessions, test data,
+// and missing outcomes. Read-only. No PII redaction (admin-only endpoint).
+async function auditDetail(sb) {
+  const now = new Date();
+  const staleThreshold = new Date(now - 90 * 86400000).toISOString();
+
+  const [clientRes, sessRes, recRes, acRes, intakeRes, notesRes] = await Promise.all([
+    sb.from('clients')
+      .select('id, full_name, email, phone, status, source, tags, created_at, updated_at')
+      .order('created_at', { ascending: false }),
+    sb.from('sessions')
+      .select('id, client_id, client_name, service, session_date, status, payment_status, state_before, state_after, source, seller_notes, created_at, updated_at')
+      .order('session_date', { ascending: false }),
+    sb.from('recommendations')
+      .select('id, client_id, product_name, category, outcome_status, recommended_at, created_at')
+      .order('created_at', { ascending: false }),
+    sb.from('aftercare')
+      .select('id, client_id, session_id, client_name, followup_type, scheduled_for, status, source, created_at')
+      .order('scheduled_for', { ascending: false })
+      .limit(500),
+    sb.from('intake_submissions')
+      .select('id, client_id, session_id, full_name, email, phone, processed, match_status, spam_suspect, created_at')
+      .order('created_at', { ascending: false })
+      .limit(300),
+    sb.from('session_notes')
+      .select('id, session_id, client_id, note_type, created_at')
+      .order('created_at', { ascending: false })
+      .limit(500),
+  ]);
+
+  if (clientRes.error)  throw new Error('clients: '  + clientRes.error.message);
+  if (sessRes.error)    throw new Error('sessions: '  + sessRes.error.message);
+  if (recRes.error)     throw new Error('recs: '      + recRes.error.message);
+  if (acRes.error)      throw new Error('aftercare: ' + acRes.error.message);
+
+  const clients  = clientRes.data  || [];
+  const sessions = sessRes.data    || [];
+  const recs     = recRes.data     || [];
+  const aftercare = acRes.data     || [];
+  const intakes  = intakeRes.data  || [];
+  const notes    = notesRes.data   || [];
+
+  const clientIdSet  = new Set(clients.map(c => c.id));
+  const sessionIdSet = new Set(sessions.map(s => s.id));
+
+  // ── Duplicate client emails ───────────────────────────────────────
+  const emailMap = {};
+  clients.forEach(c => {
+    if (!c.email) return;
+    const key = c.email.toLowerCase().trim();
+    if (!emailMap[key]) emailMap[key] = [];
+    emailMap[key].push({ id: c.id, full_name: c.full_name, email: c.email, phone: c.phone, status: c.status, tags: c.tags, created_at: c.created_at, source: c.source });
+  });
+  const dupEmails = Object.entries(emailMap)
+    .filter(([, rows]) => rows.length > 1)
+    .map(([email, rows]) => ({ email, count: rows.length, clients: rows }));
+
+  // ── Duplicate client phones ───────────────────────────────────────
+  const phoneMap = {};
+  clients.forEach(c => {
+    if (!c.phone) return;
+    const key = c.phone.replace(/\D/g, '');
+    if (key.length < 7) return;
+    if (!phoneMap[key]) phoneMap[key] = [];
+    phoneMap[key].push({ id: c.id, full_name: c.full_name, email: c.email, phone: c.phone, status: c.status, tags: c.tags, created_at: c.created_at });
+  });
+  const dupPhones = Object.entries(phoneMap)
+    .filter(([, rows]) => rows.length > 1)
+    .map(([phone, rows]) => ({ phone, count: rows.length, clients: rows }));
+
+  // ── Duplicate sessions (same client_id + session_date) ────────────
+  const sessKeyMap = {};
+  sessions.forEach(s => {
+    if (!s.client_id || !s.session_date) return;
+    const key = `${s.client_id}::${s.session_date}`;
+    if (!sessKeyMap[key]) sessKeyMap[key] = [];
+    sessKeyMap[key].push({ id: s.id, client_id: s.client_id, client_name: s.client_name, service: s.service, session_date: s.session_date, status: s.status, payment_status: s.payment_status, source: s.source, created_at: s.created_at });
+  });
+  const dupSessions = Object.entries(sessKeyMap)
+    .filter(([, rows]) => rows.length > 1)
+    .map(([key, rows]) => ({ client_id: key.split('::')[0], session_date: key.split('::')[1], count: rows.length, sessions: rows }));
+
+  // ── Sessions missing state scores (completed) ─────────────────────
+  const completedSessions = sessions.filter(s => s.status === 'completed');
+  const missingState = completedSessions.filter(s => s.state_before == null || s.state_after == null)
+    .map(s => ({
+      id: s.id, client_id: s.client_id, client_name: s.client_name,
+      service: s.service, session_date: s.session_date, status: s.status,
+      state_before: s.state_before, state_after: s.state_after,
+      source: s.source, seller_notes: (s.seller_notes || '').slice(0, 80),
+      created_at: s.created_at,
+    }));
+
+  // ── Stale pending sessions (> 90 days, never completed) ──────────
+  const stalePending = sessions.filter(s =>
+    s.status === 'pending' &&
+    s.session_date &&
+    new Date(s.session_date) < new Date(staleThreshold)
+  ).map(s => ({
+    id: s.id, client_id: s.client_id, client_name: s.client_name,
+    service: s.service, session_date: s.session_date, status: s.status,
+    payment_status: s.payment_status, source: s.source,
+    seller_notes: (s.seller_notes || '').slice(0, 80),
+    created_at: s.created_at,
+    daysOld: Math.floor((now - new Date(s.session_date)) / 86400000),
+  }));
+
+  // ── Test / QA data detection ──────────────────────────────────────
+  const QA_TAGS = ['qa', 'test', 'seed', 'demo'];
+  const QA_NAMES = /qa|test|seed|demo|sample|fake|automation|workflow.audit/i;
+  const testClients = clients.filter(c => {
+    const tags = (c.tags || []).map(t => (t || '').toLowerCase());
+    return QA_TAGS.some(q => tags.includes(q)) || QA_NAMES.test(c.full_name || '');
+  }).map(c => ({ id: c.id, full_name: c.full_name, email: c.email, tags: c.tags, created_at: c.created_at }));
+
+  const testClientIdSet = new Set(testClients.map(c => c.id));
+  const testSessions = sessions.filter(s =>
+    testClientIdSet.has(s.client_id) || QA_NAMES.test(s.client_name || '') || QA_NAMES.test(s.seller_notes || '')
+  ).map(s => ({ id: s.id, client_id: s.client_id, client_name: s.client_name, session_date: s.session_date, status: s.status, source: s.source }));
+
+  const testRecs = recs.filter(r => testClientIdSet.has(r.client_id))
+    .map(r => ({ id: r.id, client_id: r.client_id, product_name: r.product_name }));
+
+  const testAftercate = aftercare.filter(a => testClientIdSet.has(a.client_id))
+    .map(a => ({ id: a.id, client_id: a.client_id, client_name: a.client_name, followup_type: a.followup_type, status: a.status }));
+
+  // ── Orphaned records ──────────────────────────────────────────────
+  const orphanedSessions = sessions.filter(s => s.client_id && !clientIdSet.has(s.client_id))
+    .map(s => ({ id: s.id, client_id: s.client_id, client_name: s.client_name, session_date: s.session_date }));
+
+  const orphanedRecs = recs.filter(r => r.client_id && !clientIdSet.has(r.client_id))
+    .map(r => ({ id: r.id, client_id: r.client_id, product_name: r.product_name }));
+
+  const orphanedAftercate = aftercare.filter(a => a.client_id && !clientIdSet.has(a.client_id))
+    .map(a => ({ id: a.id, client_id: a.client_id, client_name: a.client_name }));
+
+  const orphanedAftercareSession = aftercare.filter(a => a.session_id && !sessionIdSet.has(a.session_id))
+    .map(a => ({ id: a.id, session_id: a.session_id, client_name: a.client_name }));
+
+  // ── Clients with issues ───────────────────────────────────────────
+  const blankNames = clients.filter(c => !(c.full_name || '').trim())
+    .map(c => ({ id: c.id, email: c.email, phone: c.phone, created_at: c.created_at }));
+
+  const noContact = clients.filter(c => !c.email && !c.phone && c.status !== 'archived')
+    .map(c => ({ id: c.id, full_name: c.full_name, source: c.source, created_at: c.created_at }));
+
+  // ── Recommendations missing outcomes ─────────────────────────────
+  const ALLOWED_OUTCOMES = ['purchased', 'tried', 'helpful', 'not_helpful', 'declined'];
+  const recsNoOutcome = recs.filter(r => !r.outcome_status || r.outcome_status === 'recommended')
+    .map(r => ({ id: r.id, client_id: r.client_id, product_name: r.product_name, recommended_at: r.recommended_at, created_at: r.created_at }));
+
+  const recsPurchasedNoFeedback = recs.filter(r => {
+    if (r.outcome_status !== 'purchased' && r.outcome_status !== 'tried') return false;
+    const age = (now - new Date(r.recommended_at || r.created_at)) / 86400000;
+    return age > 30;
+  }).map(r => ({
+    id: r.id, client_id: r.client_id, product_name: r.product_name,
+    outcome_status: r.outcome_status, recommended_at: r.recommended_at,
+    daysOld: Math.floor((now - new Date(r.recommended_at || r.created_at)) / 86400000),
+  }));
+
+  // ── Intake quality ────────────────────────────────────────────────
+  const unmatchedIntakes = intakes.filter(i => !i.processed || i.match_status === 'unmatched')
+    .map(i => ({ id: i.id, full_name: i.full_name, email: i.email, phone: i.phone, match_status: i.match_status, processed: i.processed, created_at: i.created_at }));
+
+  const intakeEmailMap = {};
+  intakes.forEach(i => {
+    if (!i.email) return;
+    const key = i.email.toLowerCase();
+    if (!intakeEmailMap[key]) intakeEmailMap[key] = [];
+    intakeEmailMap[key].push(i);
+  });
+  const dupIntakes = Object.entries(intakeEmailMap)
+    .filter(([, rows]) => rows.length > 1)
+    .map(([email, rows]) => ({ email, count: rows.length, ids: rows.map(r => r.id) }));
+
+  // ── Analytics impact summary ──────────────────────────────────────
+  const validState = completedSessions.filter(s =>
+    s.state_before != null && s.state_after != null &&
+    s.state_before >= 1 && s.state_before <= 5 &&
+    s.state_after  >= 1 && s.state_after  <= 5
+  );
+  const validRecs = recs.filter(r => ALLOWED_OUTCOMES.includes(r.outcome_status));
+  const nonTestCompleted = completedSessions.filter(s => !testClientIdSet.has(s.client_id));
+  const nonTestValidState = validState.filter(s => !testClientIdSet.has(s.client_id));
+
+  const analyticsReadiness = {
+    outcomeAnalytics: nonTestValidState.length >= 3 ? 'Healthy' : nonTestValidState.length > 0 ? 'Limited' : 'Insufficient',
+    recommendationAnalytics: validRecs.length >= 3 ? 'Healthy' : validRecs.length > 0 ? 'Limited' : 'Insufficient',
+    retentionAnalytics: 'See retention section',
+    effectiveSampleSizes: {
+      completedSessions: completedSessions.length,
+      completedNonTest: nonTestCompleted.length,
+      sessionsWithValidState: validState.length,
+      sessionsWithValidStateNonTest: nonTestValidState.length,
+      recsWithOutcome: validRecs.length,
+      totalRecommendations: recs.length,
+    },
+  };
+
+  return {
+    generatedAt: now.toISOString(),
+    counts: {
+      clients: clients.length, sessions: sessions.length, recommendations: recs.length,
+      aftercare: aftercare.length, intakes: intakes.length, notes: notes.length,
+    },
+    duplicates: { emails: dupEmails, phones: dupPhones, sessions: dupSessions, intakes: dupIntakes },
+    sessions: { missingState, stalePending, orphaned: orphanedSessions },
+    clients: { blankNames, noContact },
+    recommendations: { noOutcome: recsNoOutcome, purchasedNoFeedback: recsPurchasedNoFeedback, orphaned: orphanedRecs },
+    aftercare: { orphanedClient: orphanedAftercate, orphanedSession: orphanedAftercareSession },
+    intakes: { unmatched: unmatchedIntakes, duplicates: dupIntakes },
+    testData: { clients: testClients, sessions: testSessions, recommendations: testRecs, aftercare: testAftercate },
+    analyticsReadiness,
   };
 }
