@@ -1237,43 +1237,38 @@ async function run() {
 
   // ── RN-0  research function deployed ─────────────────────────────────────
   await check(RN + ' research function deployed', async () => {
-    const res = await finReq('/.netlify/functions/research?section=notes', { method: 'GET' });
-    if (res.status === 0) throw new Error('Network error — function unreachable');
-    if (res.status === 500) throw new Error('Function error HTTP 500');
-    return { detail: 'HTTP ' + res.status };
+    const r = await finReq('GET', '/.netlify/functions/research?section=notes');
+    if (r.s === 0)   throw new Error('Network error — function unreachable');
+    if (r.s === 500) throw new Error('Function error HTTP 500: ' + (r.b && r.b.error || ''));
+    return { detail: 'HTTP ' + r.s };
   });
 
   // ── RN-1  notes table accessible ─────────────────────────────────────────
   let rnQaId = null;
   await check(RN + ' notes table accessible (GET section=notes)', async () => {
-    const res  = await finReq('/.netlify/functions/research?section=notes', { method: 'GET' });
-    const data = JSON.parse(res.body);
-    if (!res.ok) throw new Error(data.error || 'API error HTTP ' + res.status);
-    if (data.migration_needed) throw new Error('migration_needed=true — run 2026-06-13-research-lite.sql');
-    if (!Array.isArray(data.notes)) throw new Error('notes array missing from response');
-    return { detail: data.notes.length + ' existing note(s)' };
+    const r = await finReq('GET', '/.netlify/functions/research?section=notes');
+    if (r.s !== 200) throw new Error(classifyFinError(r.s, r.b));
+    if (r.b.migration_needed) throw new Error('migration_needed=true — run 2026-06-13-research-lite.sql');
+    if (!Array.isArray(r.b.notes)) throw new Error('notes array missing from response');
+    return { detail: r.b.notes.length + ' existing note(s)' };
   });
 
   // ── RN-2  create note ─────────────────────────────────────────────────────
   await check(RN + ' Create note (POST create_note)', async () => {
-    const res  = await finReq('/.netlify/functions/research?action=create_note', {
-      method: 'POST',
-      body: JSON.stringify({ title: 'QA Test Note', content: 'Automated QA content', tags: ['qa','test'] }),
-    });
-    const data = JSON.parse(res.body);
-    if (!res.ok) throw new Error(data.error || 'HTTP ' + res.status);
-    if (!data.note?.id) throw new Error('note.id missing from response');
-    rnQaId = data.note.id;
+    const r = await finReq('POST', '/.netlify/functions/research?action=create_note',
+      { title: 'QA Test Note', content: 'Automated QA content', tags: ['qa', 'test'] });
+    if (r.s !== 201) throw new Error(classifyFinError(r.s, r.b));
+    if (!r.b.note?.id) throw new Error('note.id missing from response');
+    rnQaId = r.b.note.id;
     return { detail: 'id=' + rnQaId };
   });
 
   // ── RN-3  created note persists in list ──────────────────────────────────
   await check(RN + ' Created note persists in list', async () => {
     if (!rnQaId) return { status: 'SKIP', detail: 'Create step did not produce an id' };
-    const res  = await finReq('/.netlify/functions/research?section=notes', { method: 'GET' });
-    const data = JSON.parse(res.body);
-    if (!res.ok) throw new Error(data.error || 'HTTP ' + res.status);
-    const found = (data.notes || []).find(n => n.id === rnQaId);
+    const r = await finReq('GET', '/.netlify/functions/research?section=notes');
+    if (r.s !== 200) throw new Error(classifyFinError(r.s, r.b));
+    const found = (r.b.notes || []).find(n => n.id === rnQaId);
     if (!found) throw new Error('Created note not found in list');
     return { detail: 'title=' + found.title };
   });
@@ -1281,64 +1276,54 @@ async function run() {
   // ── RN-4  filter by session_id (no crash) ────────────────────────────────
   await check(RN + ' Filter by session_id (no error)', async () => {
     const fakeId = '00000000-0000-0000-0000-000000000000';
-    const res    = await finReq('/.netlify/functions/research?section=notes&session_id=' + fakeId, { method: 'GET' });
-    const data   = JSON.parse(res.body);
-    if (!res.ok) throw new Error(data.error || 'HTTP ' + res.status);
-    return { detail: (data.notes || []).length + ' note(s) for fake session_id' };
+    const r = await finReq('GET', '/.netlify/functions/research?section=notes&session_id=' + fakeId);
+    if (r.s !== 200) throw new Error(classifyFinError(r.s, r.b));
+    return { detail: (r.b.notes || []).length + ' note(s) for fake session_id' };
   });
 
   // ── RN-5  search keyword filters results ─────────────────────────────────
   await check(RN + ' Search by keyword filters results', async () => {
-    const res  = await finReq('/.netlify/functions/research?section=notes&search=QA+Test', { method: 'GET' });
-    const data = JSON.parse(res.body);
-    if (!res.ok) throw new Error(data.error || 'HTTP ' + res.status);
-    const found = (data.notes || []).find(n => n.id === rnQaId);
+    if (!rnQaId) return { status: 'SKIP', detail: 'No note id from create step' };
+    const r = await finReq('GET', '/.netlify/functions/research?section=notes&search=QA%20Test');
+    if (r.s !== 200) throw new Error(classifyFinError(r.s, r.b));
+    const found = (r.b.notes || []).find(n => n.id === rnQaId);
     if (!found) throw new Error('QA note not found in search results for "QA Test"');
-    return { detail: data.notes.length + ' result(s) for "QA Test"' };
+    return { detail: r.b.notes.length + ' result(s) for "QA Test"' };
   });
 
   // ── RN-6  edit note ───────────────────────────────────────────────────────
   await check(RN + ' Edit note (PATCH update_note)', async () => {
     if (!rnQaId) return { status: 'SKIP', detail: 'No note id from create step' };
-    const res  = await finReq('/.netlify/functions/research?action=update_note&id=' + rnQaId, {
-      method: 'PATCH',
-      body: JSON.stringify({ content: 'Updated QA content' }),
-    });
-    const data = JSON.parse(res.body);
-    if (!res.ok) throw new Error(data.error || 'HTTP ' + res.status);
-    if (data.note?.content !== 'Updated QA content') throw new Error('content not updated in response');
+    const r = await finReq('PATCH', '/.netlify/functions/research?action=update_note&id=' + rnQaId,
+      { content: 'Updated QA content' });
+    if (r.s !== 200) throw new Error(classifyFinError(r.s, r.b));
+    if (r.b.note?.content !== 'Updated QA content') throw new Error('content not updated in response');
     return { detail: 'content updated' };
   });
 
   // ── RN-7  missing title rejected (400) ───────────────────────────────────
   await check(RN + ' Missing title rejected (400)', async () => {
-    const res  = await finReq('/.netlify/functions/research?action=create_note', {
-      method: 'POST',
-      body: JSON.stringify({ content: 'No title here' }),
-    });
-    if (res.status !== 400) throw new Error('Expected 400, got ' + res.status);
-    return { detail: 'Correctly rejected: ' + JSON.parse(res.body).error };
+    const r = await finReq('POST', '/.netlify/functions/research?action=create_note',
+      { content: 'No title here' });
+    if (r.s !== 400) throw new Error('Expected 400, got ' + r.s);
+    return { detail: 'Correctly rejected: ' + (r.b && r.b.error) };
   });
 
   // ── RN-8  soft-delete note ────────────────────────────────────────────────
   await check(RN + ' Soft-delete note (PATCH delete_note)', async () => {
     if (!rnQaId) return { status: 'SKIP', detail: 'No note id from create step' };
-    const res  = await finReq('/.netlify/functions/research?action=delete_note&id=' + rnQaId, {
-      method: 'PATCH', body: '{}',
-    });
-    const data = JSON.parse(res.body);
-    if (!res.ok) throw new Error(data.error || 'HTTP ' + res.status);
-    if (!data.deleted) throw new Error('deleted flag not true in response');
+    const r = await finReq('PATCH', '/.netlify/functions/research?action=delete_note&id=' + rnQaId, {});
+    if (r.s !== 200) throw new Error(classifyFinError(r.s, r.b));
+    if (!r.b.deleted) throw new Error('deleted flag not true in response');
     return { detail: 'deleted=true  id=' + rnQaId };
   });
 
   // ── RN-9  soft-deleted note absent from list ──────────────────────────────
   await check(RN + ' Soft-deleted note absent from list', async () => {
     if (!rnQaId) return { status: 'SKIP', detail: 'No note id from create step' };
-    const res  = await finReq('/.netlify/functions/research?section=notes', { method: 'GET' });
-    const data = JSON.parse(res.body);
-    if (!res.ok) throw new Error(data.error || 'HTTP ' + res.status);
-    const found = (data.notes || []).find(n => n.id === rnQaId);
+    const r = await finReq('GET', '/.netlify/functions/research?section=notes');
+    if (r.s !== 200) throw new Error(classifyFinError(r.s, r.b));
+    const found = (r.b.notes || []).find(n => n.id === rnQaId);
     if (found) throw new Error('Soft-deleted note still appears in list');
     return { detail: 'Correctly absent from list after soft-delete' };
   });
