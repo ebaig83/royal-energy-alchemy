@@ -1972,15 +1972,16 @@ async function run() {
 
   // CS-20: Ideas has New Idea button and Generate button
   await check(CS + ' Ideas has New Idea + Generate buttons', async () => {
-    const hasNew = await page.evaluate(() => {
-      const btns = Array.from(document.querySelectorAll('#tab-cs button'));
-      return btns.some(b => b.textContent.includes('New Idea'));
-    });
-    const hasGen = await page.evaluate(() => {
-      const btns = Array.from(document.querySelectorAll('#tab-cs button'));
-      return btns.some(b => b.textContent.includes('Generate'));
-    });
-    if (!hasNew) throw new Error('New Idea button not found');
+    // Ensure ideas section is active and toolbar has rendered
+    await page.evaluate(() => { window.csSection('ideas'); });
+    await page.waitForSelector('#tab-cs #cs-ideas-list', { timeout: AI_TIMEOUT });
+    await page.waitForFunction(
+      () => Array.from(document.querySelectorAll('#tab-cs button')).some(b => b.textContent.includes('New Idea')),
+      { timeout: AI_TIMEOUT }
+    );
+    const hasGen = await page.evaluate(() =>
+      Array.from(document.querySelectorAll('#tab-cs button')).some(b => b.textContent.includes('Generate'))
+    );
     if (!hasGen) throw new Error('Generate button not found');
     return { detail: 'New Idea and Generate buttons present' };
   });
