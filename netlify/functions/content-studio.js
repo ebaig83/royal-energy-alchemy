@@ -68,7 +68,7 @@ exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return respond(200, {});
 
   const auth = requireAdmin(event);
-  if (auth.error) return respond(auth.status, { error: auth.error });
+  if (auth.error) return auth.error;
 
   const sb     = getClient();
   const params = Object.fromEntries(new URLSearchParams(event.queryStringParameters || {}));
