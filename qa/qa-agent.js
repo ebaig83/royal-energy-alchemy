@@ -2146,6 +2146,196 @@ async function run() {
     return { detail: 'External sources section + Add Source button present' };
   });
 
+  // ── Phase 15: Content Generation Engine QA (Suite 16) ────────────────
+  const CD = 'CD:';
+  let cdDraftId = null;
+  let cdIdeaId  = null;
+
+  console.log('\n-- Phase 15: Content Generation Engine QA (Suite 16)');
+
+  // CD-01: content_drafts schema via schema validator
+  await check(CD + ' content_drafts table exists and schema valid', async () => {
+    const r = await finReq('GET', '/.netlify/functions/financial?section=schema');
+    const cd = (r.tables || []).find(t => t.table === 'content_drafts');
+    if (!cd) return { status: 'WARN', detail: 'content_drafts not in schema report — run migration 2026-06-13-content-drafts.sql' };
+    if (!cd.exists) return { status: 'WARN', detail: 'content_drafts table not yet created' };
+    const issues = [
+      ...(cd.missing_columns || []).map(c => 'missing col: ' + c),
+      ...(cd.missing_check_constraints || []).map(c => 'missing constraint: ' + c),
+      ...(cd.missing_indexes || []).map(i => 'missing index: ' + i),
+    ];
+    if (issues.length) throw new Error(issues.join('; '));
+    return { detail: 'content_drafts schema fully valid' };
+  });
+
+  // CD-02: Library section renders
+  await check(CD + ' Library section renders', async () => {
+    await page.evaluate(() => { window.csSection('library'); });
+    await page.waitForSelector('#tab-cs .cs-lib-header', { timeout: AI_TIMEOUT });
+    const hasKpis = await page.evaluate(() => !!document.querySelector('#tab-cs .cs-lib-kpis'));
+    if (!hasKpis) throw new Error('.cs-lib-kpis not found');
+    return { detail: 'Library section loaded with KPI strip' };
+  });
+
+  // CD-03: Library has filter buttons (All/Draft/Review/Approved/Published/Archived)
+  await check(CD + ' Library filter KPIs present', async () => {
+    const labels = await page.evaluate(() =>
+      Array.from(document.querySelectorAll('#tab-cs .cs-lib-kpi')).map(b => b.textContent.trim())
+    );
+    const required = ['All','Draft','Review','Approved','Published','Archived'];
+    const missing = required.filter(r => !labels.some(l => l.includes(r)));
+    if (missing.length) throw new Error('Missing filter KPIs: ' + missing.join(', '));
+    return { detail: 'All 6 filter KPIs present: ' + labels.join(', ') };
+  });
+
+  // CD-04: GET /content-studio?section=library returns counts
+  await check(CD + ' Library API returns status counts', async () => {
+    const r = await finReq('GET', '/.netlify/functions/content-studio?section=library');
+    if (r.migration_needed) return { status: 'WARN', detail: 'Migration needed — run 2026-06-13-content-drafts.sql' };
+    const c = r.counts;
+    if (typeof c !== 'object') throw new Error('counts missing from library response');
+    const required = ['total','draft','review','approved','published','archived'];
+    const missing = required.filter(k => !(k in c));
+    if (missing.length) throw new Error('Missing count keys: ' + missing.join(', '));
+    return { detail: 'Library counts: ' + JSON.stringify(c) };
+  });
+
+  // CD-05: Create a manual draft via API
+  await check(CD + ' Create manual draft via API', async () => {
+    const r = await finReq('POST', '/.netlify/functions/content-studio?action=create_draft', {
+      title:        'QA Test Draft — Social Post',
+      content_type: 'social_post',
+      draft_content: 'Test content for QA validation.',
+    });
+    if (!r.draft || !r.draft.id) throw new Error('No draft.id in response: ' + JSON.stringify(r));
+    cdDraftId = r.draft.id;
+    if (r.draft.status !== 'draft') throw new Error('Expected status=draft, got: ' + r.draft.status);
+    if (!Array.isArray(r.draft.source_ids)) throw new Error('source_ids not an array');
+    return { detail: 'Draft created: ' + cdDraftId + ' status=' + r.draft.status };
+  });
+
+  // CD-06: Draft appears in library GET
+  await check(CD + ' Created draft visible in library list', async () => {
+    if (!cdDraftId) return { status: 'SKIP', detail: 'no cdDraftId' };
+    const r = await finReq('GET', '/.netlify/functions/content-studio?section=drafts&status=draft');
+    const found = (r.drafts || []).find(d => d.id === cdDraftId);
+    if (!found) throw new Error('Draft ' + cdDraftId + ' not found in list');
+    return { detail: 'Draft found in list, title: ' + found.title };
+  });
+
+  // CD-07: Edit draft (update title + content)
+  await check(CD + ' Edit draft via API (update_draft)', async () => {
+    if (!cdDraftId) return { status: 'SKIP', detail: 'no cdDraftId' };
+    const r = await finReq('PATCH', '/.netlify/functions/content-studio?action=update_draft&id=' + cdDraftId, {
+      title:        'QA Test Draft — Social Post (edited)',
+      draft_content: 'Updated content after edit.',
+    });
+    if (!r.draft) throw new Error('No draft in response');
+    if (r.draft.title !== 'QA Test Draft — Social Post (edited)') throw new Error('Title not updated: ' + r.draft.title);
+    return { detail: 'Draft title updated successfully' };
+  });
+
+  // CD-08: Transition to review
+  await check(CD + ' Transition draft → review', async () => {
+    if (!cdDraftId) return { status: 'SKIP', detail: 'no cdDraftId' };
+    const r = await finReq('PATCH', '/.netlify/functions/content-studio?action=review_draft&id=' + cdDraftId);
+    if (!r.draft) throw new Error('No draft in response');
+    if (r.draft.status !== 'review') throw new Error('Expected review, got: ' + r.draft.status);
+    return { detail: 'Status → review confirmed' };
+  });
+
+  // CD-09: Transition to approved
+  await check(CD + ' Transition draft → approved', async () => {
+    if (!cdDraftId) return { status: 'SKIP', detail: 'no cdDraftId' };
+    const r = await finReq('PATCH', '/.netlify/functions/content-studio?action=approve_draft&id=' + cdDraftId);
+    if (!r.draft) throw new Error('No draft in response');
+    if (r.draft.status !== 'approved') throw new Error('Expected approved, got: ' + r.draft.status);
+    return { detail: 'Status → approved confirmed' };
+  });
+
+  // CD-10: Transition to published
+  await check(CD + ' Transition draft → published', async () => {
+    if (!cdDraftId) return { status: 'SKIP', detail: 'no cdDraftId' };
+    const r = await finReq('PATCH', '/.netlify/functions/content-studio?action=publish_draft&id=' + cdDraftId);
+    if (!r.draft) throw new Error('No draft in response');
+    if (r.draft.status !== 'published') throw new Error('Expected published, got: ' + r.draft.status);
+    return { detail: 'Status → published confirmed' };
+  });
+
+  // CD-11: Search drafts by keyword
+  await check(CD + ' Search drafts by keyword', async () => {
+    if (!cdDraftId) return { status: 'SKIP', detail: 'no cdDraftId' };
+    const r = await finReq('GET', '/.netlify/functions/content-studio?section=drafts&search=QA+Test');
+    const found = (r.drafts || []).find(d => d.id === cdDraftId);
+    if (!found) throw new Error('Draft not found via search');
+    return { detail: 'Draft found via keyword search' };
+  });
+
+  // CD-12: source_ids traceability preserved
+  await check(CD + ' source_ids traceability preserved on draft', async () => {
+    if (!cdDraftId) return { status: 'SKIP', detail: 'no cdDraftId' };
+    const r = await finReq('GET', '/.netlify/functions/content-studio?section=drafts');
+    const d = (r.drafts || []).find(dr => dr.id === cdDraftId);
+    if (!d) throw new Error('Draft not found');
+    if (!Array.isArray(d.source_ids)) throw new Error('source_ids not an array on returned draft');
+    return { detail: 'source_ids is array with ' + d.source_ids.length + ' entries' };
+  });
+
+  // CD-13: Generate Draft from approved idea (if one exists)
+  await check(CD + ' Generate draft from approved idea (if available)', async () => {
+    const r = await finReq('GET', '/.netlify/functions/content-studio?section=ideas&status=approved');
+    const ideas = r.ideas || [];
+    if (!ideas.length) return { status: 'WARN', detail: 'No approved ideas found — approve an idea first to test generation' };
+    cdIdeaId = ideas[0].id;
+    const gen = await finReq('POST', '/.netlify/functions/content-studio?action=generate_draft', {
+      content_idea_id: cdIdeaId,
+    });
+    if (!gen.draft || !gen.draft.id) throw new Error('No draft.id in generate response');
+    if (!gen.draft.source_ids) throw new Error('Generated draft missing source_ids');
+    if (gen.draft.generation_method !== 'generated') throw new Error('generation_method should be "generated"');
+    return { detail: 'Generated draft id=' + gen.draft.id + ' type=' + gen.draft.content_type };
+  });
+
+  // CD-14: Library section shows draft cards in UI
+  await check(CD + ' Library section shows draft cards in UI', async () => {
+    await page.evaluate(() => { window.csSection('library'); });
+    await page.waitForSelector('#tab-cs .cs-lib-list, #tab-cs #cs-lib-list', { timeout: AI_TIMEOUT });
+    await page.waitForFunction(() => {
+      const el = document.getElementById('cs-lib-list');
+      return el && !el.innerHTML.includes('shimmer') && el.innerHTML.length > 50;
+    }, { timeout: AI_TIMEOUT });
+    const hasDraftCards = await page.evaluate(() => !!document.querySelector('#tab-cs .cs-draft-card'));
+    const hasEmpty      = await page.evaluate(() => {
+      const el = document.getElementById('cs-lib-list');
+      return el && el.textContent.includes('No drafts yet');
+    });
+    if (!hasDraftCards && !hasEmpty) throw new Error('Library list neither shows draft cards nor empty state');
+    return { detail: hasDraftCards ? 'Draft cards rendered in UI' : 'Empty state shown (no drafts yet)' };
+  });
+
+  // CD-15: Workflow buttons present on draft cards
+  await check(CD + ' Workflow buttons present on draft cards', async () => {
+    const hasBtns = await page.evaluate(() => {
+      const actions = document.querySelectorAll('#tab-cs .cs-draft-actions');
+      return actions.length > 0;
+    });
+    if (!hasBtns) return { status: 'WARN', detail: 'No draft cards to check workflow buttons — create a draft first' };
+    const btnTexts = await page.evaluate(() =>
+      Array.from(document.querySelectorAll('#tab-cs .cs-draft-actions button')).map(b => b.textContent.trim())
+    );
+    return { detail: 'Workflow buttons found: ' + [...new Set(btnTexts)].join(', ') };
+  });
+
+  // CD-16: Soft delete — draft absent after delete
+  await check(CD + ' Soft-deleted draft absent from list', async () => {
+    if (!cdDraftId) return { status: 'SKIP', detail: 'no cdDraftId' };
+    await finReq('PATCH', '/.netlify/functions/content-studio?action=delete_draft&id=' + cdDraftId);
+    const r = await finReq('GET', '/.netlify/functions/content-studio?section=drafts');
+    const found = (r.drafts || []).find(d => d.id === cdDraftId);
+    if (found) throw new Error('Soft-deleted draft still visible');
+    return { detail: 'Soft-deleted draft correctly excluded from list' };
+  });
+
   await browser.close();
 
   // Final report
@@ -2235,6 +2425,18 @@ async function run() {
     console.log('\n=== CONTENT STUDIO QA (Suite 15) ===');
     csResults.forEach(r => console.log(`  ${SICONS[r.status] || '?'} ${r.status.padEnd(5)} ${r.name.replace('CS: ', '')}`));
     console.log(`\n  CS totals : PASS ${csPass}  FAIL ${csFail}  WARN ${csWarn}  SKIP ${csSkip}  / ${csResults.length} checks`);
+  }
+
+  // Content Generation Engine sub-report (Suite 16)
+  const cdResults = results.filter(r => r.name.startsWith('CD:'));
+  const cdPass    = cdResults.filter(r => r.status === 'PASS').length;
+  const cdFail    = cdResults.filter(r => r.status === 'FAIL').length;
+  const cdWarn    = cdResults.filter(r => r.status === 'WARN').length;
+  const cdSkip    = cdResults.filter(r => r.status === 'SKIP').length;
+  if (cdResults.length > 0) {
+    console.log('\n=== CONTENT GENERATION ENGINE QA (Suite 16) ===');
+    cdResults.forEach(r => console.log(`  ${SICONS[r.status] || '?'} ${r.status.padEnd(5)} ${r.name.replace('CD: ', '')}`));
+    console.log(`\n  CD totals : PASS ${cdPass}  FAIL ${cdFail}  WARN ${cdWarn}  SKIP ${cdSkip}  / ${cdResults.length} checks`);
   }
 
   // Technical Debt Regression sub-report (Suite 14)

@@ -159,7 +159,7 @@
       '    <button class="cs-snav" onclick="csSection(\'intelligence\')">◉ Intelligence</button>',
       '    <button class="cs-snav" onclick="csSection(\'ideas\')">✦ Ideas</button>',
       '    <button class="cs-snav" onclick="csSection(\'calendar\')">◈ Calendar</button>',
-      '    <button class="cs-snav" onclick="csSection(\'drafts\')">◎ Drafts</button>',
+      '    <button class="cs-snav" onclick="csSection(\'library\')">📄 Library</button>',
       '    <button class="cs-snav" onclick="csSection(\'sources\')">⌂ Sources</button>',
       '  </div>',
       '  <div id="cs-body" class="cs-body"></div>',
@@ -171,19 +171,19 @@
   window.csSection = function (name) {
     var btns = document.querySelectorAll('.cs-snav');
     btns.forEach(function (b) { b.classList.remove('active'); });
-    var sections = ['dashboard', 'intelligence', 'ideas', 'calendar', 'drafts', 'sources'];
+    var sections = ['dashboard', 'intelligence', 'ideas', 'calendar', 'library', 'sources'];
     var idx = sections.indexOf(name);
     if (idx >= 0 && btns[idx]) btns[idx].classList.add('active');
 
     var body = document.getElementById('cs-body');
     if (!body) return;
 
-    if (name === 'dashboard')    loadDashboard(body);
-    else if (name === 'intelligence') loadIntelligence(body);
-    else if (name === 'ideas')    loadIdeas(body, {});
-    else if (name === 'calendar') loadCalendar(body);
-    else if (name === 'drafts')   loadIdeas(body, { status: 'draft' });
-    else if (name === 'sources')  loadSources(body);
+    if (name === 'dashboard')         loadDashboard(body);
+    else if (name === 'intelligence')  loadIntelligence(body);
+    else if (name === 'ideas')         loadIdeas(body, {});
+    else if (name === 'calendar')      loadCalendar(body);
+    else if (name === 'library')       loadLibrary(body);
+    else if (name === 'sources')       loadSources(body);
   };
 
   // ════════════════════════════════════════════════════════════════════════
@@ -226,6 +226,7 @@
         '    <button class="cs-action-btn" onclick="csGenerate(\'video\')">▶ Generate Video Topics</button>',
         '    <button class="cs-action-btn" onclick="csGenerate(null)">✦ Generate All Ideas</button>',
         '    <button class="cs-action-btn cs-action-secondary" onclick="csSection(\'ideas\')">View All Ideas →</button>',
+        '    <button class="cs-action-btn cs-action-secondary" onclick="csSection(\'library\')">📄 Content Library →</button>',
         '  </div>',
         '</div>',
       ].join('');
@@ -442,6 +443,7 @@
         '    <div class="cs-idea-actions">',
         '      <button class="cs-btn-edit" onclick="csEditIdea(\'' + idea.id + '\')">Edit</button>',
         '      <button class="cs-btn-approve" onclick="csApproveIdea(\'' + idea.id + '\', \'' + idea.status + '\')">' + (idea.status === 'approved' ? 'Unapprove' : 'Approve') + '</button>',
+        idea.status === 'approved' ? '      <button class="cs-btn-draft" onclick="csGenerateDraft(\'' + idea.id + '\')">📄 Generate Draft</button>' : '',
         '      <button class="cs-btn-delete" onclick="csDeleteIdea(\'' + idea.id + '\')">Delete</button>',
         '    </div>',
         '  </div>',
@@ -941,6 +943,270 @@
     _extSourceFilter = el ? el.value : '';
     var csBody = document.getElementById('cs-body');
     if (csBody) loadSources(csBody);
+  };
+
+  // ════════════════════════════════════════════════════════════════════════
+  // GENERATE DRAFT (from approved idea)
+  // ════════════════════════════════════════════════════════════════════════
+
+  window.csGenerateDraft = function (ideaId) {
+    var btn = document.querySelector('[onclick="csGenerateDraft(\'' + ideaId + '\')"]');
+    if (btn) { btn.textContent = '⏳ Generating…'; btn.disabled = true; }
+    csReq('POST', '/.netlify/functions/content-studio?action=generate_draft', { content_idea_id: ideaId })
+      .then(function (d) {
+        toast('Draft generated! Opening Content Library…');
+        setTimeout(function () { csSection('library'); }, 600);
+      })
+      .catch(function (e) {
+        toast('Draft generation failed: ' + e.message, true);
+        if (btn) { btn.textContent = '📄 Generate Draft'; btn.disabled = false; }
+      });
+  };
+
+  // ════════════════════════════════════════════════════════════════════════
+  // CONTENT LIBRARY
+  // ════════════════════════════════════════════════════════════════════════
+
+  var _libFilter   = 'all';
+  var _libSearch   = '';
+  var _editDraftId = null;
+
+  function loadLibrary(body) {
+    body.innerHTML = '<div class="cs-loading">' + shimmer(4) + '</div>';
+    csReq('GET', '/.netlify/functions/content-studio?section=library').then(function (lib) {
+      var c = lib.counts || {};
+      var warn = lib.migration_needed ? '<div class="cs-warn">Run migration 2026-06-13-content-drafts.sql in Supabase to enable the Content Library.</div>' : '';
+
+      body.innerHTML = warn + [
+        // Library header KPIs
+        '<div class="cs-lib-header">',
+        '  <div class="cs-lib-title">📄 Content Library</div>',
+        '  <button class="cs-btn-primary" onclick="csNewDraftForm()">+ New Draft</button>',
+        '</div>',
+        '<div class="cs-lib-kpis">',
+        libKpi('All',       c.total     || 0, 'all',       _libFilter),
+        libKpi('Draft',     c.draft     || 0, 'draft',     _libFilter),
+        libKpi('Review',    c.review    || 0, 'review',    _libFilter),
+        libKpi('Approved',  c.approved  || 0, 'approved',  _libFilter),
+        libKpi('Published', c.published || 0, 'published', _libFilter),
+        libKpi('Archived',  c.archived  || 0, 'archived',  _libFilter),
+        '</div>',
+
+        // Search + filter
+        '<div class="cs-lib-controls">',
+        '  <input id="cs-lib-search" class="cs-search" placeholder="Search drafts…" oninput="csLibSearch()" value="' + esc(_libSearch) + '">',
+        '  <select class="cs-filter-select" id="cs-lib-type-filter" onchange="csLibTypeFilter()">',
+        '    <option value="">All Types</option>',
+        CONTENT_TYPES.map(function (t) { return '<option value="' + t.value + '">' + t.label + '</option>'; }).join(''),
+        '  </select>',
+        '</div>',
+
+        // Form placeholder
+        '<div id="cs-draft-form-wrap"></div>',
+
+        // Drafts list
+        '<div id="cs-lib-list">' + shimmer(3) + '</div>',
+      ].join('');
+
+      fetchDrafts();
+    }).catch(function (e) {
+      body.innerHTML = '<div class="cs-error">Failed to load library: ' + esc(e.message) + '</div>';
+    });
+  }
+
+  function libKpi(label, count, filterVal, active) {
+    var isActive = active === filterVal;
+    return '<button class="cs-lib-kpi' + (isActive ? ' cs-lib-kpi-active' : '') + '" onclick="csLibFilter(\'' + filterVal + '\')">' +
+      '<span class="cs-lib-kpi-num">' + count + '</span>' +
+      '<span class="cs-lib-kpi-lbl">' + label + '</span>' +
+      '</button>';
+  }
+
+  function fetchDrafts() {
+    var qs = '?section=drafts';
+    if (_libFilter && _libFilter !== 'all') qs += '&status=' + _libFilter;
+    if (_libSearch) qs += '&search=' + encodeURIComponent(_libSearch);
+    var el = document.getElementById('cs-lib-list');
+    if (el) el.innerHTML = shimmer(3);
+    csReq('GET', '/.netlify/functions/content-studio' + qs).then(function (d) {
+      renderDraftList(d.drafts || []);
+    }).catch(function (e) {
+      var el2 = document.getElementById('cs-lib-list');
+      if (el2) el2.innerHTML = '<div class="cs-error">' + esc(e.message) + '</div>';
+    });
+  }
+
+  function renderDraftList(drafts) {
+    var el = document.getElementById('cs-lib-list');
+    if (!el) return;
+    if (!drafts.length) {
+      el.innerHTML = '<div class="cs-empty">No drafts yet. Approve an idea and click "Generate Draft" to create your first content draft.</div>';
+      return;
+    }
+    el.innerHTML = drafts.map(function (d) {
+      return renderDraftCard(d);
+    }).join('');
+  }
+
+  function renderDraftCard(d) {
+    var statusActions = draftStatusActions(d);
+    var preview = d.draft_content ? d.draft_content.replace(/#+\s/g, '').slice(0, 200) : '';
+    return [
+      '<div class="cs-draft-card" id="cs-draft-' + d.id + '">',
+      '  <div class="cs-draft-top">',
+      '    ' + typeBadge(d.content_type),
+      '    ' + draftStatusBadge(d.status),
+      d.generation_method === 'generated' ? '<span class="cs-gen-badge">⚡ Generated</span>' : '<span class="cs-gen-badge cs-gen-manual">✎ Manual</span>',
+      '    <div class="cs-draft-actions">',
+      statusActions,
+      '      <button class="cs-btn-edit" onclick="csEditDraft(\'' + d.id + '\')">Edit</button>',
+      '      <button class="cs-btn-delete" onclick="csDeleteDraft(\'' + d.id + '\')">Delete</button>',
+      '    </div>',
+      '  </div>',
+      '  <div class="cs-draft-title">' + esc(d.title) + '</div>',
+      preview ? '<div class="cs-draft-preview">' + esc(preview) + (d.draft_content.length > 200 ? '…' : '') + '</div>' : '',
+      renderTrace(d.source_ids),
+      '<div class="cs-draft-meta">Created ' + fmt(d.created_at) + '</div>',
+      '</div>',
+    ].join('');
+  }
+
+  function draftStatusBadge(s) {
+    var colors = { draft: '#7a7060', review: '#1976d2', approved: '#2e7d32', published: '#6a1b9a', archived: '#424242' };
+    var color = colors[s] || '#7a7060';
+    return '<span class="cs-draft-status" style="background:' + color + '">' + s.toUpperCase() + '</span>';
+  }
+
+  function draftStatusActions(d) {
+    var html = '';
+    if (d.status === 'draft')     html += '<button class="cs-btn-workflow" onclick="csReviewDraft(\'' + d.id + '\')">Send to Review</button>';
+    if (d.status === 'review')    html += '<button class="cs-btn-workflow cs-btn-approve" onclick="csApproveDraft(\'' + d.id + '\')">Approve</button>';
+    if (d.status === 'approved')  html += '<button class="cs-btn-workflow cs-btn-publish" onclick="csPublishDraft(\'' + d.id + '\')">Publish</button>';
+    if (d.status !== 'archived')  html += '<button class="cs-btn-workflow cs-btn-archive" onclick="csArchiveDraft(\'' + d.id + '\')">Archive</button>';
+    return html;
+  }
+
+  // ── Library controls ─────────────────────────────────────────────────
+
+  window.csLibFilter = function (filterVal) {
+    _libFilter = filterVal;
+    var csBody = document.getElementById('cs-body');
+    if (csBody) loadLibrary(csBody);
+  };
+
+  window.csLibSearch = function () {
+    var el = document.getElementById('cs-lib-search');
+    _libSearch = el ? el.value : '';
+    fetchDrafts();
+  };
+
+  window.csLibTypeFilter = function () {
+    var el = document.getElementById('cs-lib-type-filter');
+    var qs = '?section=drafts';
+    if (_libFilter && _libFilter !== 'all') qs += '&status=' + _libFilter;
+    if (el && el.value) qs += '&content_type=' + el.value;
+    if (_libSearch) qs += '&search=' + encodeURIComponent(_libSearch);
+    var listEl = document.getElementById('cs-lib-list');
+    if (listEl) listEl.innerHTML = shimmer(3);
+    csReq('GET', '/.netlify/functions/content-studio' + qs).then(function (d) {
+      renderDraftList(d.drafts || []);
+    }).catch(function (e) {
+      if (listEl) listEl.innerHTML = '<div class="cs-error">' + esc(e.message) + '</div>';
+    });
+  };
+
+  // ── Draft form ───────────────────────────────────────────────────────
+
+  window.csNewDraftForm = function () {
+    _editDraftId = null;
+    renderDraftForm({});
+  };
+
+  window.csEditDraft = function (id) {
+    _editDraftId = id;
+    csReq('GET', '/.netlify/functions/content-studio?section=drafts').then(function (d) {
+      var draft = (d.drafts || []).find(function (dr) { return dr.id === id; });
+      if (draft) renderDraftForm(draft);
+    }).catch(function (e) { toast(e.message, true); });
+  };
+
+  function renderDraftForm(draft) {
+    var wrap = document.getElementById('cs-draft-form-wrap');
+    if (!wrap) return;
+    var typeOpts = CONTENT_TYPES.map(function (t) {
+      return '<option value="' + t.value + '"' + (draft.content_type === t.value ? ' selected' : '') + '>' + t.label + '</option>';
+    }).join('');
+    wrap.innerHTML = [
+      '<div class="cs-form cs-draft-form" id="cs-draft-form">',
+      '  <div class="cs-form-row"><label class="cs-label">Title *</label>',
+      '    <input class="cs-input" id="csDraftTitle" value="' + esc(draft.title || '') + '" placeholder="Draft title…"></div>',
+      draft.id ? '' : [
+        '  <div class="cs-form-row"><label class="cs-label">Content Type *</label>',
+        '    <select class="cs-input" id="csDraftType"><option value="">— select —</option>' + typeOpts + '</select></div>',
+      ].join(''),
+      '  <div class="cs-form-row"><label class="cs-label">Draft Content</label>',
+      '    <textarea class="cs-textarea cs-draft-textarea" id="csDraftContent" rows="20" placeholder="Write or paste draft content here…">' + esc(draft.draft_content || '') + '</textarea></div>',
+      '  <div class="cs-form-actions">',
+      '    <button class="cs-btn-primary" onclick="csDraftSave()">Save Draft</button>',
+      '    <button class="cs-btn-cancel" onclick="csDraftCancel()">Cancel</button>',
+      '  </div>',
+      '</div>',
+    ].join('');
+    wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  window.csDraftSave = function () {
+    var title   = (document.getElementById('csDraftTitle')   || {}).value || '';
+    var content = (document.getElementById('csDraftContent') || {}).value || '';
+    var ctype   = (document.getElementById('csDraftType')    || {}).value || '';
+
+    if (!title.trim()) { toast('Title is required.', true); return; }
+
+    var isNew = !_editDraftId;
+    if (isNew && !ctype) { toast('Content type is required.', true); return; }
+
+    var body = isNew
+      ? { title: title.trim(), content_type: ctype, draft_content: content }
+      : { title: title.trim(), draft_content: content };
+
+    var req = isNew
+      ? csReq('POST', '/.netlify/functions/content-studio?action=create_draft', body)
+      : csReq('PATCH', '/.netlify/functions/content-studio?action=update_draft&id=' + _editDraftId, body);
+
+    req.then(function () {
+      toast(isNew ? 'Draft created.' : 'Draft saved.');
+      csDraftCancel();
+      fetchDrafts();
+    }).catch(function (e) { toast(e.message, true); });
+  };
+
+  window.csDraftCancel = function () {
+    var wrap = document.getElementById('cs-draft-form-wrap');
+    if (wrap) wrap.innerHTML = '';
+    _editDraftId = null;
+  };
+
+  // ── Draft workflow ───────────────────────────────────────────────────
+
+  function draftTransition(id, action, label) {
+    csReq('PATCH', '/.netlify/functions/content-studio?action=' + action + '&id=' + id)
+      .then(function (d) {
+        toast('Draft status: ' + (d.draft ? d.draft.status : label));
+        fetchDrafts();
+      })
+      .catch(function (e) { toast(e.message, true); });
+  }
+
+  window.csReviewDraft  = function (id) { draftTransition(id, 'review_draft',  'review');    };
+  window.csApproveDraft = function (id) { draftTransition(id, 'approve_draft', 'approved');  };
+  window.csPublishDraft = function (id) { draftTransition(id, 'publish_draft', 'published'); };
+  window.csArchiveDraft = function (id) { draftTransition(id, 'archive_draft', 'archived');  };
+
+  window.csDeleteDraft  = function (id) {
+    if (!confirm('Delete this draft? This cannot be undone.')) return;
+    csReq('PATCH', '/.netlify/functions/content-studio?action=delete_draft&id=' + id)
+      .then(function () { toast('Draft deleted.'); fetchDrafts(); })
+      .catch(function (e) { toast(e.message, true); });
   };
 
 })();

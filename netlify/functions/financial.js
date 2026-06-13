@@ -990,6 +990,26 @@ const SPRINT1_SCHEMA = {
     indexes:    ['cs_type_idx','cs_score_idx','cs_deleted_idx','cs_date_idx','cs_tags_idx'],
     grants:     ['SELECT','INSERT','UPDATE','DELETE'],
   },
+  content_drafts: {
+    column_contracts: [
+      { name: 'id',                not_null: true,  default_contains: 'gen_random_uuid' },
+      { name: 'content_idea_id',   not_null: false, default_contains: null              },
+      { name: 'title',             not_null: true,  default_contains: null              },
+      { name: 'content_type',      not_null: true,  default_contains: null              },
+      { name: 'draft_content',     not_null: false, default_contains: null              },
+      { name: 'source_ids',        not_null: true,  default_contains: '[]'              },
+      { name: 'generation_method', not_null: false, default_contains: null              },
+      { name: 'status',            not_null: true,  default_contains: 'draft'           },
+      { name: 'created_by',        not_null: true,  default_contains: 'daron'           },
+      { name: 'created_at',        not_null: true,  default_contains: 'now()'           },
+      { name: 'updated_at',        not_null: true,  default_contains: 'now()'           },
+      { name: 'deleted_at',        not_null: false, default_contains: null              },
+    ],
+    check_constraints: ['content_drafts_status_check','content_drafts_type_check','content_drafts_method_check'],
+    fk_columns: [],
+    indexes:    ['cd_status_idx','cd_type_idx','cd_idea_idx','cd_deleted_idx','cd_created_idx','cd_source_ids_idx'],
+    grants:     ['SELECT','INSERT','UPDATE','DELETE'],
+  },
 };
 
 async function validateSprint1Schema(sb) {
