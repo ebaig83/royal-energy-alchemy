@@ -83,6 +83,8 @@ async function safeOne(query, fallback = null) {
   return data || fallback;
 }
 
+function userErr(msg) { const e = new Error(msg); e.name = 'UserError'; return e; }
+
 // ── Invoice number: timestamp-based, collision-resistant ─────────────────
 async function nextInvoiceNumber(sb) {
   const year = new Date().getFullYear();
@@ -219,6 +221,7 @@ exports.handler = async function(event) {
       if (action === 'create_expense')   return respond(201, await createExpense(sb, body, auth, ip));
       return respond(400, { error: `Unknown action: ${action}` });
     } catch (err) {
+      if (err.name === 'UserError') return respond(400, { error: err.message });
       console.error('[financial] POST', action, err.message);
       return respond(500, { error: err.message });
     }
@@ -240,6 +243,7 @@ exports.handler = async function(event) {
       if (action === 'delete_expense')  return respond(200, await deleteExpense(sb, id, auth, ip));
       return respond(400, { error: `Unknown action: ${action}` });
     } catch (err) {
+      if (err.name === 'UserError') return respond(400, { error: err.message });
       console.error('[financial] PATCH', action, err.message);
       return respond(500, { error: err.message });
     }
@@ -1230,17 +1234,17 @@ async function getPnL(sb) {
 // ═════════════════════════════════════════════════════════════════════════
 
 async function createExpense(sb, body, auth, ip) {
-  if (!body.description?.trim())       throw new Error('description is required.');
-  if (!body.category)                  throw new Error('category is required.');
-  if (body.amount == null || isNaN(body.amount)) throw new Error('amount is required.');
-  if (Number(body.amount) <= 0)        throw new Error('amount must be greater than 0.');
+  if (!body.description?.trim())       throw userErr('description is required.');
+  if (!body.category)                  throw userErr('category is required.');
+  if (body.amount == null || isNaN(body.amount)) throw userErr('amount is required.');
+  if (Number(body.amount) <= 0)        throw userErr('amount must be greater than 0.');
 
   if (!VALID_EXPENSE_CATEGORIES.includes(body.category))
-    throw new Error(`category must be one of: ${VALID_EXPENSE_CATEGORIES.join(', ')}`);
+    throw userErr(`category must be one of: ${VALID_EXPENSE_CATEGORIES.join(', ')}`);
 
   const paymentMethod = body.payment_method || 'personal';
   if (!VALID_PAYMENT_METHODS.includes(paymentMethod))
-    throw new Error(`payment_method must be one of: ${VALID_PAYMENT_METHODS.join(', ')}`);
+    throw userErr(`payment_method must be one of: ${VALID_PAYMENT_METHODS.join(', ')}`);
 
   const insert = {
     expense_date:       body.expense_date       || new Date().toISOString().slice(0, 10),
@@ -1281,18 +1285,18 @@ async function updateExpense(sb, id, body, auth, ip) {
   allowed.forEach(k => { if (body[k] !== undefined) updates[k] = body[k]; });
 
   if (updates.category && !VALID_EXPENSE_CATEGORIES.includes(updates.category))
-    throw new Error(`category must be one of: ${VALID_EXPENSE_CATEGORIES.join(', ')}`);
+    throw userErr(`category must be one of: ${VALID_EXPENSE_CATEGORIES.join(', ')}`);
 
   if (updates.payment_method && !VALID_PAYMENT_METHODS.includes(updates.payment_method))
-    throw new Error(`payment_method must be one of: ${VALID_PAYMENT_METHODS.join(', ')}`);
+    throw userErr(`payment_method must be one of: ${VALID_PAYMENT_METHODS.join(', ')}`);
 
   if (updates.amount !== undefined) {
     updates.amount = parseFloat(updates.amount);
     if (isNaN(updates.amount) || updates.amount <= 0)
-      throw new Error('amount must be a positive number.');
+      throw userErr('amount must be a positive number.');
   }
 
-  if (Object.keys(updates).length === 0) throw new Error('No valid fields to update.');
+  if (Object.keys(updates).length === 0) throw userErr('No valid fields to update.');
 
   updates.updated_at = new Date().toISOString();
 
