@@ -2318,6 +2318,133 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
   .cs-cal-grid { font-size: .65rem; }
   .cs-week-grid { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ══ TRAINING CENTER MODULE (tc-module.js) ══════════════════════════════ */
+.tc-wrap       { padding: 0; }
+.tc-subnav     { display: flex; gap: 0; border-bottom: 1px solid rgba(232,184,75,.2); margin-bottom: 24px; overflow-x: auto; }
+.tc-snav       { padding: 11px 20px; background: transparent; border: none; border-bottom: 2px solid transparent; color: #9a9080; font-size: .78rem; letter-spacing: .1em; cursor: pointer; white-space: nowrap; transition: color .2s; }
+.tc-snav:hover        { color: #e8b84b; }
+.tc-snav-active       { color: #e8b84b; border-bottom-color: #e8b84b; }
+.tc-body       { padding: 0 2px; }
+
+/* ── Dashboard ── */
+.tc-dash-header     { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; flex-wrap: wrap; gap: 12px; }
+.tc-dash-title      { font-size: 1.15rem; font-weight: 600; color: #e0d8cc; }
+.tc-kpi-row         { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 24px; }
+.tc-kpi             { background: rgba(30,25,20,.6); border: 1px solid rgba(232,184,75,.12); border-radius: 10px; padding: 16px 12px; text-align: center; }
+.tc-kpi-icon        { font-size: 1.4rem; margin-bottom: 4px; }
+.tc-kpi-num         { font-size: 1.8rem; font-weight: 700; color: #e8b84b; }
+.tc-kpi-lbl         { font-size: .7rem; color: #7a7060; text-transform: uppercase; letter-spacing: .08em; margin-top: 2px; }
+.tc-dash-grid       { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.tc-dash-card       { background: rgba(30,25,20,.5); border: 1px solid rgba(232,184,75,.1); border-radius: 12px; padding: 18px 20px; }
+.tc-dash-card-title { font-size: .8rem; letter-spacing: .1em; color: #e8b84b; text-transform: uppercase; margin-bottom: 14px; }
+.tc-pipeline        { display: flex; flex-direction: column; gap: 8px; }
+.tc-pipe-item       { display: flex; align-items: center; gap: 10px; }
+.tc-pipe-dot        { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.tc-pipe-lbl        { font-size: .83rem; color: #9a9080; flex: 1; }
+.tc-pipe-count      { font-size: .88rem; font-weight: 600; color: #e0d8cc; }
+.tc-quick-actions   { display: flex; flex-direction: column; gap: 8px; }
+.tc-quick-btn       { padding: 9px 14px; background: rgba(232,184,75,.06); border: 1px solid rgba(232,184,75,.18); border-radius: 7px; color: #e8b84b; font-size: .8rem; cursor: pointer; text-align: left; transition: background .2s; }
+.tc-quick-btn:hover { background: rgba(232,184,75,.14); }
+
+/* ── Section header ── */
+.tc-section-header  { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; flex-wrap: wrap; gap: 10px; }
+.tc-section-title   { font-size: 1.05rem; font-weight: 600; color: #e0d8cc; }
+.tc-header-actions  { display: flex; gap: 8px; }
+
+/* ── Filters ── */
+.tc-filters         { display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
+.tc-search          { flex: 1; min-width: 180px; padding: 8px 14px; background: rgba(255,255,255,.04); border: 1px solid rgba(232,184,75,.2); border-radius: 6px; color: #e8e0d4; font-size: .88rem; outline: none; }
+.tc-filter-select   { padding: 8px 12px; background: rgba(255,255,255,.04); border: 1px solid rgba(232,184,75,.2); border-radius: 6px; color: #e8e0d4; font-size: .82rem; cursor: pointer; }
+
+/* ── Module card ── */
+.tc-module-card     { background: rgba(30,25,20,.7); border: 1px solid rgba(232,184,75,.1); border-radius: 12px; padding: 16px 18px; margin-bottom: 14px; }
+.tc-mod-top         { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.tc-mod-actions     { display: flex; gap: 6px; flex-wrap: wrap; margin-left: auto; }
+.tc-mod-title       { font-size: 1rem; font-weight: 600; color: #e0d8cc; margin-bottom: 8px; line-height: 1.4; }
+.tc-mod-preview     { font-size: .82rem; color: #7a7060; margin-bottom: 8px; line-height: 1.5; white-space: pre-wrap; }
+.tc-objectives      { font-size: .78rem; color: #9a8870; margin-bottom: 6px; }
+.tc-objectives-lbl  { color: #7a7060; letter-spacing: .06em; font-size: .72rem; text-transform: uppercase; }
+.tc-duration        { font-size: .72rem; padding: 2px 8px; background: rgba(232,184,75,.08); border: 1px solid rgba(232,184,75,.18); border-radius: 10px; color: #e8b84b; }
+.tc-mod-meta        { font-size: .72rem; color: #5a5040; margin-top: 8px; }
+
+/* ── Type / Difficulty / Status badges ── */
+.tc-type-badge      { padding: 2px 9px; border-radius: 12px; font-size: .7rem; font-weight: 600; letter-spacing: .06em; border: 1px solid; text-transform: uppercase; }
+.tc-diff-badge      { padding: 2px 8px; border-radius: 10px; font-size: .68rem; font-weight: 600; border: 1px solid; }
+.tc-status-badge    { padding: 2px 8px; border-radius: 12px; font-size: .68rem; font-weight: 700; letter-spacing: .08em; color: #fff; }
+
+/* ── Source trace ── */
+.tc-trace      { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; }
+.tc-trace-lbl  { font-size: .7rem; color: #7a7060; letter-spacing: .06em; text-transform: uppercase; }
+.tc-trace-chip { padding: 2px 8px; background: rgba(232,184,75,.07); border: 1px solid rgba(232,184,75,.18); border-radius: 12px; font-size: .7rem; color: #e8b84b; }
+
+/* ── Learning Path / Cert cards ── */
+.tc-path-card, .tc-cert-card { background: rgba(30,25,20,.7); border: 1px solid rgba(232,184,75,.1); border-radius: 12px; padding: 16px 18px; margin-bottom: 14px; }
+.tc-path-modules    { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.tc-path-mod-count  { font-size: .8rem; color: #b09ef8; font-weight: 600; }
+
+/* ── Resources section ── */
+.tc-res-section     { margin-bottom: 28px; }
+.tc-res-header      { font-size: .85rem; font-weight: 600; color: #e8b84b; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid rgba(232,184,75,.12); }
+.tc-res-list        { display: flex; flex-direction: column; gap: 8px; }
+.tc-res-item        { background: rgba(30,25,20,.5); border: 1px solid rgba(255,255,255,.06); border-radius: 8px; padding: 12px 14px; }
+.tc-res-title       { font-size: .88rem; color: #e0d8cc; font-weight: 500; margin-bottom: 4px; }
+.tc-res-summary     { font-size: .78rem; color: #7a7060; line-height: 1.4; }
+.tc-res-tags        { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+.tc-res-tag         { font-size: .68rem; padding: 1px 7px; background: rgba(176,158,248,.08); border: 1px solid rgba(176,158,248,.15); border-radius: 10px; color: #b09ef8; }
+.tc-res-type        { font-size: .68rem; padding: 1px 7px; background: rgba(232,184,75,.07); border: 1px solid rgba(232,184,75,.18); border-radius: 10px; color: #e8b84b; margin-right: 6px; }
+.tc-res-status      { font-size: .68rem; padding: 1px 7px; background: rgba(80,200,80,.08); border: 1px solid rgba(80,200,80,.18); border-radius: 10px; color: #50c850; }
+
+/* ── Workflow buttons ── */
+.tc-btn-primary     { padding: 9px 18px; background: rgba(232,184,75,.12); border: 1px solid rgba(232,184,75,.3); border-radius: 6px; color: #e8b84b; font-size: .8rem; letter-spacing: .06em; cursor: pointer; transition: background .2s; }
+.tc-btn-primary:hover  { background: rgba(232,184,75,.22); }
+.tc-btn-secondary   { padding: 9px 16px; background: transparent; border: 1px solid rgba(232,184,75,.2); border-radius: 6px; color: rgba(232,184,75,.65); font-size: .8rem; letter-spacing: .06em; cursor: pointer; }
+.tc-btn-cancel      { padding: 7px 14px; background: transparent; border: 1px solid rgba(255,255,255,.1); border-radius: 6px; color: #7a7060; font-size: .78rem; cursor: pointer; }
+.tc-btn-edit        { padding: 4px 10px; border-radius: 6px; font-size: .75rem; cursor: pointer; border: 1px solid rgba(255,255,255,.12); background: transparent; color: #a09080; }
+.tc-btn-delete      { padding: 4px 10px; border-radius: 6px; font-size: .75rem; cursor: pointer; border: 1px solid rgba(200,80,80,.25); background: transparent; color: #c07070; }
+.tc-btn-workflow    { padding: 4px 10px; border-radius: 6px; font-size: .75rem; cursor: pointer; border: 1px solid rgba(176,158,248,.3); background: rgba(176,158,248,.1); color: #b09ef8; transition: background .2s; }
+.tc-btn-workflow:hover { background: rgba(176,158,248,.2); }
+.tc-btn-approve     { border-color: rgba(80,200,80,.3); background: rgba(80,200,80,.1); color: #50c850; }
+.tc-btn-approve:hover  { background: rgba(80,200,80,.2); }
+.tc-btn-publish     { border-color: rgba(130,80,220,.3); background: rgba(130,80,220,.1); color: #9060d0; }
+.tc-btn-archive     { border-color: rgba(120,100,80,.3); background: rgba(120,100,80,.1); color: #a08060; }
+
+/* ── Form ── */
+.tc-form            { background: rgba(255,255,255,.03); border: 1px solid rgba(232,184,75,.2); border-radius: 10px; padding: 22px 24px; margin-bottom: 20px; }
+.tc-gen-form        { border-color: rgba(176,158,248,.25); background: rgba(176,158,248,.03); }
+.tc-form-title      { font-size: .9rem; font-weight: 600; color: #e8b84b; letter-spacing: .06em; margin-bottom: 18px; }
+.tc-form-row        { margin-bottom: 14px; }
+.tc-form-row-2      { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.tc-form-actions    { display: flex; gap: 10px; margin-top: 18px; }
+.tc-label           { display: block; font-size: .75rem; letter-spacing: .08em; color: #b09ef8; text-transform: uppercase; margin-bottom: 5px; }
+.tc-input           { width: 100%; padding: 9px 14px; background: rgba(255,255,255,.04); border: 1px solid rgba(232,184,75,.2); border-radius: 6px; color: #e8e0d4; font-size: .88rem; outline: none; box-sizing: border-box; }
+.tc-input:focus     { border-color: rgba(232,184,75,.45); }
+.tc-textarea-sm     { resize: vertical; font-family: 'EB Garamond', serif; min-height: 80px; }
+.tc-mod-textarea    { min-height: 360px; font-family: 'Courier New', monospace; font-size: .82rem; line-height: 1.6; resize: vertical; }
+.tc-input-sm        { max-width: 200px; }
+
+/* ── Shimmer / states ── */
+.tc-shimmer         { padding: 8px 0; }
+.tc-shimmer-row     { display: flex; gap: 12px; margin-bottom: 12px; }
+.tc-shimmer-cell    { height: 60px; flex: 1; border-radius: 8px; background: linear-gradient(90deg, rgba(232,184,75,.04) 25%, rgba(232,184,75,.08) 50%, rgba(232,184,75,.04) 75%); background-size: 200% 100%; animation: tc-shimmer 1.5s infinite; }
+@keyframes tc-shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+.tc-warn            { padding: 12px 16px; background: rgba(255,180,0,.07); border: 1px solid rgba(255,180,0,.2); border-radius: 8px; color: #e8a840; font-size: .84rem; margin-bottom: 20px; }
+.tc-error           { padding: 20px; color: #dc9090; font-size: .88rem; text-align: center; }
+.tc-empty           { padding: 40px 20px; text-align: center; color: #7a7060; font-size: .88rem; letter-spacing: .04em; border: 1px dashed rgba(232,184,75,.1); border-radius: 10px; }
+
+/* ── Toast ── */
+.tc-toast           { position: fixed; bottom: 28px; right: 24px; padding: 12px 20px; background: rgba(20,16,12,.95); border: 1px solid rgba(232,184,75,.3); border-radius: 8px; color: #e8b84b; font-size: .83rem; z-index: 9999; animation: tc-fadein .25s ease; }
+.tc-toast-err       { border-color: rgba(220,80,80,.4); color: #dc9090; }
+@keyframes tc-fadein { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+
+@media (max-width: 900px) {
+  .tc-kpi-row    { grid-template-columns: repeat(3, 1fr); }
+  .tc-dash-grid  { grid-template-columns: 1fr; }
+  .tc-form-row-2 { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .tc-kpi-row  { grid-template-columns: repeat(2, 1fr); }
+}
 </style>
 </head>
 <body>
@@ -2395,6 +2522,9 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
       </button>
       <button class="tab ck-nav-item" onclick="showTab('cs')">
         <span class="nav-icon">✦</span><span class="nav-text">CONTENT STUDIO</span>
+      </button>
+      <button class="tab ck-nav-item" onclick="showTab('tc')">
+        <span class="nav-icon">🎓</span><span class="nav-text">TRAINING CENTER</span>
       </button>
 
       <div class="ck-nav-divider"></div>
@@ -2781,6 +2911,9 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
 
   <!-- CONTENT STUDIO TAB -->
   <div class="tab-content" id="tab-cs"></div>
+
+  <!-- TRAINING CENTER TAB -->
+  <div class="tab-content" id="tab-tc"></div>
 
 
   <!-- BOOKING TAB -->
@@ -3424,6 +3557,7 @@ function showTab(name) {
   if (name === 'followups')   { try { loadFollowUps(); } catch(e){ console.error('loadFollowUps', e); } }
   if (name === 'kh')             { try { khInit(); } catch(e){ console.error('khInit', e); } }
   if (name === 'cs')             { try { csInit(); } catch(e){ console.error('csInit', e); } }
+  if (name === 'tc')             { try { tcInit(); } catch(e){ console.error('tcInit', e); } }
   if (name === 'financial')      { try { fcInit(); } catch(e){ console.error('fcInit', e); } }
   if (name === 'communications') { try { cmInit(); } catch(e){ console.error('cmInit', e); } }
 }
@@ -10302,6 +10436,7 @@ purgeTestEntries();
 <script src="financial-module.js"></script>
 <script src="kh-module.js"></script>
 <script src="cs-module.js"></script>
+<script src="tc-module.js"></script>
 <script src="communications-module.js"></script>
 <script src="pin-lock.js"></script>
 </body>

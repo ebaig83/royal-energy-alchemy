@@ -2338,6 +2338,354 @@ async function run() {
     return { detail: 'Soft-deleted draft correctly excluded from list' };
   });
 
+  // ── Phase 16: Training Center QA (Suite 17) ──────────────────────────────
+  const TC = 'TC:';
+  let tcModuleId = null;
+  let tcPathId   = null;
+  let tcCertId   = null;
+
+  console.log('\n-- Phase 16: Training Center QA (Suite 17)');
+
+  // TC-01: training_modules schema
+  await check(TC + ' training_modules schema valid', async () => {
+    const r = await finReq('GET', '/.netlify/functions/financial?section=schema');
+    const tm = (r.b.tables || []).find(t => t.table === 'training_modules');
+    if (!tm) return { status: 'WARN', detail: 'training_modules not in schema — run migration 2026-06-13-training-center.sql' };
+    if (!tm.exists) return { status: 'WARN', detail: 'training_modules table not yet created' };
+    const issues = [
+      ...(tm.missing_columns || []).map(c => 'missing col: ' + c),
+      ...(tm.missing_check_constraints || []).map(c => 'missing constraint: ' + c),
+    ];
+    if (issues.length) throw new Error(issues.join('; '));
+    return { detail: 'training_modules schema valid' };
+  });
+
+  // TC-02: learning_paths schema
+  await check(TC + ' learning_paths schema valid', async () => {
+    const r = await finReq('GET', '/.netlify/functions/financial?section=schema');
+    const lp = (r.b.tables || []).find(t => t.table === 'learning_paths');
+    if (!lp) return { status: 'WARN', detail: 'learning_paths not in schema — run migration 2026-06-13-training-center.sql' };
+    if (!lp.exists) return { status: 'WARN', detail: 'learning_paths table not yet created' };
+    const issues = [...(lp.missing_columns || []).map(c => 'missing col: ' + c), ...(lp.missing_check_constraints || []).map(c => 'missing: ' + c)];
+    if (issues.length) throw new Error(issues.join('; '));
+    return { detail: 'learning_paths schema valid' };
+  });
+
+  // TC-03: certifications schema
+  await check(TC + ' certifications schema valid', async () => {
+    const r = await finReq('GET', '/.netlify/functions/financial?section=schema');
+    const ce = (r.b.tables || []).find(t => t.table === 'certifications');
+    if (!ce) return { status: 'WARN', detail: 'certifications not in schema — run migration 2026-06-13-training-center.sql' };
+    if (!ce.exists) return { status: 'WARN', detail: 'certifications table not yet created' };
+    const issues = [...(ce.missing_columns || []).map(c => 'missing col: ' + c), ...(ce.missing_check_constraints || []).map(c => 'missing: ' + c)];
+    if (issues.length) throw new Error(issues.join('; '));
+    return { detail: 'certifications schema valid' };
+  });
+
+  // TC-04: training-center function deployed
+  await check(TC + ' training-center function deployed', async () => {
+    const r = await finReq('GET', '/.netlify/functions/training-center?section=dashboard');
+    if (r.s !== 200) throw new Error('HTTP ' + r.s + ': ' + JSON.stringify(r.b).slice(0, 80));
+    if (r.b.migration_needed) return { status: 'WARN', detail: 'Migration needed — run 2026-06-13-training-center.sql' };
+    if (!r.b.kpis) throw new Error('Dashboard response missing kpis: ' + JSON.stringify(r.b).slice(0, 100));
+    return { detail: 'Dashboard KPIs: ' + JSON.stringify(r.b.kpis) };
+  });
+
+  // TC-05: Training Center tab renders in dashboard
+  await check(TC + ' Training Center tab renders in dashboard', async () => {
+    await page.evaluate(() => { window.showTab('tc'); });
+    await page.waitForSelector('#tab-tc .tc-wrap', { timeout: AI_TIMEOUT });
+    return { detail: 'Training Center tab rendered' };
+  });
+
+  // TC-06: Sub-nav has 5 sections
+  await check(TC + ' Sub-nav has 5 sections', async () => {
+    await page.waitForSelector('#tab-tc .tc-subnav', { timeout: TIMEOUT });
+    const count = await page.evaluate(() => document.querySelectorAll('#tab-tc .tc-snav').length);
+    if (count !== 5) throw new Error('Expected 5 sub-nav buttons, found ' + count);
+    return { detail: count + ' sub-nav buttons present' };
+  });
+
+  // TC-07: Dashboard loads KPI row
+  await check(TC + ' Dashboard loads KPI row', async () => {
+    await page.evaluate(() => { window.tcSection('dashboard'); });
+    await page.waitForSelector('#tab-tc .tc-kpi', { timeout: AI_TIMEOUT });
+    const count = await page.evaluate(() => document.querySelectorAll('#tab-tc .tc-kpi').length);
+    if (count < 5) throw new Error('Expected ≥5 KPI cards, found ' + count);
+    return { detail: count + ' KPI cards on TC dashboard' };
+  });
+
+  // TC-08: Create module (POST create_module)
+  await check(TC + ' Create module (POST create_module)', async () => {
+    const r = await finReq('POST', '/.netlify/functions/training-center?action=create_module', {
+      title:               'QA Test: Energy Healing Foundations',
+      module_type:         'onboarding',
+      difficulty_level:    'beginner',
+      summary:             'Introduction to energy healing principles for new practitioners.',
+      learning_objectives: ['Understand basic energy concepts', 'Apply grounding techniques'],
+      estimated_duration:  45,
+    });
+    if (r.s !== 201) throw new Error('HTTP ' + r.s + ': ' + JSON.stringify(r.b).slice(0, 100));
+    if (!r.b.module || !r.b.module.id) throw new Error('No module.id in response: ' + JSON.stringify(r.b).slice(0, 120));
+    tcModuleId = r.b.module.id;
+    if (r.b.module.status !== 'draft') throw new Error('Expected status=draft, got: ' + r.b.module.status);
+    if (!Array.isArray(r.b.module.learning_objectives)) throw new Error('learning_objectives not an array');
+    return { detail: 'Module created: ' + tcModuleId + ' status=' + r.b.module.status };
+  });
+
+  // TC-09: Module appears in list
+  await check(TC + ' Created module visible in modules list', async () => {
+    if (!tcModuleId) return { status: 'SKIP', detail: 'no tcModuleId' };
+    const r = await finReq('GET', '/.netlify/functions/training-center?section=modules');
+    const found = (r.b.modules || []).find(m => m.id === tcModuleId);
+    if (!found) throw new Error('Module ' + tcModuleId + ' not found in list');
+    if (found.module_type !== 'onboarding') throw new Error('module_type mismatch');
+    if (found.difficulty_level !== 'beginner') throw new Error('difficulty_level mismatch');
+    return { detail: 'Module found: ' + found.title };
+  });
+
+  // TC-10: Edit module (update_module)
+  await check(TC + ' Edit module (update_module)', async () => {
+    if (!tcModuleId) return { status: 'SKIP', detail: 'no tcModuleId' };
+    const r = await finReq('PATCH', '/.netlify/functions/training-center?action=update_module&id=' + tcModuleId, {
+      summary:      'Updated QA summary text.',
+      module_content: '# Test Module\n\nThis is QA content.',
+    });
+    if (!r.b.module) throw new Error('No module in response');
+    if (r.b.module.summary !== 'Updated QA summary text.') throw new Error('Summary not updated');
+    return { detail: 'Module updated successfully' };
+  });
+
+  // TC-11: Workflow — review
+  await check(TC + ' Transition module → review', async () => {
+    if (!tcModuleId) return { status: 'SKIP', detail: 'no tcModuleId' };
+    const r = await finReq('PATCH', '/.netlify/functions/training-center?action=review_module&id=' + tcModuleId);
+    if (!r.b.module) throw new Error('No module in response');
+    if (r.b.module.status !== 'review') throw new Error('Expected review, got: ' + r.b.module.status);
+    return { detail: 'Status → review confirmed' };
+  });
+
+  // TC-12: Workflow — approved
+  await check(TC + ' Transition module → approved', async () => {
+    if (!tcModuleId) return { status: 'SKIP', detail: 'no tcModuleId' };
+    const r = await finReq('PATCH', '/.netlify/functions/training-center?action=approve_module&id=' + tcModuleId);
+    if (!r.b.module) throw new Error('No module in response');
+    if (r.b.module.status !== 'approved') throw new Error('Expected approved, got: ' + r.b.module.status);
+    return { detail: 'Status → approved confirmed' };
+  });
+
+  // TC-13: Workflow — published
+  await check(TC + ' Transition module → published', async () => {
+    if (!tcModuleId) return { status: 'SKIP', detail: 'no tcModuleId' };
+    const r = await finReq('PATCH', '/.netlify/functions/training-center?action=publish_module&id=' + tcModuleId);
+    if (!r.b.module) throw new Error('No module in response');
+    if (r.b.module.status !== 'published') throw new Error('Expected published, got: ' + r.b.module.status);
+    return { detail: 'Status → published confirmed' };
+  });
+
+  // TC-14: Filter modules by type
+  await check(TC + ' Filter modules by type', async () => {
+    if (!tcModuleId) return { status: 'SKIP', detail: 'no tcModuleId' };
+    const r = await finReq('GET', '/.netlify/functions/training-center?section=modules&type=onboarding');
+    const found = (r.b.modules || []).find(m => m.id === tcModuleId);
+    if (!found) throw new Error('Module not found when filtering by type=onboarding');
+    return { detail: 'Filter by type returned ' + r.b.count + ' module(s)' };
+  });
+
+  // TC-15: Search modules
+  await check(TC + ' Search modules by keyword', async () => {
+    if (!tcModuleId) return { status: 'SKIP', detail: 'no tcModuleId' };
+    const r = await finReq('GET', '/.netlify/functions/training-center?section=modules&search=QA+Test');
+    const found = (r.b.modules || []).find(m => m.id === tcModuleId);
+    if (!found) throw new Error('Module not found via keyword search');
+    return { detail: 'Module found via search' };
+  });
+
+  // TC-16: Generate module from KB source
+  await check(TC + ' Generate module from KB source', async () => {
+    const res = await finReq('GET', '/.netlify/functions/training-center?section=resources');
+    const kbEntries = res.b.kb_entries || [];
+    if (!kbEntries.length) return { status: 'WARN', detail: 'No KB entries available — add published KB articles first' };
+    const sourceId = kbEntries[0].id;
+    const r = await finReq('POST', '/.netlify/functions/training-center?action=generate_module', {
+      source_type: 'kb', source_id: sourceId, module_type: 'practitioner', difficulty_level: 'intermediate',
+    });
+    if (r.s !== 201) throw new Error('HTTP ' + r.s + ': ' + JSON.stringify(r.b).slice(0, 100));
+    if (!r.b.module || !r.b.module.id) throw new Error('No module.id in generate response');
+    if (!Array.isArray(r.b.module.source_ids) || !r.b.module.source_ids.length) throw new Error('Generated module missing source_ids traceability');
+    if (!r.b.module.learning_objectives || !r.b.module.learning_objectives.length) throw new Error('Generated module missing learning_objectives');
+    // Clean up generated module after verification
+    await finReq('PATCH', '/.netlify/functions/training-center?action=delete_module&id=' + r.b.module.id);
+    return { detail: 'Generated module: ' + r.b.module.title + ' | source_ids=' + r.b.module.source_ids.length };
+  });
+
+  // TC-17: Invalid module_type rejected (400)
+  await check(TC + ' Invalid module_type rejected (400)', async () => {
+    const r = await finReq('POST', '/.netlify/functions/training-center?action=create_module', {
+      title: 'Bad Type Test', module_type: 'invalid_type',
+    });
+    if (r.s !== 400) throw new Error('Expected 400 but got ' + r.s);
+    return { detail: 'Correctly rejected invalid module_type with 400' };
+  });
+
+  // TC-18: Missing title rejected (400)
+  await check(TC + ' Missing title rejected (400)', async () => {
+    const r = await finReq('POST', '/.netlify/functions/training-center?action=create_module', {
+      module_type: 'onboarding',
+    });
+    if (r.s !== 400) throw new Error('Expected 400 but got ' + r.s);
+    return { detail: 'Correctly rejected missing title with 400' };
+  });
+
+  // TC-19: Resources endpoint returns KB + RN + drafts counts
+  await check(TC + ' Resources endpoint returns source counts', async () => {
+    const r = await finReq('GET', '/.netlify/functions/training-center?section=resources');
+    if (r.s !== 200) throw new Error('HTTP ' + r.s);
+    if (typeof r.b.kb_count !== 'number') throw new Error('Missing kb_count');
+    if (typeof r.b.rn_count !== 'number') throw new Error('Missing rn_count');
+    if (typeof r.b.draft_count !== 'number') throw new Error('Missing draft_count');
+    return { detail: 'Resources: KB=' + r.b.kb_count + ' RN=' + r.b.rn_count + ' Drafts=' + r.b.draft_count };
+  });
+
+  // TC-20: Create learning path
+  await check(TC + ' Create learning path (POST create_path)', async () => {
+    const r = await finReq('POST', '/.netlify/functions/training-center?action=create_path', {
+      title:       'QA Test: Practitioner Foundations Path',
+      path_type:   'practitioner',
+      description: 'A structured path for new practitioners.',
+      module_ids:  tcModuleId ? [tcModuleId] : [],
+    });
+    if (r.s !== 201) throw new Error('HTTP ' + r.s + ': ' + JSON.stringify(r.b).slice(0, 100));
+    if (!r.b.path || !r.b.path.id) throw new Error('No path.id in response');
+    tcPathId = r.b.path.id;
+    return { detail: 'Path created: ' + tcPathId };
+  });
+
+  // TC-21: Learning path visible in list
+  await check(TC + ' Created path visible in paths list', async () => {
+    if (!tcPathId) return { status: 'SKIP', detail: 'no tcPathId' };
+    const r = await finReq('GET', '/.netlify/functions/training-center?section=paths');
+    const found = (r.b.paths || []).find(p => p.id === tcPathId);
+    if (!found) throw new Error('Path not found in list');
+    return { detail: 'Path found: ' + found.title };
+  });
+
+  // TC-22: Create certification
+  await check(TC + ' Create certification (POST create_cert)', async () => {
+    const r = await finReq('POST', '/.netlify/functions/training-center?action=create_cert', {
+      title:            'QA Test: Royal Energy Alchemy Practitioner Certificate',
+      description:      'Foundational certification for REA practitioners.',
+      required_modules: tcModuleId ? [tcModuleId] : [],
+    });
+    if (r.s !== 201) throw new Error('HTTP ' + r.s + ': ' + JSON.stringify(r.b).slice(0, 100));
+    if (!r.b.certification || !r.b.certification.id) throw new Error('No certification.id in response');
+    tcCertId = r.b.certification.id;
+    return { detail: 'Certification created: ' + tcCertId };
+  });
+
+  // TC-23: Certification visible in list
+  await check(TC + ' Created certification visible in certs list', async () => {
+    if (!tcCertId) return { status: 'SKIP', detail: 'no tcCertId' };
+    const r = await finReq('GET', '/.netlify/functions/training-center?section=certifications');
+    const found = (r.b.certifications || []).find(c => c.id === tcCertId);
+    if (!found) throw new Error('Certification not found in list');
+    return { detail: 'Certification found: ' + found.title };
+  });
+
+  // TC-24: Modules section renders in UI
+  await check(TC + ' Modules section renders in UI', async () => {
+    await page.evaluate(() => { window.tcSection('modules'); });
+    await page.waitForSelector('#tab-tc #tc-mod-list', { timeout: AI_TIMEOUT });
+    await page.waitForFunction(() => {
+      const el = document.getElementById('tc-mod-list');
+      return el && !el.innerHTML.includes('tc-shimmer') && el.innerHTML.length > 30;
+    }, { timeout: AI_TIMEOUT });
+    const hasMods = await page.evaluate(() => !!document.querySelector('#tab-tc .tc-module-card'));
+    const hasEmpty = await page.evaluate(() => {
+      const el = document.getElementById('tc-mod-list');
+      return el && el.textContent.includes('No training modules');
+    });
+    if (!hasMods && !hasEmpty) throw new Error('Modules list neither shows cards nor empty state');
+    return { detail: hasMods ? 'Module cards rendered' : 'Empty state shown' };
+  });
+
+  // TC-25: Learning Paths section renders in UI
+  await check(TC + ' Learning Paths section renders in UI', async () => {
+    await page.evaluate(() => { window.tcSection('paths'); });
+    await page.waitForFunction(() => {
+      return !!document.querySelector('#tab-tc #tc-path-list') || !!document.querySelector('#tab-tc .tc-path-card');
+    }, { timeout: AI_TIMEOUT });
+    return { detail: 'Learning Paths section rendered' };
+  });
+
+  // TC-26: Certifications section renders in UI
+  await check(TC + ' Certifications section renders in UI', async () => {
+    await page.evaluate(() => { window.tcSection('certs'); });
+    await page.waitForFunction(() => {
+      return !!document.querySelector('#tab-tc #tc-cert-list') || !!document.querySelector('#tab-tc .tc-cert-card');
+    }, { timeout: AI_TIMEOUT });
+    return { detail: 'Certifications section rendered' };
+  });
+
+  // TC-27: Resources section renders in UI
+  await check(TC + ' Resources section renders in UI', async () => {
+    await page.evaluate(() => { window.tcSection('resources'); });
+    await page.waitForFunction(() => {
+      return !!document.querySelector('#tab-tc .tc-res-section') || !!document.querySelector('#tab-tc .tc-section-header');
+    }, { timeout: AI_TIMEOUT });
+    return { detail: 'Resources section rendered' };
+  });
+
+  // TC-28: Dashboard KPIs reflect created data
+  await check(TC + ' Dashboard KPIs reflect created records', async () => {
+    const r = await finReq('GET', '/.netlify/functions/training-center?section=dashboard');
+    if (r.b.migration_needed) return { status: 'WARN', detail: 'Migration needed' };
+    const kpis = r.b.kpis || {};
+    if (kpis.total < 1) throw new Error('Expected total ≥ 1, got ' + kpis.total);
+    if (kpis.certifications < 1) throw new Error('Expected certifications ≥ 1, got ' + kpis.certifications);
+    if (kpis.learning_paths < 1) throw new Error('Expected learning_paths ≥ 1, got ' + kpis.learning_paths);
+    return { detail: 'KPIs: total=' + kpis.total + ' certs=' + kpis.certifications + ' paths=' + kpis.learning_paths };
+  });
+
+  // TC-29: No console errors on TC tab
+  await check(TC + ' No console errors on TC tab', async () => {
+    await page.evaluate(() => { window.showTab('tc'); });
+    await page.waitForTimeout(1000);
+    const tcErrors = consoleErrors.filter(e =>
+      e.toLowerCase().includes('tcinit') ||
+      e.toLowerCase().includes('tc-module') ||
+      e.toLowerCase().includes('training-center') ||
+      e.toLowerCase().includes('tcsection')
+    );
+    if (tcErrors.length > 0) throw new Error('Console errors: ' + tcErrors.join(' | '));
+    return { detail: 'No TC-related console errors' };
+  });
+
+  // TC-30: Soft-delete module — absent from list
+  await check(TC + ' Soft-deleted module absent from list', async () => {
+    if (!tcModuleId) return { status: 'SKIP', detail: 'no tcModuleId' };
+    await finReq('PATCH', '/.netlify/functions/training-center?action=delete_module&id=' + tcModuleId);
+    const r = await finReq('GET', '/.netlify/functions/training-center?section=modules');
+    const found = (r.b.modules || []).find(m => m.id === tcModuleId);
+    if (found) throw new Error('Deleted module still visible');
+    return { detail: 'Soft-deleted module correctly excluded from list' };
+  });
+
+  // TC-31: Soft-delete path and cert (cleanup)
+  await check(TC + ' Cleanup — soft-delete QA path and cert', async () => {
+    const results2 = [];
+    if (tcPathId) {
+      const r = await finReq('PATCH', '/.netlify/functions/training-center?action=delete_path&id=' + tcPathId);
+      results2.push('path deleted=' + r.b.deleted);
+    }
+    if (tcCertId) {
+      const r = await finReq('PATCH', '/.netlify/functions/training-center?action=delete_cert&id=' + tcCertId);
+      results2.push('cert deleted=' + r.b.deleted);
+    }
+    if (!tcPathId && !tcCertId) return { status: 'SKIP', detail: 'no path or cert IDs' };
+    return { detail: results2.join(', ') };
+  });
+
   await browser.close();
 
   // Final report
@@ -2439,6 +2787,18 @@ async function run() {
     console.log('\n=== CONTENT GENERATION ENGINE QA (Suite 16) ===');
     cdResults.forEach(r => console.log(`  ${SICONS[r.status] || '?'} ${r.status.padEnd(5)} ${r.name.replace('CD: ', '')}`));
     console.log(`\n  CD totals : PASS ${cdPass}  FAIL ${cdFail}  WARN ${cdWarn}  SKIP ${cdSkip}  / ${cdResults.length} checks`);
+  }
+
+  // Training Center sub-report (Suite 17)
+  const tcResults = results.filter(r => r.name.startsWith('TC:'));
+  const tcPass    = tcResults.filter(r => r.status === 'PASS').length;
+  const tcFail    = tcResults.filter(r => r.status === 'FAIL').length;
+  const tcWarn    = tcResults.filter(r => r.status === 'WARN').length;
+  const tcSkip    = tcResults.filter(r => r.status === 'SKIP').length;
+  if (tcResults.length > 0) {
+    console.log('\n=== TRAINING CENTER QA (Suite 17) ===');
+    tcResults.forEach(r => console.log(`  ${SICONS[r.status] || '?'} ${r.status.padEnd(5)} ${r.name.replace('TC: ', '')}`));
+    console.log(`\n  TC totals : PASS ${tcPass}  FAIL ${tcFail}  WARN ${tcWarn}  SKIP ${tcSkip}  / ${tcResults.length} checks`);
   }
 
   // Technical Debt Regression sub-report (Suite 14)
