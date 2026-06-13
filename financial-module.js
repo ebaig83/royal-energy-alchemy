@@ -93,11 +93,12 @@
     var el = document.getElementById('fc-' + name);
     if (el) el.style.display = 'block';
 
-    if (name === 'overview') renderOverview();
-    if (name === 'packages') renderPackages();
-    if (name === 'ledger')   renderLedger();
-    if (name === 'invoices') renderInvoices();
-    if (name === 'revenue')  renderRevenue();
+    if (name === 'overview')     renderOverview();
+    if (name === 'packages')     renderPackages();
+    if (name === 'ledger')       renderLedger();
+    if (name === 'invoices')     renderInvoices();
+    if (name === 'revenue')      renderRevenue();
+    if (name === 'bookkeeping')  renderBookkeeping();
   };
 
   // ── Alert banner ─────────────────────────────────────────────────────────
@@ -845,5 +846,340 @@
     panel.classList.toggle('open');
     if (panel.classList.contains('open')) panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   };
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // BOOKKEEPING LITE
+  // ══════════════════════════════════════════════════════════════════════════
+
+  var BK_CATEGORIES   = ['supplies','marketing','education','software','professional','travel','other'];
+  var BK_PAY_METHODS  = ['personal','business','venmo','cash','check','card'];
+
+  // Active filter state for the expense list
+  var _bkFilter = { category: '', from: '', to: '', taxOnly: false };
+  // Tracks the expense row currently being edited (id string or null)
+  var _bkEditId = null;
+
+  async function renderBookkeeping() {
+    var el = document.getElementById('fc-bookkeeping');
+    if (!el) return;
+    loading(el);
+    try {
+      var [summary, pnl] = await Promise.all([
+        api('/financial?section=expenses_summary'),
+        api('/financial?section=pnl'),
+      ]);
+      el.innerHTML = bkHTML(summary, pnl);
+      bkBindForm();
+      bkLoadExpenses();
+    } catch (e) {
+      errBox(el, 'Could not load bookkeeping: ' + e.message);
+    }
+  }
+
+  function bkHTML(summary, pnl) {
+    var net = pnl.ytd.net;
+    var netCls = net >= 0 ? 'green' : 'red';
+
+    // ── KPI strip ──
+    var html = '<div class="fc-section-head">Bookkeeping' +
+      '<button onclick="fcSection(\'bookkeeping\')">↻ Refresh</button></div>';
+
+    html += '<div class="fc-kpi-row">';
+    html += kpi('This Month (Expenses)', fmtMoney(summary.thisMonth), 'amber');
+    html += kpi('YTD Expenses',          fmtMoney(summary.ytd),       'amber');
+    html += kpi('YTD Tax-Deductible',    fmtMoney(summary.ytdTaxDeductible), 'green');
+    html += kpi('YTD Net Income',        fmtMoney(net),               netCls);
+    html += '</div>';
+
+    // ── P&L mini chart (last 6 months as text bars) ──
+    html += '<div class="fc-divider">6-Month P&amp;L</div>';
+    html += '<div class="bk-pnl-grid">';
+    var months6 = (pnl.monthly || []).slice(-6);
+    months6.forEach(function (m) {
+      var netM   = m.net;
+      var clsM   = netM >= 0 ? 'green' : 'red';
+      var label  = m.month ? m.month.slice(5) + '/' + m.month.slice(2,4) : '';
+      html += '<div class="bk-pnl-cell">' +
+        '<div class="bk-pnl-label">' + esc(label) + '</div>' +
+        '<div class="bk-pnl-rev">↑ ' + fmtMoney(m.revenue) + '</div>' +
+        '<div class="bk-pnl-exp">↓ ' + fmtMoney(m.expenses) + '</div>' +
+        '<div class="bk-pnl-net ' + clsM + '">' + fmtMoney(netM) + '</div>' +
+        '</div>';
+    });
+    html += '</div>';
+
+    // ── Category breakdown ──
+    html += '<div class="fc-divider">YTD by Category</div>';
+    html += '<div class="bk-cat-row">';
+    BK_CATEGORIES.forEach(function (cat) {
+      var amt = (summary.byCategory || {})[cat] || 0;
+      if (amt === 0) return;
+      html += '<div class="bk-cat-chip">' +
+        '<span class="bk-cat-name">' + esc(cat) + '</span>' +
+        '<span class="bk-cat-amt">' + fmtMoney(amt) + '</span>' +
+        '</div>';
+    });
+    html += '</div>';
+
+    // ── Add Expense form (collapsible) ──
+    html += '<div class="fc-divider">Expenses</div>';
+    html += '<button class="fc-btn" onclick="fcToggleForm(\'bkAddForm\')" style="margin-bottom:14px">＋ Add Expense</button>';
+    html += '<div id="bkAddForm" class="fc-form-panel">';
+    html += bkFormHTML(null);
+    html += '</div>';
+
+    // ── Filter bar ──
+    html += '<div class="bk-filter-bar">' +
+      '<select id="bkFilterCat" onchange="bkApplyFilter()" class="bk-filter-select">' +
+        '<option value="">All Categories</option>' +
+        BK_CATEGORIES.map(function(c){ return '<option value="'+esc(c)+'">'+esc(c)+'</option>'; }).join('') +
+      '</select>' +
+      '<input id="bkFilterFrom" type="date" onchange="bkApplyFilter()" class="bk-filter-input" title="From date">' +
+      '<input id="bkFilterTo"   type="date" onchange="bkApplyFilter()" class="bk-filter-input" title="To date">' +
+      '<label class="bk-filter-check"><input type="checkbox" id="bkFilterTax" onchange="bkApplyFilter()"> Tax-deductible only</label>' +
+      '<button class="bk-filter-clear" onclick="bkClearFilter()">✕ Clear</button>' +
+      '</div>';
+
+    // ── Expense table (populated by bkLoadExpenses) ──
+    html += '<div id="bkExpenseList"><div class="fc-empty">Loading expenses…</div></div>';
+
+    return html;
+  }
+
+  function bkFormHTML(expense) {
+    var e   = expense || {};
+    var isEdit = !!e.id;
+    var today  = new Date().toISOString().slice(0, 10);
+    return '<div class="bk-form-grid">' +
+      '<div class="bk-form-group bk-span2">' +
+        '<label class="bk-form-label">Description *</label>' +
+        '<input id="bkFDesc" class="bk-form-input" type="text" value="' + esc(e.description || '') + '" placeholder="What was purchased / paid for">' +
+      '</div>' +
+      '<div class="bk-form-group">' +
+        '<label class="bk-form-label">Category *</label>' +
+        '<select id="bkFCat" class="bk-form-select">' +
+          BK_CATEGORIES.map(function(c){ return '<option value="'+c+'"'+(e.category===c?' selected':'')+'>'+c+'</option>'; }).join('') +
+        '</select>' +
+      '</div>' +
+      '<div class="bk-form-group">' +
+        '<label class="bk-form-label">Amount ($) *</label>' +
+        '<input id="bkFAmt" class="bk-form-input" type="number" step="0.01" min="0.01" value="' + esc(e.amount || '') + '" placeholder="0.00">' +
+      '</div>' +
+      '<div class="bk-form-group">' +
+        '<label class="bk-form-label">Date *</label>' +
+        '<input id="bkFDate" class="bk-form-input" type="date" value="' + esc(e.expense_date || today) + '">' +
+      '</div>' +
+      '<div class="bk-form-group">' +
+        '<label class="bk-form-label">Vendor</label>' +
+        '<input id="bkFVendor" class="bk-form-input" type="text" value="' + esc(e.vendor || '') + '" placeholder="Store or service name">' +
+      '</div>' +
+      '<div class="bk-form-group">' +
+        '<label class="bk-form-label">Payment Method</label>' +
+        '<select id="bkFMethod" class="bk-form-select">' +
+          BK_PAY_METHODS.map(function(m){ return '<option value="'+m+'"'+(e.payment_method===m?' selected':'')+'>'+m+'</option>'; }).join('') +
+        '</select>' +
+      '</div>' +
+      '<div class="bk-form-group">' +
+        '<label class="bk-form-label">Receipt URL / Note</label>' +
+        '<input id="bkFReceipt" class="bk-form-input" type="text" value="' + esc(e.receipt_url || '') + '" placeholder="Photo link or note">' +
+      '</div>' +
+      '<div class="bk-form-group" style="display:flex;align-items:center;gap:10px;padding-top:20px">' +
+        '<input id="bkFTax" type="checkbox"' + (e.tax_deductible ? ' checked' : '') + '>' +
+        '<label class="bk-form-label" for="bkFTax" style="margin:0;cursor:pointer">Tax-Deductible</label>' +
+      '</div>' +
+      '<div class="bk-form-group bk-span2">' +
+        '<label class="bk-form-label">Notes</label>' +
+        '<input id="bkFNotes" class="bk-form-input" type="text" value="' + esc(e.notes || '') + '" placeholder="Optional notes">' +
+      '</div>' +
+      '</div>' +
+      '<div style="display:flex;gap:12px;margin-top:14px">' +
+        '<button class="fc-btn" onclick="bkSaveExpense(' + (isEdit ? "'"+esc(e.id)+"'" : 'null') + ')">' + (isEdit ? 'Save Changes' : 'Save Expense') + '</button>' +
+        (isEdit ? '<button class="fc-btn" style="background:transparent;border-color:#e8b84b44;color:#e8b84b88" onclick="bkCancelEdit()">Cancel</button>' : '') +
+      '</div>' +
+      '<div id="bkFormMsg" class="bk-form-msg"></div>';
+  }
+
+  function bkBindForm() {}  // form is rendered inline; no additional binding needed
+
+  window.bkApplyFilter = function () {
+    _bkFilter.category = (document.getElementById('bkFilterCat') || {}).value || '';
+    _bkFilter.from     = (document.getElementById('bkFilterFrom') || {}).value || '';
+    _bkFilter.to       = (document.getElementById('bkFilterTo')   || {}).value || '';
+    _bkFilter.taxOnly  = !!(document.getElementById('bkFilterTax') || {}).checked;
+    bkLoadExpenses();
+  };
+
+  window.bkClearFilter = function () {
+    _bkFilter = { category: '', from: '', to: '', taxOnly: false };
+    var f;
+    f = document.getElementById('bkFilterCat');  if (f) f.value = '';
+    f = document.getElementById('bkFilterFrom'); if (f) f.value = '';
+    f = document.getElementById('bkFilterTo');   if (f) f.value = '';
+    f = document.getElementById('bkFilterTax');  if (f) f.checked = false;
+    bkLoadExpenses();
+  };
+
+  async function bkLoadExpenses() {
+    var el = document.getElementById('bkExpenseList');
+    if (!el) return;
+    el.innerHTML = '<div class="fc-empty" style="font-size:13px">Loading…</div>';
+    try {
+      var qs = '/financial?section=expenses';
+      if (_bkFilter.category)     qs += '&category='      + encodeURIComponent(_bkFilter.category);
+      if (_bkFilter.from)         qs += '&from='          + encodeURIComponent(_bkFilter.from);
+      if (_bkFilter.to)           qs += '&to='            + encodeURIComponent(_bkFilter.to);
+      if (_bkFilter.taxOnly)      qs += '&tax_deductible=true';
+      var data = await api(qs);
+      el.innerHTML = bkExpenseTableHTML(data.expenses || [], data.totals || {});
+    } catch (e) {
+      el.innerHTML = '<div class="fc-empty" style="color:#ee7070">Failed to load expenses: ' + esc(e.message) + '</div>';
+    }
+  }
+
+  function bkExpenseTableHTML(expenses, totals) {
+    if (expenses.length === 0) {
+      return '<div class="fc-empty">No expenses found. Add your first expense above.</div>';
+    }
+    var html = '<table class="fc-table bk-expense-table">' +
+      '<thead><tr>' +
+        '<th>Date</th><th>Category</th><th>Description</th>' +
+        '<th>Vendor</th><th>Method</th><th>Amount</th><th>Tax</th><th></th>' +
+      '</tr></thead><tbody>';
+
+    expenses.forEach(function (e) {
+      var taxBadge = e.tax_deductible
+        ? '<span class="fc-pill active" style="font-size:8px">✓ deductible</span>'
+        : '';
+      html += '<tr id="bkRow-' + esc(e.id) + '">' +
+        '<td>' + esc(fmtDate(e.expense_date)) + '</td>' +
+        '<td><span class="fc-pill adjustment">' + esc(e.category) + '</span></td>' +
+        '<td>' + esc(e.description) + (e.notes ? '<div style="font-size:13px;color:#b09ef888;margin-top:2px">'+esc(e.notes)+'</div>' : '') + '</td>' +
+        '<td>' + esc(e.vendor || '—') + '</td>' +
+        '<td>' + esc(e.payment_method || '—') + '</td>' +
+        '<td style="font-weight:600;white-space:nowrap">' + fmtMoney(e.amount) + '</td>' +
+        '<td>' + taxBadge + '</td>' +
+        '<td style="white-space:nowrap">' +
+          '<button class="bk-row-btn" onclick="bkStartEdit(\'' + esc(e.id) + '\')">Edit</button> ' +
+          '<button class="bk-row-btn del" onclick="bkDeleteExpense(\'' + esc(e.id) + '\',\'' + esc(e.description.replace(/'/g,"")) + '\')">Delete</button>' +
+        '</td>' +
+        '</tr>';
+    });
+
+    html += '</tbody><tfoot><tr>' +
+      '<td colspan="5" style="padding-top:14px;font-family:\'Cinzel\',serif;font-size:10px;letter-spacing:.25em;color:#e8b84b88">TOTAL</td>' +
+      '<td style="padding-top:14px;font-weight:700;color:#e8b84b">' + fmtMoney(totals.total || 0) + '</td>' +
+      '<td colspan="2"></td>' +
+      '</tr></tfoot></table>';
+
+    return html;
+  }
+
+  window.bkStartEdit = function (id) {
+    _bkEditId = id;
+    var row = document.getElementById('bkRow-' + id);
+    if (!row) return;
+    // Fetch the expense data via API and repopulate the add form as an edit form
+    api('/financial?section=expenses').then(function (data) {
+      var expense = (data.expenses || []).find(function (e) { return e.id === id; });
+      if (!expense) return;
+      var formPanel = document.getElementById('bkAddForm');
+      if (!formPanel) return;
+      formPanel.classList.add('open');
+      formPanel.innerHTML = bkFormHTML(expense);
+      formPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }).catch(function () {});
+  };
+
+  window.bkCancelEdit = function () {
+    _bkEditId = null;
+    var formPanel = document.getElementById('bkAddForm');
+    if (!formPanel) return;
+    formPanel.innerHTML = bkFormHTML(null);
+    formPanel.classList.remove('open');
+  };
+
+  window.bkSaveExpense = async function (editId) {
+    var desc   = (document.getElementById('bkFDesc')    || {}).value || '';
+    var cat    = (document.getElementById('bkFCat')     || {}).value || '';
+    var amt    = (document.getElementById('bkFAmt')     || {}).value || '';
+    var date   = (document.getElementById('bkFDate')    || {}).value || '';
+    var vendor = (document.getElementById('bkFVendor')  || {}).value || '';
+    var method = (document.getElementById('bkFMethod')  || {}).value || 'personal';
+    var receipt= (document.getElementById('bkFReceipt') || {}).value || '';
+    var tax    = !!(document.getElementById('bkFTax')   || {}).checked;
+    var notes  = (document.getElementById('bkFNotes')   || {}).value || '';
+    var msgEl  = document.getElementById('bkFormMsg');
+
+    if (!desc.trim()) { if (msgEl) msgEl.innerHTML = bkErr('Description is required.'); return; }
+    if (!cat)         { if (msgEl) msgEl.innerHTML = bkErr('Category is required.'); return; }
+    if (!amt || isNaN(parseFloat(amt)) || parseFloat(amt) <= 0) {
+      if (msgEl) msgEl.innerHTML = bkErr('A positive amount is required.');
+      return;
+    }
+
+    var btn = document.querySelector('#bkAddForm .fc-btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+    if (msgEl) msgEl.innerHTML = '';
+
+    try {
+      var payload = {
+        description: desc.trim(), category: cat, amount: parseFloat(amt),
+        expense_date: date || new Date().toISOString().slice(0,10),
+        vendor: vendor || null, payment_method: method,
+        receipt_url: receipt || null, tax_deductible: tax,
+        notes: notes || null,
+      };
+
+      if (editId) {
+        await api('/financial?action=update_expense&id=' + editId, {
+          method: 'PATCH', body: JSON.stringify(payload),
+        });
+      } else {
+        await api('/financial?action=create_expense', {
+          method: 'POST', body: JSON.stringify(payload),
+        });
+      }
+
+      // Reset form and reload
+      _bkEditId = null;
+      var formPanel = document.getElementById('bkAddForm');
+      if (formPanel) {
+        formPanel.innerHTML = bkFormHTML(null);
+        formPanel.classList.remove('open');
+      }
+      bkLoadExpenses();
+
+      // Refresh summary KPIs
+      api('/financial?section=expenses_summary').then(function (s) {
+        var kpiRow = document.querySelector('#fc-bookkeeping .fc-kpi-row');
+        if (!kpiRow) return;
+        var net = 0;
+        try { net = parseFloat(document.querySelector('#fc-bookkeeping .fc-kpi-val.red, #fc-bookkeeping .fc-kpi-val.green').textContent.replace(/[$,]/g,'')); } catch(_){}
+        kpiRow.innerHTML =
+          kpi('This Month (Expenses)', fmtMoney(s.thisMonth), 'amber') +
+          kpi('YTD Expenses',          fmtMoney(s.ytd),        'amber') +
+          kpi('YTD Tax-Deductible',    fmtMoney(s.ytdTaxDeductible), 'green') +
+          kpi('YTD Net Income',        fmtMoney(net),           net >= 0 ? 'green' : 'red');
+      }).catch(function(){});
+
+    } catch (e) {
+      if (msgEl) msgEl.innerHTML = bkErr(e.message);
+      if (btn) { btn.disabled = false; btn.textContent = editId ? 'Save Changes' : 'Save Expense'; }
+    }
+  };
+
+  window.bkDeleteExpense = async function (id, desc) {
+    if (!confirm('Delete expense "' + desc + '"?\n\nThis cannot be undone.')) return;
+    try {
+      await api('/financial?action=delete_expense&id=' + id, { method: 'PATCH', body: JSON.stringify({}) });
+      bkLoadExpenses();
+    } catch (e) {
+      alert('Could not delete expense: ' + e.message);
+    }
+  };
+
+  function bkErr(msg) {
+    return '<div style="color:#ee7070;font-family:\'EB Garamond\',serif;font-size:15px;margin-top:8px">⚠ ' + esc(msg) + '</div>';
+  }
 
 })();

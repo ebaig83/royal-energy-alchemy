@@ -11,6 +11,15 @@
 // GET  ?section=alerts            — unread financial alerts
 // GET  ?section=client_summary&client_id=uuid — full financial profile for client
 //
+// ── Bookkeeping Lite (Sprint 1) ──────────────────────────────────────────────
+// GET  ?section=expenses                            — all expenses (filterable)
+// GET  ?section=expenses&category=supplies          — filter by category
+// GET  ?section=expenses&tax_deductible=true        — tax-deductible only
+// GET  ?section=expenses&from=YYYY-MM-DD&to=YYYY-MM-DD — date range
+// GET  ?section=expenses_summary                    — KPI aggregates (month/YTD/by category)
+// GET  ?section=pnl                                 — 12-month P&L (revenue vs expenses)
+// GET  ?section=schema_validation                   — Sprint 1 table schema checks (columns/indexes/FKs/grants/RLS)
+//
 // POST ?action=create_package     — create a package record (auto-creates ledger charge)
 // POST ?action=use_session        — link a session to a package (burns 1 usage)
 // POST ?action=create_ledger      — manual ledger entry
@@ -18,10 +27,13 @@
 // POST ?action=add_invoice_item   — add line item to invoice
 // POST ?action=record_payment     — record payment → ledger payment entry + update invoice
 // POST ?action=generate_alerts    — scan packages/invoices and write financial alerts
+// POST ?action=create_expense     — create expense record
 //
 // PATCH ?action=update_package&id=uuid   — edit package fields
 // PATCH ?action=update_invoice&id=uuid   — change invoice status / notes
 // PATCH ?action=mark_alert_read&id=uuid  — dismiss a financial alert
+// PATCH ?action=update_expense&id=uuid   — edit expense fields
+// PATCH ?action=delete_expense&id=uuid   — soft-delete expense (sets deleted_at)
 
 const { requireAdmin, respond } = require('./lib/auth');
 const { getClient }             = require('./lib/supabase');
@@ -170,13 +182,19 @@ exports.handler = async function(event) {
     const section = params.section;
     if (!section) return respond(400, { error: 'section is required.' });
     try {
-      if (section === 'overview')       return respond(200, await getOverview(sb));
-      if (section === 'packages')       return respond(200, await getPackages(sb, params));
-      if (section === 'ledger')         return respond(200, await getLedger(sb, params));
-      if (section === 'invoices')       return respond(200, await getInvoices(sb, params));
-      if (section === 'revenue')        return respond(200, await getRevenue(sb));
-      if (section === 'alerts')         return respond(200, await getAlerts(sb));
-      if (section === 'client_summary') return respond(200, await getClientSummary(sb, params));
+      if (section === 'overview')          return respond(200, await getOverview(sb));
+      if (section === 'packages')          return respond(200, await getPackages(sb, params));
+      if (section === 'ledger')            return respond(200, await getLedger(sb, params));
+      if (section === 'invoices')          return respond(200, await getInvoices(sb, params));
+      if (section === 'revenue')           return respond(200, await getRevenue(sb));
+      if (section === 'alerts')            return respond(200, await getAlerts(sb));
+      if (section === 'client_summary')    return respond(200, await getClientSummary(sb, params));
+      // ── Bookkeeping Lite ─────────────────────────────────────────────────
+      if (section === 'expenses')          return respond(200, await getExpenses(sb, params));
+      if (section === 'expenses_summary')  return respond(200, await getExpensesSummary(sb));
+      if (section === 'pnl')               return respond(200, await getPnL(sb));
+      // ── Schema Validation ────────────────────────────────────────────────
+      if (section === 'schema_validation') return respond(200, await validateSprint1Schema(sb));
       return respond(400, { error: `Unknown section: ${section}` });
     } catch (err) {
       console.error('[financial] GET', section, err.message);
@@ -197,6 +215,8 @@ exports.handler = async function(event) {
       if (action === 'add_invoice_item') return respond(201, await addInvoiceItem(sb, body, auth, ip));
       if (action === 'record_payment')   return respond(200, await recordPayment(sb, body, auth, ip));
       if (action === 'generate_alerts')  return respond(200, await generateAlerts(sb, auth, ip));
+      // ── Bookkeeping Lite ────────────────────────────────────────────────
+      if (action === 'create_expense')   return respond(201, await createExpense(sb, body, auth, ip));
       return respond(400, { error: `Unknown action: ${action}` });
     } catch (err) {
       console.error('[financial] POST', action, err.message);
@@ -215,6 +235,9 @@ exports.handler = async function(event) {
       if (action === 'update_package')  return respond(200, await updatePackage(sb, id, body, auth, ip));
       if (action === 'update_invoice')  return respond(200, await updateInvoice(sb, id, body, auth, ip));
       if (action === 'mark_alert_read') return respond(200, await markAlertRead(sb, id, auth, ip));
+      // ── Bookkeeping Lite ────────────────────────────────────────────────
+      if (action === 'update_expense')  return respond(200, await updateExpense(sb, id, body, auth, ip));
+      if (action === 'delete_expense')  return respond(200, await deleteExpense(sb, id, auth, ip));
       return respond(400, { error: `Unknown action: ${action}` });
     } catch (err) {
       console.error('[financial] PATCH', action, err.message);
@@ -825,4 +848,503 @@ async function markAlertRead(sb, id, auth, ip) {
     .eq('id', id).select().single();
   if (error) throw new Error(error.message);
   return { alert: data };
+}
+
+// ═════════════════════════════════════════════════════════════════════════
+// SPRINT 1 SCHEMA VALIDATION
+// ═════════════════════════════════════════════════════════════════════════
+//
+// Full contract per table: column presence, NOT NULL, defaults,
+// CHECK constraints, FK constraints, indexes, grants, RLS.
+//
+// column_contracts: { name, not_null, default_contains }
+//   default_contains — case-insensitive substring match on column_default.
+//   null means "no default required" (not checked).
+// check_constraints: expected constraint names (from pg_constraint.conname)
+// fk_columns:        column names that must have a FK constraint
+//                    (matched by constraint name containing the column name)
+// indexes:           expected index names in pg_indexes
+// grants:            privilege_type values service_role must have
+//
+// All checks degrade gracefully when information_schema / pg_catalog are
+// not exposed by PostgREST — they return WARN rather than crashing.
+// ─────────────────────────────────────────────────────────────────────────
+
+const SPRINT1_SCHEMA = {
+  expenses: {
+    column_contracts: [
+      { name: 'id',                 not_null: true,  default_contains: 'gen_random_uuid' },
+      { name: 'expense_date',       not_null: true,  default_contains: 'current_date'   },
+      { name: 'category',           not_null: true,  default_contains: null             },
+      { name: 'description',        not_null: true,  default_contains: null             },
+      { name: 'amount',             not_null: true,  default_contains: null             },
+      { name: 'vendor',             not_null: false, default_contains: null             },
+      { name: 'payment_method',     not_null: true,  default_contains: 'personal'       },
+      { name: 'tax_deductible',     not_null: true,  default_contains: 'false'          },
+      { name: 'receipt_url',        not_null: false, default_contains: null             },
+      { name: 'related_session_id', not_null: false, default_contains: null             },
+      { name: 'notes',              not_null: false, default_contains: null             },
+      { name: 'created_by',         not_null: true,  default_contains: 'daron'          },
+      { name: 'created_at',         not_null: true,  default_contains: 'now()'          },
+      { name: 'updated_at',         not_null: true,  default_contains: 'now()'          },
+      { name: 'deleted_at',         not_null: false, default_contains: null             },
+    ],
+    check_constraints: [
+      'expenses_category_check',
+      'expenses_payment_method_check',
+      'expenses_amount_positive',
+    ],
+    fk_columns: ['related_session_id'],
+    indexes:    ['expenses_date_idx','expenses_category_idx','expenses_tax_idx',
+                 'expenses_deleted_idx','expenses_session_idx'],
+    grants:     ['SELECT','INSERT','UPDATE','DELETE'],
+  },
+  research_notes: {
+    column_contracts: [
+      { name: 'id',         not_null: true,  default_contains: 'gen_random_uuid' },
+      { name: 'title',      not_null: true,  default_contains: null             },
+      { name: 'content',    not_null: false, default_contains: null             },
+      { name: 'source_url', not_null: false, default_contains: null             },
+      { name: 'tags',       not_null: false, default_contains: null             },
+      { name: 'session_id', not_null: false, default_contains: null             },
+      { name: 'created_by', not_null: true,  default_contains: 'daron'          },
+      { name: 'created_at', not_null: true,  default_contains: 'now()'          },
+      { name: 'updated_at', not_null: true,  default_contains: 'now()'          },
+      { name: 'deleted_at', not_null: false, default_contains: null             },
+    ],
+    check_constraints: [],
+    fk_columns: [],
+    indexes:    ['research_notes_created_idx','research_notes_deleted_idx'],
+    grants:     ['SELECT','INSERT','UPDATE','DELETE'],
+  },
+  kb_entries: {
+    column_contracts: [
+      { name: 'id',         not_null: true,  default_contains: 'gen_random_uuid' },
+      { name: 'title',      not_null: true,  default_contains: null             },
+      { name: 'content',    not_null: false, default_contains: null             },
+      { name: 'category',   not_null: false, default_contains: null             },
+      { name: 'tags',       not_null: false, default_contains: null             },
+      { name: 'fts',        not_null: false, default_contains: null             },
+      { name: 'created_by', not_null: true,  default_contains: 'daron'          },
+      { name: 'created_at', not_null: true,  default_contains: 'now()'          },
+      { name: 'updated_at', not_null: true,  default_contains: 'now()'          },
+      { name: 'deleted_at', not_null: false, default_contains: null             },
+    ],
+    check_constraints: [],
+    fk_columns: [],
+    indexes:    ['kb_entries_fts_idx','kb_entries_category_idx','kb_entries_deleted_idx'],
+    grants:     ['SELECT','INSERT','UPDATE','DELETE'],
+  },
+};
+
+async function validateSprint1Schema(sb) {
+  const out = {};
+
+  for (const [table, expected] of Object.entries(SPRINT1_SCHEMA)) {
+    const r = {
+      table,
+      exists:                  false,
+      // columns
+      missing_columns:         [],
+      wrong_nullable:          [],   // [{column, expected:'NOT NULL', actual:'nullable'}]
+      wrong_default:           [],   // [{column, expected_contains, actual}]
+      col_meta_available:      true,
+      // constraints
+      missing_check_constraints: [],
+      missing_fks:             [],
+      constraint_check_available: true,
+      // indexes
+      missing_indexes:         [],
+      index_check_available:   true,
+      // security
+      missing_grants:          [],
+      grant_check_available:   true,
+      rls_enabled:             null,
+      errors:                  [],
+    };
+
+    // ── 1. Table existence ──────────────────────────────────────────────────
+    const { error: existErr } = await sb.from(table).select('id').limit(0);
+    if (existErr) {
+      if (isMissingTableError(existErr)) { out[table] = r; continue; }
+      r.errors.push('table_check: ' + existErr.message.slice(0, 200));
+      out[table] = r;
+      continue;
+    }
+    r.exists = true;
+
+    // ── 2. Column metadata: presence, NOT NULL, defaults ───────────────────
+    // Primary: information_schema.columns (names + defaults + nullability).
+    // Fallback: single SELECT probe (names only, from Postgres error message).
+    const colNames = expected.column_contracts.map(c => c.name);
+
+    const { data: colData, error: colMetaErr } = await sb
+      .schema('information_schema')
+      .from('columns')
+      .select('column_name, column_default, is_nullable')
+      .eq('table_schema', 'public')
+      .eq('table_name', table);
+
+    if (!colMetaErr && Array.isArray(colData)) {
+      const colMap = {};
+      colData.forEach(c => { colMap[c.column_name] = c; });
+
+      r.missing_columns = colNames.filter(name => !colMap[name]);
+
+      expected.column_contracts.filter(c => colMap[c.name]).forEach(c => {
+        const meta = colMap[c.name];
+        if (c.not_null && meta.is_nullable !== 'NO') {
+          r.wrong_nullable.push({ column: c.name, expected: 'NOT NULL', actual: 'nullable' });
+        }
+        if (c.default_contains) {
+          const actual = (meta.column_default || '').toLowerCase();
+          if (!actual.includes(c.default_contains.toLowerCase())) {
+            r.wrong_default.push({
+              column:            c.name,
+              expected_contains: c.default_contains,
+              actual:            meta.column_default || 'NULL',
+            });
+          }
+        }
+      });
+    } else {
+      r.col_meta_available = false;
+      // Fallback: single SELECT probe — Postgres names the first missing column
+      const { error: probeErr } = await sb
+        .from(table)
+        .select(colNames.join(', '))
+        .limit(0);
+      if (probeErr) {
+        const match = probeErr.message.match(/column[s]?\s+"([^"]+)"/i);
+        r.missing_columns = [match ? match[1] : probeErr.message.slice(0, 80)];
+      }
+    }
+
+    // ── 3. CHECK constraints + FK constraints (information_schema) ──────────
+    const { data: tcData, error: tcErr } = await sb
+      .schema('information_schema')
+      .from('table_constraints')
+      .select('constraint_name, constraint_type')
+      .eq('table_schema', 'public')
+      .eq('table_name', table);
+
+    if (!tcErr && Array.isArray(tcData)) {
+      const names = tcData.map(c => c.constraint_name.toLowerCase());
+
+      r.missing_check_constraints = expected.check_constraints
+        .filter(name => !names.includes(name.toLowerCase()));
+
+      if (expected.fk_columns.length > 0) {
+        r.missing_fks = expected.fk_columns.filter(col =>
+          !names.some(name => name.includes(col.toLowerCase()))
+        );
+      }
+    } else {
+      r.constraint_check_available = false;
+    }
+
+    // ── 4. Index check (pg_catalog.pg_indexes) ──────────────────────────────
+    const { data: idxData, error: idxErr } = await sb
+      .schema('pg_catalog')
+      .from('pg_indexes')
+      .select('indexname')
+      .eq('schemaname', 'public')
+      .eq('tablename', table);
+    if (!idxErr && Array.isArray(idxData)) {
+      const existing = idxData.map(i => i.indexname);
+      r.missing_indexes = expected.indexes.filter(i => !existing.includes(i));
+    } else {
+      r.index_check_available = false;
+    }
+
+    // ── 5. Grant check (information_schema.role_table_grants) ───────────────
+    const { data: grantData, error: grantErr } = await sb
+      .schema('information_schema')
+      .from('role_table_grants')
+      .select('privilege_type')
+      .eq('table_schema', 'public')
+      .eq('table_name', table)
+      .eq('grantee', 'service_role');
+    if (!grantErr && Array.isArray(grantData)) {
+      const existing = grantData.map(g => g.privilege_type);
+      r.missing_grants = expected.grants.filter(g => !existing.includes(g));
+    } else {
+      r.grant_check_available = false;
+    }
+
+    // ── 6. RLS check (pg_catalog.pg_class) ──────────────────────────────────
+    const { data: rlsData, error: rlsErr } = await sb
+      .schema('pg_catalog')
+      .from('pg_class')
+      .select('relrowsecurity')
+      .eq('relname', table)
+      .maybeSingle();
+    if (!rlsErr && rlsData) {
+      r.rls_enabled = rlsData.relrowsecurity === true;
+    }
+
+    out[table] = r;
+  }
+
+  return { tables: out };
+}
+
+// ═════════════════════════════════════════════════════════════════════════
+// BOOKKEEPING LITE — GET HANDLERS
+// ═════════════════════════════════════════════════════════════════════════
+
+const VALID_EXPENSE_CATEGORIES = [
+  'supplies','marketing','education','software','professional','travel','other',
+];
+
+const VALID_PAYMENT_METHODS = [
+  'personal','business','venmo','cash','check','card',
+];
+
+async function getExpenses(sb, params) {
+  let q = sb.from('expenses')
+    .select('*')
+    .is('deleted_at', null)
+    .order('expense_date', { ascending: false })
+    .order('created_at', { ascending: false });
+
+  if (params.category)      q = q.eq('category', params.category);
+  if (params.from)          q = q.gte('expense_date', params.from);
+  if (params.to)            q = q.lte('expense_date', params.to);
+  if (params.tax_deductible === 'true')  q = q.eq('tax_deductible', true);
+  if (params.tax_deductible === 'false') q = q.eq('tax_deductible', false);
+
+  const limit = params.limit ? parseInt(params.limit, 10) : 300;
+  q = q.limit(limit);
+
+  const expenses = await safeRows(q);
+
+  const total   = expenses.reduce((s, e) => s + Number(e.amount), 0);
+  const taxDeductible = expenses.filter(e => e.tax_deductible)
+                                .reduce((s, e) => s + Number(e.amount), 0);
+
+  const byCategory = {};
+  for (const e of expenses) {
+    const cat = e.category || 'other';
+    byCategory[cat] = (byCategory[cat] || 0) + Number(e.amount);
+  }
+
+  return { expenses, totals: { total, taxDeductible, byCategory, count: expenses.length } };
+}
+
+async function getExpensesSummary(sb) {
+  const now    = new Date();
+  const y      = now.getFullYear();
+  const m      = String(now.getMonth() + 1).padStart(2, '0');
+  const ytdStart = `${y}-01-01`;
+  const mStart   = `${y}-${m}-01`;
+
+  const allExpenses = await safeRows(
+    sb.from('expenses')
+      .select('amount, category, tax_deductible, expense_date')
+      .is('deleted_at', null)
+      .gte('expense_date', ytdStart)
+      .order('expense_date', { ascending: false })
+  );
+
+  const thisMonth = allExpenses.filter(e => e.expense_date >= mStart);
+  const ytd       = allExpenses;
+
+  const monthTotal = thisMonth.reduce((s, e) => s + Number(e.amount), 0);
+  const ytdTotal   = ytd.reduce((s, e) => s + Number(e.amount), 0);
+  const ytdTaxDeductible = ytd.filter(e => e.tax_deductible)
+                              .reduce((s, e) => s + Number(e.amount), 0);
+
+  const byCategory = {};
+  for (const e of ytd) {
+    const cat = e.category || 'other';
+    byCategory[cat] = (byCategory[cat] || 0) + Number(e.amount);
+  }
+
+  return {
+    thisMonth: monthTotal,
+    ytd: ytdTotal,
+    ytdTaxDeductible,
+    byCategory,
+    transactionCount: allExpenses.length,
+  };
+}
+
+async function getPnL(sb) {
+  const now    = new Date();
+  const months = Array.from({ length: 12 }, (_, i) => {
+    const d   = new Date(now.getFullYear(), now.getMonth() - (11 - i), 1);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    return key;
+  });
+
+  const earliest = months[0] + '-01';
+
+  const [payments, expenses] = await Promise.all([
+    safeRows(
+      sb.from('payments')
+        .select('amount, paid_at, status')
+        .eq('status', 'received')
+        .gte('paid_at', earliest)
+        .order('paid_at', { ascending: false })
+    ),
+    safeRows(
+      sb.from('expenses')
+        .select('amount, expense_date, category, tax_deductible')
+        .is('deleted_at', null)
+        .gte('expense_date', earliest)
+        .order('expense_date', { ascending: false })
+    ),
+  ]);
+
+  const monthly = months.map(key => {
+    const revenue = payments
+      .filter(p => (p.paid_at || '').startsWith(key))
+      .reduce((s, p) => s + Number(p.amount), 0);
+    const expenseAmt = expenses
+      .filter(e => (e.expense_date || '').startsWith(key))
+      .reduce((s, e) => s + Number(e.amount), 0);
+    return { month: key, revenue, expenses: expenseAmt, net: revenue - expenseAmt };
+  });
+
+  const totalRevenue  = payments.reduce((s, p) => s + Number(p.amount), 0);
+  const totalExpenses = expenses.reduce((s, e) => s + Number(e.amount), 0);
+  const netIncome     = totalRevenue - totalExpenses;
+
+  const ytdStart  = `${now.getFullYear()}-01-01`;
+  const ytdRev    = payments.filter(p => (p.paid_at || '') >= ytdStart)
+                            .reduce((s, p) => s + Number(p.amount), 0);
+  const ytdExp    = expenses.filter(e => (e.expense_date || '') >= ytdStart)
+                            .reduce((s, e) => s + Number(e.amount), 0);
+  const ytdNet    = ytdRev - ytdExp;
+
+  return {
+    monthly,
+    totals: { revenue: totalRevenue, expenses: totalExpenses, net: netIncome },
+    ytd:    { revenue: ytdRev, expenses: ytdExp, net: ytdNet },
+  };
+}
+
+// ═════════════════════════════════════════════════════════════════════════
+// BOOKKEEPING LITE — POST / PATCH HANDLERS
+// ═════════════════════════════════════════════════════════════════════════
+
+async function createExpense(sb, body, auth, ip) {
+  if (!body.description?.trim())       throw new Error('description is required.');
+  if (!body.category)                  throw new Error('category is required.');
+  if (body.amount == null || isNaN(body.amount)) throw new Error('amount is required.');
+  if (Number(body.amount) <= 0)        throw new Error('amount must be greater than 0.');
+
+  if (!VALID_EXPENSE_CATEGORIES.includes(body.category))
+    throw new Error(`category must be one of: ${VALID_EXPENSE_CATEGORIES.join(', ')}`);
+
+  const paymentMethod = body.payment_method || 'personal';
+  if (!VALID_PAYMENT_METHODS.includes(paymentMethod))
+    throw new Error(`payment_method must be one of: ${VALID_PAYMENT_METHODS.join(', ')}`);
+
+  const insert = {
+    expense_date:       body.expense_date       || new Date().toISOString().slice(0, 10),
+    category:           body.category,
+    description:        body.description.trim(),
+    amount:             parseFloat(body.amount),
+    vendor:             (body.vendor            || '').trim() || null,
+    payment_method:     paymentMethod,
+    tax_deductible:     body.tax_deductible === true || body.tax_deductible === 'true',
+    receipt_url:        body.receipt_url        || null,
+    related_session_id: body.related_session_id || null,
+    notes:              body.notes              || null,
+    created_by:         auth.user.email         || 'daron',
+  };
+
+  const { data, error } = await sb.from('expenses').insert(insert).select().single();
+  if (error) throw new Error(error.message);
+
+  await log({
+    actor:     auth.user.email,
+    action:    'created',
+    tableName: 'expenses',
+    recordId:  data.id,
+    newData:   data,
+    context:   `Expense: ${data.category} — ${data.description} $${data.amount}`,
+    ip,
+  });
+
+  return { expense: data };
+}
+
+async function updateExpense(sb, id, body, auth, ip) {
+  const allowed = [
+    'expense_date','category','description','amount','vendor',
+    'payment_method','tax_deductible','receipt_url','notes',
+  ];
+  const updates = {};
+  allowed.forEach(k => { if (body[k] !== undefined) updates[k] = body[k]; });
+
+  if (updates.category && !VALID_EXPENSE_CATEGORIES.includes(updates.category))
+    throw new Error(`category must be one of: ${VALID_EXPENSE_CATEGORIES.join(', ')}`);
+
+  if (updates.payment_method && !VALID_PAYMENT_METHODS.includes(updates.payment_method))
+    throw new Error(`payment_method must be one of: ${VALID_PAYMENT_METHODS.join(', ')}`);
+
+  if (updates.amount !== undefined) {
+    updates.amount = parseFloat(updates.amount);
+    if (isNaN(updates.amount) || updates.amount <= 0)
+      throw new Error('amount must be a positive number.');
+  }
+
+  if (Object.keys(updates).length === 0) throw new Error('No valid fields to update.');
+
+  updates.updated_at = new Date().toISOString();
+
+  const { data, error } = await sb.from('expenses')
+    .update(updates)
+    .eq('id', id)
+    .is('deleted_at', null)
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+  if (!data)  throw new Error('Expense not found or already deleted.');
+
+  await log({
+    actor:     auth.user.email,
+    action:    'updated',
+    tableName: 'expenses',
+    recordId:  id,
+    newData:   data,
+    context:   `Updated expense: ${data.description}`,
+    ip,
+  });
+
+  return { expense: data };
+}
+
+async function deleteExpense(sb, id, auth, ip) {
+  const { data: existing, error: fetchErr } = await sb.from('expenses')
+    .select('id, description')
+    .eq('id', id)
+    .is('deleted_at', null)
+    .single();
+
+  if (fetchErr || !existing) throw new Error('Expense not found or already deleted.');
+
+  const { data, error } = await sb.from('expenses')
+    .update({ deleted_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+
+  await log({
+    actor:     auth.user.email,
+    action:    'deleted',
+    tableName: 'expenses',
+    recordId:  id,
+    newData:   { deleted_at: data.deleted_at },
+    context:   `Soft-deleted expense: ${existing.description}`,
+    ip,
+  });
+
+  return { deleted: true, id };
 }

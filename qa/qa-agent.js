@@ -663,6 +663,544 @@ async function run() {
     ].forEach(n => record(FIN + ' ' + n, 'SKIP', skipMsg));
   }
 
+  // ══════════════════════════════════════════════════════════════════════════
+  // PHASE 8 — SPRINT 1 SCHEMA VALIDATION (Suite SV)
+  // ══════════════════════════════════════════════════════════════════════════
+  //
+  // Runs before all CRUD tests. Validates every Sprint 1 table against its
+  // expected schema: column names, indexes, FK constraints, service_role
+  // grants, and RLS enabled. Fails hard (stops CRUD suite) if any required
+  // column, index, or grant is missing so the operator gets an exact diff
+  // rather than a cryptic CRUD error downstream.
+  //
+  // research_notes and kb_entries: SKIP if table not yet deployed (Phases B/C).
+
+  console.log('\n-- Phase 8: Sprint 1 Schema Validation');
+
+  const SV = 'Schema:';
+  let bkSchemaFailed = false;   // gates Suite 10 CRUD tests
+  let rnSchemaFailed = false;   // gates Suite 11 CRUD tests (Phase B)
+  let kbSchemaFailed = false;   // gates Suite 12 CRUD tests (Phase C)
+  let svData         = null;    // raw schema validation response
+
+  // ── SV-0: endpoint accessible ────────────────────────────────────────────
+  await check(SV + ' schema_validation endpoint accessible', async () => {
+    const r = await finReq('GET', '/.netlify/functions/financial?section=schema_validation');
+    if (r.s !== 200) throw new Error('HTTP ' + r.s + ' -- ' + String((r.b && r.b.error) || '') +
+      '  (ensure schema_validation route is deployed)');
+    if (!r.b || !r.b.tables) throw new Error('tables key missing from response -- endpoint not wired correctly');
+    svData = r.b.tables;
+    return { detail: 'tables in response: ' + Object.keys(svData).join(', ') };
+  });
+
+  // Helper: check if a table exists and data was loaded; sets failed flag if not.
+  function svTableCheck(key, setFailed) {
+    if (!svData) return 'skip:Schema endpoint unavailable';
+    const t = svData[key];
+    if (!t || !t.exists) {
+      if (setFailed) setFailed(true);
+      return 'missing';
+    }
+    return t;
+  }
+
+  // ── expenses: full 8-point contract ──────────────────────────────────────
+
+  // SV-1  table exists
+  await check(SV + ' expenses: (1) table exists', async () => {
+    if (!svData) return { status: 'SKIP', detail: 'Schema endpoint unavailable' };
+    if (!svData.expenses || !svData.expenses.exists) {
+      bkSchemaFailed = true;
+      throw new Error('expenses table NOT found -- run 2026-06-13-bookkeeping-lite.sql in Supabase SQL Editor');
+    }
+    return { detail: 'Table present' };
+  });
+
+  // SV-2  required columns
+  await check(SV + ' expenses: (2) all 15 required columns present', async () => {
+    const t = svData && svData.expenses;
+    if (!t || !t.exists) { bkSchemaFailed = true; return { status: 'SKIP', detail: 'Table not found' }; }
+    const missing = t.missing_columns || [];
+    if (missing.length > 0) {
+      bkSchemaFailed = true;
+      throw new Error('Missing column(s): ' + missing.join(', ') +
+        ' -- absent from migration. Run expenses repair SQL.');
+    }
+    if (!t.col_meta_available)
+      return { status: 'WARN', detail: 'information_schema not accessible -- column names probed via SELECT, defaults/nullable not verified' };
+    return { detail: 'All 15 columns present' };
+  });
+
+  // SV-3  column defaults
+  await check(SV + ' expenses: (3) column defaults correct', async () => {
+    const t = svData && svData.expenses;
+    if (!t || !t.exists) return { status: 'SKIP', detail: 'Table not found' };
+    if (!t.col_meta_available)
+      return { status: 'WARN', detail: 'information_schema not accessible -- cannot verify defaults; check manually: id=gen_random_uuid(), expense_date=CURRENT_DATE, payment_method=\'personal\', tax_deductible=false, created_by=\'daron\', created_at=now(), updated_at=now()' };
+    const wrong = t.wrong_default || [];
+    if (wrong.length > 0) {
+      bkSchemaFailed = true;
+      throw new Error('Wrong default(s): ' +
+        wrong.map(w => `${w.column} (expected to contain "${w.expected_contains}", got "${w.actual}")`).join('; ') +
+        ' -- run expenses repair SQL to reset defaults');
+    }
+    return { detail: '7 required defaults verified: id, expense_date, payment_method, tax_deductible, created_by, created_at, updated_at' };
+  });
+
+  // SV-4  NOT NULL constraints
+  await check(SV + ' expenses: (4) NOT NULL constraints correct', async () => {
+    const t = svData && svData.expenses;
+    if (!t || !t.exists) return { status: 'SKIP', detail: 'Table not found' };
+    if (!t.col_meta_available)
+      return { status: 'WARN', detail: 'information_schema not accessible -- cannot verify NOT NULL; check manually: id, expense_date, category, description, amount, payment_method, tax_deductible, created_by, created_at, updated_at' };
+    const wrong = t.wrong_nullable || [];
+    if (wrong.length > 0) {
+      bkSchemaFailed = true;
+      throw new Error('Nullable columns that should be NOT NULL: ' +
+        wrong.map(w => w.column).join(', ') +
+        ' -- column was added with ADD COLUMN without NOT NULL. Run ALTER TABLE expenses ALTER COLUMN <col> SET NOT NULL;');
+    }
+    return { detail: '10 NOT NULL columns verified' };
+  });
+
+  // SV-5  CHECK constraints
+  await check(SV + ' expenses: (5) CHECK constraints present (amount>0, category, payment_method)', async () => {
+    const t = svData && svData.expenses;
+    if (!t || !t.exists) return { status: 'SKIP', detail: 'Table not found' };
+    if (t.constraint_check_available === false)
+      return { status: 'WARN', detail: 'information_schema not accessible -- verify 3 CHECK constraints manually: expenses_amount_positive, expenses_category_check, expenses_payment_method_check' };
+    const missing = t.missing_check_constraints || [];
+    if (missing.length > 0) {
+      bkSchemaFailed = true;
+      throw new Error('Missing CHECK constraint(s): ' + missing.join(', ') +
+        ' -- run expenses repair SQL to add missing constraints');
+    }
+    return { detail: 'All 3 CHECK constraints present: expenses_amount_positive, expenses_category_check, expenses_payment_method_check' };
+  });
+
+  // SV-6  FK constraint
+  await check(SV + ' expenses: (6) FK on related_session_id → sessions.id (ON DELETE SET NULL)', async () => {
+    const t = svData && svData.expenses;
+    if (!t || !t.exists) return { status: 'SKIP', detail: 'Table not found' };
+    if (t.constraint_check_available === false)
+      return { status: 'WARN', detail: 'information_schema not accessible -- verify FK manually: expenses_related_session_id_fkey REFERENCES sessions(id) ON DELETE SET NULL' };
+    const missing = t.missing_fks || [];
+    if (missing.length > 0)
+      throw new Error('Missing FK on column(s): ' + missing.join(', ') +
+        ' -- run: ALTER TABLE expenses ADD CONSTRAINT expenses_related_session_id_fkey FOREIGN KEY (related_session_id) REFERENCES sessions(id) ON DELETE SET NULL;');
+    return { detail: 'FK present: related_session_id → sessions.id ON DELETE SET NULL' };
+  });
+
+  // SV-7  indexes
+  await check(SV + ' expenses: (7) all 5 required indexes present', async () => {
+    const t = svData && svData.expenses;
+    if (!t || !t.exists) return { status: 'SKIP', detail: 'Table not found' };
+    if (t.index_check_available === false)
+      return { status: 'WARN', detail: 'pg_catalog not exposed -- verify 5 indexes manually: expenses_date_idx, expenses_category_idx, expenses_tax_idx, expenses_deleted_idx, expenses_session_idx' };
+    const missing = t.missing_indexes || [];
+    if (missing.length > 0) {
+      bkSchemaFailed = true;
+      throw new Error('Missing index(es): ' + missing.join(', ') +
+        ' -- index likely failed due to missing column. Run expenses repair SQL.');
+    }
+    return { detail: 'All 5 indexes present: date, category, tax, deleted (partial), session (partial)' };
+  });
+
+  // SV-8a  RLS
+  await check(SV + ' expenses: (8a) RLS enabled', async () => {
+    const t = svData && svData.expenses;
+    if (!t || !t.exists) return { status: 'SKIP', detail: 'Table not found' };
+    if (t.rls_enabled === null)
+      return { status: 'WARN', detail: 'pg_catalog not accessible -- verify RLS manually in Supabase > Table Editor > expenses > RLS' };
+    if (!t.rls_enabled) {
+      bkSchemaFailed = true;
+      throw new Error('RLS NOT enabled -- run: ALTER TABLE expenses ENABLE ROW LEVEL SECURITY;');
+    }
+    return { detail: 'RLS enabled' };
+  });
+
+  // SV-8b  service_role grants
+  await check(SV + ' expenses: (8b) service_role grants (SELECT/INSERT/UPDATE/DELETE)', async () => {
+    const t = svData && svData.expenses;
+    if (!t || !t.exists) return { status: 'SKIP', detail: 'Table not found' };
+    if (t.grant_check_available === false)
+      return { status: 'WARN', detail: 'information_schema not accessible -- verify manually: GRANT SELECT,INSERT,UPDATE,DELETE ON expenses TO service_role' };
+    const missing = t.missing_grants || [];
+    if (missing.length > 0) {
+      bkSchemaFailed = true;
+      throw new Error('Missing grant(s): ' + missing.join(', ') +
+        ' -- run: GRANT SELECT, INSERT, UPDATE, DELETE ON expenses TO service_role;');
+    }
+    return { detail: 'service_role has SELECT, INSERT, UPDATE, DELETE' };
+  });
+
+  // ── research_notes: full contract (SKIP until Phase B deployed) ───────────
+
+  await check(SV + ' research_notes: (1) table exists', async () => {
+    if (!svData) return { status: 'SKIP', detail: 'Schema endpoint unavailable' };
+    if (!svData.research_notes || !svData.research_notes.exists)
+      return { status: 'SKIP', detail: 'Phase B not yet deployed -- expected' };
+    return { detail: 'Table present' };
+  });
+
+  await check(SV + ' research_notes: (2) required columns present', async () => {
+    const t = svData && svData.research_notes;
+    if (!t || !t.exists) return { status: 'SKIP', detail: 'Phase B not yet deployed -- expected' };
+    const missing = t.missing_columns || [];
+    if (missing.length > 0) { rnSchemaFailed = true; throw new Error('Missing column(s): ' + missing.join(', ') + ' -- re-run Phase B migration'); }
+    return { detail: 'All required columns present' };
+  });
+
+  await check(SV + ' research_notes: (3-4) defaults and NOT NULL', async () => {
+    const t = svData && svData.research_notes;
+    if (!t || !t.exists) return { status: 'SKIP', detail: 'Phase B not yet deployed -- expected' };
+    if (!t.col_meta_available) return { status: 'WARN', detail: 'information_schema not accessible -- verify defaults/nullable manually' };
+    const problems = [];
+    (t.wrong_default   || []).forEach(w => problems.push(`default: ${w.column} expected "${w.expected_contains}", got "${w.actual}"`));
+    (t.wrong_nullable  || []).forEach(w => problems.push(`nullable: ${w.column} should be NOT NULL`));
+    if (problems.length > 0) { rnSchemaFailed = true; throw new Error(problems.join('; ')); }
+    return { detail: 'Defaults and NOT NULL correct' };
+  });
+
+  await check(SV + ' research_notes: (5-6) constraints and indexes', async () => {
+    const t = svData && svData.research_notes;
+    if (!t || !t.exists) return { status: 'SKIP', detail: 'Phase B not yet deployed -- expected' };
+    if (t.constraint_check_available === false || t.index_check_available === false)
+      return { status: 'WARN', detail: 'pg_catalog/information_schema not fully accessible -- verify constraints and indexes manually' };
+    const problems = [];
+    (t.missing_check_constraints || []).forEach(c => problems.push('missing constraint: ' + c));
+    (t.missing_indexes           || []).forEach(i => problems.push('missing index: ' + i));
+    if (problems.length > 0) { rnSchemaFailed = true; throw new Error(problems.join(' | ')); }
+    return { detail: 'Constraints and indexes OK' };
+  });
+
+  await check(SV + ' research_notes: (7-8) RLS and service_role grants', async () => {
+    const t = svData && svData.research_notes;
+    if (!t || !t.exists) return { status: 'SKIP', detail: 'Phase B not yet deployed -- expected' };
+    const problems = [];
+    if (t.rls_enabled === false) problems.push('RLS not enabled');
+    (t.missing_grants || []).forEach(g => problems.push('missing grant: ' + g));
+    if (problems.length > 0) { rnSchemaFailed = true; throw new Error(problems.join(' | ')); }
+    if (t.rls_enabled === null || t.grant_check_available === false)
+      return { status: 'WARN', detail: 'pg_catalog/information_schema not accessible -- verify RLS and grants manually' };
+    return { detail: 'RLS enabled, service_role grants OK' };
+  });
+
+  // ── kb_entries: full contract (SKIP until Phase C deployed) ──────────────
+
+  await check(SV + ' kb_entries: (1) table exists', async () => {
+    if (!svData) return { status: 'SKIP', detail: 'Schema endpoint unavailable' };
+    if (!svData.kb_entries || !svData.kb_entries.exists)
+      return { status: 'SKIP', detail: 'Phase C not yet deployed -- expected' };
+    return { detail: 'Table present' };
+  });
+
+  await check(SV + ' kb_entries: (2) required columns present (including fts tsvector)', async () => {
+    const t = svData && svData.kb_entries;
+    if (!t || !t.exists) return { status: 'SKIP', detail: 'Phase C not yet deployed -- expected' };
+    const missing = t.missing_columns || [];
+    if (missing.length > 0) { kbSchemaFailed = true; throw new Error('Missing column(s): ' + missing.join(', ') + ' -- re-run Phase C migration'); }
+    return { detail: 'All required columns present including fts tsvector' };
+  });
+
+  await check(SV + ' kb_entries: (3-4) defaults and NOT NULL', async () => {
+    const t = svData && svData.kb_entries;
+    if (!t || !t.exists) return { status: 'SKIP', detail: 'Phase C not yet deployed -- expected' };
+    if (!t.col_meta_available) return { status: 'WARN', detail: 'information_schema not accessible -- verify defaults/nullable manually' };
+    const problems = [];
+    (t.wrong_default   || []).forEach(w => problems.push(`default: ${w.column} expected "${w.expected_contains}", got "${w.actual}"`));
+    (t.wrong_nullable  || []).forEach(w => problems.push(`nullable: ${w.column} should be NOT NULL`));
+    if (problems.length > 0) { kbSchemaFailed = true; throw new Error(problems.join('; ')); }
+    return { detail: 'Defaults and NOT NULL correct' };
+  });
+
+  await check(SV + ' kb_entries: (5-6) constraints and indexes (including GIN FTS)', async () => {
+    const t = svData && svData.kb_entries;
+    if (!t || !t.exists) return { status: 'SKIP', detail: 'Phase C not yet deployed -- expected' };
+    if (t.constraint_check_available === false || t.index_check_available === false)
+      return { status: 'WARN', detail: 'pg_catalog/information_schema not accessible -- verify GIN FTS index manually' };
+    const problems = [];
+    (t.missing_check_constraints || []).forEach(c => problems.push('missing constraint: ' + c));
+    (t.missing_indexes           || []).forEach(i => problems.push('missing index: ' + i));
+    if (problems.length > 0) { kbSchemaFailed = true; throw new Error(problems.join(' | ')); }
+    return { detail: 'Constraints and indexes OK (including GIN FTS index)' };
+  });
+
+  await check(SV + ' kb_entries: (7-8) RLS and service_role grants', async () => {
+    const t = svData && svData.kb_entries;
+    if (!t || !t.exists) return { status: 'SKIP', detail: 'Phase C not yet deployed -- expected' };
+    const problems = [];
+    if (t.rls_enabled === false) problems.push('RLS not enabled');
+    (t.missing_grants || []).forEach(g => problems.push('missing grant: ' + g));
+    if (problems.length > 0) { kbSchemaFailed = true; throw new Error(problems.join(' | ')); }
+    if (t.rls_enabled === null || t.grant_check_available === false)
+      return { status: 'WARN', detail: 'pg_catalog/information_schema not accessible -- verify RLS and grants manually' };
+    return { detail: 'RLS enabled, service_role grants OK' };
+  });
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // PHASE 9 — BOOKKEEPING LITE QA (Suite 10)
+  // ══════════════════════════════════════════════════════════════════════════
+  //
+  // Validates the expenses table, all three GET sections, POST create,
+  // PATCH update + soft-delete, audit trail, RLS, and UI tab render.
+  // Uses the same finReq helper defined in Phase 7.
+  // Skipped entirely if Phase 8 schema validation failed for expenses.
+
+  console.log('\n-- Phase 9: Bookkeeping Lite QA (Suite 10)');
+
+  const BK = 'Bookkeeping:';
+  let bkExpenseId = null;
+
+  if (bkSchemaFailed) {
+    const schemaGate = 'Schema validation failed for expenses -- fix schema first, then re-run QA';
+    [
+      'expenses table accessible (GET section=expenses)',
+      'expenses_summary section accessible',
+      'pnl section accessible',
+      'Create expense (POST create_expense)',
+      'Created expense persists in list',
+      'Filter by category returns correct rows',
+      'Filter tax_deductible=true returns only flagged rows',
+      'Edit expense (PATCH update_expense)',
+      'Edited expense reflects changes in list',
+      'Missing description rejected (400)',
+      'Missing amount rejected (400)',
+      'Invalid category rejected (400)',
+      'Audit log coverage (expense create + update)',
+      'Soft-delete expense (PATCH delete_expense)',
+      'Soft-deleted expense absent from list',
+      'RLS blocks anon direct Supabase access',
+      'Bookkeeping sub-tab renders in Financial tab',
+      'No JS console errors in Bookkeeping section',
+    ].forEach(n => record(BK + ' ' + n, 'SKIP', schemaGate));
+  } else {
+
+  // ── 10.1  expenses table accessible ────────────────────────────────────
+  await check(BK + ' expenses table accessible (GET section=expenses)', async () => {
+    const r = await finReq('GET', '/.netlify/functions/financial?section=expenses');
+    if (r.s === 500) {
+      const msg = String((r.b && r.b.error) || '');
+      if (msg.includes('does not exist') || msg.includes('42P01') || msg.includes('PGRST204'))
+        throw new Error('500 -- expenses table missing. Run 2026-06-13-bookkeeping-lite.sql in Supabase.');
+      throw new Error('500 -- ' + msg.slice(0, 120));
+    }
+    if (r.s !== 200) throw new Error('HTTP ' + r.s + ' -- ' + String((r.b && r.b.error) || ''));
+    if (!Array.isArray(r.b.expenses)) throw new Error('expenses array missing from response');
+    if (!r.b.totals)                  throw new Error('totals object missing from response');
+    return { detail: r.b.expenses.length + ' existing expense(s)' };
+  });
+
+  // ── 10.2  expenses_summary accessible ──────────────────────────────────
+  await check(BK + ' expenses_summary section accessible', async () => {
+    const r = await finReq('GET', '/.netlify/functions/financial?section=expenses_summary');
+    if (r.s !== 200) throw new Error('HTTP ' + r.s + ' -- ' + String((r.b && r.b.error) || ''));
+    if (r.b.thisMonth === undefined) throw new Error('thisMonth key missing');
+    if (r.b.ytd       === undefined) throw new Error('ytd key missing');
+    return { detail: 'thisMonth=$' + (r.b.thisMonth || 0).toFixed(2) + '  ytd=$' + (r.b.ytd || 0).toFixed(2) };
+  });
+
+  // ── 10.3  pnl section accessible ───────────────────────────────────────
+  await check(BK + ' pnl section accessible', async () => {
+    const r = await finReq('GET', '/.netlify/functions/financial?section=pnl');
+    if (r.s !== 200) throw new Error('HTTP ' + r.s + ' -- ' + String((r.b && r.b.error) || ''));
+    if (!Array.isArray(r.b.monthly)) throw new Error('monthly array missing');
+    if (!r.b.totals)                 throw new Error('totals object missing');
+    if (!r.b.ytd)                    throw new Error('ytd object missing');
+    const lastMonth = r.b.monthly[r.b.monthly.length - 1] || {};
+    return { detail: 'months=' + r.b.monthly.length + '  ytdNet=$' + (r.b.ytd.net || 0).toFixed(2) +
+             '  lastMonth=' + (lastMonth.month || '?') };
+  });
+
+  // ── 10.4  create expense ────────────────────────────────────────────────
+  await check(BK + ' Create expense (POST create_expense)', async () => {
+    const r = await finReq('POST', '/.netlify/functions/financial?action=create_expense', {
+      description:    'QA Test Supply Purchase',
+      category:       'supplies',
+      amount:         25.50,
+      expense_date:   new Date().toISOString().slice(0, 10),
+      vendor:         'QA Test Vendor',
+      payment_method: 'personal',
+      tax_deductible: false,
+      notes:          'Auto-created by QA agent -- safe to delete',
+    });
+    if (r.s !== 201 || !r.b.expense || !r.b.expense.id)
+      throw new Error('Create failed: ' + (r.b && r.b.error ? r.b.error : 'HTTP ' + r.s));
+    bkExpenseId = r.b.expense.id;
+    return { detail: 'id=' + bkExpenseId + '  amount=$' + r.b.expense.amount };
+  });
+
+  if (bkExpenseId) {
+    // ── 10.5  created expense appears in list ─────────────────────────────
+    await check(BK + ' Created expense persists in list', async () => {
+      const r = await finReq('GET', '/.netlify/functions/financial?section=expenses');
+      if (r.s !== 200) throw new Error('HTTP ' + r.s);
+      const found = (r.b.expenses || []).find(e => e.id === bkExpenseId);
+      if (!found) throw new Error('Expense not found in list after create -- RLS or write issue');
+      if (found.category !== 'supplies')        throw new Error('category mismatch: got ' + found.category);
+      if (parseFloat(found.amount) !== 25.50)   throw new Error('amount mismatch: got ' + found.amount);
+      return { detail: 'category=' + found.category + '  amount=$' + found.amount };
+    });
+
+    // ── 10.6  filter by category ─────────────────────────────────────────
+    await check(BK + ' Filter by category returns correct rows', async () => {
+      const r = await finReq('GET', '/.netlify/functions/financial?section=expenses&category=supplies');
+      if (r.s !== 200) throw new Error('HTTP ' + r.s);
+      const all = r.b.expenses || [];
+      const wrong = all.filter(e => e.category !== 'supplies');
+      if (wrong.length > 0) throw new Error('Non-supplies rows returned: ' + wrong.length);
+      const hasOurs = all.some(e => e.id === bkExpenseId);
+      if (!hasOurs) throw new Error('QA expense not in filtered result');
+      return { detail: all.length + ' supplies expense(s) returned' };
+    });
+
+    // ── 10.7  filter by tax_deductible ───────────────────────────────────
+    await check(BK + ' Filter tax_deductible=true returns only flagged rows', async () => {
+      const r = await finReq('GET', '/.netlify/functions/financial?section=expenses&tax_deductible=true');
+      if (r.s !== 200) throw new Error('HTTP ' + r.s);
+      const all = r.b.expenses || [];
+      const notFlagged = all.filter(e => e.tax_deductible !== true);
+      if (notFlagged.length > 0) throw new Error(notFlagged.length + ' non-deductible rows slipped through');
+      return { detail: all.length + ' tax-deductible expense(s) returned' };
+    });
+
+    // ── 10.8  edit expense ────────────────────────────────────────────────
+    await check(BK + ' Edit expense (PATCH update_expense)', async () => {
+      const r = await finReq('PATCH',
+        '/.netlify/functions/financial?action=update_expense&id=' + bkExpenseId,
+        { amount: 30.00, tax_deductible: true, notes: 'QA updated' }
+      );
+      if (r.s !== 200 || !r.b.expense) throw new Error('Update failed: ' + (r.b && r.b.error ? r.b.error : 'HTTP ' + r.s));
+      if (parseFloat(r.b.expense.amount) !== 30.00) throw new Error('amount not updated: got ' + r.b.expense.amount);
+      if (r.b.expense.tax_deductible !== true)      throw new Error('tax_deductible not updated');
+      return { detail: 'amount=$' + r.b.expense.amount + '  tax_deductible=' + r.b.expense.tax_deductible };
+    });
+
+    // ── 10.9  edited expense reflected in list ────────────────────────────
+    await check(BK + ' Edited expense reflects changes in list', async () => {
+      const r = await finReq('GET', '/.netlify/functions/financial?section=expenses');
+      if (r.s !== 200) throw new Error('HTTP ' + r.s);
+      const found = (r.b.expenses || []).find(e => e.id === bkExpenseId);
+      if (!found)                                    throw new Error('Expense missing from list after edit');
+      if (parseFloat(found.amount) !== 30.00)        throw new Error('amount not persisted: got ' + found.amount);
+      if (found.tax_deductible !== true)             throw new Error('tax_deductible not persisted');
+      return { detail: 'amount=$' + found.amount + '  tax_deductible=' + found.tax_deductible };
+    });
+
+    // ── 10.10  missing required field rejected ────────────────────────────
+    await check(BK + ' Missing description rejected (400)', async () => {
+      const r = await finReq('POST', '/.netlify/functions/financial?action=create_expense', {
+        category: 'supplies', amount: 10,
+      });
+      if (r.s !== 400) throw new Error('Expected 400, got ' + r.s + ' -- validation not enforced');
+      return { detail: 'Correctly rejected: ' + (r.b && r.b.error ? r.b.error : 'HTTP 400') };
+    });
+
+    // ── 10.11  missing amount rejected ───────────────────────────────────
+    await check(BK + ' Missing amount rejected (400)', async () => {
+      const r = await finReq('POST', '/.netlify/functions/financial?action=create_expense', {
+        description: 'QA test', category: 'supplies',
+      });
+      if (r.s !== 400) throw new Error('Expected 400, got ' + r.s + ' -- validation not enforced');
+      return { detail: 'Correctly rejected: ' + (r.b && r.b.error ? r.b.error : 'HTTP 400') };
+    });
+
+    // ── 10.12  invalid category rejected ─────────────────────────────────
+    await check(BK + ' Invalid category rejected (400)', async () => {
+      const r = await finReq('POST', '/.netlify/functions/financial?action=create_expense', {
+        description: 'QA test', category: 'pizza', amount: 10,
+      });
+      if (r.s !== 400) throw new Error('Expected 400, got ' + r.s + ' -- category validation not enforced');
+      return { detail: 'Correctly rejected invalid category' };
+    });
+
+    // ── 10.13  audit log written ──────────────────────────────────────────
+    await check(BK + ' Audit log coverage (expense create + update)', async () => {
+      if (!bkExpenseId) return { status: 'SKIP', detail: 'No expense created -- cannot verify audit trail' };
+      return {
+        status: 'WARN',
+        detail: 'audit_logs not exposed via API -- rows expected for expense id=' + bkExpenseId +
+                ' -- verify in Supabase dashboard > audit_logs table (action=created + action=updated)',
+      };
+    });
+
+    // ── 10.14  soft-delete expense ────────────────────────────────────────
+    await check(BK + ' Soft-delete expense (PATCH delete_expense)', async () => {
+      const r = await finReq('PATCH',
+        '/.netlify/functions/financial?action=delete_expense&id=' + bkExpenseId,
+        {}
+      );
+      if (r.s !== 200 || !r.b.deleted) throw new Error('Delete failed: ' + (r.b && r.b.error ? r.b.error : 'HTTP ' + r.s));
+      return { detail: 'deleted=true  id=' + r.b.id };
+    });
+
+    // ── 10.15  soft-deleted row absent from list ──────────────────────────
+    await check(BK + ' Soft-deleted expense absent from list', async () => {
+      const r = await finReq('GET', '/.netlify/functions/financial?section=expenses');
+      if (r.s !== 200) throw new Error('HTTP ' + r.s);
+      const stillPresent = (r.b.expenses || []).some(e => e.id === bkExpenseId);
+      if (stillPresent) throw new Error('Deleted expense still appears in list -- deleted_at filter not applied');
+      return { detail: 'Correctly absent from list after soft-delete' };
+    });
+
+  } else {
+    [
+      'Created expense persists in list', 'Filter by category returns correct rows',
+      'Filter tax_deductible=true returns only flagged rows',
+      'Edit expense (PATCH update_expense)', 'Edited expense reflects changes in list',
+      'Missing description rejected (400)', 'Missing amount rejected (400)',
+      'Invalid category rejected (400)', 'Audit log coverage (expense create + update)',
+      'Soft-delete expense (PATCH delete_expense)', 'Soft-deleted expense absent from list',
+    ].forEach(n => record(BK + ' ' + n, 'SKIP', 'Expense creation failed -- skipping dependent checks'));
+  }
+
+  // ── 10.16  RLS blocks anon direct access ─────────────────────────────────
+  await check(BK + ' RLS blocks anon direct Supabase access', async () => {
+    const r = await page.evaluate(async (supaUrl) => {
+      if (!supaUrl) return { skipped: true };
+      try {
+        const res = await fetch(supaUrl + '/rest/v1/expenses?select=id&limit=1', {
+          headers: { 'apikey': 'anon', 'Authorization': 'Bearer anon' },
+        });
+        return { status: res.status };
+      } catch (e) { return { error: e.message }; }
+    }, process.env.QA_SUPABASE_URL || '');
+    if (r.skipped) return { status: 'WARN', detail: 'QA_SUPABASE_URL not set -- cannot test anon RLS. Set it in qa/.env' };
+    if (r.error)   return { status: 'WARN', detail: 'Network error testing RLS: ' + r.error };
+    if (r.status === 200) throw new Error('Anon got HTTP 200 -- RLS not enabled on expenses table');
+    return { detail: 'Anon correctly blocked: HTTP ' + r.status };
+  });
+
+  // ── 10.17  Bookkeeping tab renders in dashboard ───────────────────────────
+  await check(BK + ' Bookkeeping sub-tab renders in Financial tab', async () => {
+    await page.click("button[onclick*=\"showTab('financial')\"]");
+    await page.waitForSelector('#tab-financial', { state: 'visible', timeout: TIMEOUT });
+    const bkBtn = await page.$("button[onclick*=\"fcSection('bookkeeping')\"]");
+    if (!bkBtn) throw new Error("Bookkeeping sub-tab button not found -- check dashboard.html fin-subnav");
+    await bkBtn.click();
+    await page.waitForSelector('#fc-bookkeeping', { state: 'visible', timeout: TIMEOUT });
+    await page.waitForFunction(() => {
+      const el = document.getElementById('fc-bookkeeping');
+      return el && el.innerHTML.trim().length > 50 && !el.textContent.includes('LOADING');
+    }, { timeout: TIMEOUT });
+    return { detail: 'Bookkeeping section rendered without errors' };
+  }, page);
+
+  // ── 10.18  No console errors from bookkeeping section ────────────────────
+  await check(BK + ' No JS console errors in Bookkeeping section', async () => {
+    const bkErrors = consoleErrors.filter(e =>
+      e.toLowerCase().includes('bookkeep') ||
+      e.toLowerCase().includes('bkexpense') ||
+      e.toLowerCase().includes('bksave') ||
+      e.toLowerCase().includes('fcSection') ||
+      e.toLowerCase().includes('fc-bookkeeping')
+    );
+    if (bkErrors.length > 0) throw new Error('Console errors: ' + bkErrors.join(' | '));
+    return { detail: 'No bookkeeping-related console errors' };
+  });
+
+  } // end if (bkSchemaFailed) else
+
   await browser.close();
 
   // Final report
@@ -680,17 +1218,42 @@ async function run() {
   if (warn > 0) { console.log('\n  WARNINGS:'); results.filter(r => r.status === 'WARN').forEach(r => console.log(`    ! ${r.name}  --  ${r.detail}`)); }
   if (skip > 0) { console.log('\n  SKIPPED:'); results.filter(r => r.status === 'SKIP').forEach(r => console.log(`    - ${r.name}`)); }
 
+  const SICONS = { PASS: 'v', FAIL: 'x', WARN: '!', SKIP: '-' };
+
   // Financial Operations sub-report
   const finResults  = results.filter(r => r.name.startsWith('Financial:'));
   const finPass     = finResults.filter(r => r.status === 'PASS').length;
   const finFail     = finResults.filter(r => r.status === 'FAIL').length;
   const finWarn     = finResults.filter(r => r.status === 'WARN').length;
   const finSkip     = finResults.filter(r => r.status === 'SKIP').length;
-  const FICONS      = { PASS: 'v', FAIL: 'x', WARN: '!', SKIP: '-' };
   if (finResults.length > 0) {
     console.log('\n=== FINANCIAL OPERATIONS QA ===');
-    finResults.forEach(r => console.log(`  ${FICONS[r.status] || '?'} ${r.status.padEnd(5)} ${r.name.replace('Financial: ', '')}`));
+    finResults.forEach(r => console.log(`  ${SICONS[r.status] || '?'} ${r.status.padEnd(5)} ${r.name.replace('Financial: ', '')}`));
     console.log(`\n  Financial totals : PASS ${finPass}  FAIL ${finFail}  WARN ${finWarn}  SKIP ${finSkip}  / ${finResults.length} checks`);
+  }
+
+  // Schema Validation sub-report (Suite SV)
+  const svResults = results.filter(r => r.name.startsWith('Schema:'));
+  const svPass    = svResults.filter(r => r.status === 'PASS').length;
+  const svFail    = svResults.filter(r => r.status === 'FAIL').length;
+  const svWarn    = svResults.filter(r => r.status === 'WARN').length;
+  const svSkip    = svResults.filter(r => r.status === 'SKIP').length;
+  if (svResults.length > 0) {
+    console.log('\n=== SPRINT 1 SCHEMA VALIDATION (Suite SV) ===');
+    svResults.forEach(r => console.log(`  ${SICONS[r.status] || '?'} ${r.status.padEnd(5)} ${r.name.replace('Schema: ', '')}`));
+    console.log(`\n  Schema totals : PASS ${svPass}  FAIL ${svFail}  WARN ${svWarn}  SKIP ${svSkip}  / ${svResults.length} checks`);
+  }
+
+  // Bookkeeping Lite sub-report (Suite 10)
+  const bkResults = results.filter(r => r.name.startsWith('Bookkeeping:'));
+  const bkPass    = bkResults.filter(r => r.status === 'PASS').length;
+  const bkFail    = bkResults.filter(r => r.status === 'FAIL').length;
+  const bkWarn    = bkResults.filter(r => r.status === 'WARN').length;
+  const bkSkip    = bkResults.filter(r => r.status === 'SKIP').length;
+  if (bkResults.length > 0) {
+    console.log('\n=== BOOKKEEPING LITE QA (Suite 10) ===');
+    bkResults.forEach(r => console.log(`  ${SICONS[r.status] || '?'} ${r.status.padEnd(5)} ${r.name.replace('Bookkeeping: ', '')}`));
+    console.log(`\n  Bookkeeping totals : PASS ${bkPass}  FAIL ${bkFail}  WARN ${bkWarn}  SKIP ${bkSkip}  / ${bkResults.length} checks`);
   }
 
   const report = {

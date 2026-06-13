@@ -1590,6 +1590,137 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
 }
 </style>
 
+<!-- ── BOOKKEEPING LITE STYLES ───────────────────────────────── -->
+<style>
+/* Section divider label (used by bookkeeping and reusable) */
+.fc-divider {
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  letter-spacing: .35em;
+  text-transform: uppercase;
+  color: rgba(232,184,75,.5);
+  border-bottom: 1px solid rgba(232,184,75,.12);
+  padding-bottom: 8px;
+  margin: 28px 0 16px;
+}
+
+/* P&L monthly grid */
+.bk-pnl-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  margin-bottom: 28px;
+}
+.bk-pnl-cell {
+  background: rgba(13,8,32,.5);
+  border: 1px solid rgba(232,184,75,.12);
+  padding: 12px 10px;
+  text-align: center;
+}
+.bk-pnl-label {
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  letter-spacing: .25em;
+  color: rgba(232,184,75,.5);
+  margin-bottom: 6px;
+}
+.bk-pnl-rev  { font-size: 13px; color: #22c98a; margin-bottom: 2px; }
+.bk-pnl-exp  { font-size: 13px; color: #ee7070; margin-bottom: 4px; }
+.bk-pnl-net  { font-family: 'Cinzel', serif; font-size: 12px; font-weight: 700; }
+.bk-pnl-net.green { color: #22c98a; }
+.bk-pnl-net.red   { color: #ee7070; }
+
+/* Category chips */
+.bk-cat-row  { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; }
+.bk-cat-chip {
+  display: flex; align-items: center; gap: 8px;
+  border: 1px solid rgba(232,184,75,.2);
+  padding: 6px 14px;
+  background: rgba(13,8,32,.4);
+}
+.bk-cat-name {
+  font-family: 'Cinzel', serif; font-size: 9px;
+  letter-spacing: .25em; text-transform: uppercase;
+  color: rgba(232,184,75,.6);
+}
+.bk-cat-amt {
+  font-family: 'EB Garamond', serif; font-size: 15px;
+  color: #f0ecff; font-weight: 600;
+}
+
+/* Filter bar */
+.bk-filter-bar {
+  display: flex; flex-wrap: wrap; align-items: center;
+  gap: 10px; margin-bottom: 16px;
+}
+.bk-filter-select,
+.bk-filter-input {
+  font-family: 'EB Garamond', serif; font-size: 15px;
+  background: #0a0612; color: #f0ecff;
+  border: 1px solid rgba(232,184,75,.25);
+  padding: 6px 10px;
+}
+.bk-filter-select:focus,
+.bk-filter-input:focus { outline: none; border-color: rgba(232,184,75,.6); }
+.bk-filter-check {
+  font-family: 'EB Garamond', serif; font-size: 15px;
+  color: rgba(240,236,255,.7); display: flex; align-items: center; gap: 6px; cursor: pointer;
+}
+.bk-filter-clear {
+  font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: .25em;
+  color: rgba(232,184,75,.5); border: 1px solid rgba(232,184,75,.2);
+  background: transparent; padding: 6px 12px; cursor: pointer; margin-left: auto;
+}
+.bk-filter-clear:hover { color: #e8b84b; border-color: #e8b84b66; }
+
+/* Expense table row buttons */
+.bk-row-btn {
+  font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: .2em;
+  text-transform: uppercase; border: 1px solid rgba(232,184,75,.3);
+  background: transparent; color: rgba(232,184,75,.7); padding: 3px 9px;
+  cursor: pointer; transition: all .15s;
+}
+.bk-row-btn:hover { background: rgba(232,184,75,.08); color: #e8b84b; }
+.bk-row-btn.del   { border-color: rgba(238,112,112,.3); color: rgba(238,112,112,.6); }
+.bk-row-btn.del:hover { background: rgba(238,112,112,.08); color: #ee7070; }
+
+/* Add/Edit expense form grid */
+.bk-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 20px;
+}
+.bk-span2 { grid-column: span 2; }
+.bk-form-group { display: flex; flex-direction: column; gap: 5px; }
+.bk-form-label {
+  font-family: 'Cinzel', serif; font-size: 9px;
+  letter-spacing: .3em; text-transform: uppercase;
+  color: rgba(232,184,75,.6);
+}
+.bk-form-input,
+.bk-form-select {
+  font-family: 'EB Garamond', serif; font-size: 16px;
+  background: #0a0612; color: #f0ecff;
+  border: 1px solid rgba(232,184,75,.25);
+  padding: 8px 10px;
+}
+.bk-form-input:focus,
+.bk-form-select:focus { outline: none; border-color: rgba(232,184,75,.6); }
+.bk-form-msg { min-height: 20px; }
+
+/* Expense table column sizing */
+.bk-expense-table td:nth-child(3) { max-width: 260px; }
+
+@media (max-width: 900px) {
+  .bk-pnl-grid { grid-template-columns: repeat(3, 1fr); }
+  .bk-form-grid { grid-template-columns: 1fr; }
+  .bk-span2 { grid-column: span 1; }
+}
+@media (max-width: 600px) {
+  .bk-pnl-grid { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+
 <!-- ── KNOWLEDGE HUB STYLES ────────────────────────────────── -->
 <style>
 /* ── KH shell ── */
@@ -2301,11 +2432,12 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
 
       <!-- Sub-nav -->
       <div class="fin-subnav" id="finSubnav">
-        <button class="fin-sub active" data-section="overview"  onclick="fcSection('overview')">Overview</button>
-        <button class="fin-sub"        data-section="packages"  onclick="fcSection('packages')">Packages</button>
-        <button class="fin-sub"        data-section="ledger"    onclick="fcSection('ledger')">Ledger</button>
-        <button class="fin-sub"        data-section="invoices"  onclick="fcSection('invoices')">Invoices</button>
-        <button class="fin-sub"        data-section="revenue"   onclick="fcSection('revenue')">Revenue Analytics</button>
+        <button class="fin-sub active" data-section="overview"     onclick="fcSection('overview')">Overview</button>
+        <button class="fin-sub"        data-section="packages"     onclick="fcSection('packages')">Packages</button>
+        <button class="fin-sub"        data-section="ledger"       onclick="fcSection('ledger')">Ledger</button>
+        <button class="fin-sub"        data-section="invoices"     onclick="fcSection('invoices')">Invoices</button>
+        <button class="fin-sub"        data-section="revenue"      onclick="fcSection('revenue')">Revenue Analytics</button>
+        <button class="fin-sub"        data-section="bookkeeping"  onclick="fcSection('bookkeeping')">Bookkeeping</button>
       </div>
 
       <!-- Alert banner (auto-shown when alerts exist) -->
@@ -2320,11 +2452,12 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
       </div>
 
       <!-- Section containers -->
-      <div id="fc-overview"  class="fc-section"></div>
-      <div id="fc-packages"  class="fc-section" style="display:none"></div>
-      <div id="fc-ledger"    class="fc-section" style="display:none"></div>
-      <div id="fc-invoices"  class="fc-section" style="display:none"></div>
-      <div id="fc-revenue"   class="fc-section" style="display:none"></div>
+      <div id="fc-overview"     class="fc-section"></div>
+      <div id="fc-packages"     class="fc-section" style="display:none"></div>
+      <div id="fc-ledger"       class="fc-section" style="display:none"></div>
+      <div id="fc-invoices"     class="fc-section" style="display:none"></div>
+      <div id="fc-revenue"      class="fc-section" style="display:none"></div>
+      <div id="fc-bookkeeping"  class="fc-section" style="display:none"></div>
     </div>
   </div>
 
