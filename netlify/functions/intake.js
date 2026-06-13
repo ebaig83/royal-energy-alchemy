@@ -9,20 +9,50 @@ const { getClient }             = require('./lib/supabase');
 const { log }                   = require('./lib/audit');
 const { runIntakeAgent }        = require('./agents/intake-agent');
 
+// Rate limits for public intake POST (per IP)
+const RATE_SHORT_MAX  = 5;    // 5 per 10 minutes
+const RATE_SHORT_SECS = 600;
+const RATE_DAY_MAX    = 20;   // 20 per 24 hours
+const RATE_DAY_SECS   = 86400;
+
+async function checkIntakeRateLimit(sb, ip) {
+  if (!ip || ip === 'unknown') return false;
+  const now = Date.now();
+  const shortWindow = new Date(now - RATE_SHORT_SECS * 1000).toISOString();
+  const dayWindow   = new Date(now - RATE_DAY_SECS   * 1000).toISOString();
+  const [shortRes, dayRes] = await Promise.all([
+    sb.from('audit_logs').select('id', { count: 'exact', head: true })
+      .eq('action', 'intake_submission').eq('ip_address', ip).gte('created_at', shortWindow),
+    sb.from('audit_logs').select('id', { count: 'exact', head: true })
+      .eq('action', 'intake_submission').eq('ip_address', ip).gte('created_at', dayWindow),
+  ]);
+  return (shortRes.count >= RATE_SHORT_MAX) || (dayRes.count >= RATE_DAY_MAX);
+}
+
 exports.handler = async function(event) {
   if (event.httpMethod === 'OPTIONS') return respond(200, {});
 
   const sb = getClient();
-  const ip = event.headers['x-forwarded-for'] || '';
+  const ip = (event.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
 
   // ── PUBLIC POST — form submission ─────────────────────────────────
   if (event.httpMethod === 'POST') {
     let body;
     try { body = JSON.parse(event.body || '{}'); } catch { return respond(400, { error: 'Invalid JSON.' }); }
 
-    // Basic spam check
+    // Honeypot check first — silently accept spam before rate limit burn
     if (body.bot_field || body['bot-field']) {
-      return respond(200, { success: true }); // silently accept spam
+      return respond(200, { success: true });
+    }
+
+    // Rate limit
+    try {
+      const limited = await checkIntakeRateLimit(sb, ip);
+      if (limited) {
+        return respond(429, { error: 'Too many requests. Please try again later.' });
+      }
+    } catch (rlErr) {
+      console.error('[intake] Rate limit check error:', rlErr.message);
     }
 
     const fullName = (body.name || body.full_name || '').trim();
@@ -51,6 +81,9 @@ exports.handler = async function(event) {
       .single();
 
     if (subErr) return respond(500, { error: 'Could not save submission.' });
+
+    // Log the submission for rate limiting (non-fatal if it fails)
+    await log({ actor: 'public', action: 'intake_submission', tableName: 'intake_submissions', recordId: submission.id, ip });
 
     // 2. Run intake agent (find/create client, create session, generate summary)
     try {

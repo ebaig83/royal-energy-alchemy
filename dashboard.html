@@ -1066,6 +1066,133 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
   .ck-home-grid { grid-template-columns: 1fr; }
   .ck-panel--urgent, .ck-panel--activity, .ck-panel--metrics { grid-column: 1; grid-row: auto; }
   .ck-header-search { width: 130px; }
+  /* Hamburger visible only on mobile */
+  .ck-hamburger { display: flex !important; }
+}
+
+/* ── Mobile sidebar drawer ───────────────────────────────────── */
+.ck-hamburger {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(232,184,75,.18);
+  color: rgba(240,236,255,.7);
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 4px;
+  flex-shrink: 0;
+  transition: border-color .2s, color .2s;
+}
+.ck-hamburger:hover { border-color: #e8b84b; color: #e8b84b; }
+
+/* Drawer overlay backdrop */
+.ck-sidebar-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(4,2,14,.7);
+  z-index: 199;
+}
+.ck-sidebar-backdrop.open { display: block; }
+
+/* Sidebar becomes fixed drawer on mobile when .sidebar-open on #cockpit */
+@media (max-width: 640px) {
+  #cockpit.sidebar-open .ck-sidebar {
+    display: flex;
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 240px;
+    z-index: 200;
+    box-shadow: 4px 0 32px rgba(0,0,0,.8);
+  }
+}
+
+/* ── Notification badge ──────────────────────────────────────── */
+.ck-notif-wrap { position: relative; flex-shrink: 0; }
+.ck-notif-badge {
+  display: none;
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 16px;
+  height: 16px;
+  background: #ee7070;
+  border-radius: 8px;
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  color: #fff;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+  pointer-events: none;
+}
+.ck-notif-badge.visible { display: flex; }
+
+/* ── Global search dropdown ─────────────────────────────────── */
+.ck-search-wrap { position: relative; flex-shrink: 0; }
+.ck-search-results {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  min-width: 280px;
+  background: #0d0820;
+  border: 1px solid rgba(232,184,75,.3);
+  z-index: 300;
+  max-height: 320px;
+  overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0,0,0,.7);
+}
+.ck-search-results.open { display: block; }
+.ck-sr-section {
+  font-family: 'Cinzel', serif;
+  font-size: 8px;
+  letter-spacing: .45em;
+  color: rgba(232,184,75,.4);
+  text-transform: uppercase;
+  padding: 10px 14px 4px;
+}
+.ck-sr-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+  cursor: pointer;
+  transition: background .15s;
+  border-bottom: 1px solid rgba(232,184,75,.06);
+}
+.ck-sr-item:hover { background: rgba(232,184,75,.07); }
+.ck-sr-item-type {
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  letter-spacing: .2em;
+  color: rgba(176,158,248,.6);
+  text-transform: uppercase;
+  min-width: 52px;
+  flex-shrink: 0;
+}
+.ck-sr-item-name {
+  font-family: 'EB Garamond', serif;
+  font-size: 16px;
+  color: #f0ecff;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ck-sr-empty {
+  font-family: 'EB Garamond', serif;
+  font-size: 15px;
+  color: rgba(176,158,248,.5);
+  font-style: italic;
+  padding: 18px 14px;
+  text-align: center;
 }
 </style>
 
@@ -1464,16 +1591,27 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
 
     <!-- Header bar -->
     <header class="ck-header">
-      <div>
-        <div class="ck-greeting-text" id="ckGreeting">Good morning, Daron</div>
-        <div class="ck-greeting-date" id="ckDate"></div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button class="ck-hamburger" id="ckHamburger" title="Menu" aria-label="Open sidebar">☰</button>
+        <div>
+          <div class="ck-greeting-text" id="ckGreeting">Good morning, Daron</div>
+          <div class="ck-greeting-date" id="ckDate"></div>
+        </div>
       </div>
       <div class="ck-header-right">
-        <input class="ck-header-search" type="text" placeholder="Search clients, sessions…" id="ckGlobalSearch">
-        <button class="ck-notif-btn" title="Notifications">🔔</button>
+        <div class="ck-search-wrap">
+          <input class="ck-header-search" type="text" placeholder="Search clients, sessions…" id="ckGlobalSearch" autocomplete="off">
+          <div class="ck-search-results" id="ckSearchResults"></div>
+        </div>
+        <div class="ck-notif-wrap">
+          <button class="ck-notif-btn" id="ckNotifBtn" title="Notifications">🔔</button>
+          <span class="ck-notif-badge" id="ckNotifBadge"></span>
+        </div>
         <div class="ck-profile-chip">DR</div>
       </div>
     </header>
+    <!-- Mobile sidebar backdrop -->
+    <div class="ck-sidebar-backdrop" id="ckSidebarBackdrop"></div>
 
     <!-- KPI bar — .action-stats / .action-stat preserved for QA selectors -->
     <div class="action-stats ck-kpi-row">
@@ -9779,6 +9917,202 @@ function purgeTestEntries(){
 }
 purgeTestEntries();
 (function(){var st=getSettings();if(st&&st.netlifyToken)setTimeout(pullNetlifySubmissions,1500);})();
+
+// ══════════════════════════════════════════════════════════════════════════
+// POLISH SPRINT — P1 hamburger · P2 active-on-load · P3 search · P4 notif
+//                 P7 cookie-auth helper
+// ══════════════════════════════════════════════════════════════════════════
+(function() {
+
+  // ── P7: Auth token helper ─────────────────────────────────────────────
+  // Centralised accessor — future migration: swap sessionStorage for a
+  // server-read httpOnly cookie by changing this one function only.
+  window.getAuthToken = function() {
+    return sessionStorage.getItem('rea_api_token') || '';
+  };
+
+  // ── P1: Mobile sidebar drawer ─────────────────────────────────────────
+  var cockpit  = document.getElementById('cockpit');
+  var hamburger = document.getElementById('ckHamburger');
+  var backdrop  = document.getElementById('ckSidebarBackdrop');
+
+  function openSidebar() {
+    if (!cockpit) return;
+    cockpit.classList.add('sidebar-open');
+    backdrop.classList.add('open');
+    document.addEventListener('keydown', onEscClose);
+  }
+
+  function closeSidebar() {
+    if (!cockpit) return;
+    cockpit.classList.remove('sidebar-open');
+    backdrop.classList.remove('open');
+    document.removeEventListener('keydown', onEscClose);
+  }
+
+  function onEscClose(e) { if (e.key === 'Escape') closeSidebar(); }
+
+  if (hamburger) hamburger.addEventListener('click', function(e) {
+    e.stopPropagation();
+    cockpit && cockpit.classList.contains('sidebar-open') ? closeSidebar() : openSidebar();
+  });
+
+  if (backdrop) backdrop.addEventListener('click', closeSidebar);
+
+  // Close drawer when a nav item is tapped on mobile
+  document.querySelectorAll('.ck-nav-item').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      if (window.innerWidth <= 640) closeSidebar();
+    });
+  });
+
+  // ── P2: Active sidebar state on load ─────────────────────────────────
+  // Patch initDashboard so the Home nav item is always highlighted after unlock
+  var _origInit = window.initDashboard;
+  window.initDashboard = function() {
+    if (typeof _origInit === 'function') _origInit();
+    if (typeof showTab === 'function') showTab('home');
+  };
+
+  // ── P3: Global search ─────────────────────────────────────────────────
+  var searchInput   = document.getElementById('ckGlobalSearch');
+  var searchResults = document.getElementById('ckSearchResults');
+  var _searchTimer  = null;
+
+  function escHtml(s) {
+    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function runSearch(q) {
+    if (!searchResults) return;
+    if (!q) { closeSearch(); return; }
+
+    var clients  = (window._crmClients  || []);
+    var sessions = (window.REA_DATA && window.REA_DATA.sessions) || [];
+
+    var clientHits = clients.filter(function(c) {
+      var name = (c.name || c.full_name || '').toLowerCase();
+      return name.indexOf(q) !== -1;
+    }).slice(0, 5);
+
+    var sessionHits = sessions.filter(function(s) {
+      var cn = (s.client || '').toLowerCase();
+      var type = (s.type || s.session_type || '').toLowerCase();
+      return cn.indexOf(q) !== -1 || type.indexOf(q) !== -1;
+    }).slice(0, 3);
+
+    var html = '';
+
+    if (clientHits.length) {
+      html += '<div class="ck-sr-section">Clients</div>';
+      html += clientHits.map(function(c) {
+        var name = c.name || c.full_name || 'Unknown';
+        return '<div class="ck-sr-item" data-action="client" data-id="' + escHtml(c.id || '') + '">' +
+               '<span class="ck-sr-item-type">Client</span>' +
+               '<span class="ck-sr-item-name">' + escHtml(name) + '</span></div>';
+      }).join('');
+    }
+
+    if (sessionHits.length) {
+      html += '<div class="ck-sr-section">Sessions</div>';
+      html += sessionHits.map(function(s) {
+        var label = (s.client || 'Unknown') + (s.type ? ' · ' + s.type : '');
+        return '<div class="ck-sr-item" data-action="sessions">' +
+               '<span class="ck-sr-item-type">Session</span>' +
+               '<span class="ck-sr-item-name">' + escHtml(label) + '</span></div>';
+      }).join('');
+    }
+
+    if (!html) {
+      html = '<div class="ck-sr-empty">No results for "' + escHtml(q) + '"</div>';
+    }
+
+    searchResults.innerHTML = html;
+    searchResults.classList.add('open');
+
+    // Wire result clicks
+    searchResults.querySelectorAll('.ck-sr-item').forEach(function(row) {
+      row.addEventListener('click', function() {
+        var action = row.dataset.action;
+        if (typeof showTab === 'function') showTab(action || 'clients');
+        closeSearch();
+        if (searchInput) searchInput.value = '';
+      });
+    });
+  }
+
+  function closeSearch() {
+    if (searchResults) {
+      searchResults.classList.remove('open');
+      searchResults.innerHTML = '';
+    }
+  }
+
+  if (searchInput) {
+    searchInput.addEventListener('input', function() {
+      clearTimeout(_searchTimer);
+      var q = searchInput.value.trim().toLowerCase();
+      _searchTimer = setTimeout(function() { runSearch(q); }, 220);
+    });
+
+    searchInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        clearTimeout(_searchTimer);
+        var q = searchInput.value.trim().toLowerCase();
+        if (!q) return;
+        // Navigate to clients tab as the primary cross-tab action
+        if (typeof showTab === 'function') showTab('clients');
+        closeSearch();
+        searchInput.value = '';
+      }
+      if (e.key === 'Escape') { closeSearch(); searchInput.blur(); }
+    });
+
+    // Close when clicking outside the search area
+    document.addEventListener('click', function(e) {
+      var wrap = searchInput.closest('.ck-search-wrap');
+      if (wrap && !wrap.contains(e.target)) closeSearch();
+    });
+  }
+
+  // ── P4: Notification badge ────────────────────────────────────────────
+  var notifBtn   = document.getElementById('ckNotifBtn');
+  var notifBadge = document.getElementById('ckNotifBadge');
+
+  function updateNotifBadge() {
+    if (!notifBadge) return;
+    var alertEl = document.getElementById('homeStatAlerts');
+    var count   = alertEl ? parseInt(alertEl.textContent, 10) : 0;
+    if (isNaN(count) || count <= 0) {
+      notifBadge.classList.remove('visible');
+      notifBadge.textContent = '';
+    } else {
+      notifBadge.textContent = count > 99 ? '99+' : String(count);
+      notifBadge.classList.add('visible');
+    }
+  }
+
+  // Poll the alert stat element for changes (set by renderHomeDashboard)
+  if (notifBadge) {
+    var _alertObs = new MutationObserver(updateNotifBadge);
+    var _alertEl  = document.getElementById('homeStatAlerts');
+    if (_alertEl) _alertObs.observe(_alertEl, { childList: true, characterData: true, subtree: true });
+    // Also run immediately in case it's already populated
+    setTimeout(updateNotifBadge, 1500);
+  }
+
+  if (notifBtn) {
+    notifBtn.addEventListener('click', function() {
+      // Navigate to Follow-Ups if there are alerts, otherwise Home
+      var alertEl = document.getElementById('homeStatAlerts');
+      var count   = alertEl ? parseInt(alertEl.textContent, 10) : 0;
+      if (typeof showTab === 'function') {
+        showTab(count > 0 ? 'followups' : 'home');
+      }
+    });
+  }
+
+})();
 
 </script>
 <script src="clients-module.js"></script>
