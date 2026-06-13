@@ -60,7 +60,7 @@
   function tok() { return sessionStorage.getItem('rea_api_token') || ''; }
 
   function csReq(method, path, body) {
-    var opts = { method: method, headers: { Authorization: 'Bearer ' + tok() } };
+    var opts = { method: method, headers: { 'X-Dashboard-Token': tok() } };
     if (body) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
     return fetch(path, opts).then(function (r) {
       return r.json().then(function (j) {
