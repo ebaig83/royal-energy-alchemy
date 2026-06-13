@@ -1361,11 +1361,11 @@ async function run() {
     await page.evaluate(() => {
       window.khSection('research');
     });
-    await page.waitForSelector('#tab-kh .kh-rn-wrap', { timeout: TIMEOUT });
+    await page.waitForSelector('#tab-kh .kh-rn-wrap', { timeout: AI_TIMEOUT });
     await page.waitForFunction(() => {
       const el = document.querySelector('#tab-kh .kh-rn-wrap');
       return el && el.innerHTML.trim().length > 50;
-    }, { timeout: TIMEOUT });
+    }, { timeout: AI_TIMEOUT });
     return { detail: 'Research section rendered inside Knowledge Hub' };
   }, page);
 
