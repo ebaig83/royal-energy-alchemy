@@ -1209,6 +1209,191 @@ async function run() {
 
   } // end if (bkSchemaFailed) else
 
+  // ═══════════════════════════════════════════════════════════════════════
+  // Phase 10: Research Lite QA (Suite 11)
+  // ═══════════════════════════════════════════════════════════════════════
+  console.log('\n-- Phase 10: Research Lite QA (Suite 11)');
+
+  const RN = 'Research:';
+  const schemaGateRN = 'Schema validation failed — Suite 11 skipped';
+
+  if (rnSchemaFailed) {
+    [
+      'research function deployed',
+      'notes table accessible (GET section=notes)',
+      'Create note (POST create_note)',
+      'Created note persists in list',
+      'Filter by session_id (no error)',
+      'Search by keyword filters results',
+      'Edit note (PATCH update_note)',
+      'Missing title rejected (400)',
+      'Soft-delete note (PATCH delete_note)',
+      'Soft-deleted note absent from list',
+      'RLS blocks anon direct Supabase access',
+      'Research tab renders in dashboard',
+      'No JS console errors in Research section',
+    ].forEach(n => record(RN + ' ' + n, 'SKIP', schemaGateRN));
+  } else {
+
+  // ── RN-0  research function deployed ─────────────────────────────────────
+  await check(RN + ' research function deployed', async () => {
+    const res = await finReq('/.netlify/functions/research?section=notes', { method: 'GET' });
+    if (res.status === 0) throw new Error('Network error — function unreachable');
+    if (res.status === 500) throw new Error('Function error HTTP 500');
+    return { detail: 'HTTP ' + res.status };
+  });
+
+  // ── RN-1  notes table accessible ─────────────────────────────────────────
+  let rnQaId = null;
+  await check(RN + ' notes table accessible (GET section=notes)', async () => {
+    const res  = await finReq('/.netlify/functions/research?section=notes', { method: 'GET' });
+    const data = JSON.parse(res.body);
+    if (!res.ok) throw new Error(data.error || 'API error HTTP ' + res.status);
+    if (data.migration_needed) throw new Error('migration_needed=true — run 2026-06-13-research-lite.sql');
+    if (!Array.isArray(data.notes)) throw new Error('notes array missing from response');
+    return { detail: data.notes.length + ' existing note(s)' };
+  });
+
+  // ── RN-2  create note ─────────────────────────────────────────────────────
+  await check(RN + ' Create note (POST create_note)', async () => {
+    const res  = await finReq('/.netlify/functions/research?action=create_note', {
+      method: 'POST',
+      body: JSON.stringify({ title: 'QA Test Note', content: 'Automated QA content', tags: ['qa','test'] }),
+    });
+    const data = JSON.parse(res.body);
+    if (!res.ok) throw new Error(data.error || 'HTTP ' + res.status);
+    if (!data.note?.id) throw new Error('note.id missing from response');
+    rnQaId = data.note.id;
+    return { detail: 'id=' + rnQaId };
+  });
+
+  // ── RN-3  created note persists in list ──────────────────────────────────
+  await check(RN + ' Created note persists in list', async () => {
+    if (!rnQaId) return { status: 'SKIP', detail: 'Create step did not produce an id' };
+    const res  = await finReq('/.netlify/functions/research?section=notes', { method: 'GET' });
+    const data = JSON.parse(res.body);
+    if (!res.ok) throw new Error(data.error || 'HTTP ' + res.status);
+    const found = (data.notes || []).find(n => n.id === rnQaId);
+    if (!found) throw new Error('Created note not found in list');
+    return { detail: 'title=' + found.title };
+  });
+
+  // ── RN-4  filter by session_id (no crash) ────────────────────────────────
+  await check(RN + ' Filter by session_id (no error)', async () => {
+    const fakeId = '00000000-0000-0000-0000-000000000000';
+    const res    = await finReq('/.netlify/functions/research?section=notes&session_id=' + fakeId, { method: 'GET' });
+    const data   = JSON.parse(res.body);
+    if (!res.ok) throw new Error(data.error || 'HTTP ' + res.status);
+    return { detail: (data.notes || []).length + ' note(s) for fake session_id' };
+  });
+
+  // ── RN-5  search keyword filters results ─────────────────────────────────
+  await check(RN + ' Search by keyword filters results', async () => {
+    const res  = await finReq('/.netlify/functions/research?section=notes&search=QA+Test', { method: 'GET' });
+    const data = JSON.parse(res.body);
+    if (!res.ok) throw new Error(data.error || 'HTTP ' + res.status);
+    const found = (data.notes || []).find(n => n.id === rnQaId);
+    if (!found) throw new Error('QA note not found in search results for "QA Test"');
+    return { detail: data.notes.length + ' result(s) for "QA Test"' };
+  });
+
+  // ── RN-6  edit note ───────────────────────────────────────────────────────
+  await check(RN + ' Edit note (PATCH update_note)', async () => {
+    if (!rnQaId) return { status: 'SKIP', detail: 'No note id from create step' };
+    const res  = await finReq('/.netlify/functions/research?action=update_note&id=' + rnQaId, {
+      method: 'PATCH',
+      body: JSON.stringify({ content: 'Updated QA content' }),
+    });
+    const data = JSON.parse(res.body);
+    if (!res.ok) throw new Error(data.error || 'HTTP ' + res.status);
+    if (data.note?.content !== 'Updated QA content') throw new Error('content not updated in response');
+    return { detail: 'content updated' };
+  });
+
+  // ── RN-7  missing title rejected (400) ───────────────────────────────────
+  await check(RN + ' Missing title rejected (400)', async () => {
+    const res  = await finReq('/.netlify/functions/research?action=create_note', {
+      method: 'POST',
+      body: JSON.stringify({ content: 'No title here' }),
+    });
+    if (res.status !== 400) throw new Error('Expected 400, got ' + res.status);
+    return { detail: 'Correctly rejected: ' + JSON.parse(res.body).error };
+  });
+
+  // ── RN-8  soft-delete note ────────────────────────────────────────────────
+  await check(RN + ' Soft-delete note (PATCH delete_note)', async () => {
+    if (!rnQaId) return { status: 'SKIP', detail: 'No note id from create step' };
+    const res  = await finReq('/.netlify/functions/research?action=delete_note&id=' + rnQaId, {
+      method: 'PATCH', body: '{}',
+    });
+    const data = JSON.parse(res.body);
+    if (!res.ok) throw new Error(data.error || 'HTTP ' + res.status);
+    if (!data.deleted) throw new Error('deleted flag not true in response');
+    return { detail: 'deleted=true  id=' + rnQaId };
+  });
+
+  // ── RN-9  soft-deleted note absent from list ──────────────────────────────
+  await check(RN + ' Soft-deleted note absent from list', async () => {
+    if (!rnQaId) return { status: 'SKIP', detail: 'No note id from create step' };
+    const res  = await finReq('/.netlify/functions/research?section=notes', { method: 'GET' });
+    const data = JSON.parse(res.body);
+    if (!res.ok) throw new Error(data.error || 'HTTP ' + res.status);
+    const found = (data.notes || []).find(n => n.id === rnQaId);
+    if (found) throw new Error('Soft-deleted note still appears in list');
+    return { detail: 'Correctly absent from list after soft-delete' };
+  });
+
+  // ── RN-10  RLS blocks anon ────────────────────────────────────────────────
+  await check(RN + ' RLS blocks anon direct Supabase access', async () => {
+    const supaUrl = process.env.SUPABASE_URL || '';
+    if (!supaUrl) return { status: 'WARN', detail: 'SUPABASE_URL not set in local env — cannot test anon RLS from QA runner' };
+    const anonKey = process.env.SUPABASE_ANON_KEY || '';
+    if (!anonKey)  return { status: 'WARN', detail: 'SUPABASE_ANON_KEY not set — skipping anon RLS check' };
+    const r = await page.evaluate(async ([url, key]) => {
+      try {
+        const res = await fetch(url + '/rest/v1/research_notes?select=id&limit=1', {
+          headers: { 'apikey': key, 'Authorization': 'Bearer ' + key },
+        });
+        return { status: res.status };
+      } catch { return { status: 0 }; }
+    }, [supaUrl, anonKey]);
+    if (r.status === 200) throw new Error('Anon got HTTP 200 — RLS not enabled on research_notes table');
+    return { detail: 'Anon correctly blocked: HTTP ' + r.status };
+  });
+
+  // ── RN-11  Research tab renders in dashboard ──────────────────────────────
+  await check(RN + ' Research tab renders in dashboard', async () => {
+    // Close any open modal before interacting with tabs
+    await page.evaluate(() => {
+      document.querySelectorAll('.modal, [id$="Modal"], [class*="modal"]').forEach(m => {
+        m.classList.remove('open', 'show', 'active');
+        if (m.style.display !== 'none') m.style.display = 'none';
+      });
+    });
+    await page.waitForTimeout(300);
+    await page.click("button[onclick*=\"showTab('research')\"]");
+    await page.waitForSelector('#tab-research', { state: 'visible', timeout: TIMEOUT });
+    await page.waitForFunction(() => {
+      const el = document.getElementById('tab-research');
+      return el && el.innerHTML.trim().length > 50 && !el.textContent.includes('LOADING');
+    }, { timeout: TIMEOUT });
+    return { detail: 'Research tab rendered without errors' };
+  }, page);
+
+  // ── RN-12  No console errors from research section ───────────────────────
+  await check(RN + ' No JS console errors in Research section', async () => {
+    const rnErrors = consoleErrors.filter(e =>
+      e.toLowerCase().includes('research') ||
+      e.toLowerCase().includes('rnnote')   ||
+      e.toLowerCase().includes('rninit')   ||
+      e.toLowerCase().includes('tab-research')
+    );
+    if (rnErrors.length > 0) throw new Error('Console errors: ' + rnErrors.join(' | '));
+    return { detail: 'No research-related console errors' };
+  });
+
+  } // end if (rnSchemaFailed) else
+
   await browser.close();
 
   // Final report
@@ -1250,6 +1435,18 @@ async function run() {
     console.log('\n=== SPRINT 1 SCHEMA VALIDATION (Suite SV) ===');
     svResults.forEach(r => console.log(`  ${SICONS[r.status] || '?'} ${r.status.padEnd(5)} ${r.name.replace('Schema: ', '')}`));
     console.log(`\n  Schema totals : PASS ${svPass}  FAIL ${svFail}  WARN ${svWarn}  SKIP ${svSkip}  / ${svResults.length} checks`);
+  }
+
+  // Research Lite sub-report (Suite 11)
+  const rnResults = results.filter(r => r.name.startsWith('Research:'));
+  const rnPass    = rnResults.filter(r => r.status === 'PASS').length;
+  const rnFail    = rnResults.filter(r => r.status === 'FAIL').length;
+  const rnWarn    = rnResults.filter(r => r.status === 'WARN').length;
+  const rnSkip    = rnResults.filter(r => r.status === 'SKIP').length;
+  if (rnResults.length > 0) {
+    console.log('\n=== RESEARCH LITE QA (Suite 11) ===');
+    rnResults.forEach(r => console.log(`  ${SICONS[r.status] || '?'} ${r.status.padEnd(5)} ${r.name.replace('Research: ', '')}`));
+    console.log(`\n  Research totals : PASS ${rnPass}  FAIL ${rnFail}  WARN ${rnWarn}  SKIP ${rnSkip}  / ${rnResults.length} checks`);
   }
 
   // Bookkeeping Lite sub-report (Suite 10)

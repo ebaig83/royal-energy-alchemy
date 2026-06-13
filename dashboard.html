@@ -1725,6 +1725,44 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
 <style>
 /* ── KH shell ── */
 #tab-knowledge { background: transparent; }
+
+/* ── Research Notes ─────────────────────────────────────────── */
+.rn-wrap        { max-width: 860px; margin: 0 auto; padding: 8px 0 40px; }
+.rn-header      { margin-bottom: 20px; }
+.rn-title-row   { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.rn-title       { font-family: Cinzel, serif; font-size: 1.1rem; letter-spacing: .12em; color: #e8b84b; text-transform: uppercase; }
+.rn-search      { width: 100%; padding: 9px 14px; background: rgba(255,255,255,.04); border: 1px solid rgba(232,184,75,.25); border-radius: 6px; color: #e8e0d4; font-size: .88rem; outline: none; box-sizing: border-box; }
+.rn-search::placeholder { color: #7a7060; }
+.rn-form        { background: rgba(255,255,255,.03); border: 1px solid rgba(232,184,75,.2); border-radius: 10px; padding: 22px 24px; margin-bottom: 20px; }
+.rn-form-row    { margin-bottom: 14px; }
+.rn-label       { display: block; font-size: .78rem; letter-spacing: .08em; color: #b09ef8; text-transform: uppercase; margin-bottom: 5px; }
+.rn-req         { color: #e8b84b; }
+.rn-hint        { color: #7a7060; font-size: .75rem; text-transform: none; letter-spacing: 0; }
+.rn-input       { width: 100%; padding: 8px 12px; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.12); border-radius: 6px; color: #e8e0d4; font-size: .88rem; outline: none; box-sizing: border-box; }
+.rn-textarea    { width: 100%; padding: 8px 12px; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.12); border-radius: 6px; color: #e8e0d4; font-size: .88rem; outline: none; box-sizing: border-box; resize: vertical; }
+.rn-form-actions { display: flex; gap: 10px; margin-top: 6px; }
+.rn-btn-primary { padding: 8px 20px; background: rgba(232,184,75,.15); border: 1px solid #e8b84b; border-radius: 6px; color: #e8b84b; font-size: .82rem; letter-spacing: .07em; cursor: pointer; text-transform: uppercase; }
+.rn-btn-primary:hover { background: rgba(232,184,75,.25); }
+.rn-btn-cancel  { padding: 8px 18px; background: transparent; border: 1px solid rgba(255,255,255,.15); border-radius: 6px; color: #9a9080; font-size: .82rem; cursor: pointer; text-transform: uppercase; letter-spacing: .07em; }
+.rn-btn-cancel:hover { border-color: rgba(255,255,255,.3); color: #c8c0b4; }
+.rn-list        { display: flex; flex-direction: column; gap: 14px; }
+.rn-card        { background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.08); border-radius: 10px; padding: 18px 20px; }
+.rn-card:hover  { border-color: rgba(232,184,75,.2); }
+.rn-card-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; gap: 12px; }
+.rn-card-title  { font-family: Cinzel, serif; font-size: .92rem; color: #e8e0d4; letter-spacing: .05em; }
+.rn-card-date   { font-size: .75rem; color: #7a7060; white-space: nowrap; }
+.rn-card-content{ font-size: .86rem; color: #b8b0a4; line-height: 1.6; margin-bottom: 8px; }
+.rn-card-link   { font-size: .78rem; color: #b09ef8; text-decoration: none; display: inline-block; margin-bottom: 8px; }
+.rn-card-link:hover { text-decoration: underline; }
+.rn-card-tags   { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.rn-tag         { padding: 2px 9px; background: rgba(176,158,248,.1); border: 1px solid rgba(176,158,248,.25); border-radius: 20px; font-size: .72rem; color: #b09ef8; letter-spacing: .04em; }
+.rn-card-actions{ display: flex; gap: 8px; margin-top: 4px; }
+.rn-btn-edit    { padding: 5px 14px; background: transparent; border: 1px solid rgba(232,184,75,.3); border-radius: 5px; color: #e8b84b; font-size: .75rem; cursor: pointer; letter-spacing: .05em; }
+.rn-btn-edit:hover { background: rgba(232,184,75,.1); }
+.rn-btn-delete  { padding: 5px 14px; background: transparent; border: 1px solid rgba(220,80,80,.25); border-radius: 5px; color: #dc9090; font-size: .75rem; cursor: pointer; letter-spacing: .05em; }
+.rn-btn-delete:hover { background: rgba(220,80,80,.1); }
+.rn-empty       { padding: 40px 20px; text-align: center; color: #7a7060; font-size: .88rem; letter-spacing: .05em; }
+.rn-error       { padding: 20px; color: #dc9090; font-size: .88rem; text-align: center; }
 .kh-wrap { padding: 0; }
 
 /* ── KH sub-nav ── */
@@ -2098,6 +2136,9 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
 
       <div class="ck-nav-divider"></div>
       <div class="ck-nav-section">Knowledge</div>
+      <button class="tab ck-nav-item" onclick="showTab('research')">
+        <span class="nav-icon">✦</span><span class="nav-text">Research Notes</span>
+      </button>
       <button class="tab ck-nav-item" onclick="showTab('knowledge')">
         <span class="nav-icon">◈</span><span class="nav-text">Knowledge Hub</span>
       </button>
@@ -2482,6 +2523,9 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
   </div>
 
   <!-- KNOWLEDGE HUB TAB -->
+  <!-- RESEARCH NOTES TAB -->
+  <div class="tab-content" id="tab-research"></div>
+
   <div class="tab-content" id="tab-knowledge">
   <div class="kh-wrap">
 
@@ -3364,6 +3408,7 @@ function showTab(name) {
   if (name === 'booking')     { try { renderCal(); renderUpcoming(); renderWaitlist(); updateCapacityStats(); renderCancellationLog(); renderBooking(); renderSyncLastRun(); } catch(e){} }
   if (name === 'operations')  { try { renderOperationsCenter(); } catch(e){ console.error('renderOperationsCenter', e); } }
   if (name === 'followups')   { try { loadFollowUps(); } catch(e){ console.error('loadFollowUps', e); } }
+  if (name === 'research')       { try { rnInit(); } catch(e){ console.error('rnInit', e); } }
   if (name === 'knowledge')      { try { khInit(); } catch(e){ console.error('khInit', e); } }
   if (name === 'financial')      { try { fcInit(); } catch(e){ console.error('fcInit', e); } }
   if (name === 'communications') { try { cmInit(); } catch(e){ console.error('cmInit', e); } }
@@ -10709,6 +10754,7 @@ purgeTestEntries();
 <script src="clients-module.js"></script>
 <script src="sessions-module.js"></script>
 <script src="financial-module.js"></script>
+<script src="research-module.js"></script>
 <script src="communications-module.js"></script>
 <script src="pin-lock.js"></script>
 </body>
