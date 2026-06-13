@@ -1787,20 +1787,21 @@ async function run() {
   // CS-0: Function deployed
   await check(CS + ' content-studio function deployed', async () => {
     const r = await finReq('GET', '/.netlify/functions/content-studio?section=dashboard');
-    if (r.migration_needed === 'WARN') return { status: 'WARN', detail: 'migration_needed — run 2026-06-13-content-studio.sql' };
-    if (r.kpis) return { detail: 'Dashboard responded with KPIs' };
-    throw new Error('Unexpected response: ' + JSON.stringify(r).slice(0, 120));
+    if (r.s !== 200) throw new Error('HTTP ' + r.s + ': ' + JSON.stringify(r.b).slice(0, 80));
+    if (r.b.migration_needed) return { status: 'WARN', detail: 'migration_needed — run 2026-06-13-content-studio.sql' };
+    if (r.b.kpis) return { detail: 'Dashboard responded with KPIs' };
+    throw new Error('Unexpected response: ' + JSON.stringify(r.b).slice(0, 120));
   });
 
   // CS-1: content_ideas table accessible
   let csMigrationNeeded = false;
   await check(CS + ' content_ideas table accessible', async () => {
     const r = await finReq('GET', '/.netlify/functions/content-studio?section=ideas');
-    if (r.migration_needed === 'WARN') {
+    if (r.b.migration_needed) {
       csMigrationNeeded = true;
       return { status: 'WARN', detail: 'content_ideas table not yet created — run migration' };
     }
-    return { detail: `${r.count} existing idea(s)` };
+    return { detail: r.b.count + ' existing idea(s)' };
   });
 
   let csTestId = null;
@@ -1814,29 +1815,29 @@ async function run() {
       summary: 'QA generated social post idea about energy healing misconceptions.',
       source_ids: [{ table: 'kb_entries', id: '00000000-0000-0000-0000-000000000000', title: 'QA Stub Article' }],
     });
-    if (!r.idea || !r.idea.id) throw new Error('No idea returned: ' + JSON.stringify(r).slice(0,120));
-    csTestId = r.idea.id;
-    return { detail: `id=${csTestId}  status=${r.idea.status}` };
+    if (!r.b.idea || !r.b.idea.id) throw new Error('No idea returned: ' + JSON.stringify(r.b).slice(0,120));
+    csTestId = r.b.idea.id;
+    return { detail: 'id=' + csTestId + '  status=' + r.b.idea.status };
   });
 
   // CS-3: Verify idea fields
   await check(CS + ' Verify idea fields', async () => {
     if (!csTestId) return { status: 'SKIP', detail: 'no csTestId' };
     const r = await finReq('GET', '/.netlify/functions/content-studio?section=ideas');
-    const idea = (r.ideas || []).find(i => i.id === csTestId);
+    const idea = (r.b.ideas || []).find(i => i.id === csTestId);
     if (!idea) throw new Error('Created idea not found in list');
     if (idea.content_type !== 'social_post') throw new Error('content_type mismatch');
     if (!Array.isArray(idea.source_ids))     throw new Error('source_ids not an array');
     if (idea.source_ids.length !== 1)        throw new Error('source_ids should have 1 entry');
-    return { detail: `title OK  content_type=${idea.content_type}  source_ids=${idea.source_ids.length}` };
+    return { detail: 'title OK  content_type=' + idea.content_type + '  source_ids=' + idea.source_ids.length };
   });
 
   // CS-4: Approve idea (update status)
   await check(CS + ' Approve idea (PATCH update_idea)', async () => {
     if (!csTestId) return { status: 'SKIP', detail: 'no csTestId' };
-    const r = await finReq('PATCH', `/.netlify/functions/content-studio?action=update_idea&id=${csTestId}`, { status: 'approved' });
-    if (!r.idea) throw new Error('No idea returned');
-    if (r.idea.status !== 'approved') throw new Error(`Expected status=approved, got ${r.idea.status}`);
+    const r = await finReq('PATCH', '/.netlify/functions/content-studio?action=update_idea&id=' + csTestId, { status: 'approved' });
+    if (!r.b.idea) throw new Error('No idea returned');
+    if (r.b.idea.status !== 'approved') throw new Error('Expected status=approved, got ' + r.b.idea.status);
     return { detail: 'status updated to approved' };
   });
 
@@ -1844,102 +1845,97 @@ async function run() {
   await check(CS + ' Search ideas (section=ideas&search=)', async () => {
     if (!csTestId) return { status: 'SKIP', detail: 'no csTestId' };
     const r = await finReq('GET', '/.netlify/functions/content-studio?section=ideas&search=QA+Test+Idea');
-    if (!r.ideas || r.ideas.length === 0) throw new Error('Search returned 0 results');
-    return { detail: `${r.ideas.length} result(s) for "QA Test Idea"` };
+    if (!r.b.ideas || r.b.ideas.length === 0) throw new Error('Search returned 0 results');
+    return { detail: r.b.ideas.length + ' result(s) for "QA Test Idea"' };
   });
 
   // CS-6: Filter by content_type
   await check(CS + ' Filter by content_type', async () => {
     if (!csTestId) return { status: 'SKIP', detail: 'no csTestId' };
     const r = await finReq('GET', '/.netlify/functions/content-studio?section=ideas&content_type=social_post');
-    if (!r.ideas || !r.ideas.find(i => i.id === csTestId)) throw new Error('Filtered result missing test idea');
-    return { detail: `${r.ideas.length} social_post idea(s)` };
+    if (!r.b.ideas || !r.b.ideas.find(i => i.id === csTestId)) throw new Error('Filtered result missing test idea');
+    return { detail: r.b.ideas.length + ' social_post idea(s)' };
   });
 
   // CS-7: Schedule idea
   await check(CS + ' Schedule idea (PATCH schedule_idea)', async () => {
     if (!csTestId) return { status: 'SKIP', detail: 'no csTestId' };
-    const r = await finReq('PATCH', `/.netlify/functions/content-studio?action=schedule_idea&id=${csTestId}`, { scheduled_date: '2026-07-04' });
-    if (!r.idea) throw new Error('No idea returned');
-    if (!r.idea.scheduled_date) throw new Error('scheduled_date not set');
-    return { detail: `scheduled_date=${r.idea.scheduled_date}` };
+    const r = await finReq('PATCH', '/.netlify/functions/content-studio?action=schedule_idea&id=' + csTestId, { scheduled_date: '2026-07-04' });
+    if (!r.b.idea) throw new Error('No idea returned');
+    if (!r.b.idea.scheduled_date) throw new Error('scheduled_date not set');
+    return { detail: 'scheduled_date=' + r.b.idea.scheduled_date };
   });
 
   // CS-8: Calendar returns scheduled idea
   await check(CS + ' Calendar returns scheduled ideas', async () => {
     if (!csTestId) return { status: 'SKIP', detail: 'no csTestId' };
     const r = await finReq('GET', '/.netlify/functions/content-studio?section=calendar');
-    if (!r.calendar || !r.calendar.find(i => i.id === csTestId)) throw new Error('Scheduled idea not in calendar');
-    return { detail: `${r.calendar.length} scheduled idea(s) in calendar` };
+    if (!r.b.calendar || !r.b.calendar.find(i => i.id === csTestId)) throw new Error('Scheduled idea not in calendar');
+    return { detail: r.b.calendar.length + ' scheduled idea(s) in calendar' };
   });
 
   // CS-9: Sources endpoint returns KB + research
   await check(CS + ' Sources endpoint returns KB + research', async () => {
     const r = await finReq('GET', '/.netlify/functions/content-studio?section=sources');
-    if (typeof r.kb_count !== 'number' || typeof r.rn_count !== 'number') throw new Error('Missing kb_count or rn_count');
-    return { detail: `kb_count=${r.kb_count}  rn_count=${r.rn_count}` };
+    if (typeof r.b.kb_count !== 'number' || typeof r.b.rn_count !== 'number') throw new Error('Missing kb_count or rn_count');
+    return { detail: 'kb_count=' + r.b.kb_count + '  rn_count=' + r.b.rn_count };
   });
 
   // CS-10: Generate ideas (deterministic engine)
   let csGeneratedCount = 0;
   await check(CS + ' Generate ideas (POST generate)', async () => {
     const r = await finReq('POST', '/.netlify/functions/content-studio?action=generate', { limit: 10 });
-    if (!Array.isArray(r.generated)) throw new Error('generated is not an array');
-    csGeneratedCount = r.generated.length;
-    if (r.generated.length > 0) {
-      const idea = r.generated[0];
+    if (!Array.isArray(r.b.generated)) throw new Error('generated is not an array');
+    csGeneratedCount = r.b.generated.length;
+    if (r.b.generated.length > 0) {
+      const idea = r.b.generated[0];
       if (!idea.title)        throw new Error('Generated idea missing title');
       if (!idea.content_type) throw new Error('Generated idea missing content_type');
       if (!idea.source_ids)   throw new Error('Generated idea missing source_ids (traceability)');
     }
-    return { detail: `${r.generated.length} idea(s) generated from ${r.sources.kb_count} KB + ${r.sources.rn_count} RN` };
+    return { detail: r.b.generated.length + ' idea(s) generated from ' + r.b.sources.kb_count + ' KB + ' + r.b.sources.rn_count + ' RN' };
   });
 
   // CS-11: Generated ideas have source traceability
   await check(CS + ' Generated ideas have source traceability', async () => {
     const r = await finReq('POST', '/.netlify/functions/content-studio?action=generate', { limit: 20 });
-    const missing = (r.generated || []).filter(i => !i.source_ids || !Array.isArray(i.source_ids) || i.source_ids.length === 0);
-    if (missing.length > 0) throw new Error(`${missing.length} generated idea(s) missing source_ids`);
-    return { detail: `All ${(r.generated||[]).length} generated ideas have source_ids` };
+    const generated = r.b.generated || [];
+    const missing = generated.filter(i => !i.source_ids || !Array.isArray(i.source_ids) || i.source_ids.length === 0);
+    if (missing.length > 0) throw new Error(missing.length + ' generated idea(s) missing source_ids');
+    return { detail: 'All ' + generated.length + ' generated ideas have source_ids' };
   });
 
   // CS-12: Invalid content_type rejected
   await check(CS + ' Invalid content_type rejected (400)', async () => {
     if (csMigrationNeeded) return { status: 'SKIP', detail: 'migration_needed' };
-    try {
-      await finReq('POST', '/.netlify/functions/content-studio?action=create_idea', { title: 'x', content_type: 'invalid_type' });
-      throw new Error('Expected 400 but got success');
-    } catch (e) {
-      if (e.message.includes('Invalid content_type')) return { detail: 'Correctly rejected invalid content_type' };
-      throw e;
-    }
+    const r = await finReq('POST', '/.netlify/functions/content-studio?action=create_idea', { title: 'x', content_type: 'invalid_type' });
+    if (r.s !== 400) throw new Error('Expected 400 but got ' + r.s);
+    if (!r.b.error || !r.b.error.toLowerCase().includes('content_type')) throw new Error('Error message did not mention content_type: ' + JSON.stringify(r.b));
+    return { detail: 'Correctly rejected invalid content_type with 400' };
   });
 
   // CS-13: Missing title rejected
   await check(CS + ' Missing title rejected (400)', async () => {
     if (csMigrationNeeded) return { status: 'SKIP', detail: 'migration_needed' };
-    try {
-      await finReq('POST', '/.netlify/functions/content-studio?action=create_idea', { content_type: 'blog' });
-      throw new Error('Expected 400 but got success');
-    } catch (e) {
-      if (e.message.includes('title is required')) return { detail: 'Correctly rejected: title is required' };
-      throw e;
-    }
+    const r = await finReq('POST', '/.netlify/functions/content-studio?action=create_idea', { content_type: 'blog' });
+    if (r.s !== 400) throw new Error('Expected 400 but got ' + r.s);
+    if (!r.b.error || !r.b.error.toLowerCase().includes('title')) throw new Error('Error message did not mention title: ' + JSON.stringify(r.b));
+    return { detail: 'Correctly rejected missing title with 400' };
   });
 
   // CS-14: Soft-delete idea
   await check(CS + ' Soft-delete idea (PATCH delete_idea)', async () => {
     if (!csTestId) return { status: 'SKIP', detail: 'no csTestId' };
-    const r = await finReq('PATCH', `/.netlify/functions/content-studio?action=delete_idea&id=${csTestId}`);
-    if (!r.deleted) throw new Error('deleted flag not true');
-    return { detail: `deleted=true  id=${csTestId}` };
+    const r = await finReq('PATCH', '/.netlify/functions/content-studio?action=delete_idea&id=' + csTestId);
+    if (!r.b.deleted) throw new Error('deleted flag not true');
+    return { detail: 'deleted=true  id=' + csTestId };
   });
 
   // CS-15: Deleted idea absent from list
   await check(CS + ' Soft-deleted idea absent from list', async () => {
     if (!csTestId) return { status: 'SKIP', detail: 'no csTestId' };
     const r = await finReq('GET', '/.netlify/functions/content-studio?section=ideas');
-    if ((r.ideas || []).find(i => i.id === csTestId)) throw new Error('Deleted idea still appears in list');
+    if ((r.b.ideas || []).find(i => i.id === csTestId)) throw new Error('Deleted idea still appears in list');
     return { detail: 'Correctly absent from list after soft-delete' };
   });
 
@@ -1960,9 +1956,11 @@ async function run() {
 
   // CS-18: Dashboard section loads KPI row
   await check(CS + ' Dashboard loads KPI row', async () => {
+    await page.evaluate(() => { window.csSection('dashboard'); });
+    await page.waitForSelector('#tab-cs .cs-kpi', { timeout: AI_TIMEOUT });
     const count = await page.evaluate(() => document.querySelectorAll('#tab-cs .cs-kpi').length);
-    if (count < 5) throw new Error(`Expected 5 KPI cards, found ${count}`);
-    return { detail: `${count} KPI cards on CS dashboard` };
+    if (count < 5) throw new Error('Expected ≥5 KPI cards, found ' + count);
+    return { detail: count + ' KPI cards on CS dashboard' };
   });
 
   // CS-19: Ideas section renders
@@ -1990,14 +1988,18 @@ async function run() {
   // CS-21: Calendar section renders
   await check(CS + ' Calendar section renders', async () => {
     await page.evaluate(() => { window.csSection('calendar'); });
-    await page.waitForSelector('#tab-cs #cs-cal-body', { timeout: AI_TIMEOUT });
+    await page.waitForFunction(() => {
+      return !!document.querySelector('#tab-cs #cs-cal-body') || !!document.querySelector('#tab-cs .cs-cal-header');
+    }, { timeout: AI_TIMEOUT });
     return { detail: 'Calendar section rendered' };
   });
 
   // CS-22: Sources section renders
   await check(CS + ' Sources section renders', async () => {
     await page.evaluate(() => { window.csSection('sources'); });
-    await page.waitForSelector('#tab-cs .cs-sources-header', { timeout: AI_TIMEOUT });
+    await page.waitForFunction(() => {
+      return !!document.querySelector('#tab-cs .cs-sources-header') || !!document.querySelector('#tab-cs .cs-sources-ext-header');
+    }, { timeout: AI_TIMEOUT });
     return { detail: 'Sources section rendered' };
   });
 
@@ -2044,8 +2046,8 @@ async function run() {
   let csSrcMigrationNeeded = false;
   await check(CS + ' content_sources table accessible', async () => {
     const r = await finReq('GET', '/.netlify/functions/content-studio?section=content_sources');
-    if (r.migration_needed) { csSrcMigrationNeeded = true; return { status: 'WARN', detail: 'migration_needed — run addendum-a migration' }; }
-    return { detail: `content_sources accessible, ${r.count} record(s)` };
+    if (r.b.migration_needed) { csSrcMigrationNeeded = true; return { status: 'WARN', detail: 'migration_needed — run addendum-a migration' }; }
+    return { detail: 'content_sources accessible, ' + r.b.count + ' record(s)' };
   });
 
   // CS-28: Create external source
@@ -2058,19 +2060,19 @@ async function run() {
       source_tags: ['energy healing', 'qa-test'],
       relevance_score: 8,
     });
-    if (!r.source || !r.source.id) throw new Error('No source returned');
-    csExtSrcId = r.source.id;
-    return { detail: `Source created: ${csExtSrcId}` };
+    if (!r.b.source || !r.b.source.id) throw new Error('No source returned: ' + JSON.stringify(r.b).slice(0,100));
+    csExtSrcId = r.b.source.id;
+    return { detail: 'Source created: ' + csExtSrcId };
   });
 
   // CS-29: Verify source fields
   await check(CS + ' Verify source fields', async () => {
     if (!csExtSrcId) return { status: 'SKIP', detail: 'no csExtSrcId' };
     const r = await finReq('GET', '/.netlify/functions/content-studio?section=content_sources');
-    const src = (r.sources || []).find(s => s.id === csExtSrcId);
+    const src = (r.b.sources || []).find(s => s.id === csExtSrcId);
     if (!src) throw new Error('Created source not found in list');
-    if (src.source_type !== 'search_trend') throw new Error(`source_type mismatch: ${src.source_type}`);
-    if (src.relevance_score !== 8) throw new Error(`relevance_score mismatch: ${src.relevance_score}`);
+    if (src.source_type !== 'search_trend') throw new Error('source_type mismatch: ' + src.source_type);
+    if (src.relevance_score !== 8) throw new Error('relevance_score mismatch: ' + src.relevance_score);
     return { detail: 'source_type + relevance_score correct' };
   });
 
@@ -2078,21 +2080,21 @@ async function run() {
   await check(CS + ' Filter content_sources by type', async () => {
     if (!csExtSrcId) return { status: 'SKIP', detail: 'no csExtSrcId' };
     const r = await finReq('GET', '/.netlify/functions/content-studio?section=content_sources&type=search_trend');
-    const found = (r.sources || []).some(s => s.id === csExtSrcId);
+    const found = (r.b.sources || []).some(s => s.id === csExtSrcId);
     if (!found) throw new Error('Source not found when filtering by type=search_trend');
-    return { detail: `Filter by type returned ${r.count} source(s)` };
+    return { detail: 'Filter by type returned ' + r.b.count + ' source(s)' };
   });
 
   // CS-31: Generated ideas have priority + score fields
   await check(CS + ' Generated ideas have priority + score fields', async () => {
     const r = await finReq('POST', '/.netlify/functions/content-studio?action=generate', { limit: 5 });
-    const ideas = r.generated || [];
+    const ideas = r.b.generated || [];
     if (!ideas.length) return { status: 'SKIP', detail: 'no ideas generated (add KB or RN first)' };
     const hasPriority = ideas.every(i => ['low','medium','high','critical'].includes(i.priority));
     const hasScores   = ideas.every(i => typeof i.internal_score === 'number' && typeof i.market_score === 'number');
     if (!hasPriority) throw new Error('Some ideas missing valid priority field');
     if (!hasScores)   throw new Error('Some ideas missing score fields');
-    return { detail: `All ${ideas.length} generated ideas have priority + scores` };
+    return { detail: 'All ' + ideas.length + ' generated ideas have priority + scores' };
   });
 
   // CS-32: New content types accepted (workshop, podcast_topic)
@@ -2104,25 +2106,25 @@ async function run() {
       content_type: 'workshop',
       topic: 'grounding',
     });
-    if (!r.idea || !r.idea.id) throw new Error('workshop idea not created');
-    csWorkshopId = r.idea.id;
+    if (!r.b.idea || !r.b.idea.id) throw new Error('workshop idea not created: ' + JSON.stringify(r.b).slice(0,100));
+    csWorkshopId = r.b.idea.id;
     const r2 = await finReq('POST', '/.netlify/functions/content-studio?action=create_idea', {
       title: 'QA Test: Podcast topic — energy hygiene',
       content_type: 'podcast_topic',
       topic: 'energy hygiene',
     });
-    if (!r2.idea || !r2.idea.id) throw new Error('podcast_topic idea not created');
+    if (!r2.b.idea || !r2.b.idea.id) throw new Error('podcast_topic idea not created: ' + JSON.stringify(r2.b).slice(0,100));
     // Clean up
-    await finReq('PATCH', `/.netlify/functions/content-studio?action=delete_idea&id=${csWorkshopId}`).catch(() => {});
-    await finReq('PATCH', `/.netlify/functions/content-studio?action=delete_idea&id=${r2.idea.id}`).catch(() => {});
+    await finReq('PATCH', '/.netlify/functions/content-studio?action=delete_idea&id=' + csWorkshopId);
+    await finReq('PATCH', '/.netlify/functions/content-studio?action=delete_idea&id=' + r2.b.idea.id);
     return { detail: 'workshop + podcast_topic content types accepted' };
   });
 
   // CS-33: Soft-delete external source
   await check(CS + ' Soft-delete external source', async () => {
     if (!csExtSrcId) return { status: 'SKIP', detail: 'no csExtSrcId' };
-    const r = await finReq('PATCH', `/.netlify/functions/content-studio?action=delete_source&id=${csExtSrcId}`);
-    if (!r.deleted) throw new Error('delete_source did not return deleted:true');
+    const r = await finReq('PATCH', '/.netlify/functions/content-studio?action=delete_source&id=' + csExtSrcId);
+    if (!r.b.deleted) throw new Error('delete_source did not return deleted:true');
     return { detail: 'External source soft-deleted' };
   });
 
@@ -2130,7 +2132,7 @@ async function run() {
   await check(CS + ' Soft-deleted source absent from list', async () => {
     if (!csExtSrcId) return { status: 'SKIP', detail: 'no csExtSrcId' };
     const r = await finReq('GET', '/.netlify/functions/content-studio?section=content_sources');
-    const found = (r.sources || []).some(s => s.id === csExtSrcId);
+    const found = (r.b.sources || []).some(s => s.id === csExtSrcId);
     if (found) throw new Error('Deleted source still visible in list');
     return { detail: 'Deleted source correctly excluded' };
   });
@@ -2156,7 +2158,7 @@ async function run() {
   // CD-01: content_drafts schema via schema validator
   await check(CD + ' content_drafts table exists and schema valid', async () => {
     const r = await finReq('GET', '/.netlify/functions/financial?section=schema');
-    const cd = (r.tables || []).find(t => t.table === 'content_drafts');
+    const cd = (r.b.tables || []).find(t => t.table === 'content_drafts');
     if (!cd) return { status: 'WARN', detail: 'content_drafts not in schema report — run migration 2026-06-13-content-drafts.sql' };
     if (!cd.exists) return { status: 'WARN', detail: 'content_drafts table not yet created' };
     const issues = [
@@ -2191,9 +2193,9 @@ async function run() {
   // CD-04: GET /content-studio?section=library returns counts
   await check(CD + ' Library API returns status counts', async () => {
     const r = await finReq('GET', '/.netlify/functions/content-studio?section=library');
-    if (r.migration_needed) return { status: 'WARN', detail: 'Migration needed — run 2026-06-13-content-drafts.sql' };
-    const c = r.counts;
-    if (typeof c !== 'object') throw new Error('counts missing from library response');
+    if (r.b.migration_needed) return { status: 'WARN', detail: 'Migration needed — run 2026-06-13-content-drafts.sql' };
+    const c = r.b.counts;
+    if (typeof c !== 'object') throw new Error('counts missing from library response: ' + JSON.stringify(r.b).slice(0,100));
     const required = ['total','draft','review','approved','published','archived'];
     const missing = required.filter(k => !(k in c));
     if (missing.length) throw new Error('Missing count keys: ' + missing.join(', '));
@@ -2207,18 +2209,18 @@ async function run() {
       content_type: 'social_post',
       draft_content: 'Test content for QA validation.',
     });
-    if (!r.draft || !r.draft.id) throw new Error('No draft.id in response: ' + JSON.stringify(r));
-    cdDraftId = r.draft.id;
-    if (r.draft.status !== 'draft') throw new Error('Expected status=draft, got: ' + r.draft.status);
-    if (!Array.isArray(r.draft.source_ids)) throw new Error('source_ids not an array');
-    return { detail: 'Draft created: ' + cdDraftId + ' status=' + r.draft.status };
+    if (!r.b.draft || !r.b.draft.id) throw new Error('No draft.id in response: ' + JSON.stringify(r.b).slice(0,120));
+    cdDraftId = r.b.draft.id;
+    if (r.b.draft.status !== 'draft') throw new Error('Expected status=draft, got: ' + r.b.draft.status);
+    if (!Array.isArray(r.b.draft.source_ids)) throw new Error('source_ids not an array');
+    return { detail: 'Draft created: ' + cdDraftId + ' status=' + r.b.draft.status };
   });
 
   // CD-06: Draft appears in library GET
   await check(CD + ' Created draft visible in library list', async () => {
     if (!cdDraftId) return { status: 'SKIP', detail: 'no cdDraftId' };
     const r = await finReq('GET', '/.netlify/functions/content-studio?section=drafts&status=draft');
-    const found = (r.drafts || []).find(d => d.id === cdDraftId);
+    const found = (r.b.drafts || []).find(d => d.id === cdDraftId);
     if (!found) throw new Error('Draft ' + cdDraftId + ' not found in list');
     return { detail: 'Draft found in list, title: ' + found.title };
   });
@@ -2230,8 +2232,8 @@ async function run() {
       title:        'QA Test Draft — Social Post (edited)',
       draft_content: 'Updated content after edit.',
     });
-    if (!r.draft) throw new Error('No draft in response');
-    if (r.draft.title !== 'QA Test Draft — Social Post (edited)') throw new Error('Title not updated: ' + r.draft.title);
+    if (!r.b.draft) throw new Error('No draft in response');
+    if (r.b.draft.title !== 'QA Test Draft — Social Post (edited)') throw new Error('Title not updated: ' + r.b.draft.title);
     return { detail: 'Draft title updated successfully' };
   });
 
@@ -2239,8 +2241,8 @@ async function run() {
   await check(CD + ' Transition draft → review', async () => {
     if (!cdDraftId) return { status: 'SKIP', detail: 'no cdDraftId' };
     const r = await finReq('PATCH', '/.netlify/functions/content-studio?action=review_draft&id=' + cdDraftId);
-    if (!r.draft) throw new Error('No draft in response');
-    if (r.draft.status !== 'review') throw new Error('Expected review, got: ' + r.draft.status);
+    if (!r.b.draft) throw new Error('No draft in response');
+    if (r.b.draft.status !== 'review') throw new Error('Expected review, got: ' + r.b.draft.status);
     return { detail: 'Status → review confirmed' };
   });
 
@@ -2248,8 +2250,8 @@ async function run() {
   await check(CD + ' Transition draft → approved', async () => {
     if (!cdDraftId) return { status: 'SKIP', detail: 'no cdDraftId' };
     const r = await finReq('PATCH', '/.netlify/functions/content-studio?action=approve_draft&id=' + cdDraftId);
-    if (!r.draft) throw new Error('No draft in response');
-    if (r.draft.status !== 'approved') throw new Error('Expected approved, got: ' + r.draft.status);
+    if (!r.b.draft) throw new Error('No draft in response');
+    if (r.b.draft.status !== 'approved') throw new Error('Expected approved, got: ' + r.b.draft.status);
     return { detail: 'Status → approved confirmed' };
   });
 
@@ -2257,8 +2259,8 @@ async function run() {
   await check(CD + ' Transition draft → published', async () => {
     if (!cdDraftId) return { status: 'SKIP', detail: 'no cdDraftId' };
     const r = await finReq('PATCH', '/.netlify/functions/content-studio?action=publish_draft&id=' + cdDraftId);
-    if (!r.draft) throw new Error('No draft in response');
-    if (r.draft.status !== 'published') throw new Error('Expected published, got: ' + r.draft.status);
+    if (!r.b.draft) throw new Error('No draft in response');
+    if (r.b.draft.status !== 'published') throw new Error('Expected published, got: ' + r.b.draft.status);
     return { detail: 'Status → published confirmed' };
   });
 
@@ -2266,7 +2268,7 @@ async function run() {
   await check(CD + ' Search drafts by keyword', async () => {
     if (!cdDraftId) return { status: 'SKIP', detail: 'no cdDraftId' };
     const r = await finReq('GET', '/.netlify/functions/content-studio?section=drafts&search=QA+Test');
-    const found = (r.drafts || []).find(d => d.id === cdDraftId);
+    const found = (r.b.drafts || []).find(d => d.id === cdDraftId);
     if (!found) throw new Error('Draft not found via search');
     return { detail: 'Draft found via keyword search' };
   });
@@ -2275,7 +2277,7 @@ async function run() {
   await check(CD + ' source_ids traceability preserved on draft', async () => {
     if (!cdDraftId) return { status: 'SKIP', detail: 'no cdDraftId' };
     const r = await finReq('GET', '/.netlify/functions/content-studio?section=drafts');
-    const d = (r.drafts || []).find(dr => dr.id === cdDraftId);
+    const d = (r.b.drafts || []).find(dr => dr.id === cdDraftId);
     if (!d) throw new Error('Draft not found');
     if (!Array.isArray(d.source_ids)) throw new Error('source_ids not an array on returned draft');
     return { detail: 'source_ids is array with ' + d.source_ids.length + ' entries' };
@@ -2284,16 +2286,16 @@ async function run() {
   // CD-13: Generate Draft from approved idea (if one exists)
   await check(CD + ' Generate draft from approved idea (if available)', async () => {
     const r = await finReq('GET', '/.netlify/functions/content-studio?section=ideas&status=approved');
-    const ideas = r.ideas || [];
+    const ideas = r.b.ideas || [];
     if (!ideas.length) return { status: 'WARN', detail: 'No approved ideas found — approve an idea first to test generation' };
     cdIdeaId = ideas[0].id;
     const gen = await finReq('POST', '/.netlify/functions/content-studio?action=generate_draft', {
       content_idea_id: cdIdeaId,
     });
-    if (!gen.draft || !gen.draft.id) throw new Error('No draft.id in generate response');
-    if (!gen.draft.source_ids) throw new Error('Generated draft missing source_ids');
-    if (gen.draft.generation_method !== 'generated') throw new Error('generation_method should be "generated"');
-    return { detail: 'Generated draft id=' + gen.draft.id + ' type=' + gen.draft.content_type };
+    if (!gen.b.draft || !gen.b.draft.id) throw new Error('No draft.id in generate response: ' + JSON.stringify(gen.b).slice(0,120));
+    if (!gen.b.draft.source_ids) throw new Error('Generated draft missing source_ids');
+    if (gen.b.draft.generation_method !== 'generated') throw new Error('generation_method should be "generated"');
+    return { detail: 'Generated draft id=' + gen.b.draft.id + ' type=' + gen.b.draft.content_type };
   });
 
   // CD-14: Library section shows draft cards in UI
@@ -2331,7 +2333,7 @@ async function run() {
     if (!cdDraftId) return { status: 'SKIP', detail: 'no cdDraftId' };
     await finReq('PATCH', '/.netlify/functions/content-studio?action=delete_draft&id=' + cdDraftId);
     const r = await finReq('GET', '/.netlify/functions/content-studio?section=drafts');
-    const found = (r.drafts || []).find(d => d.id === cdDraftId);
+    const found = (r.b.drafts || []).find(d => d.id === cdDraftId);
     if (found) throw new Error('Soft-deleted draft still visible');
     return { detail: 'Soft-deleted draft correctly excluded from list' };
   });
