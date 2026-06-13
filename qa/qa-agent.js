@@ -1576,16 +1576,13 @@ async function run() {
     return { detail: 'Correctly absent from list after soft-delete' };
   });
 
-  // ── KB-13  dashboard tab renders ─────────────────────────────────────────
+  // ── KB-13  dashboard tab renders (via KH module) ─────────────────────────
   await check(KB + ' Knowledge Base tab renders in dashboard', async () => {
-    await page.evaluate(() => {
-      if (typeof showTab === 'function') showTab('kb');
-    });
-    await page.waitForFunction(() => {
-      const el = document.getElementById('tab-kb');
-      return el && el.innerHTML.trim().length > 50 && !el.textContent.includes('LOADING');
-    }, { timeout: TIMEOUT });
-    return { detail: 'Knowledge Base tab rendered without errors' };
+    await page.evaluate(() => { window.showTab('kh'); });
+    await page.waitForSelector('#tab-kh .kh-wrap', { timeout: AI_TIMEOUT });
+    await page.evaluate(() => { window.khSection('kb'); });
+    await page.waitForSelector('#tab-kh .kh-kb-wrap', { timeout: AI_TIMEOUT });
+    return { detail: 'KB section rendered inside KH module' };
   }, page);
 
   // ── KB-14  no console errors ──────────────────────────────────────────────

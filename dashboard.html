@@ -9799,8 +9799,6 @@ function pullNetlifySubmissions(){
 
 // (old knowledge-hub IIFE removed — functionality consolidated into kh-module.js)
 
-})();
-
 /* purge any test entries already in storage */
 function purgeTestEntries(){
   var appts=getAppts().filter(function(a){return !shouldSkipEntry(a.client,a.email);});
