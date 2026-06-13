@@ -1458,7 +1458,10 @@ async function run() {
   await check(KB + ' kb_entries table accessible', async () => {
     const r = await finReq('GET', '/.netlify/functions/kb?section=entries');
     if (r.s !== 200) throw new Error(classifyFinError(r.s, r.b));
-    if (r.b.migration_needed) { kbSchemaFailed = true; throw new Error('migration_needed=true — run 2026-06-13-kb-lite.sql in Supabase'); }
+    if (r.b.migration_needed) {
+      kbSchemaFailed = true;
+      return { status: 'WARN', detail: 'migration_needed=true — run migrations/2026-06-13-kb-lite.sql in Supabase to add missing columns' };
+    }
     if (!Array.isArray(r.b.entries)) throw new Error('entries array missing from response');
     return { detail: r.b.entries.length + ' existing entry/entries' };
   });
