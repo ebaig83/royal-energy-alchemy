@@ -127,6 +127,7 @@ async function createNote(sb, body, auth, ip) {
 
   const insert = {
     title:      body.title.trim(),
+    body:       body.content    || '',   // legacy NOT NULL column — mirrors content
     content:    body.content    || null,
     source_url: body.source_url || null,
     tags:       Array.isArray(body.tags) ? body.tags : null,
@@ -154,6 +155,8 @@ async function updateNote(sb, id, body, auth, ip) {
   const allowed = ['title', 'content', 'source_url', 'tags', 'session_id'];
   const updates = {};
   allowed.forEach(k => { if (body[k] !== undefined) updates[k] = body[k]; });
+  // Keep legacy body column in sync when content changes
+  if (updates.content !== undefined) updates.body = updates.content || '';
 
   if (updates.title !== undefined && !String(updates.title).trim())
     throw userErr('title cannot be empty.');
