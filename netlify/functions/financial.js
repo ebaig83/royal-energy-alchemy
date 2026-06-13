@@ -37,15 +37,26 @@ const PACKAGE_TYPES = {
 };
 
 // ── Safe query helper — returns [] / null when a table does not yet exist ─
-// Supabase returns error code "42P01" (undefined_table) when the table hasn't
-// been created. We treat that as an empty dataset so the dashboard works
-// before Daron runs the SQL migration.
+// Handles both Postgres 42P01 (undefined_table) and PostgREST PGRST204
+// (schema cache miss) so the dashboard works before Daron runs the migration.
+function isMissingTableError(error) {
+  if (!error) return false;
+  const code = String(error.code || '');
+  const msg  = String(error.message || '');
+  return (
+    code === '42P01'   ||   // Postgres: undefined_table
+    code === 'PGRST204'||   // PostgREST: schema cache miss (table not in schema cache)
+    code === 'PGRST200'||   // PostgREST: relationship not found
+    msg.includes('does not exist') ||
+    msg.includes('Could not find') ||
+    msg.includes('schema cache')
+  );
+}
+
 async function safeRows(query, fallback = []) {
   const { data, error } = await query;
   if (error) {
-    if (error.code === '42P01' || (error.message || '').includes('does not exist')) {
-      return fallback;
-    }
+    if (isMissingTableError(error)) return fallback;
     throw new Error(error.message);
   }
   return data || fallback;
@@ -54,9 +65,7 @@ async function safeRows(query, fallback = []) {
 async function safeOne(query, fallback = null) {
   const { data, error } = await query;
   if (error) {
-    if (error.code === '42P01' || (error.message || '').includes('does not exist')) {
-      return fallback;
-    }
+    if (isMissingTableError(error)) return fallback;
     throw new Error(error.message);
   }
   return data || fallback;
