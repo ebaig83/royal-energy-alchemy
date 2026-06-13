@@ -72,42 +72,50 @@ exports.handler = async function (event) {
     try { body = JSON.parse(event.body); } catch { body = {}; }
   }
 
-  // ── GET routes ────────────────────────────────────────────────────────────
-  if (method === 'GET') {
-    if (section === 'dashboard')     return respond(200, await getDashboard(sb));
-    if (section === 'modules')       return respond(200, await getModules(sb, params));
-    if (section === 'paths')         return respond(200, await getPaths(sb, params));
-    if (section === 'certifications')return respond(200, await getCertifications(sb, params));
-    if (section === 'resources')     return respond(200, await getResources(sb));
-    return respond(400, { error: 'Unknown section: ' + section });
-  }
+  try {
+    // ── GET routes ──────────────────────────────────────────────────────────
+    if (method === 'GET') {
+      if (section === 'dashboard')     return respond(200, await getDashboard(sb));
+      if (section === 'modules')       return respond(200, await getModules(sb, params));
+      if (section === 'paths')         return respond(200, await getPaths(sb, params));
+      if (section === 'certifications')return respond(200, await getCertifications(sb, params));
+      if (section === 'resources')     return respond(200, await getResources(sb));
+      return respond(400, { error: 'Unknown section: ' + section });
+    }
 
-  // ── POST routes ───────────────────────────────────────────────────────────
-  if (method === 'POST') {
-    if (action === 'create_module')   return respond(201, await createModule(sb, body, authResult, ip));
-    if (action === 'generate_module') return respond(201, await generateModule(sb, body, authResult, ip));
-    if (action === 'create_path')     return respond(201, await createPath(sb, body, authResult, ip));
-    if (action === 'create_cert')     return respond(201, await createCert(sb, body, authResult, ip));
-    return respond(400, { error: 'Unknown action: ' + action });
-  }
+    // ── POST routes ─────────────────────────────────────────────────────────
+    if (method === 'POST') {
+      if (action === 'create_module')   return respond(201, await createModule(sb, body, authResult, ip));
+      if (action === 'generate_module') return respond(201, await generateModule(sb, body, authResult, ip));
+      if (action === 'create_path')     return respond(201, await createPath(sb, body, authResult, ip));
+      if (action === 'create_cert')     return respond(201, await createCert(sb, body, authResult, ip));
+      return respond(400, { error: 'Unknown action: ' + action });
+    }
 
-  // ── PATCH routes ──────────────────────────────────────────────────────────
-  if (method === 'PATCH') {
-    if (!id) return respond(400, { error: 'id required' });
-    if (action === 'update_module')  return respond(200, await updateModule(sb, id, body, authResult, ip));
-    if (action === 'review_module')  return respond(200, await transitionModule(sb, id, 'review',    authResult, ip));
-    if (action === 'approve_module') return respond(200, await transitionModule(sb, id, 'approved',  authResult, ip));
-    if (action === 'publish_module') return respond(200, await transitionModule(sb, id, 'published', authResult, ip));
-    if (action === 'archive_module') return respond(200, await transitionModule(sb, id, 'archived',  authResult, ip));
-    if (action === 'delete_module')  return respond(200, await deleteModule(sb, id, authResult, ip));
-    if (action === 'update_path')    return respond(200, await updatePath(sb, id, body, authResult, ip));
-    if (action === 'delete_path')    return respond(200, await deletePath(sb, id, authResult, ip));
-    if (action === 'update_cert')    return respond(200, await updateCert(sb, id, body, authResult, ip));
-    if (action === 'delete_cert')    return respond(200, await deleteCert(sb, id, authResult, ip));
-    return respond(400, { error: 'Unknown action: ' + action });
-  }
+    // ── PATCH routes ────────────────────────────────────────────────────────
+    if (method === 'PATCH') {
+      if (!id) return respond(400, { error: 'id required' });
+      if (action === 'update_module')  return respond(200, await updateModule(sb, id, body, authResult, ip));
+      if (action === 'review_module')  return respond(200, await transitionModule(sb, id, 'review',    authResult, ip));
+      if (action === 'approve_module') return respond(200, await transitionModule(sb, id, 'approved',  authResult, ip));
+      if (action === 'publish_module') return respond(200, await transitionModule(sb, id, 'published', authResult, ip));
+      if (action === 'archive_module') return respond(200, await transitionModule(sb, id, 'archived',  authResult, ip));
+      if (action === 'delete_module')  return respond(200, await deleteModule(sb, id, authResult, ip));
+      if (action === 'update_path')    return respond(200, await updatePath(sb, id, body, authResult, ip));
+      if (action === 'delete_path')    return respond(200, await deletePath(sb, id, authResult, ip));
+      if (action === 'update_cert')    return respond(200, await updateCert(sb, id, body, authResult, ip));
+      if (action === 'delete_cert')    return respond(200, await deleteCert(sb, id, authResult, ip));
+      return respond(400, { error: 'Unknown action: ' + action });
+    }
 
-  return respond(405, { error: 'Method not allowed' });
+    return respond(405, { error: 'Method not allowed' });
+  } catch (err) {
+    const status = (err && err.status) ? err.status : 500;
+    const msg    = (err && err.message) ? err.message : String(err);
+    if (status < 500) console.warn('[training-center]', method, action || section, status, msg);
+    else console.error('[training-center]', method, action || section, msg);
+    return respond(status, { error: msg });
+  }
 };
 
 function requireAdmin(event) {

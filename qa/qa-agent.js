@@ -2157,8 +2157,7 @@ async function run() {
 
   // CD-01: content_drafts schema via schema validator
   await check(CD + ' content_drafts table exists and schema valid', async () => {
-    const r = await finReq('GET', '/.netlify/functions/financial?section=schema');
-    const cd = (r.b.tables || []).find(t => t.table === 'content_drafts');
+    const cd = svData && svData['content_drafts'];
     if (!cd) return { status: 'WARN', detail: 'content_drafts not in schema report — run migration 2026-06-13-content-drafts.sql' };
     if (!cd.exists) return { status: 'WARN', detail: 'content_drafts table not yet created' };
     const issues = [
@@ -2348,38 +2347,35 @@ async function run() {
 
   // TC-01: training_modules schema
   await check(TC + ' training_modules schema valid', async () => {
-    const r = await finReq('GET', '/.netlify/functions/financial?section=schema');
-    const tm = (r.b.tables || []).find(t => t.table === 'training_modules');
-    if (!tm) return { status: 'WARN', detail: 'training_modules not in schema — run migration 2026-06-13-training-center.sql' };
-    if (!tm.exists) return { status: 'WARN', detail: 'training_modules table not yet created' };
+    const tm = svData && svData['training_modules'];
+    if (!tm) return { status: 'WARN', detail: 'training_modules not in schema report — schema_validation endpoint may need redeployment' };
+    if (!tm.exists) return { status: 'WARN', detail: 'training_modules table not yet created in Supabase' };
     const issues = [
       ...(tm.missing_columns || []).map(c => 'missing col: ' + c),
       ...(tm.missing_check_constraints || []).map(c => 'missing constraint: ' + c),
     ];
     if (issues.length) throw new Error(issues.join('; '));
-    return { detail: 'training_modules schema valid' };
+    return { detail: 'training_modules schema valid — cols OK, constraints OK' };
   });
 
   // TC-02: learning_paths schema
   await check(TC + ' learning_paths schema valid', async () => {
-    const r = await finReq('GET', '/.netlify/functions/financial?section=schema');
-    const lp = (r.b.tables || []).find(t => t.table === 'learning_paths');
-    if (!lp) return { status: 'WARN', detail: 'learning_paths not in schema — run migration 2026-06-13-training-center.sql' };
-    if (!lp.exists) return { status: 'WARN', detail: 'learning_paths table not yet created' };
-    const issues = [...(lp.missing_columns || []).map(c => 'missing col: ' + c), ...(lp.missing_check_constraints || []).map(c => 'missing: ' + c)];
+    const lp = svData && svData['learning_paths'];
+    if (!lp) return { status: 'WARN', detail: 'learning_paths not in schema report — schema_validation endpoint may need redeployment' };
+    if (!lp.exists) return { status: 'WARN', detail: 'learning_paths table not yet created in Supabase' };
+    const issues = [...(lp.missing_columns || []).map(c => 'missing col: ' + c), ...(lp.missing_check_constraints || []).map(c => 'missing constraint: ' + c)];
     if (issues.length) throw new Error(issues.join('; '));
-    return { detail: 'learning_paths schema valid' };
+    return { detail: 'learning_paths schema valid — cols OK, constraints OK' };
   });
 
   // TC-03: certifications schema
   await check(TC + ' certifications schema valid', async () => {
-    const r = await finReq('GET', '/.netlify/functions/financial?section=schema');
-    const ce = (r.b.tables || []).find(t => t.table === 'certifications');
-    if (!ce) return { status: 'WARN', detail: 'certifications not in schema — run migration 2026-06-13-training-center.sql' };
-    if (!ce.exists) return { status: 'WARN', detail: 'certifications table not yet created' };
-    const issues = [...(ce.missing_columns || []).map(c => 'missing col: ' + c), ...(ce.missing_check_constraints || []).map(c => 'missing: ' + c)];
+    const ce = svData && svData['certifications'];
+    if (!ce) return { status: 'WARN', detail: 'certifications not in schema report — schema_validation endpoint may need redeployment' };
+    if (!ce.exists) return { status: 'WARN', detail: 'certifications table not yet created in Supabase' };
+    const issues = [...(ce.missing_columns || []).map(c => 'missing col: ' + c), ...(ce.missing_check_constraints || []).map(c => 'missing constraint: ' + c)];
     if (issues.length) throw new Error(issues.join('; '));
-    return { detail: 'certifications schema valid' };
+    return { detail: 'certifications schema valid — cols OK, constraints OK' };
   });
 
   // TC-04: training-center function deployed
