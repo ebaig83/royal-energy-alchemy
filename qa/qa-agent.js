@@ -2369,14 +2369,14 @@ async function run() {
     return { detail: 'learning_paths schema valid — cols OK, constraints OK' };
   });
 
-  // TC-03: certifications schema
-  await check(TC + ' certifications schema valid', async () => {
-    const ce = svData && svData['certifications'];
-    if (!ce) return { status: 'WARN', detail: 'certifications not in schema report — schema_validation endpoint may need redeployment' };
-    if (!ce.exists) return { status: 'WARN', detail: 'certifications table not yet created in Supabase' };
+  // TC-03: training_certifications schema
+  await check(TC + ' training_certifications schema valid', async () => {
+    const ce = svData && svData['training_certifications'];
+    if (!ce) return { status: 'WARN', detail: 'training_certifications not in schema report — run migration 2026-06-13-training-certifications.sql' };
+    if (!ce.exists) return { status: 'WARN', detail: 'training_certifications table not yet created in Supabase' };
     const issues = [...(ce.missing_columns || []).map(c => 'missing col: ' + c), ...(ce.missing_check_constraints || []).map(c => 'missing constraint: ' + c)];
     if (issues.length) throw new Error(issues.join('; '));
-    return { detail: 'certifications schema valid — cols OK, constraints OK' };
+    return { detail: 'training_certifications schema valid — cols OK, constraints OK' };
   });
 
   // TC-04: training-center function deployed
@@ -2583,8 +2583,8 @@ async function run() {
   // TC-23: Certification visible in list
   await check(TC + ' Created certification visible in certs list', async () => {
     if (!tcCertId) return { status: 'SKIP', detail: 'no tcCertId' };
-    const r = await finReq('GET', '/.netlify/functions/training-center?section=certifications');
-    const found = (r.b.certifications || []).find(c => c.id === tcCertId);
+    const r = await finReq('GET', '/.netlify/functions/training-center?section=training_certifications');
+    const found = (r.b.training_certifications || []).find(c => c.id === tcCertId);
     if (!found) throw new Error('Certification not found in list');
     return { detail: 'Certification found: ' + found.title };
   });

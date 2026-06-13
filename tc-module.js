@@ -649,8 +649,8 @@
 
   function loadCerts(body) {
     body.innerHTML = shimmer(2);
-    tcReq('GET', '/.netlify/functions/training-center?section=certifications').then(function (d) {
-      var warn = d.migration_needed ? '<div class="tc-warn">Run migration 2026-06-13-training-center.sql to enable certifications.</div>' : '';
+    tcReq('GET', '/.netlify/functions/training-center?section=training_certifications').then(function (d) {
+      var warn = d.migration_needed ? '<div class="tc-warn">Run migration 2026-06-13-training-certifications.sql to enable training certifications.</div>' : '';
       body.innerHTML = warn + [
         '<div class="tc-section-header">',
         '  <div class="tc-section-title">🏆 Certifications</div>',
@@ -658,7 +658,7 @@
         '</div>',
         '<div id="tc-cert-form-wrap"></div>',
         '<div id="tc-cert-list">',
-        renderCertList(d.certifications || []),
+        renderCertList(d.training_certifications || []),
         '</div>',
       ].join('');
     }).catch(function (e) {
@@ -692,8 +692,8 @@
   window.tcNewCertForm = function () { _editCertId = null; renderCertForm({}); };
   window.tcEditCert = function (id) {
     _editCertId = id;
-    tcReq('GET', '/.netlify/functions/training-center?section=certifications').then(function (d) {
-      var c = (d.certifications || []).find(function (x) { return x.id === id; });
+    tcReq('GET', '/.netlify/functions/training-center?section=training_certifications').then(function (d) {
+      var c = (d.training_certifications || []).find(function (x) { return x.id === id; });
       if (c) renderCertForm(c);
     }).catch(function (e) { toast(e.message, true); });
   };

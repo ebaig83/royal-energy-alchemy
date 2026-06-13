@@ -1054,21 +1054,21 @@ const SPRINT1_SCHEMA = {
     indexes:    ['lp_status_idx','lp_type_idx','lp_deleted_idx','lp_created_idx'],
     grants:     ['SELECT','INSERT','UPDATE','DELETE'],
   },
-  certifications: {
+  training_certifications: {
     column_contracts: [
       { name: 'id',               not_null: true,  default_contains: 'gen_random_uuid' },
       { name: 'title',            not_null: true,  default_contains: null              },
       { name: 'description',      not_null: false, default_contains: null              },
-      { name: 'required_modules', not_null: true,  default_contains: '[]'              },
+      { name: 'required_modules', not_null: true,  default_contains: '{}'             },
       { name: 'status',           not_null: true,  default_contains: 'draft'           },
       { name: 'created_by',       not_null: true,  default_contains: 'daron'           },
       { name: 'created_at',       not_null: true,  default_contains: 'now()'           },
       { name: 'updated_at',       not_null: true,  default_contains: 'now()'           },
       { name: 'deleted_at',       not_null: false, default_contains: null              },
     ],
-    check_constraints: ['cert_status_check'],
+    check_constraints: ['tcert_status_check'],
     fk_columns: [],
-    indexes:    ['cert_status_idx','cert_deleted_idx','cert_created_idx'],
+    indexes:    ['tcert_status_idx','tcert_deleted_idx','tcert_created_idx'],
     grants:     ['SELECT','INSERT','UPDATE','DELETE'],
   },
 };

@@ -3,7 +3,7 @@
 // GET  ?section=dashboard          → KPIs
 // GET  ?section=modules            → list modules (?type=&difficulty=&status=&search=)
 // GET  ?section=paths              → list learning paths (?type=&status=)
-// GET  ?section=certifications     → list certifications (?status=)
+// GET  ?section=training_certifications → list training certifications (?status=)
 // GET  ?section=resources          → KB + RN + drafts available as source material
 // POST ?action=create_module       → create module (manual)
 // POST ?action=generate_module     → generate module from KB/RN/draft source
@@ -78,7 +78,7 @@ exports.handler = async function (event) {
       if (section === 'dashboard')     return respond(200, await getDashboard(sb));
       if (section === 'modules')       return respond(200, await getModules(sb, params));
       if (section === 'paths')         return respond(200, await getPaths(sb, params));
-      if (section === 'certifications')return respond(200, await getCertifications(sb, params));
+      if (section === 'training_certifications')return respond(200, await getCertifications(sb, params));
       if (section === 'resources')     return respond(200, await getResources(sb));
       return respond(400, { error: 'Unknown section: ' + section });
     }
@@ -131,11 +131,11 @@ async function getDashboard(sb) {
     const [mods, paths, certs] = await Promise.all([
       sb.from('training_modules').select('status').is('deleted_at', null),
       sb.from('learning_paths').select('status').is('deleted_at', null),
-      sb.from('certifications').select('status').is('deleted_at', null),
+      sb.from('training_certifications').select('status').is('deleted_at', null),
     ]);
 
     if (mods.error && isMissingTableError(mods.error)) {
-      return { migration_needed: true, _warn: 'Run migration 2026-06-13-training-center.sql', kpis: { total: 0, published: 0, certifications: 0, learning_paths: 0, draft: 0 } };
+      return { migration_needed: true, _warn: 'Run migration 2026-06-13-training-certifications.sql', kpis: { total: 0, published: 0, certifications: 0, learning_paths: 0, draft: 0 } };
     }
 
     const allMods  = mods.data  || [];
@@ -207,17 +207,17 @@ async function getPaths(sb, params) {
 
 async function getCertifications(sb, params) {
   try {
-    let q = sb.from('certifications').select(CERT_COLS).is('deleted_at', null).order('created_at', { ascending: false });
+    let q = sb.from('training_certifications').select(CERT_COLS).is('deleted_at', null).order('created_at', { ascending: false });
     if (params.status) q = q.eq('status', params.status);
 
     const { data, error } = await q;
     if (error) {
-      if (isMissingTableError(error)) return { migration_needed: true, certifications: [], count: 0 };
+      if (isMissingTableError(error)) return { migration_needed: true, training_certifications: [], count: 0 };
       throw error;
     }
-    return { certifications: data || [], count: (data || []).length };
+    return { training_certifications: data || [], count: (data || []).length };
   } catch (e) {
-    return { error: e.message, certifications: [], count: 0 };
+    return { error: e.message, training_certifications: [], count: 0 };
   }
 }
 
@@ -490,7 +490,7 @@ async function createCert(sb, body, auth, ip) {
     status:           body.status            || 'draft',
     created_by:       (auth && auth.user)    || 'daron',
   };
-  const { data, error } = await sb.from('certifications').insert(row).select(CERT_COLS).single();
+  const { data, error } = await sb.from('training_certifications').insert(row).select(CERT_COLS).single();
   if (error) throw error;
   return { certification: data };
 }
@@ -500,13 +500,13 @@ async function updateCert(sb, id, body, auth, ip) {
   const updates = {};
   allowed.forEach(k => { if (k in body) updates[k] = body[k]; });
   updates.updated_at = new Date().toISOString();
-  const { data, error } = await sb.from('certifications').update(updates).eq('id', id).is('deleted_at', null).select(CERT_COLS).single();
+  const { data, error } = await sb.from('training_certifications').update(updates).eq('id', id).is('deleted_at', null).select(CERT_COLS).single();
   if (error) throw error;
   return { certification: data };
 }
 
 async function deleteCert(sb, id, auth, ip) {
-  const { data, error } = await sb.from('certifications').update({ deleted_at: new Date().toISOString() }).eq('id', id).is('deleted_at', null).select('id').single();
+  const { data, error } = await sb.from('training_certifications').update({ deleted_at: new Date().toISOString() }).eq('id', id).is('deleted_at', null).select('id').single();
   if (error) throw error;
   return { deleted: true, id };
 }
