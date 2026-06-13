@@ -1354,13 +1354,9 @@ async function run() {
   // ── RN-11  Research section renders in Knowledge Hub ─────────────────────
   await check(RN + ' Research tab renders in dashboard', async () => {
     // Research is now inside Knowledge Hub — navigate via KH sub-nav
-    await page.evaluate(() => {
-      window.showTab('kh');
-    });
-    await page.waitForSelector('#tab-kh .kh-wrap', { timeout: TIMEOUT });
-    await page.evaluate(() => {
-      window.khSection('research');
-    });
+    await page.evaluate(() => { window.showTab('kh'); });
+    await page.waitForSelector('#tab-kh .kh-subnav', { timeout: AI_TIMEOUT });
+    await page.evaluate(() => { window.khSection('research'); });
     await page.waitForSelector('#tab-kh .kh-rn-wrap', { timeout: AI_TIMEOUT });
     await page.waitForFunction(() => {
       const el = document.querySelector('#tab-kh .kh-rn-wrap');
