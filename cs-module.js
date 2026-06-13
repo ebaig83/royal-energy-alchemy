@@ -1,32 +1,60 @@
 // ══════════════════════════════════════════════════════════════════════════
 // CONTENT STUDIO MODULE — cs-module.js
-// Sections: Dashboard · Ideas · Calendar · Drafts · Sources
+// Sections: Dashboard · Intelligence · Ideas · Calendar · Drafts · Sources
 // ══════════════════════════════════════════════════════════════════════════
 (function () {
   'use strict';
 
   // ── Constants ────────────────────────────────────────────────────────
   var CONTENT_TYPES = [
-    { value: 'social_post',  label: 'Social Post' },
-    { value: 'video',        label: 'Video' },
-    { value: 'newsletter',   label: 'Newsletter' },
-    { value: 'blog',         label: 'Blog' },
-    { value: 'training',     label: 'Training' },
-    { value: 'book_chapter', label: 'Book Chapter' },
-    { value: 'faq',          label: 'FAQ' },
-    { value: 'webinar',      label: 'Webinar' },
+    { value: 'social_post',         label: 'Social Post' },
+    { value: 'video',               label: 'Video' },
+    { value: 'newsletter',          label: 'Newsletter' },
+    { value: 'blog',                label: 'Blog' },
+    { value: 'training',            label: 'Training' },
+    { value: 'book_chapter',        label: 'Book Chapter' },
+    { value: 'faq',                 label: 'FAQ' },
+    { value: 'faq_series',          label: 'FAQ Series' },
+    { value: 'webinar',             label: 'Webinar' },
+    { value: 'workshop',            label: 'Workshop' },
+    { value: 'podcast_topic',       label: 'Podcast Topic' },
+    { value: 'course_module',       label: 'Course Module' },
+    { value: 'lead_magnet',         label: 'Lead Magnet' },
+    { value: 'case_study',          label: 'Case Study' },
+    { value: 'certification_module',label: 'Certification Module' },
   ];
 
   var TYPE_ICONS = {
-    social_post:  '◎',
-    video:        '▶',
-    newsletter:   '✉',
-    blog:         '✦',
-    training:     '◈',
-    book_chapter: '⬡',
-    faq:          '?',
-    webinar:      '⊕',
+    social_post:          '◎',
+    video:                '▶',
+    newsletter:           '✉',
+    blog:                 '✦',
+    training:             '◈',
+    book_chapter:         '⬡',
+    faq:                  '?',
+    faq_series:           '?',
+    webinar:              '⊕',
+    workshop:             '⚙',
+    podcast_topic:        '🎙',
+    course_module:        '📚',
+    lead_magnet:          '⤓',
+    case_study:           '◉',
+    certification_module: '★',
   };
+
+  var EXT_SOURCE_TYPES = [
+    { value: 'search_trend', label: 'Search Trend' },
+    { value: 'article',      label: 'Article' },
+    { value: 'podcast',      label: 'Podcast' },
+    { value: 'book',         label: 'Book' },
+    { value: 'video',        label: 'Video' },
+    { value: 'webinar',      label: 'Webinar' },
+    { value: 'competitor',   label: 'Competitor' },
+    { value: 'research',     label: 'Research' },
+    { value: 'community',    label: 'Community' },
+  ];
+
+  var PRIORITY_COLORS = { critical: '#e53935', high: '#f57c00', medium: '#1976d2', low: '#616161' };
 
   // ── Auth helper ───────────────────────────────────────────────────────
   function tok() { return sessionStorage.getItem('rea_api_token') || ''; }
@@ -70,12 +98,34 @@
     return '<span class="cs-status cs-status-' + s + '">' + s + '</span>';
   }
 
+  function priorityBadge(p) {
+    if (!p) return '';
+    var color = PRIORITY_COLORS[p] || '#616161';
+    return '<span class="cs-priority-badge" style="background:' + color + '">' + p.toUpperCase() + '</span>';
+  }
+
+  function scoreBadge(idea) {
+    if (!idea.priority) return '';
+    return [
+      '<div class="cs-scores">',
+      '<span class="cs-score-item" title="Internal Relevance">INT ' + (idea.internal_score || '—') + '</span>',
+      '<span class="cs-score-item" title="Market Interest">MKT ' + (idea.market_score || '—') + '</span>',
+      '<span class="cs-score-item" title="Educational Value">EDU ' + (idea.educational_score || '—') + '</span>',
+      '<span class="cs-score-item" title="Business Value">BIZ ' + (idea.business_score || '—') + '</span>',
+      priorityBadge(idea.priority),
+      '</div>',
+    ].join('');
+  }
+
   // ── Render source trace ───────────────────────────────────────────────
   function renderTrace(sourceIds) {
     if (!sourceIds || !sourceIds.length) return '';
     var html = '<div class="cs-trace"><span class="cs-trace-lbl">Sources:</span>';
     sourceIds.forEach(function (src) {
-      var tableLabel = src.table === 'kb_entries' ? 'KB' : src.table === 'research_notes' ? 'RN' : src.table;
+      var tableLabel = src.table === 'kb_entries' ? 'KB'
+        : src.table === 'research_notes' ? 'RN'
+        : src.table === 'content_sources' ? 'EXT'
+        : src.table || 'SRC';
       html += '<span class="cs-trace-chip">' + tableLabel + ': ' + esc(src.title || src.id) + '</span>';
     });
     html += '</div>';
@@ -106,6 +156,7 @@
       '<div class="cs-wrap">',
       '  <div class="cs-subnav" id="cs-subnav">',
       '    <button class="cs-snav active" onclick="csSection(\'dashboard\')">⬡ Dashboard</button>',
+      '    <button class="cs-snav" onclick="csSection(\'intelligence\')">◉ Intelligence</button>',
       '    <button class="cs-snav" onclick="csSection(\'ideas\')">✦ Ideas</button>',
       '    <button class="cs-snav" onclick="csSection(\'calendar\')">◈ Calendar</button>',
       '    <button class="cs-snav" onclick="csSection(\'drafts\')">◎ Drafts</button>',
@@ -120,14 +171,15 @@
   window.csSection = function (name) {
     var btns = document.querySelectorAll('.cs-snav');
     btns.forEach(function (b) { b.classList.remove('active'); });
-    var sections = ['dashboard', 'ideas', 'calendar', 'drafts', 'sources'];
+    var sections = ['dashboard', 'intelligence', 'ideas', 'calendar', 'drafts', 'sources'];
     var idx = sections.indexOf(name);
     if (idx >= 0 && btns[idx]) btns[idx].classList.add('active');
 
     var body = document.getElementById('cs-body');
     if (!body) return;
 
-    if (name === 'dashboard') loadDashboard(body);
+    if (name === 'dashboard')    loadDashboard(body);
+    else if (name === 'intelligence') loadIntelligence(body);
     else if (name === 'ideas')    loadIdeas(body, {});
     else if (name === 'calendar') loadCalendar(body);
     else if (name === 'drafts')   loadIdeas(body, { status: 'draft' });
@@ -148,8 +200,11 @@
         kpiCard('Total Ideas',     k.total           || 0, '✦'),
         kpiCard('Draft Ideas',     k.draft           || 0, '◎'),
         kpiCard('Approved Ideas',  k.approved        || 0, '✔'),
+        kpiCard('Critical',        k.critical        || 0, '!'),
+        kpiCard('High Priority',   k.high            || 0, '↑'),
         kpiCard('KB Articles',     k.source_articles || 0, '⬡'),
         kpiCard('Research Notes',  k.source_notes    || 0, '⌂'),
+        kpiCard('Ext Sources',     k.ext_sources     || 0, '◉'),
         '</div>',
         '<div class="cs-dash-grid">',
         '<div class="cs-dash-card">',
@@ -164,6 +219,7 @@
         '<div class="cs-dash-card cs-quick-actions">',
         '  <div class="cs-card-title">Quick Actions</div>',
         '  <div class="cs-action-row">',
+        '    <button class="cs-action-btn" onclick="csSection(\'intelligence\')">◉ View Intelligence</button>',
         '    <button class="cs-action-btn" onclick="csGenerate(\'social_post\')">◎ Generate Social Posts</button>',
         '    <button class="cs-action-btn" onclick="csGenerate(\'training\')">◈ Generate Training Topics</button>',
         '    <button class="cs-action-btn" onclick="csGenerate(\'book_chapter\')">⬡ Generate Book Topics</button>',
@@ -185,8 +241,141 @@
   function renderRecentList(items) {
     if (!items.length) return '<div class="cs-empty">None yet.</div>';
     return '<ul class="cs-recent-list">' + items.map(function (i) {
-      return '<li><span class="cs-recent-type">' + (TYPE_ICONS[i.content_type] || '•') + '</span> ' + esc(i.title) + '</li>';
+      return '<li>' + priorityBadge(i.priority) + '<span class="cs-recent-type">' + (TYPE_ICONS[i.content_type] || '•') + '</span> ' + esc(i.title) + '</li>';
     }).join('') + '</ul>';
+  }
+
+  // ════════════════════════════════════════════════════════════════════════
+  // INTELLIGENCE
+  // ════════════════════════════════════════════════════════════════════════
+
+  function loadIntelligence(body) {
+    body.innerHTML = '<div class="cs-loading">' + shimmer(4) + '</div>';
+    csReq('GET', '/.netlify/functions/content-studio?section=intelligence').then(function (d) {
+      var s = d.summary || {};
+      body.innerHTML = [
+        '<div class="cs-intel-header">',
+        '  <div class="cs-intel-meta">',
+        '    <span class="cs-intel-stat">◉ ' + (s.ext_sources_count || 0) + ' External Sources</span>',
+        '    <span class="cs-intel-stat">⌂ ' + (s.internal_notes_count || 0) + ' Research Notes</span>',
+        '    <span class="cs-intel-stat">⬡ ' + (s.kb_count || 0) + ' KB Articles</span>',
+        '  </div>',
+        '  <button class="cs-btn-primary" onclick="csSection(\'sources\')">+ Add External Source</button>',
+        '</div>',
+
+        // Trending Topics
+        '<div class="cs-intel-section">',
+        '  <div class="cs-intel-title">🔥 Trending Topics</div>',
+        renderTrendingTopics(d.trending_topics || []),
+        '</div>',
+
+        // Emerging Themes
+        '<div class="cs-intel-section">',
+        '  <div class="cs-intel-title">🌱 Emerging Themes</div>',
+        renderSourceCards(d.emerging_themes || [], 'No recent high-relevance sources. Add external content to see emerging themes.'),
+        '</div>',
+
+        // High Interest Topics
+        '<div class="cs-intel-section">',
+        '  <div class="cs-intel-title">⭐ High Interest Topics</div>',
+        renderSourceCards(d.high_interest || [], 'No high-interest sources yet (relevance ≥ 8).'),
+        '</div>',
+
+        // FAQ Opportunities
+        '<div class="cs-intel-section">',
+        '  <div class="cs-intel-title">? FAQ Opportunities</div>',
+        renderSourceCards(d.faq_opportunities || [], 'No search trend or community sources yet.'),
+        '</div>',
+
+        // Underserved Topics
+        '<div class="cs-intel-section">',
+        '  <div class="cs-intel-title">⚡ Underserved Topics</div>',
+        renderUnderserved(d.underserved_topics || []),
+        '</div>',
+
+        // Competitor Gaps
+        '<div class="cs-intel-section">',
+        '  <div class="cs-intel-title">◈ Competitor Gaps</div>',
+        renderCompetitorGaps(d.competitor_gaps || []),
+        '</div>',
+
+        // Internal Pattern Matches
+        '<div class="cs-intel-section">',
+        '  <div class="cs-intel-title">⬡ Internal Pattern Matches</div>',
+        renderPatternMatches(d.pattern_matches || []),
+        '</div>',
+
+        // Generate from intelligence
+        d.summary && (d.trending_topics || []).length > 0 ? [
+          '<div class="cs-dash-card cs-quick-actions">',
+          '  <div class="cs-card-title">Generate from Intelligence</div>',
+          '  <div class="cs-action-row">',
+          '    <button class="cs-action-btn" onclick="csGenerate(null)">✦ Generate All (scored)</button>',
+          '    <button class="cs-action-btn" onclick="csGenerate(\'social_post\')">◎ Social Posts</button>',
+          '    <button class="cs-action-btn" onclick="csGenerate(\'faq_series\')">? FAQ Series</button>',
+          '    <button class="cs-action-btn" onclick="csGenerate(\'podcast_topic\')">🎙 Podcast Topics</button>',
+          '    <button class="cs-action-btn" onclick="csGenerate(\'lead_magnet\')">⤓ Lead Magnets</button>',
+          '  </div>',
+          '</div>',
+        ].join('') : '',
+      ].join('');
+    }).catch(function (e) {
+      body.innerHTML = '<div class="cs-error">Failed to load intelligence: ' + esc(e.message) + '</div>';
+    });
+  }
+
+  function renderTrendingTopics(topics) {
+    if (!topics.length) return '<div class="cs-empty">No external sources yet. Add sources in the Sources section to surface trending topics.</div>';
+    return '<div class="cs-intel-tags">' + topics.map(function (t) {
+      return '<span class="cs-intel-tag" title="' + t.count + ' source(s), avg score ' + t.avg_score + '">' +
+        esc(t.tag) + ' <small>×' + t.count + ' · ' + t.avg_score + '/10</small></span>';
+    }).join('') + '</div>';
+  }
+
+  function renderSourceCards(items, emptyMsg) {
+    if (!items.length) return '<div class="cs-empty">' + emptyMsg + '</div>';
+    return '<div class="cs-intel-cards">' + items.map(function (s) {
+      return '<div class="cs-intel-card">' +
+        '<div class="cs-intel-card-title">' + esc(s.title) + '</div>' +
+        (s.type ? '<span class="cs-intel-type-chip">' + esc(s.type) + '</span>' : '') +
+        (s.score ? '<span class="cs-intel-score">' + s.score + '/10</span>' : '') +
+        ((s.tags || []).length ? '<div class="cs-source-tags">' + s.tags.map(function (t) { return '<span class="cs-tag">' + esc(t) + '</span>'; }).join('') + '</div>' : '') +
+        (s.url ? '<a class="cs-intel-link" href="' + esc(s.url) + '" target="_blank" rel="noopener">View →</a>' : '') +
+        '</div>';
+    }).join('') + '</div>';
+  }
+
+  function renderUnderserved(topics) {
+    if (!topics.length) return '<div class="cs-empty">No underserved topics identified. Trending topics with no internal coverage will appear here.</div>';
+    return '<div class="cs-intel-tags">' + topics.map(function (t) {
+      return '<span class="cs-intel-tag cs-intel-tag-gap" title="External demand, no internal coverage">' +
+        esc(t.tag) + ' <small>×' + t.count + '</small></span>';
+    }).join('') + '</div>';
+  }
+
+  function renderCompetitorGaps(gaps) {
+    if (!gaps.length) return '<div class="cs-empty">No competitor sources added. Add sources with type "competitor" to surface gaps.</div>';
+    return '<div class="cs-intel-cards">' + gaps.map(function (g) {
+      return '<div class="cs-intel-card cs-intel-card-competitor">' +
+        '<div class="cs-intel-card-title">' + esc(g.title) + '</div>' +
+        '<span class="cs-intel-score">' + (g.score || 0) + '/10</span>' +
+        (g.summary ? '<div class="cs-intel-summary">' + esc(g.summary.slice(0, 120)) + '…</div>' : '') +
+        ((g.tags || []).length ? '<div class="cs-source-tags">' + g.tags.map(function (t) { return '<span class="cs-tag">' + esc(t) + '</span>'; }).join('') + '</div>' : '') +
+        '</div>';
+    }).join('') + '</div>';
+  }
+
+  function renderPatternMatches(patterns) {
+    if (!patterns.length) return '<div class="cs-empty">No internal research patterns found. Add research notes to reveal pattern-intelligence overlaps.</div>';
+    return '<div class="cs-intel-patterns">' + patterns.map(function (p) {
+      var supported = p.opportunity === 'supported';
+      return '<div class="cs-intel-pattern' + (supported ? ' cs-intel-pattern-match' : '') + '">' +
+        '<span class="cs-intel-pattern-tag">' + esc(p.pattern) + '</span>' +
+        '<span class="cs-intel-pattern-stat">Internal: ' + p.internal_count + '</span>' +
+        '<span class="cs-intel-pattern-stat">External: ' + p.external_matches + '</span>' +
+        '<span class="cs-intel-opp' + (supported ? ' cs-intel-opp-ok' : '') + '">' + (supported ? '✔ Supported' : 'Internal only') + '</span>' +
+        '</div>';
+    }).join('') + '</div>';
   }
 
   // ════════════════════════════════════════════════════════════════════════
@@ -249,6 +438,7 @@
         '  <div class="cs-idea-top">',
         '    ' + typeBadge(idea.content_type),
         '    ' + statusBadge(idea.status),
+        scoreBadge(idea),
         '    <div class="cs-idea-actions">',
         '      <button class="cs-btn-edit" onclick="csEditIdea(\'' + idea.id + '\')">Edit</button>',
         '      <button class="cs-btn-approve" onclick="csApproveIdea(\'' + idea.id + '\', \'' + idea.status + '\')">' + (idea.status === 'approved' ? 'Unapprove' : 'Approve') + '</button>',
@@ -369,12 +559,11 @@
   window.csGenerate = function (contentType) {
     var panel = document.getElementById('cs-generate-panel');
     if (!panel) {
-      // If called from dashboard, switch to ideas first
       csSection('ideas');
       setTimeout(function () { csGenerate(contentType); }, 200);
       return;
     }
-    panel.innerHTML = '<div class="cs-generate-loading">⚡ Analyzing knowledge base…' + shimmer(2) + '</div>';
+    panel.innerHTML = '<div class="cs-generate-loading">⚡ Analyzing knowledge base + intelligence sources…' + shimmer(2) + '</div>';
     panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
     var body = { limit: 30 };
@@ -387,14 +576,10 @@
         return;
       }
 
-      var typeLabel = contentType
-        ? (CONTENT_TYPES.find(function (t) { return t.value === contentType; }) || {}).label || contentType
-        : 'All Types';
-
       panel.innerHTML = [
         '<div class="cs-generate-results">',
         '  <div class="cs-generate-header">',
-        '    <span>⚡ ' + ideas.length + ' ideas generated from ' + d.sources.kb_count + ' KB articles + ' + d.sources.rn_count + ' research notes</span>',
+        '    <span>⚡ ' + ideas.length + ' ideas generated from ' + d.sources.kb_count + ' KB · ' + d.sources.rn_count + ' RN · ' + (d.sources.ext_count || 0) + ' Ext sources</span>',
         '    <button class="cs-btn-cancel" onclick="csClearGenerate()">✕ Clear</button>',
         '  </div>',
         '  <div class="cs-gen-list">',
@@ -403,6 +588,7 @@
             '<div class="cs-gen-item" id="cs-gen-' + i + '">',
             '  <div class="cs-gen-item-top">',
             '    ' + typeBadge(idea.content_type),
+            scoreBadge(idea),
             '    <button class="cs-btn-save-gen" onclick="csSaveGenerated(' + i + ')">Save Idea</button>',
             '  </div>',
             '  <div class="cs-gen-title">' + esc(idea.title) + '</div>',
@@ -419,7 +605,6 @@
         '</div>',
       ].join('');
 
-      // Store for saving
       window._csGeneratedIdeas = ideas;
     }).catch(function (e) {
       panel.innerHTML = '<div class="cs-error">Generation failed: ' + esc(e.message) + '</div>';
@@ -583,16 +768,43 @@
   function pad(n) { return n < 10 ? '0' + n : '' + n; }
 
   // ════════════════════════════════════════════════════════════════════════
-  // SOURCES
+  // SOURCES — Internal + External
   // ════════════════════════════════════════════════════════════════════════
+
+  var _extSourceFilter = '';
+  var _newSourceFormOpen = false;
 
   function loadSources(body) {
     body.innerHTML = '<div class="cs-loading">' + shimmer(3) + '</div>';
-    csReq('GET', '/.netlify/functions/content-studio?section=sources').then(function (d) {
-      var kb = d.kb_entries    || [];
-      var rn = d.research_notes || [];
+    Promise.all([
+      csReq('GET', '/.netlify/functions/content-studio?section=sources'),
+      csReq('GET', '/.netlify/functions/content-studio?section=content_sources' + (_extSourceFilter ? '&type=' + _extSourceFilter : '')),
+    ]).then(function (results) {
+      var internal = results[0];
+      var external = results[1];
+      var kb = internal.kb_entries    || [];
+      var rn = internal.research_notes || [];
+      var ext = external.sources || [];
+
       body.innerHTML = [
-        '<div class="cs-sources-header">',
+        // External sources management
+        '<div class="cs-sources-ext-header">',
+        '  <div class="cs-sources-ext-title">◉ External Intelligence Sources</div>',
+        '  <div class="cs-sources-ext-controls">',
+        '    <select class="cs-filter-select" id="cs-ext-type-filter" onchange="csFilterExtSources()">',
+        '      <option value="">All Types</option>',
+        EXT_SOURCE_TYPES.map(function (t) {
+          return '<option value="' + t.value + '"' + (_extSourceFilter === t.value ? ' selected' : '') + '>' + t.label + '</option>';
+        }).join(''),
+        '    </select>',
+        '    <button class="cs-btn-primary" onclick="csNewSourceForm()">+ Add Source</button>',
+        '  </div>',
+        '</div>',
+        '<div id="cs-source-form-wrap"></div>',
+        ext.length ? renderExtSourcesList(ext) : '<div class="cs-empty cs-ext-empty">No external sources yet. Add search trends, articles, podcasts, competitor content, and more to power the Intelligence layer.</div>',
+
+        // Internal sources (read-only reference)
+        '<div class="cs-sources-int-header">',
         '  <span class="cs-sources-lbl">⬡ ' + kb.length + ' Published KB Articles</span>',
         '  <span class="cs-sources-lbl">⌂ ' + rn.length + ' Research Notes</span>',
         '  <button class="cs-btn-primary" onclick="csGenerate(null)">⚡ Generate Ideas from Sources</button>',
@@ -625,5 +837,110 @@
       body.innerHTML = '<div class="cs-error">Failed to load sources: ' + esc(e.message) + '</div>';
     });
   }
+
+  function renderExtSourcesList(sources) {
+    return '<div class="cs-ext-sources-list">' + sources.map(function (s) {
+      return [
+        '<div class="cs-ext-source-card" id="cs-ext-src-' + s.id + '">',
+        '  <div class="cs-ext-src-top">',
+        '    <span class="cs-intel-type-chip">' + esc(s.source_type) + '</span>',
+        '    <span class="cs-intel-score">' + (s.relevance_score || 5) + '/10</span>',
+        '    <button class="cs-btn-delete" onclick="csDeleteExtSource(\'' + s.id + '\')">Delete</button>',
+        '  </div>',
+        '  <div class="cs-ext-src-title">' + esc(s.source_title) + '</div>',
+        s.source_url ? '<a class="cs-intel-link" href="' + esc(s.source_url) + '" target="_blank" rel="noopener">View →</a>' : '',
+        s.source_summary ? '<div class="cs-source-summary">' + esc(s.source_summary.slice(0, 120)) + (s.source_summary.length > 120 ? '…' : '') + '</div>' : '',
+        (s.source_tags || []).length ? '<div class="cs-source-tags">' + s.source_tags.map(function (t) { return '<span class="cs-tag">' + esc(t) + '</span>'; }).join('') + '</div>' : '',
+        s.source_date ? '<div class="cs-source-meta">Date: ' + fmt(s.source_date) + '</div>' : '',
+        '</div>',
+      ].join('');
+    }).join('') + '</div>';
+  }
+
+  window.csNewSourceForm = function () {
+    var wrap = document.getElementById('cs-source-form-wrap');
+    if (!wrap) return;
+    var typeOpts = EXT_SOURCE_TYPES.map(function (t) {
+      return '<option value="' + t.value + '">' + t.label + '</option>';
+    }).join('');
+    wrap.innerHTML = [
+      '<div class="cs-form" id="cs-source-form">',
+      '  <div class="cs-form-row"><label class="cs-label">Source Type *</label>',
+      '    <select class="cs-input" id="csSrcType"><option value="">— select —</option>' + typeOpts + '</select></div>',
+      '  <div class="cs-form-row"><label class="cs-label">Title *</label>',
+      '    <input class="cs-input" id="csSrcTitle" placeholder="Source title…"></div>',
+      '  <div class="cs-form-row"><label class="cs-label">URL</label>',
+      '    <input class="cs-input" id="csSrcUrl" placeholder="https://…"></div>',
+      '  <div class="cs-form-row"><label class="cs-label">Summary</label>',
+      '    <textarea class="cs-textarea" id="csSrcSummary" rows="2" placeholder="Brief summary of this source…"></textarea></div>',
+      '  <div class="cs-form-row"><label class="cs-label">Tags (comma-separated)</label>',
+      '    <input class="cs-input" id="csSrcTags" placeholder="energy healing, chakras, meditation…"></div>',
+      '  <div class="cs-form-row"><label class="cs-label">Date</label>',
+      '    <input class="cs-input" id="csSrcDate" type="date"></div>',
+      '  <div class="cs-form-row"><label class="cs-label">Relevance Score (1–10)</label>',
+      '    <input class="cs-input" id="csSrcScore" type="number" min="1" max="10" value="5"></div>',
+      '  <div class="cs-form-actions">',
+      '    <button class="cs-btn-primary" onclick="csSourceSave()">Add Source</button>',
+      '    <button class="cs-btn-cancel" onclick="csSourceCancel()">Cancel</button>',
+      '  </div>',
+      '</div>',
+    ].join('');
+    wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  window.csSourceSave = function () {
+    var stype = (document.getElementById('csSrcType')    || {}).value || '';
+    var title = (document.getElementById('csSrcTitle')   || {}).value || '';
+    var url   = (document.getElementById('csSrcUrl')     || {}).value || '';
+    var summ  = (document.getElementById('csSrcSummary') || {}).value || '';
+    var tags  = (document.getElementById('csSrcTags')    || {}).value || '';
+    var date  = (document.getElementById('csSrcDate')    || {}).value || null;
+    var score = parseInt((document.getElementById('csSrcScore') || {}).value || '5', 10);
+
+    if (!stype) { toast('Source type is required.', true); return; }
+    if (!title.trim()) { toast('Title is required.', true); return; }
+
+    var body = {
+      source_type:    stype,
+      source_title:   title.trim(),
+      source_url:     url  || null,
+      source_summary: summ || null,
+      source_tags:    tags ? tags.split(',').map(function (t) { return t.trim(); }).filter(Boolean) : [],
+      source_date:    date || null,
+      relevance_score: isNaN(score) ? 5 : Math.min(10, Math.max(1, score)),
+    };
+
+    csReq('POST', '/.netlify/functions/content-studio?action=create_source', body)
+      .then(function () {
+        toast('Source added.');
+        csSourceCancel();
+        var csBody = document.getElementById('cs-body');
+        if (csBody) loadSources(csBody);
+      })
+      .catch(function (e) { toast(e.message, true); });
+  };
+
+  window.csSourceCancel = function () {
+    var wrap = document.getElementById('cs-source-form-wrap');
+    if (wrap) wrap.innerHTML = '';
+  };
+
+  window.csDeleteExtSource = function (id) {
+    if (!confirm('Delete this external source?')) return;
+    csReq('PATCH', '/.netlify/functions/content-studio?action=delete_source&id=' + id)
+      .then(function () {
+        toast('Source deleted.');
+        var csBody = document.getElementById('cs-body');
+        if (csBody) loadSources(csBody);
+      })
+      .catch(function (e) { toast(e.message, true); });
+  };
+
+  window.csFilterExtSources = function () {
+    var el = document.getElementById('cs-ext-type-filter');
+    _extSourceFilter = el ? el.value : '';
+    var csBody = document.getElementById('cs-body');
+    if (csBody) loadSources(csBody);
+  };
 
 })();

@@ -1950,11 +1950,11 @@ async function run() {
     return { detail: 'Content Studio tab rendered' };
   });
 
-  // CS-17: Sub-nav has 5 sections
-  await check(CS + ' Sub-nav has 5 sections', async () => {
+  // CS-17: Sub-nav has 6 sections (Dashboard · Intelligence · Ideas · Calendar · Drafts · Sources)
+  await check(CS + ' Sub-nav has 6 sections', async () => {
     await page.waitForSelector('#tab-cs .cs-subnav', { timeout: TIMEOUT });
     const count = await page.evaluate(() => document.querySelectorAll('#tab-cs .cs-snav').length);
-    if (count !== 5) throw new Error(`Expected 5 sub-nav buttons, found ${count}`);
+    if (count !== 6) throw new Error(`Expected 6 sub-nav buttons, found ${count}`);
     return { detail: `${count} sub-nav buttons present` };
   });
 
@@ -2022,6 +2022,128 @@ async function run() {
     );
     if (csErrors.length > 0) throw new Error('Console errors: ' + csErrors.join(' | '));
     return { detail: 'No CS-related console errors' };
+  });
+
+  // ── Addendum A checks ─────────────────────────────────────────────────
+
+  // CS-25: Intelligence section renders
+  await check(CS + ' Intelligence section renders', async () => {
+    await page.evaluate(() => { window.csSection('intelligence'); });
+    await page.waitForSelector('#tab-cs .cs-intel-header', { timeout: AI_TIMEOUT });
+    return { detail: 'Intelligence section rendered' };
+  });
+
+  // CS-26: Intelligence has expected sub-sections
+  await check(CS + ' Intelligence has Trending + Pattern sections', async () => {
+    const count = await page.evaluate(() => document.querySelectorAll('#tab-cs .cs-intel-section').length);
+    if (count < 5) throw new Error(`Expected ≥5 intel sections, found ${count}`);
+    return { detail: `${count} intelligence sections present` };
+  });
+
+  // CS-27: content_sources table accessible
+  let csSrcMigrationNeeded = false;
+  await check(CS + ' content_sources table accessible', async () => {
+    const r = await finReq('GET', '/.netlify/functions/content-studio?section=content_sources');
+    if (r.migration_needed) { csSrcMigrationNeeded = true; return { status: 'WARN', detail: 'migration_needed — run addendum-a migration' }; }
+    return { detail: `content_sources accessible, ${r.count} record(s)` };
+  });
+
+  // CS-28: Create external source
+  let csExtSrcId = null;
+  await check(CS + ' Create external source (POST create_source)', async () => {
+    if (csSrcMigrationNeeded) return { status: 'SKIP', detail: 'migration_needed' };
+    const r = await finReq('POST', '/.netlify/functions/content-studio?action=create_source', {
+      source_type: 'search_trend',
+      source_title: 'QA Test: Energy healing trends 2026',
+      source_tags: ['energy healing', 'qa-test'],
+      relevance_score: 8,
+    });
+    if (!r.source || !r.source.id) throw new Error('No source returned');
+    csExtSrcId = r.source.id;
+    return { detail: `Source created: ${csExtSrcId}` };
+  });
+
+  // CS-29: Verify source fields
+  await check(CS + ' Verify source fields', async () => {
+    if (!csExtSrcId) return { status: 'SKIP', detail: 'no csExtSrcId' };
+    const r = await finReq('GET', '/.netlify/functions/content-studio?section=content_sources');
+    const src = (r.sources || []).find(s => s.id === csExtSrcId);
+    if (!src) throw new Error('Created source not found in list');
+    if (src.source_type !== 'search_trend') throw new Error(`source_type mismatch: ${src.source_type}`);
+    if (src.relevance_score !== 8) throw new Error(`relevance_score mismatch: ${src.relevance_score}`);
+    return { detail: 'source_type + relevance_score correct' };
+  });
+
+  // CS-30: Filter sources by type
+  await check(CS + ' Filter content_sources by type', async () => {
+    if (!csExtSrcId) return { status: 'SKIP', detail: 'no csExtSrcId' };
+    const r = await finReq('GET', '/.netlify/functions/content-studio?section=content_sources&type=search_trend');
+    const found = (r.sources || []).some(s => s.id === csExtSrcId);
+    if (!found) throw new Error('Source not found when filtering by type=search_trend');
+    return { detail: `Filter by type returned ${r.count} source(s)` };
+  });
+
+  // CS-31: Generated ideas have priority + score fields
+  await check(CS + ' Generated ideas have priority + score fields', async () => {
+    const r = await finReq('POST', '/.netlify/functions/content-studio?action=generate', { limit: 5 });
+    const ideas = r.generated || [];
+    if (!ideas.length) return { status: 'SKIP', detail: 'no ideas generated (add KB or RN first)' };
+    const hasPriority = ideas.every(i => ['low','medium','high','critical'].includes(i.priority));
+    const hasScores   = ideas.every(i => typeof i.internal_score === 'number' && typeof i.market_score === 'number');
+    if (!hasPriority) throw new Error('Some ideas missing valid priority field');
+    if (!hasScores)   throw new Error('Some ideas missing score fields');
+    return { detail: `All ${ideas.length} generated ideas have priority + scores` };
+  });
+
+  // CS-32: New content types accepted (workshop, podcast_topic)
+  let csWorkshopId = null;
+  await check(CS + ' New content types accepted (workshop, podcast_topic)', async () => {
+    if (csMigrationNeeded) return { status: 'SKIP', detail: 'migration_needed' };
+    const r = await finReq('POST', '/.netlify/functions/content-studio?action=create_idea', {
+      title: 'QA Test: Workshop on grounding techniques',
+      content_type: 'workshop',
+      topic: 'grounding',
+    });
+    if (!r.idea || !r.idea.id) throw new Error('workshop idea not created');
+    csWorkshopId = r.idea.id;
+    const r2 = await finReq('POST', '/.netlify/functions/content-studio?action=create_idea', {
+      title: 'QA Test: Podcast topic — energy hygiene',
+      content_type: 'podcast_topic',
+      topic: 'energy hygiene',
+    });
+    if (!r2.idea || !r2.idea.id) throw new Error('podcast_topic idea not created');
+    // Clean up
+    await finReq('PATCH', `/.netlify/functions/content-studio?action=delete_idea&id=${csWorkshopId}`).catch(() => {});
+    await finReq('PATCH', `/.netlify/functions/content-studio?action=delete_idea&id=${r2.idea.id}`).catch(() => {});
+    return { detail: 'workshop + podcast_topic content types accepted' };
+  });
+
+  // CS-33: Soft-delete external source
+  await check(CS + ' Soft-delete external source', async () => {
+    if (!csExtSrcId) return { status: 'SKIP', detail: 'no csExtSrcId' };
+    const r = await finReq('PATCH', `/.netlify/functions/content-studio?action=delete_source&id=${csExtSrcId}`);
+    if (!r.deleted) throw new Error('delete_source did not return deleted:true');
+    return { detail: 'External source soft-deleted' };
+  });
+
+  // CS-34: Deleted source absent from list
+  await check(CS + ' Soft-deleted source absent from list', async () => {
+    if (!csExtSrcId) return { status: 'SKIP', detail: 'no csExtSrcId' };
+    const r = await finReq('GET', '/.netlify/functions/content-studio?section=content_sources');
+    const found = (r.sources || []).some(s => s.id === csExtSrcId);
+    if (found) throw new Error('Deleted source still visible in list');
+    return { detail: 'Deleted source correctly excluded' };
+  });
+
+  // CS-35: Sources section shows ext-sources UI
+  await check(CS + ' Sources section shows external sources UI', async () => {
+    await page.evaluate(() => { window.csSection('sources'); });
+    await page.waitForSelector('#tab-cs .cs-sources-ext-header', { timeout: AI_TIMEOUT });
+    const hasAddBtn = await page.evaluate(() =>
+      Array.from(document.querySelectorAll('#tab-cs button')).some(b => b.textContent.includes('Add Source'))
+    );
+    if (!hasAddBtn) throw new Error('"Add Source" button not found in Sources section');
+    return { detail: 'External sources section + Add Source button present' };
   });
 
   await browser.close();

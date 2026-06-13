@@ -2058,7 +2058,7 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
 .cs-body { padding: 0 2px 40px; }
 
 /* ── KPIs ── */
-.cs-kpi-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 28px; }
+.cs-kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
 .cs-kpi {
   background: rgba(255,255,255,.03); border: 1px solid rgba(232,184,75,.12);
   border-radius: 10px; padding: 20px 16px; text-align: center;
@@ -2125,8 +2125,60 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
 .cs-type-blog         { background: rgba(232,184,75,.12);  color: #e8b84b; border: 1px solid rgba(232,184,75,.2); }
 .cs-type-training     { background: rgba(176,158,248,.12); color: #b09ef8; border: 1px solid rgba(176,158,248,.2); }
 .cs-type-book_chapter { background: rgba(255,200,80,.12);  color: #ffc850; border: 1px solid rgba(255,200,80,.2); }
-.cs-type-faq          { background: rgba(80,200,200,.12);  color: #50c8c8; border: 1px solid rgba(80,200,200,.2); }
-.cs-type-webinar      { background: rgba(220,130,255,.12); color: #dc82ff; border: 1px solid rgba(220,130,255,.2); }
+.cs-type-faq                 { background: rgba(80,200,200,.12);  color: #50c8c8; border: 1px solid rgba(80,200,200,.2); }
+.cs-type-faq_series          { background: rgba(60,190,190,.12);  color: #3cbebe; border: 1px solid rgba(60,190,190,.2); }
+.cs-type-webinar             { background: rgba(220,130,255,.12); color: #dc82ff; border: 1px solid rgba(220,130,255,.2); }
+.cs-type-workshop            { background: rgba(180,200,100,.12); color: #b4c864; border: 1px solid rgba(180,200,100,.2); }
+.cs-type-podcast_topic       { background: rgba(255,160,60,.12);  color: #ffa03c; border: 1px solid rgba(255,160,60,.2); }
+.cs-type-course_module       { background: rgba(100,150,255,.12); color: #6496ff; border: 1px solid rgba(100,150,255,.2); }
+.cs-type-lead_magnet         { background: rgba(100,220,140,.12); color: #64dc8c; border: 1px solid rgba(100,220,140,.2); }
+.cs-type-case_study          { background: rgba(255,200,120,.12); color: #ffc878; border: 1px solid rgba(255,200,120,.2); }
+.cs-type-certification_module{ background: rgba(232,184,75,.15);  color: #e8b84b; border: 1px solid rgba(232,184,75,.25); }
+
+/* ── Priority badges ── */
+.cs-priority-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: .65rem; font-weight: 700; letter-spacing: .08em; color: #fff; margin-left: 4px; vertical-align: middle; }
+
+/* ── Scoring ── */
+.cs-scores      { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+.cs-score-item  { font-size: .68rem; color: #9a9080; background: rgba(255,255,255,.04); padding: 2px 6px; border-radius: 6px; border: 1px solid rgba(255,255,255,.06); }
+
+/* ── Intelligence ── */
+.cs-intel-header     { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+.cs-intel-meta       { display: flex; gap: 16px; flex-wrap: wrap; }
+.cs-intel-stat       { font-size: .8rem; color: #9a9080; letter-spacing: .05em; }
+.cs-intel-section    { margin-bottom: 28px; }
+.cs-intel-title      { font-family: 'Cinzel', serif; font-size: .8rem; letter-spacing: .12em; color: #e8b84b; text-transform: uppercase; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid rgba(232,184,75,.15); }
+.cs-intel-tags       { display: flex; flex-wrap: wrap; gap: 8px; }
+.cs-intel-tag        { padding: 4px 12px; background: rgba(232,184,75,.08); border: 1px solid rgba(232,184,75,.18); border-radius: 14px; font-size: .78rem; color: #c8a860; cursor: default; }
+.cs-intel-tag small  { color: #7a7060; margin-left: 4px; }
+.cs-intel-tag-gap    { background: rgba(255,120,80,.07); border-color: rgba(255,120,80,.2); color: #ff9070; }
+.cs-intel-cards      { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+.cs-intel-card       { background: rgba(255,255,255,.02); border: 1px solid rgba(255,255,255,.07); border-radius: 10px; padding: 14px; }
+.cs-intel-card-competitor { border-color: rgba(255,120,80,.15); }
+.cs-intel-card-title { font-size: .88rem; color: #e0d8cc; margin-bottom: 6px; line-height: 1.4; }
+.cs-intel-summary    { font-size: .78rem; color: #9a9080; line-height: 1.5; margin-top: 6px; }
+.cs-intel-type-chip  { display: inline-block; padding: 2px 8px; background: rgba(176,158,248,.1); border: 1px solid rgba(176,158,248,.2); border-radius: 10px; font-size: .68rem; color: #b09ef8; letter-spacing: .05em; margin-bottom: 6px; }
+.cs-intel-score      { display: inline-block; padding: 2px 8px; background: rgba(232,184,75,.08); border-radius: 10px; font-size: .68rem; color: #c8a860; margin-left: 6px; }
+.cs-intel-link       { display: inline-block; font-size: .72rem; color: #e8b84b; text-decoration: none; margin-top: 6px; }
+.cs-intel-link:hover { text-decoration: underline; }
+.cs-intel-patterns   { display: flex; flex-direction: column; gap: 8px; }
+.cs-intel-pattern    { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: rgba(255,255,255,.02); border: 1px solid rgba(255,255,255,.06); border-radius: 8px; flex-wrap: wrap; }
+.cs-intel-pattern-match { border-color: rgba(100,220,140,.15); }
+.cs-intel-pattern-tag  { font-size: .82rem; color: #e0d8cc; font-weight: 500; min-width: 120px; }
+.cs-intel-pattern-stat { font-size: .72rem; color: #7a7060; }
+.cs-intel-opp          { font-size: .72rem; color: #7a7060; margin-left: auto; }
+.cs-intel-opp-ok       { color: #64dc8c; }
+
+/* ── External Sources ── */
+.cs-sources-ext-header  { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; padding-bottom: 14px; border-bottom: 1px solid rgba(232,184,75,.12); }
+.cs-sources-ext-title   { font-family: 'Cinzel', serif; font-size: .82rem; letter-spacing: .1em; color: #e8b84b; text-transform: uppercase; }
+.cs-sources-ext-controls{ display: flex; gap: 10px; align-items: center; }
+.cs-ext-sources-list    { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; margin-bottom: 32px; }
+.cs-ext-source-card     { background: rgba(255,255,255,.02); border: 1px solid rgba(176,158,248,.1); border-radius: 10px; padding: 14px; }
+.cs-ext-src-top         { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.cs-ext-src-title       { font-size: .88rem; color: #e0d8cc; margin-bottom: 6px; line-height: 1.4; }
+.cs-ext-empty           { border: 1px dashed rgba(176,158,248,.2); border-radius: 10px; margin-bottom: 28px; }
+.cs-sources-int-header  { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,.05); flex-wrap: wrap; }
 
 /* ── Status ── */
 .cs-status         { padding: 3px 9px; border-radius: 20px; font-size: .7rem; letter-spacing: .08em; font-weight: 600; text-transform: uppercase; }
