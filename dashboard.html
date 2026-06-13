@@ -1196,6 +1196,300 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
 }
 </style>
 
+<!-- ── FINANCIAL CENTER STYLES ─────────────────────────────── -->
+<style>
+/* Sub-nav pill row */
+.fin-subnav {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+  border-bottom: 1px solid rgba(232,184,75,.15);
+  padding-bottom: 16px;
+}
+.fin-sub {
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  letter-spacing: .32em;
+  text-transform: uppercase;
+  color: rgba(176,158,248,.55);
+  background: transparent;
+  border: 1px solid rgba(176,158,248,.18);
+  padding: 7px 18px;
+  cursor: pointer;
+  transition: color .18s, border-color .18s, background .18s;
+}
+.fin-sub:hover  { color: #b09ef8; border-color: rgba(176,158,248,.4); }
+.fin-sub.active { color: #e8b84b; border-color: #e8b84b; background: rgba(232,184,75,.06); }
+
+/* KPI grid */
+.fc-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 14px;
+  margin-bottom: 32px;
+}
+.fc-kpi {
+  background: rgba(13,8,32,.6);
+  border: 1px solid rgba(232,184,75,.22);
+  padding: 20px 22px;
+}
+.fc-kpi-label {
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  letter-spacing: .4em;
+  text-transform: uppercase;
+  color: rgba(232,184,75,.5);
+  margin-bottom: 10px;
+}
+.fc-kpi-val {
+  font-family: 'Cinzel', serif;
+  font-size: 26px;
+  color: #f0ecff;
+  line-height: 1;
+}
+.fc-kpi-val.green  { color: #22c98a; }
+.fc-kpi-val.amber  { color: #f8a84b; }
+.fc-kpi-val.red    { color: #ee7070; }
+.fc-kpi-sub {
+  font-family: 'EB Garamond', serif;
+  font-size: 13px;
+  color: rgba(176,158,248,.45);
+  margin-top: 4px;
+  font-style: italic;
+}
+
+/* Section header */
+.fc-section-head {
+  font-family: 'Cinzel', serif;
+  font-size: 13px;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  color: #e8b84b;
+  margin-bottom: 18px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(232,184,75,.2);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.fc-section-head button {
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  color: #e8b84b;
+  border: 1px solid rgba(232,184,75,.4);
+  background: transparent;
+  padding: 5px 14px;
+  cursor: pointer;
+  margin-left: auto;
+  transition: background .15s;
+}
+.fc-section-head button:hover { background: rgba(232,184,75,.08); }
+
+/* Data table */
+.fc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'EB Garamond', serif;
+  font-size: 16px;
+  color: #dddaee;
+}
+.fc-table th {
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  color: rgba(232,184,75,.5);
+  padding: 0 14px 10px 0;
+  text-align: left;
+  border-bottom: 1px solid rgba(232,184,75,.12);
+  white-space: nowrap;
+}
+.fc-table td {
+  padding: 11px 14px 11px 0;
+  border-bottom: 1px solid rgba(232,184,75,.06);
+  vertical-align: top;
+}
+.fc-table tr:last-child td { border-bottom: none; }
+.fc-table tr:hover td { background: rgba(232,184,75,.03); }
+
+/* Status pill */
+.fc-pill {
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  letter-spacing: .25em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 2px;
+  border: 1px solid;
+  white-space: nowrap;
+  display: inline-block;
+}
+.fc-pill.active    { color: #22c98a; border-color: #22c98a55; background: #22c98a11; }
+.fc-pill.completed { color: #b09ef8; border-color: #b09ef855; background: #b09ef811; }
+.fc-pill.expired   { color: #888;    border-color: #88888855; background: #88888811; }
+.fc-pill.cancelled { color: #ee7070; border-color: #ee707055; background: #ee707011; }
+.fc-pill.draft     { color: #888;    border-color: #88888855; background: #88888811; }
+.fc-pill.sent      { color: #66b5f8; border-color: #66b5f855; background: #66b5f811; }
+.fc-pill.paid      { color: #22c98a; border-color: #22c98a55; background: #22c98a11; }
+.fc-pill.partial   { color: #f8a84b; border-color: #f8a84b55; background: #f8a84b11; }
+.fc-pill.overdue   { color: #ee7070; border-color: #ee707055; background: #ee707011; }
+.fc-pill.charge    { color: #ee7070; border-color: #ee707055; background: #ee707011; }
+.fc-pill.payment   { color: #22c98a; border-color: #22c98a55; background: #22c98a11; }
+.fc-pill.credit    { color: #b09ef8; border-color: #b09ef855; background: #b09ef811; }
+.fc-pill.refund    { color: #f8a84b; border-color: #f8a84b55; background: #f8a84b11; }
+.fc-pill.adjustment{ color: #66b5f8; border-color: #66b5f855; background: #66b5f811; }
+.fc-pill.write_off { color: #888;    border-color: #88888855; background: #88888811; }
+
+/* Progress bar */
+.fc-progress-wrap { background: rgba(176,158,248,.12); height: 6px; border-radius: 3px; overflow: hidden; }
+.fc-progress-bar  { height: 100%; background: #22c98a; border-radius: 3px; transition: width .4s; }
+
+/* Alert card */
+.fc-alert-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1px solid rgba(248,168,75,.25);
+  background: rgba(248,168,75,.04);
+  margin-bottom: 10px;
+}
+.fc-alert-card.critical { border-color: rgba(238,112,112,.35); background: rgba(238,112,112,.04); }
+.fc-alert-card.high     { border-color: rgba(248,168,75,.35);  background: rgba(248,168,75,.04); }
+.fc-alert-card.medium   { border-color: rgba(102,181,248,.25); background: rgba(102,181,248,.03); }
+.fc-alert-sev {
+  font-family: 'Cinzel', serif;
+  font-size: 8px;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+  padding: 3px 8px;
+  border-radius: 2px;
+}
+.fc-alert-sev.critical { color: #ee7070; border: 1px solid #ee707055; background: #ee707011; }
+.fc-alert-sev.high     { color: #f8a84b; border: 1px solid #f8a84b55; background: #f8a84b11; }
+.fc-alert-sev.medium   { color: #66b5f8; border: 1px solid #66b5f855; background: #66b5f811; }
+.fc-alert-title {
+  font-family: 'Cinzel', serif;
+  font-size: 13px;
+  letter-spacing: .12em;
+  color: #f0ecff;
+  margin-bottom: 4px;
+}
+.fc-alert-body {
+  font-family: 'EB Garamond', serif;
+  font-size: 15px;
+  color: rgba(176,158,248,.65);
+  font-style: italic;
+}
+
+/* Package usage bar */
+.fc-pkg-card {
+  background: rgba(13,8,32,.6);
+  border: 1px solid rgba(232,184,75,.2);
+  padding: 20px 24px;
+  margin-bottom: 12px;
+}
+.fc-pkg-name {
+  font-family: 'Cinzel', serif;
+  font-size: 14px;
+  letter-spacing: .15em;
+  color: #f0ecff;
+  margin-bottom: 4px;
+}
+.fc-pkg-client {
+  font-family: 'EB Garamond', serif;
+  font-size: 16px;
+  color: rgba(232,184,75,.7);
+  margin-bottom: 12px;
+  font-style: italic;
+}
+
+/* Form panel */
+.fc-form-panel {
+  background: rgba(13,8,32,.7);
+  border: 1px solid rgba(232,184,75,.2);
+  padding: 28px 32px;
+  margin-bottom: 28px;
+  display: none;
+}
+.fc-form-panel.open { display: block; }
+.fc-form-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 14px; }
+.fc-field {
+  flex: 1;
+  min-width: 160px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.fc-field label {
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  color: rgba(232,184,75,.55);
+}
+.fc-input, .fc-select {
+  font-family: 'EB Garamond', serif;
+  font-size: 16px;
+  color: #f0ecff;
+  background: rgba(4,2,14,.7);
+  border: 1px solid rgba(232,184,75,.25);
+  padding: 9px 12px;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color .18s;
+}
+.fc-input:focus, .fc-select:focus { border-color: #e8b84b; }
+.fc-select option { background: #0d0820; }
+
+/* Action button */
+.fc-btn {
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  color: #e8b84b;
+  border: 1px solid rgba(232,184,75,.5);
+  background: transparent;
+  padding: 9px 24px;
+  cursor: pointer;
+  transition: background .18s, border-color .18s;
+}
+.fc-btn:hover { background: rgba(232,184,75,.08); border-color: #e8b84b; }
+.fc-btn.primary { background: rgba(232,184,75,.12); }
+.fc-btn.danger  { color: #ee7070; border-color: rgba(238,112,112,.4); }
+.fc-btn.danger:hover { background: rgba(238,112,112,.08); }
+
+/* Empty state */
+.fc-empty {
+  padding: 40px 24px;
+  text-align: center;
+  font-family: 'EB Garamond', serif;
+  font-size: 18px;
+  color: rgba(176,158,248,.4);
+  font-style: italic;
+  border: 1px solid rgba(232,184,75,.08);
+}
+
+/* Revenue chart bar */
+.fc-bar-chart { display: flex; align-items: flex-end; gap: 6px; height: 100px; margin: 16px 0; }
+.fc-bar-col   { display: flex; flex-direction: column; align-items: center; flex: 1; gap: 4px; }
+.fc-bar       { width: 100%; background: rgba(176,158,248,.35); border-radius: 2px 2px 0 0; min-height: 2px; transition: background .2s; }
+.fc-bar:hover { background: #b09ef8; }
+.fc-bar-lbl   { font-family: 'Cinzel', serif; font-size: 7px; letter-spacing: .15em; color: rgba(232,184,75,.4); text-align: center; white-space: nowrap; }
+
+@media (max-width: 640px) {
+  #finWrap { padding: 20px 14px 40px; }
+  .fc-kpi-row { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+
 <!-- ── KNOWLEDGE HUB STYLES ────────────────────────────────── -->
 <style>
 /* ── KH shell ── */
@@ -1563,6 +1857,12 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
       </button>
 
       <div class="ck-nav-divider"></div>
+      <div class="ck-nav-section">Business</div>
+      <button class="tab ck-nav-item" onclick="showTab('financial')">
+        <span class="nav-icon">◇</span><span class="nav-text">Financial Center</span>
+      </button>
+
+      <div class="ck-nav-divider"></div>
       <div class="ck-nav-section">Knowledge</div>
       <button class="tab ck-nav-item" onclick="showTab('knowledge')">
         <span class="nav-icon">◈</span><span class="nav-text">Knowledge Hub</span>
@@ -1890,6 +2190,39 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
   <!-- ANALYTICS TAB -->
   <div class="tab-content" id="tab-analytics">
     <div id="analyticsBody"></div>
+  </div>
+
+  <!-- FINANCIAL CENTER TAB -->
+  <div class="tab-content" id="tab-financial">
+    <div id="finWrap" style="padding:32px 28px 48px;max-width:1280px;margin:0 auto">
+
+      <!-- Sub-nav -->
+      <div class="fin-subnav" id="finSubnav">
+        <button class="fin-sub active" data-section="overview"  onclick="fcSection('overview')">Overview</button>
+        <button class="fin-sub"        data-section="packages"  onclick="fcSection('packages')">Packages</button>
+        <button class="fin-sub"        data-section="ledger"    onclick="fcSection('ledger')">Ledger</button>
+        <button class="fin-sub"        data-section="invoices"  onclick="fcSection('invoices')">Invoices</button>
+        <button class="fin-sub"        data-section="revenue"   onclick="fcSection('revenue')">Revenue Analytics</button>
+      </div>
+
+      <!-- Alert banner (auto-shown when alerts exist) -->
+      <div id="finAlertBanner" style="display:none;margin-bottom:20px;padding:14px 20px;
+           border:1px solid #f8a84b55;background:#f8a84b0a;
+           font-family:'EB Garamond',serif;font-size:16px;color:#f8a84b;
+           display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <span id="finAlertBannerText"></span>
+        <button onclick="fcSection('overview')" style="font-family:'Cinzel',serif;font-size:9px;
+          letter-spacing:.3em;text-transform:uppercase;color:#f8a84b;border:1px solid #f8a84b44;
+          background:transparent;padding:4px 12px;cursor:pointer">View Alerts</button>
+      </div>
+
+      <!-- Section containers -->
+      <div id="fc-overview"  class="fc-section"></div>
+      <div id="fc-packages"  class="fc-section" style="display:none"></div>
+      <div id="fc-ledger"    class="fc-section" style="display:none"></div>
+      <div id="fc-invoices"  class="fc-section" style="display:none"></div>
+      <div id="fc-revenue"   class="fc-section" style="display:none"></div>
+    </div>
   </div>
 
   <!-- KNOWLEDGE HUB TAB -->
@@ -2776,6 +3109,7 @@ function showTab(name) {
   if (name === 'operations')  { try { renderOperationsCenter(); } catch(e){ console.error('renderOperationsCenter', e); } }
   if (name === 'followups')   { try { loadFollowUps(); } catch(e){ console.error('loadFollowUps', e); } }
   if (name === 'knowledge')  { try { khInit(); } catch(e){ console.error('khInit', e); } }
+  if (name === 'financial')  { try { fcInit(); } catch(e){ console.error('fcInit', e); } }
 }
 
 function approveReview(id) {
@@ -10117,6 +10451,7 @@ purgeTestEntries();
 </script>
 <script src="clients-module.js"></script>
 <script src="sessions-module.js"></script>
+<script src="financial-module.js"></script>
 <script src="pin-lock.js"></script>
 </body>
 </html>

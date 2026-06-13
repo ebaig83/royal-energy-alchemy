@@ -710,6 +710,13 @@
       );
 
       // ══════════════════════════════════════════════════════════════════
+      // SECTION 4b — FINANCIAL SUMMARY (from Financial Center ledger)
+      // ══════════════════════════════════════════════════════════════════
+      var financialHtml = '<div id="crmFinancialWrap" style="margin-bottom:8px">' +
+        '<div style="font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:.22em;color:#9b7fe8;padding:16px 0 8px">Loading financial summary…</div>' +
+        '</div>';
+
+      // ══════════════════════════════════════════════════════════════════
       // SECTIONS 5–7 — RECS / REFS / PLANS (inner content only)
       // ══════════════════════════════════════════════════════════════════
       var recsHtml  = caseSection('🌿', 'Recommendations & Products', buildRecsSection(recs, id),   '#22c98a');
@@ -794,6 +801,7 @@
         '<div id="crmAttentionFlagsWrap">'      + _attentionFlagsLoadingHtml()  + '</div>' +
         '<div id="crmPractitionerTimelineWrap">'+ _timelineLoadingHtml()        + '</div>' +
         sessionDocHtml +
+        financialHtml +
         recsHtml +
         refsHtml +
         plansHtml +
@@ -806,15 +814,77 @@
             'onclick="crmCloseProfileModal();crmOpenTimeline(\'' + esc(id) + '\')">⏱ Full Timeline</button>' +
         '</div>';
 
-      // Fire all three AI sections in parallel — none blocks the others
+      // Fire all three AI sections + financial summary in parallel
       _loadAttentionFlags(id, _prepBriefPayload);
       _loadPrepBrief(id, _prepBriefPayload);
       _loadPractitionerTimeline(id, _prepBriefPayload);
+      _loadClientFinancialSummary(id, cl.full_name);
 
     } catch (e) {
       body.innerHTML = errorHtml('Failed to load case file: ' + e.message);
     }
   };
+
+  // ── Financial summary loader (async, non-blocking) ───────────────────────
+  function _loadClientFinancialSummary(clientId, clientName) {
+    var wrap = document.getElementById('crmFinancialWrap');
+    if (!wrap) return;
+    api('/financial?section=client_summary&client_id=' + clientId)
+      .then(function(data) {
+        if (!wrap) return;
+        var fin = data.financial || {};
+        var pkgs = data.packages || [];
+        var activePkg = fin.activePackage;
+        var balance   = parseFloat(fin.currentBalance || 0);
+        var credits   = parseFloat(fin.creditsAvailable || 0);
+        var outstanding = parseFloat(fin.outstandingCharges || 0);
+
+        var fmt = function(n) { return '$' + Math.abs(n).toFixed(2); };
+        var balColor = balance > 0 ? '#ff6b6b' : balance < 0 ? '#22c98a' : '#9b7fe8';
+
+        var pkgRow = activePkg
+          ? '<div style="margin-top:14px;padding:12px 16px;background:#9b7fe808;border:1px solid #9b7fe833;border-radius:6px">' +
+              '<div style="font-family:\'Cinzel\',serif;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#9b7fe8;margin-bottom:6px">Active Package</div>' +
+              '<div style="font-family:\'EB Garamond\',serif;font-size:17px;color:#e8e6f8">' + (activePkg.package_name || 'Package') + '</div>' +
+              '<div style="font-family:\'EB Garamond\',serif;font-size:15px;color:#dddaee99;margin-top:4px">' +
+                ((activePkg.sessions_included - activePkg.sessions_used) + ' sessions remaining') +
+                (activePkg.expiration_date ? ' · Expires ' + activePkg.expiration_date : '') +
+              '</div>' +
+            '</div>'
+          : '';
+
+        var kpis =
+          '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:0">' +
+            _finKpi('Running Balance', fmt(balance), balColor) +
+            _finKpi('Credits Available', fmt(credits), '#22c98a') +
+            _finKpi('Unpaid Sessions', fmt(outstanding), outstanding > 0 ? '#f8a84b' : '#dddaee66') +
+          '</div>';
+
+        var histLink = data.ledger && data.ledger.length > 0
+          ? '<div style="margin-top:14px;font-family:\'EB Garamond\',serif;font-size:15px;color:#9b7fe899">' +
+              data.ledger.length + ' ledger entr' + (data.ledger.length === 1 ? 'y' : 'ies') + ' on file. ' +
+              '<span style="color:#9b7fe8;cursor:pointer;text-decoration:underline" ' +
+                'onclick="crmCloseProfileModal();showTab(\'financial\');setTimeout(function(){fcSection(\'ledger\');},300)">View in Financial Center →</span>' +
+            '</div>'
+          : '<div style="margin-top:10px;font-family:\'EB Garamond\',serif;font-size:15px;color:#dddaee44">No ledger history yet — run the SQL migration to enable financial tracking.</div>';
+
+        wrap.innerHTML = caseSection('◇', 'Financial Summary',
+          cardWrap(kpis + pkgRow + histLink, 'border-color:#9b7fe833'),
+          '#9b7fe8'
+        );
+      })
+      .catch(function() {
+        var wrap2 = document.getElementById('crmFinancialWrap');
+        if (wrap2) wrap2.innerHTML = '';
+      });
+  }
+
+  function _finKpi(label, val, color) {
+    return '<div style="background:#0c0622;border:1px solid #2a1f4e;border-radius:8px;padding:14px 16px">' +
+      '<div style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:#dddaee66;margin-bottom:6px">' + label + '</div>' +
+      '<div style="font-size:22px;font-weight:600;color:' + color + '">' + val + '</div>' +
+    '</div>';
+  }
 
   // ── Recommendations section builder ──────────────────────────────────────
   function buildRecsSection(recs, clientId) {
