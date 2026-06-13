@@ -1435,6 +1435,169 @@ async function run() {
 
   } // end if (rnSchemaFailed) else
 
+  // ═══════════════════════════════════════════════════════════════════════
+  // Phase 11: Knowledge Base Lite QA (Suite 12)
+  // ═══════════════════════════════════════════════════════════════════════
+
+  console.log('\n-- Phase 11: Knowledge Base Lite QA (Suite 12)');
+
+  const KB = 'KB:';
+  let kbSchemaFailed = false;
+  let kbQaId = null;
+
+  // ── KB-0  kb function deployed ────────────────────────────────────────────
+  await check(KB + ' kb function deployed', async () => {
+    const r = await finReq('GET', '/.netlify/functions/kb?section=entries');
+    if (r.s === 0)   throw new Error('Network error — function unreachable');
+    if (r.s === 404) throw new Error('HTTP 404 — kb function not deployed');
+    if (r.s === 500) throw new Error('HTTP 500: ' + (r.b && r.b.error || ''));
+    return { detail: 'HTTP ' + r.s };
+  });
+
+  // ── KB-1  table accessible ────────────────────────────────────────────────
+  await check(KB + ' kb_entries table accessible', async () => {
+    const r = await finReq('GET', '/.netlify/functions/kb?section=entries');
+    if (r.s !== 200) throw new Error(classifyFinError(r.s, r.b));
+    if (r.b.migration_needed) { kbSchemaFailed = true; throw new Error('migration_needed=true — run 2026-06-13-kb-lite.sql in Supabase'); }
+    if (!Array.isArray(r.b.entries)) throw new Error('entries array missing from response');
+    return { detail: r.b.entries.length + ' existing entry/entries' };
+  });
+
+  // ── KB-2  create entry ────────────────────────────────────────────────────
+  await check(KB + ' Create entry (POST create_entry)', async () => {
+    if (kbSchemaFailed) return { status: 'SKIP', detail: 'migration_needed — skipping write tests' };
+    const r = await finReq('POST', '/.netlify/functions/kb?action=create_entry', {
+      title: 'QA Test Article', content: 'Automated QA content for Knowledge Base.',
+      category: 'qa-test', tags: ['qa', 'test'], status: 'draft', is_pinned: false,
+    });
+    if (r.s !== 201) throw new Error(classifyFinError(r.s, r.b));
+    if (!r.b.entry?.id) throw new Error('entry.id missing from response');
+    kbQaId = r.b.entry.id;
+    return { detail: 'id=' + kbQaId + '  status=' + r.b.entry.status };
+  });
+
+  // ── KB-3  verify fields ───────────────────────────────────────────────────
+  await check(KB + ' Verify entry fields', async () => {
+    if (!kbQaId) return { status: 'SKIP', detail: 'No QA entry created' };
+    const r = await finReq('GET', '/.netlify/functions/kb?section=entry&id=' + kbQaId);
+    if (r.s !== 200) throw new Error(classifyFinError(r.s, r.b));
+    const e = r.b.entry;
+    if (!e) throw new Error('entry null in response');
+    if (e.title    !== 'QA Test Article') throw new Error('title mismatch: ' + e.title);
+    if (e.category !== 'qa-test')         throw new Error('category mismatch: ' + e.category);
+    if (e.status   !== 'draft')           throw new Error('status mismatch: ' + e.status);
+    if (e.is_pinned !== false)            throw new Error('is_pinned should be false, got: ' + e.is_pinned);
+    return { detail: 'title OK  category=' + e.category + '  status=' + e.status + '  is_pinned=' + e.is_pinned };
+  });
+
+  // ── KB-4  is_pinned can be toggled ────────────────────────────────────────
+  await check(KB + ' is_pinned field updates correctly', async () => {
+    if (!kbQaId) return { status: 'SKIP', detail: 'No QA entry created' };
+    const r = await finReq('PATCH', '/.netlify/functions/kb?action=update_entry&id=' + kbQaId,
+      { is_pinned: true });
+    if (r.s !== 200) throw new Error(classifyFinError(r.s, r.b));
+    if (r.b.entry?.is_pinned !== true) throw new Error('is_pinned not updated to true');
+    // Unpin it again for cleanup
+    await finReq('PATCH', '/.netlify/functions/kb?action=update_entry&id=' + kbQaId, { is_pinned: false });
+    return { detail: 'is_pinned toggled true then false successfully' };
+  });
+
+  // ── KB-5  search works ────────────────────────────────────────────────────
+  await check(KB + ' Search works (section=entries&search=)', async () => {
+    if (kbSchemaFailed) return { status: 'SKIP', detail: 'migration_needed' };
+    const r = await finReq('GET', '/.netlify/functions/kb?section=entries&search=QA+Test+Article');
+    if (r.s !== 200) throw new Error(classifyFinError(r.s, r.b));
+    const found = (r.b.entries || []).some(e => e.id === kbQaId);
+    if (!found) throw new Error('QA entry not found in search results');
+    return { detail: (r.b.entries || []).length + ' result(s) for "QA Test Article"' };
+  });
+
+  // ── KB-6  no-match search returns empty ───────────────────────────────────
+  await check(KB + ' No-match search returns empty', async () => {
+    if (kbSchemaFailed) return { status: 'SKIP', detail: 'migration_needed' };
+    const r = await finReq('GET', '/.netlify/functions/kb?section=entries&search=ZZZNOMATCH');
+    if (r.s !== 200) throw new Error(classifyFinError(r.s, r.b));
+    if ((r.b.entries || []).length !== 0) throw new Error('Expected 0 results, got ' + r.b.entries.length);
+    return { detail: 'Correctly returned 0 results for non-matching query' };
+  });
+
+  // ── KB-7  category filter works ───────────────────────────────────────────
+  await check(KB + ' Category filter works', async () => {
+    if (!kbQaId) return { status: 'SKIP', detail: 'No QA entry created' };
+    const r = await finReq('GET', '/.netlify/functions/kb?section=entries&category=qa-test');
+    if (r.s !== 200) throw new Error(classifyFinError(r.s, r.b));
+    const found = (r.b.entries || []).some(e => e.id === kbQaId);
+    if (!found) throw new Error('QA entry not found in category filter results');
+    return { detail: (r.b.entries || []).length + ' entry/entries in category qa-test' };
+  });
+
+  // ── KB-8  categories endpoint works ──────────────────────────────────────
+  await check(KB + ' Categories endpoint returns list', async () => {
+    if (kbSchemaFailed) return { status: 'SKIP', detail: 'migration_needed' };
+    const r = await finReq('GET', '/.netlify/functions/kb?section=categories');
+    if (r.s !== 200) throw new Error(classifyFinError(r.s, r.b));
+    if (!Array.isArray(r.b.categories)) throw new Error('categories array missing');
+    return { detail: r.b.categories.length + ' category/categories' };
+  });
+
+  // ── KB-9  missing title rejected ─────────────────────────────────────────
+  await check(KB + ' Missing title rejected (400)', async () => {
+    const r = await finReq('POST', '/.netlify/functions/kb?action=create_entry',
+      { content: 'No title supplied', category: 'test' });
+    if (r.s !== 400) throw new Error('Expected 400, got ' + r.s);
+    return { detail: 'Correctly rejected: ' + (r.b.error || r.s) };
+  });
+
+  // ── KB-10  invalid status rejected ───────────────────────────────────────
+  await check(KB + ' Invalid status rejected (400)', async () => {
+    const r = await finReq('POST', '/.netlify/functions/kb?action=create_entry',
+      { title: 'Bad Status', status: 'invalid-xyz' });
+    if (r.s !== 400) throw new Error('Expected 400, got ' + r.s);
+    return { detail: 'Correctly rejected invalid status' };
+  });
+
+  // ── KB-11  soft-delete works ──────────────────────────────────────────────
+  await check(KB + ' Soft-delete entry (PATCH delete_entry)', async () => {
+    if (!kbQaId) return { status: 'SKIP', detail: 'No QA entry to delete' };
+    const r = await finReq('PATCH', '/.netlify/functions/kb?action=delete_entry&id=' + kbQaId, {});
+    if (r.s !== 200) throw new Error(classifyFinError(r.s, r.b));
+    if (!r.b.deleted) throw new Error('deleted flag not true in response');
+    return { detail: 'deleted=true  id=' + kbQaId };
+  });
+
+  // ── KB-12  soft-deleted entry absent from list ────────────────────────────
+  await check(KB + ' Soft-deleted entry absent from list', async () => {
+    if (!kbQaId) return { status: 'SKIP', detail: 'No QA entry to verify' };
+    const r = await finReq('GET', '/.netlify/functions/kb?section=entries');
+    if (r.s !== 200) throw new Error(classifyFinError(r.s, r.b));
+    const found = (r.b.entries || []).some(e => e.id === kbQaId);
+    if (found) throw new Error('Soft-deleted entry still appears in list');
+    return { detail: 'Correctly absent from list after soft-delete' };
+  });
+
+  // ── KB-13  dashboard tab renders ─────────────────────────────────────────
+  await check(KB + ' Knowledge Base tab renders in dashboard', async () => {
+    await page.evaluate(() => {
+      if (typeof showTab === 'function') showTab('kb');
+    });
+    await page.waitForFunction(() => {
+      const el = document.getElementById('tab-kb');
+      return el && el.innerHTML.trim().length > 50 && !el.textContent.includes('LOADING');
+    }, { timeout: TIMEOUT });
+    return { detail: 'Knowledge Base tab rendered without errors' };
+  }, page);
+
+  // ── KB-14  no console errors ──────────────────────────────────────────────
+  await check(KB + ' No JS console errors in KB section', async () => {
+    const kbErrors = consoleErrors.filter(e =>
+      e.toLowerCase().includes('kbinit') ||
+      e.toLowerCase().includes('tab-kb') ||
+      e.toLowerCase().includes('knowledge base')
+    );
+    if (kbErrors.length > 0) throw new Error('Console errors: ' + kbErrors.join(' | '));
+    return { detail: 'No KB-related console errors' };
+  });
+
   await browser.close();
 
   // Final report
@@ -1488,6 +1651,18 @@ async function run() {
     console.log('\n=== RESEARCH LITE QA (Suite 11) ===');
     rnResults.forEach(r => console.log(`  ${SICONS[r.status] || '?'} ${r.status.padEnd(5)} ${r.name.replace('Research: ', '')}`));
     console.log(`\n  Research totals : PASS ${rnPass}  FAIL ${rnFail}  WARN ${rnWarn}  SKIP ${rnSkip}  / ${rnResults.length} checks`);
+  }
+
+  // Knowledge Base Lite sub-report (Suite 12)
+  const kbResults = results.filter(r => r.name.startsWith('KB:'));
+  const kbPass    = kbResults.filter(r => r.status === 'PASS').length;
+  const kbFail    = kbResults.filter(r => r.status === 'FAIL').length;
+  const kbWarn    = kbResults.filter(r => r.status === 'WARN').length;
+  const kbSkip    = kbResults.filter(r => r.status === 'SKIP').length;
+  if (kbResults.length > 0) {
+    console.log('\n=== KNOWLEDGE BASE LITE QA (Suite 12) ===');
+    kbResults.forEach(r => console.log(`  ${SICONS[r.status] || '?'} ${r.status.padEnd(5)} ${r.name.replace('KB: ', '')}`));
+    console.log(`\n  KB totals : PASS ${kbPass}  FAIL ${kbFail}  WARN ${kbWarn}  SKIP ${kbSkip}  / ${kbResults.length} checks`);
   }
 
   // Bookkeeping Lite sub-report (Suite 10)
