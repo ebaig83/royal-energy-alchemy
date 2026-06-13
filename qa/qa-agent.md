@@ -16,9 +16,9 @@ Requires `qa/.env` (gitignored — never commit credentials):
 
 ```
 QA_SITE_URL=https://royal-energy-alchemy.netlify.app
-QA_SUPABASE_URL=https://pqlynrmacrorkfludmms.supabase.co
+QA_SUPABASE_URL=https://your-project-ref.supabase.co
 QA_SUPABASE_ANON=<supabase anon public key>
-QA_ADMIN_EMAIL=droyal168@gmail.com
+QA_ADMIN_EMAIL=<admin email>
 QA_ADMIN_PASSWORD=<daron dashboard password>
 QA_VERBOSE=0
 ```

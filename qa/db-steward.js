@@ -283,7 +283,7 @@ async function run() {
   console.log('║           DATABASE STEWARD AGENT — SCHEMA AUDIT             ║');
   console.log('╚══════════════════════════════════════════════════════════════╝\n');
   console.log('Run at:', report.runAt);
-  console.log('Target:', 'royal-energy-alchemy.netlify.app / pqlynrmacrorkfludmms.supabase.co');
+  console.log('Target:', process.env.QA_SUPABASE_URL || 'royal-energy-alchemy.netlify.app');
   console.log('');
 
   for (const entry of EXPECTED) {
