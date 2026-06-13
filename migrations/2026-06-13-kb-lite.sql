@@ -6,6 +6,30 @@
 -- Run in: Supabase → SQL Editor → New query → Run
 -- ============================================================
 
+-- ── HANDLE LEGACY body COLUMN ────────────────────────────────
+-- The original kb_entries table may have a NOT NULL 'body' column.
+-- If 'content' doesn't exist yet, rename body→content so existing data
+-- is preserved under the new name. If both exist, just drop the NOT NULL
+-- on body so inserts without it don't fail.
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'kb_entries' AND column_name = 'body'
+  ) THEN
+    IF NOT EXISTS (
+      SELECT 1 FROM information_schema.columns
+      WHERE table_schema = 'public' AND table_name = 'kb_entries' AND column_name = 'content'
+    ) THEN
+      -- Rename body → content (preserves all existing text)
+      ALTER TABLE kb_entries RENAME COLUMN body TO content;
+    ELSE
+      -- Both columns exist; make body nullable so inserts without it succeed
+      ALTER TABLE kb_entries ALTER COLUMN body DROP NOT NULL;
+    END IF;
+  END IF;
+END $$;
+
 -- ── ADD MISSING COLUMNS ──────────────────────────────────────
 -- ADD COLUMN IF NOT EXISTS is a no-op when the column is already present.
 -- NOT NULL columns carry a DEFAULT so the ALTER succeeds on tables with

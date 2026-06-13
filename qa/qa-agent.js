@@ -1351,23 +1351,22 @@ async function run() {
     return { detail: 'Anon correctly blocked: HTTP ' + r.status };
   });
 
-  // ── RN-11  Research tab renders in dashboard ──────────────────────────────
+  // ── RN-11  Research section renders in Knowledge Hub ─────────────────────
   await check(RN + ' Research tab renders in dashboard', async () => {
-    // Close any open modal before interacting with tabs
+    // Research is now inside Knowledge Hub — navigate via KH sub-nav
     await page.evaluate(() => {
-      document.querySelectorAll('.modal, [id$="Modal"], [class*="modal"]').forEach(m => {
-        m.classList.remove('open', 'show', 'active');
-        if (m.style.display !== 'none') m.style.display = 'none';
-      });
+      window.showTab('kh');
     });
-    await page.waitForTimeout(300);
-    await page.click("button[onclick*=\"showTab('research')\"]");
-    await page.waitForSelector('#tab-research', { state: 'visible', timeout: TIMEOUT });
+    await page.waitForSelector('#tab-kh .kh-wrap', { timeout: TIMEOUT });
+    await page.evaluate(() => {
+      window.khSection('research');
+    });
+    await page.waitForSelector('#tab-kh .kh-rn-wrap', { timeout: TIMEOUT });
     await page.waitForFunction(() => {
-      const el = document.getElementById('tab-research');
-      return el && el.innerHTML.trim().length > 50 && !el.textContent.includes('LOADING');
+      const el = document.querySelector('#tab-kh .kh-rn-wrap');
+      return el && el.innerHTML.trim().length > 50;
     }, { timeout: TIMEOUT });
-    return { detail: 'Research tab rendered without errors' };
+    return { detail: 'Research section rendered inside Knowledge Hub' };
   }, page);
 
   // ── RN-12a  Pattern Library endpoint returns data ────────────────────────
@@ -1442,7 +1441,6 @@ async function run() {
   console.log('\n-- Phase 11: Knowledge Base Lite QA (Suite 12)');
 
   const KB = 'KB:';
-  let kbSchemaFailed = false;
   let kbQaId = null;
 
   // ── KB-0  kb function deployed ────────────────────────────────────────────
