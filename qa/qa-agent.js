@@ -1711,6 +1711,82 @@ async function run() {
     return { detail: 'No KH-related console errors' };
   });
 
+  // Phase 13: Technical Debt Elimination Regression Suite (Suite 14)
+  const TD = 'TD:';
+  console.log('\n-- Phase 13: Technical Debt Regression Suite (Suite 14)');
+
+  // TD-0: No orphaned tab-research div
+  await check(TD + ' No orphaned tab-research div', async () => {
+    const exists = await page.evaluate(() => !!document.getElementById('tab-research'));
+    if (exists) throw new Error('tab-research div still exists in DOM');
+    return { detail: 'tab-research not present' };
+  });
+
+  // TD-1: No orphaned tab-kb div
+  await check(TD + ' No orphaned tab-kb div', async () => {
+    const exists = await page.evaluate(() => !!document.getElementById('tab-kb'));
+    if (exists) throw new Error('tab-kb div still exists in DOM');
+    return { detail: 'tab-kb not present' };
+  });
+
+  // TD-2: No orphaned tab-knowledge div
+  await check(TD + ' No orphaned tab-knowledge div', async () => {
+    const exists = await page.evaluate(() => !!document.getElementById('tab-knowledge'));
+    if (exists) throw new Error('tab-knowledge div still exists in DOM');
+    return { detail: 'tab-knowledge not present' };
+  });
+
+  // TD-3: No duplicate nav items (only one KNOWLEDGE HUB)
+  await check(TD + ' Nav has exactly one KNOWLEDGE HUB button', async () => {
+    const count = await page.evaluate(() =>
+      Array.from(document.querySelectorAll('.tab.ck-nav-item')).filter(b =>
+        b.textContent.includes('KNOWLEDGE HUB')
+      ).length
+    );
+    if (count !== 1) throw new Error(`Expected 1 KNOWLEDGE HUB nav item, found ${count}`);
+    return { detail: `1 KNOWLEDGE HUB nav item found` };
+  });
+
+  // TD-4: No separate Research or Knowledge Base nav items
+  await check(TD + ' No orphaned Research/KB nav items', async () => {
+    const count = await page.evaluate(() =>
+      Array.from(document.querySelectorAll('.tab.ck-nav-item')).filter(b =>
+        b.textContent.includes('RESEARCH') || b.textContent.includes('KNOWLEDGE BASE')
+      ).length
+    );
+    if (count > 0) throw new Error(`Found ${count} orphaned nav items (Research/KB)`);
+    return { detail: 'No orphaned Research/KB nav items' };
+  });
+
+  // TD-5: No research-module.js or kb-module.js script tags
+  await check(TD + ' No unused module script tags', async () => {
+    const scripts = await page.evaluate(() =>
+      Array.from(document.querySelectorAll('script[src]')).map(s => s.src)
+    );
+    const orphaned = scripts.filter(s => s.includes('research-module') || s.includes('kb-module'));
+    if (orphaned.length > 0) throw new Error('Orphaned scripts: ' + orphaned.join(', '));
+    return { detail: 'No research-module.js or kb-module.js loaded' };
+  });
+
+  // TD-6: No showKhSection or khLoadInsights in global scope
+  await check(TD + ' Old KH globals removed', async () => {
+    const stale = await page.evaluate(() => ({
+      showKhSection: typeof window.showKhSection,
+      khLoadInsights: typeof window.khLoadInsights,
+      khLoadSocial: typeof window.khLoadSocial,
+    }));
+    const found = Object.entries(stale).filter(([, t]) => t !== 'undefined').map(([k]) => k);
+    if (found.length > 0) throw new Error('Stale globals still present: ' + found.join(', '));
+    return { detail: 'Old KH globals not present' };
+  });
+
+  // TD-7: KH module still works after cleanup (regression)
+  await check(TD + ' KH module functional after cleanup', async () => {
+    await page.evaluate(() => window.showTab('kh'));
+    await page.waitForSelector('#tab-kh .kh-wrap', { timeout: AI_TIMEOUT });
+    return { detail: 'KH module renders after debt removal' };
+  });
+
   await browser.close();
 
   // Final report
@@ -1788,6 +1864,18 @@ async function run() {
     console.log('\n=== KNOWLEDGE HUB QA (Suite 13) ===');
     khResults.forEach(r => console.log(`  ${SICONS[r.status] || '?'} ${r.status.padEnd(5)} ${r.name.replace('KH: ', '')}`));
     console.log(`\n  KH totals : PASS ${khPass}  FAIL ${khFail}  WARN ${khWarn}  SKIP ${khSkip}  / ${khResults.length} checks`);
+  }
+
+  // Technical Debt Regression sub-report (Suite 14)
+  const tdResults = results.filter(r => r.name.startsWith('TD:'));
+  const tdPass    = tdResults.filter(r => r.status === 'PASS').length;
+  const tdFail    = tdResults.filter(r => r.status === 'FAIL').length;
+  const tdWarn    = tdResults.filter(r => r.status === 'WARN').length;
+  const tdSkip    = tdResults.filter(r => r.status === 'SKIP').length;
+  if (tdResults.length > 0) {
+    console.log('\n=== TECHNICAL DEBT REGRESSION QA (Suite 14) ===');
+    tdResults.forEach(r => console.log(`  ${SICONS[r.status] || '?'} ${r.status.padEnd(5)} ${r.name.replace('TD: ', '')}`));
+    console.log(`\n  TD totals : PASS ${tdPass}  FAIL ${tdFail}  WARN ${tdWarn}  SKIP ${tdSkip}  / ${tdResults.length} checks`);
   }
 
   // Bookkeeping Lite sub-report (Suite 10)
