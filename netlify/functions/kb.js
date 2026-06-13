@@ -19,7 +19,7 @@ const { log }                   = require('./lib/audit');
 
 const VALID_STATUSES = ['draft', 'published', 'archived'];
 
-const SELECT_COLS = 'id, title, content, category, tags, is_pinned, status, created_by, created_at, updated_at';
+const SELECT_COLS = 'id, title, summary, content, category, tags, is_pinned, status, created_by, created_at, updated_at';
 
 function userErr(msg) { const e = new Error(msg); e.name = 'UserError'; return e; }
 
@@ -179,6 +179,7 @@ async function createEntry(sb, body, auth, ip) {
 
   const insert = {
     title:      body.title.trim(),
+    summary:    body.summary    || null,
     content:    body.content    || null,
     category:   body.category   || null,
     tags:       Array.isArray(body.tags) ? body.tags : null,
@@ -204,7 +205,7 @@ async function createEntry(sb, body, auth, ip) {
 }
 
 async function updateEntry(sb, id, body, auth, ip) {
-  const allowed = ['title', 'content', 'category', 'tags', 'is_pinned', 'status'];
+  const allowed = ['title', 'summary', 'content', 'category', 'tags', 'is_pinned', 'status'];
   const updates = {};
   allowed.forEach(k => { if (body[k] !== undefined) updates[k] = body[k]; });
 

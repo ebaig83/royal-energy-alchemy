@@ -928,6 +928,7 @@ const SPRINT1_SCHEMA = {
       { name: 'id',         not_null: true,  default_contains: 'gen_random_uuid' },
       { name: 'title',      not_null: true,  default_contains: null             },
       { name: 'content',    not_null: false, default_contains: null             },
+      { name: 'summary',    not_null: false, default_contains: null             },
       { name: 'category',   not_null: false, default_contains: null             },
       { name: 'tags',       not_null: false, default_contains: null             },
       { name: 'is_pinned',  not_null: true,  default_contains: 'false'          },

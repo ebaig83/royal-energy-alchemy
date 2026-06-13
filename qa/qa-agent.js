@@ -1601,6 +1601,118 @@ async function run() {
     return { detail: 'No KB-related console errors' };
   });
 
+  // ═══════════════════════════════════════════════════════════════════════
+  // Phase 12: Knowledge Hub Restructure QA (Suite 13)
+  // ═══════════════════════════════════════════════════════════════════════
+
+  console.log('\n-- Phase 12: Knowledge Hub Restructure QA (Suite 13)');
+
+  const KH = 'KH:';
+
+  // KH-0: Navigate to Knowledge Hub tab
+  await check(KH + ' Hub tab renders', async () => {
+    await page.evaluate(() => window.showTab('kh'));
+    await page.waitForSelector('#tab-kh .kh-wrap', { timeout: TIMEOUT });
+    return { detail: 'tab-kh rendered kh-wrap' };
+  });
+
+  // KH-1: Sub-nav has 5 sections
+  await check(KH + ' Sub-nav has 5 sections', async () => {
+    const count = await page.locator('#tab-kh .kh-snav').count();
+    if (count < 5) throw new Error(`Expected 5 sub-nav buttons, got ${count}`);
+    return { detail: `${count} sub-nav buttons present` };
+  });
+
+  // KH-2: Dashboard section loads metrics
+  await check(KH + ' Dashboard loads KPI row', async () => {
+    await page.evaluate(() => window.khSection('dashboard'));
+    await page.waitForSelector('#tab-kh .kh-kpi-row', { timeout: AI_TIMEOUT });
+    const kpis = await page.locator('#tab-kh .kh-kpi').count();
+    if (kpis < 1) throw new Error('No KPI cards rendered');
+    return { detail: `${kpis} KPI cards on dashboard` };
+  });
+
+  // KH-3: Knowledge Base section renders
+  await check(KH + ' Knowledge Base section renders', async () => {
+    await page.evaluate(() => window.khSection('kb'));
+    await page.waitForSelector('#tab-kh .kh-kb-wrap', { timeout: AI_TIMEOUT });
+    return { detail: 'KB section rendered' };
+  });
+
+  // KH-4: KB section has New Article button
+  await check(KH + ' KB has New Article button', async () => {
+    const btn = await page.locator('#tab-kh .kh-btn-primary').first();
+    const txt = await btn.textContent();
+    if (!txt.includes('New Article')) throw new Error(`Button text: "${txt}"`);
+    return { detail: 'New Article button present' };
+  });
+
+  // KH-5: KB create article form with summary field
+  await check(KH + ' KB create form has summary field', async () => {
+    await page.evaluate(() => window.khKbNewForm());
+    await page.waitForSelector('#khKbTitle', { timeout: TIMEOUT });
+    const summaryInput = await page.locator('#khKbSummary').count();
+    if (!summaryInput) throw new Error('Summary input not found in form');
+    const catSelect = await page.locator('#khKbCategory').count();
+    if (!catSelect) throw new Error('Category select not found');
+    return { detail: 'Form has title, summary, category dropdown' };
+  });
+
+  // KH-6: KB category dropdown has the 6 defined categories
+  await check(KH + ' KB category dropdown has protocol categories', async () => {
+    const options = await page.locator('#khKbCategory option').allTextContents();
+    const expected = ['Protocol','FAQ','Training','Practitioner Guide','Procedure','Reference'];
+    const missing = expected.filter(c => !options.includes(c));
+    if (missing.length) throw new Error(`Missing categories: ${missing.join(', ')}`);
+    return { detail: `All ${expected.length} categories present` };
+  });
+
+  // KH-7: Research section renders
+  await check(KH + ' Research section renders', async () => {
+    await page.evaluate(() => window.khSection('research'));
+    await page.waitForSelector('#tab-kh .kh-rn-wrap', { timeout: AI_TIMEOUT });
+    return { detail: 'Research section rendered' };
+  });
+
+  // KH-8: Pattern Library section renders
+  await check(KH + ' Pattern Library section renders', async () => {
+    await page.evaluate(() => window.khSection('patterns'));
+    await page.waitForSelector('#tab-kh .kh-pl-wrap', { timeout: AI_TIMEOUT });
+    return { detail: 'Pattern Library section rendered' };
+  });
+
+  // KH-9: Insights Feed section renders
+  await check(KH + ' Insights Feed section renders', async () => {
+    await page.evaluate(() => window.khSection('insights'));
+    await page.waitForSelector('#tab-kh .kh-insights-wrap', { timeout: AI_TIMEOUT });
+    return { detail: 'Insights Feed section rendered' };
+  });
+
+  // KH-10: Nav only shows KNOWLEDGE HUB (not separate Research/KB items)
+  await check(KH + ' Nav shows KNOWLEDGE HUB not separate items', async () => {
+    const navButtons = await page.locator('.ck-nav-item').allTextContents();
+    const hasKh = navButtons.some(t => t.toUpperCase().includes('KNOWLEDGE HUB'));
+    if (!hasKh) throw new Error('KNOWLEDGE HUB nav item not found');
+    const hasSeparateResearch = navButtons.some(t => t.trim() === 'Research');
+    const hasSeparateKb = navButtons.some(t => t.trim() === 'Knowledge Base');
+    if (hasSeparateResearch) throw new Error('Separate Research nav item still present');
+    if (hasSeparateKb) throw new Error('Separate Knowledge Base nav item still present');
+    return { detail: 'KNOWLEDGE HUB nav item present; separate Research/KB items removed' };
+  });
+
+  // KH-11: No console errors on KH tab
+  await check(KH + ' No console errors on hub', async () => {
+    await page.evaluate(() => window.khSection('dashboard'));
+    await page.waitForTimeout(1000);
+    const khErrors = consoleErrors.filter(e =>
+      e.toLowerCase().includes('khinit') ||
+      e.toLowerCase().includes('kh-module') ||
+      e.toLowerCase().includes('knowledge hub')
+    );
+    if (khErrors.length > 0) throw new Error('Console errors: ' + khErrors.join(' | '));
+    return { detail: 'No KH-related console errors' };
+  });
+
   await browser.close();
 
   // Final report
@@ -1666,6 +1778,18 @@ async function run() {
     console.log('\n=== KNOWLEDGE BASE LITE QA (Suite 12) ===');
     kbResults.forEach(r => console.log(`  ${SICONS[r.status] || '?'} ${r.status.padEnd(5)} ${r.name.replace('KB: ', '')}`));
     console.log(`\n  KB totals : PASS ${kbPass}  FAIL ${kbFail}  WARN ${kbWarn}  SKIP ${kbSkip}  / ${kbResults.length} checks`);
+  }
+
+  // Knowledge Hub sub-report (Suite 13)
+  const khResults = results.filter(r => r.name.startsWith('KH:'));
+  const khPass    = khResults.filter(r => r.status === 'PASS').length;
+  const khFail    = khResults.filter(r => r.status === 'FAIL').length;
+  const khWarn    = khResults.filter(r => r.status === 'WARN').length;
+  const khSkip    = khResults.filter(r => r.status === 'SKIP').length;
+  if (khResults.length > 0) {
+    console.log('\n=== KNOWLEDGE HUB QA (Suite 13) ===');
+    khResults.forEach(r => console.log(`  ${SICONS[r.status] || '?'} ${r.status.padEnd(5)} ${r.name.replace('KH: ', '')}`));
+    console.log(`\n  KH totals : PASS ${khPass}  FAIL ${khFail}  WARN ${khWarn}  SKIP ${khSkip}  / ${khResults.length} checks`);
   }
 
   // Bookkeeping Lite sub-report (Suite 10)
