@@ -316,10 +316,11 @@ async function getResearch(sb) {
   const completed = sessions.filter(s => s.status === 'completed');
 
   // Compute session trends (state_before vs state_after)
+  // state_before/after may be stored as objects or other non-string types — force to string
   const withOutcome = completed.filter(s => s.state_before && s.state_after);
   const outcomePositive = withOutcome.filter(s => {
-    const before = (s.state_before || '').toLowerCase();
-    const after  = (s.state_after  || '').toLowerCase();
+    const before = String(s.state_before || '').toLowerCase();
+    const after  = String(s.state_after  || '').toLowerCase();
     const posWords = ['better', 'improved', 'lighter', 'relief', 'clear', 'calm', 'peace'];
     return posWords.some(w => after.includes(w)) && !posWords.some(w => before.includes(w));
   }).length;
