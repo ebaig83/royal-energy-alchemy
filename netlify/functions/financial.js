@@ -74,14 +74,15 @@ async function safeOne(query, fallback = null) {
 // ── Invoice number: timestamp-based, collision-resistant ─────────────────
 async function nextInvoiceNumber(sb) {
   const year = new Date().getFullYear();
-  // Count existing invoices for this year to generate sequence
-  const { count } = await sb
-    .from('invoices')
-    .select('id', { count: 'exact', head: true })
-    .gte('created_at', `${year}-01-01`)
-    .catch(() => ({ count: 0 }));
-  const seq = (count || 0) + 1;
-  return `INV-${year}-${String(seq).padStart(3, '0')}`;
+  let existing = 0;
+  try {
+    const { count } = await sb
+      .from('invoices')
+      .select('id', { count: 'exact', head: true })
+      .gte('created_at', `${year}-01-01`);
+    existing = count || 0;
+  } catch {}
+  return `INV-${year}-${String(existing + 1).padStart(3, '0')}`;
 }
 
 // ── Ledger write helper — centralises all ledger creation ────────────────
