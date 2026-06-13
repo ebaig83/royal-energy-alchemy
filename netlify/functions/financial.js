@@ -945,6 +945,27 @@ const SPRINT1_SCHEMA = {
                  'kb_entries_pinned_idx','kb_entries_deleted_idx'],
     grants:     ['SELECT','INSERT','UPDATE','DELETE'],
   },
+  content_ideas: {
+    column_contracts: [
+      { name: 'id',             not_null: true,  default_contains: 'gen_random_uuid' },
+      { name: 'title',          not_null: true,  default_contains: null             },
+      { name: 'content_type',   not_null: true,  default_contains: null             },
+      { name: 'source_type',    not_null: false, default_contains: null             },
+      { name: 'source_ids',     not_null: false, default_contains: null             },
+      { name: 'topic',          not_null: false, default_contains: null             },
+      { name: 'summary',        not_null: false, default_contains: null             },
+      { name: 'status',         not_null: true,  default_contains: 'draft'          },
+      { name: 'scheduled_date', not_null: false, default_contains: null             },
+      { name: 'created_by',     not_null: true,  default_contains: 'daron'          },
+      { name: 'created_at',     not_null: true,  default_contains: 'now()'          },
+      { name: 'updated_at',     not_null: true,  default_contains: 'now()'          },
+      { name: 'deleted_at',     not_null: false, default_contains: null             },
+    ],
+    check_constraints: ['content_ideas_content_type_check', 'content_ideas_status_check'],
+    fk_columns: [],
+    indexes:    ['ci_status_idx','ci_content_type_idx','ci_scheduled_idx','ci_deleted_idx','ci_created_idx'],
+    grants:     ['SELECT','INSERT','UPDATE','DELETE'],
+  },
 };
 
 async function validateSprint1Schema(sb) {

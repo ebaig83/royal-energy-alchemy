@@ -2038,6 +2038,195 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
   .kh-kpi-row { grid-template-columns: repeat(2, 1fr); }
   .kh-form-row--2col { grid-template-columns: 1fr; }
 }
+
+/* ══ CONTENT STUDIO MODULE (cs-module.js) ══════════════════════════════ */
+.cs-wrap { padding: 0; }
+.cs-subnav {
+  display: flex; gap: 0; border-bottom: 1px solid rgba(232,184,75,.2);
+  margin-bottom: 32px; overflow-x: auto; flex-shrink: 0;
+  background: #04020c; position: sticky; top: 0; z-index: 10;
+}
+.cs-snav {
+  font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: .35em;
+  text-transform: uppercase; padding: 16px 22px; cursor: pointer;
+  color: rgba(232,184,75,.5); border-bottom: 2px solid transparent;
+  background: none; border-top: none; border-left: none; border-right: none;
+  white-space: nowrap; transition: color .2s, border-color .2s;
+}
+.cs-snav:hover  { color: #e8b84b; }
+.cs-snav.active { color: #fff; border-bottom-color: #e8b84b; }
+.cs-body { padding: 0 2px 40px; }
+
+/* ── KPIs ── */
+.cs-kpi-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 28px; }
+.cs-kpi {
+  background: rgba(255,255,255,.03); border: 1px solid rgba(232,184,75,.12);
+  border-radius: 10px; padding: 20px 16px; text-align: center;
+}
+.cs-kpi-icon { font-size: 1.2rem; color: #e8b84b; margin-bottom: 6px; }
+.cs-kpi-num  { font-family: 'Cinzel', serif; font-size: 1.8rem; color: #fff; }
+.cs-kpi-lbl  { font-size: .72rem; letter-spacing: .1em; color: #7a7060; text-transform: uppercase; margin-top: 4px; }
+
+/* ── Shimmer ── */
+.cs-shimmer {
+  height: 80px; background: linear-gradient(90deg, rgba(232,184,75,.05) 25%, rgba(232,184,75,.1) 50%, rgba(232,184,75,.05) 75%);
+  background-size: 200% 100%; animation: cs-shimmer 1.4s infinite; border-radius: 8px; margin-bottom: 12px;
+}
+@keyframes cs-shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+/* ── Toast ── */
+.cs-toast { position: fixed; bottom: 28px; right: 28px; padding: 12px 20px; border-radius: 8px; font-size: .85rem; z-index: 9999; }
+.cs-toast-ok  { background: #1a3a1a; border: 1px solid #4a8a4a; color: #90d090; }
+.cs-toast-err { background: #3a1a1a; border: 1px solid #8a4a4a; color: #d09090; }
+
+/* ── Dashboard grid ── */
+.cs-dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+.cs-dash-card {
+  background: rgba(255,255,255,.03); border: 1px solid rgba(232,184,75,.12);
+  border-radius: 10px; padding: 20px 22px;
+}
+.cs-card-title { font-family: 'Cinzel', serif; font-size: .85rem; letter-spacing: .12em; color: #e8b84b; text-transform: uppercase; margin-bottom: 14px; }
+.cs-recent-list { list-style: none; padding: 0; margin: 0; }
+.cs-recent-list li { padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,.04); font-size: .85rem; color: #c8b89e; }
+.cs-recent-type { color: #e8b84b; margin-right: 6px; }
+.cs-quick-actions { grid-column: 1 / -1; }
+.cs-action-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.cs-action-btn {
+  padding: 10px 18px; background: rgba(232,184,75,.08); border: 1px solid rgba(232,184,75,.2);
+  border-radius: 6px; color: #e8b84b; font-size: .8rem; letter-spacing: .08em;
+  cursor: pointer; transition: background .2s;
+}
+.cs-action-btn:hover { background: rgba(232,184,75,.15); }
+.cs-action-secondary { border-color: rgba(176,158,248,.3); color: #b09ef8; background: rgba(176,158,248,.06); }
+.cs-action-secondary:hover { background: rgba(176,158,248,.12); }
+
+/* ── Ideas ── */
+.cs-ideas-header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+.cs-search { flex: 1; min-width: 180px; padding: 9px 14px; background: rgba(255,255,255,.04); border: 1px solid rgba(232,184,75,.25); border-radius: 6px; color: #e8e0d4; font-size: .88rem; outline: none; }
+.cs-search::placeholder { color: #7a7060; }
+.cs-filter-select { padding: 9px 12px; background: rgba(255,255,255,.04); border: 1px solid rgba(232,184,75,.25); border-radius: 6px; color: #e8e0d4; font-size: .88rem; outline: none; }
+.cs-idea-card {
+  background: rgba(255,255,255,.03); border: 1px solid rgba(232,184,75,.1);
+  border-radius: 10px; padding: 18px 20px; margin-bottom: 14px; transition: border-color .2s;
+}
+.cs-idea-card:hover { border-color: rgba(232,184,75,.25); }
+.cs-idea-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.cs-idea-actions { margin-left: auto; display: flex; gap: 8px; }
+.cs-idea-title   { font-size: .95rem; color: #e8e0d4; font-weight: 500; margin-bottom: 6px; }
+.cs-idea-topic   { font-size: .78rem; color: #b09ef8; letter-spacing: .06em; margin-bottom: 6px; }
+.cs-idea-summary { font-size: .83rem; color: #9a9080; line-height: 1.5; margin-bottom: 8px; }
+.cs-idea-date    { font-size: .78rem; color: #7a7060; margin-top: 6px; }
+
+/* ── Type badges ── */
+.cs-type-badge   { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: .72rem; letter-spacing: .06em; font-weight: 600; }
+.cs-type-social_post  { background: rgba(100,180,255,.12); color: #64b4ff; border: 1px solid rgba(100,180,255,.2); }
+.cs-type-video        { background: rgba(255,120,100,.12); color: #ff7864; border: 1px solid rgba(255,120,100,.2); }
+.cs-type-newsletter   { background: rgba(180,255,120,.12); color: #a0e060; border: 1px solid rgba(180,255,120,.2); }
+.cs-type-blog         { background: rgba(232,184,75,.12);  color: #e8b84b; border: 1px solid rgba(232,184,75,.2); }
+.cs-type-training     { background: rgba(176,158,248,.12); color: #b09ef8; border: 1px solid rgba(176,158,248,.2); }
+.cs-type-book_chapter { background: rgba(255,200,80,.12);  color: #ffc850; border: 1px solid rgba(255,200,80,.2); }
+.cs-type-faq          { background: rgba(80,200,200,.12);  color: #50c8c8; border: 1px solid rgba(80,200,200,.2); }
+.cs-type-webinar      { background: rgba(220,130,255,.12); color: #dc82ff; border: 1px solid rgba(220,130,255,.2); }
+
+/* ── Status ── */
+.cs-status         { padding: 3px 9px; border-radius: 20px; font-size: .7rem; letter-spacing: .08em; font-weight: 600; text-transform: uppercase; }
+.cs-status-draft   { background: rgba(150,150,150,.12); color: #9a9080; border: 1px solid rgba(150,150,150,.2); }
+.cs-status-approved{ background: rgba(80,200,80,.12);   color: #50c850; border: 1px solid rgba(80,200,80,.2); }
+.cs-status-archived{ background: rgba(100,80,80,.12);   color: #9a7070; border: 1px solid rgba(100,80,80,.2); }
+
+/* ── Source trace ── */
+.cs-trace      { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; }
+.cs-trace-lbl  { font-size: .72rem; color: #7a7060; letter-spacing: .06em; }
+.cs-trace-chip { padding: 2px 8px; background: rgba(176,158,248,.08); border: 1px solid rgba(176,158,248,.15); border-radius: 12px; font-size: .72rem; color: #b09ef8; }
+
+/* ── Buttons ── */
+.cs-btn-primary   { padding: 9px 18px; background: rgba(232,184,75,.12); border: 1px solid rgba(232,184,75,.3); border-radius: 6px; color: #e8b84b; font-size: .8rem; letter-spacing: .06em; cursor: pointer; transition: background .2s; }
+.cs-btn-primary:hover { background: rgba(232,184,75,.2); }
+.cs-btn-secondary { padding: 9px 18px; background: transparent; border: 1px solid rgba(232,184,75,.2); border-radius: 6px; color: rgba(232,184,75,.6); font-size: .8rem; letter-spacing: .06em; cursor: pointer; }
+.cs-btn-cancel    { padding: 7px 14px; background: transparent; border: 1px solid rgba(255,255,255,.1); border-radius: 6px; color: #7a7060; font-size: .78rem; cursor: pointer; }
+.cs-btn-edit      { padding: 5px 12px; background: transparent; border: 1px solid rgba(176,158,248,.25); border-radius: 5px; color: #b09ef8; font-size: .75rem; cursor: pointer; }
+.cs-btn-edit:hover { background: rgba(176,158,248,.1); }
+.cs-btn-approve   { padding: 5px 12px; background: transparent; border: 1px solid rgba(80,200,80,.25); border-radius: 5px; color: #50c850; font-size: .75rem; cursor: pointer; }
+.cs-btn-approve:hover { background: rgba(80,200,80,.1); }
+.cs-btn-delete    { padding: 5px 12px; background: transparent; border: 1px solid rgba(220,80,80,.25); border-radius: 5px; color: #dc9090; font-size: .75rem; cursor: pointer; }
+.cs-btn-delete:hover { background: rgba(220,80,80,.1); }
+.cs-btn-save-gen  { padding: 5px 12px; background: rgba(232,184,75,.1); border: 1px solid rgba(232,184,75,.25); border-radius: 5px; color: #e8b84b; font-size: .75rem; cursor: pointer; margin-left: auto; }
+.cs-btn-save-gen:hover { background: rgba(232,184,75,.2); }
+
+/* ── Form ── */
+.cs-form { background: rgba(255,255,255,.03); border: 1px solid rgba(232,184,75,.2); border-radius: 10px; padding: 22px 24px; margin-bottom: 20px; }
+.cs-form-row { margin-bottom: 14px; }
+.cs-label { display: block; font-size: .78rem; letter-spacing: .08em; color: #b09ef8; text-transform: uppercase; margin-bottom: 5px; }
+.cs-input, .cs-textarea {
+  width: 100%; padding: 9px 14px; background: rgba(255,255,255,.04); border: 1px solid rgba(232,184,75,.2);
+  border-radius: 6px; color: #e8e0d4; font-size: .88rem; outline: none; box-sizing: border-box;
+}
+.cs-textarea { resize: vertical; font-family: 'EB Garamond', serif; }
+.cs-form-actions { display: flex; gap: 10px; margin-top: 18px; }
+
+/* ── Generate panel ── */
+.cs-generate-results { background: rgba(232,184,75,.04); border: 1px solid rgba(232,184,75,.15); border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+.cs-generate-header  { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-size: .85rem; color: #e8b84b; }
+.cs-generate-footer  { display: flex; gap: 10px; margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(232,184,75,.1); }
+.cs-gen-list         { display: flex; flex-direction: column; gap: 10px; }
+.cs-gen-item         { background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.07); border-radius: 8px; padding: 14px 16px; transition: opacity .3s; }
+.cs-gen-item-top     { display: flex; align-items: center; margin-bottom: 8px; }
+.cs-gen-title        { font-size: .9rem; color: #e8e0d4; margin-bottom: 6px; }
+.cs-gen-summary      { font-size: .8rem; color: #9a9080; line-height: 1.5; }
+.cs-generate-loading { color: #e8b84b; font-size: .88rem; letter-spacing: .06em; padding: 16px 0; }
+
+/* ── Calendar ── */
+.cs-cal-header  { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.cs-cal-nav     { display: flex; align-items: center; gap: 12px; }
+.cs-cal-title   { font-family: 'Cinzel', serif; font-size: .95rem; letter-spacing: .12em; color: #e8b84b; min-width: 200px; text-align: center; }
+.cs-cal-btn     { padding: 6px 14px; background: transparent; border: 1px solid rgba(232,184,75,.2); border-radius: 6px; color: #e8b84b; cursor: pointer; font-size: 1rem; }
+.cs-cal-views   { display: flex; gap: 8px; }
+.cs-view-btn    { padding: 6px 14px; background: transparent; border: 1px solid rgba(232,184,75,.2); border-radius: 6px; color: rgba(232,184,75,.5); font-size: .8rem; letter-spacing: .06em; cursor: pointer; }
+.cs-view-btn.active { background: rgba(232,184,75,.1); color: #e8b84b; border-color: rgba(232,184,75,.4); }
+.cs-cal-grid    { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.cs-cal-dow     { padding: 8px; text-align: center; font-size: .72rem; letter-spacing: .1em; color: #7a7060; text-transform: uppercase; }
+.cs-cal-day     { min-height: 80px; padding: 6px; background: rgba(255,255,255,.02); border: 1px solid rgba(255,255,255,.05); border-radius: 6px; }
+.cs-cal-today   { background: rgba(232,184,75,.07); border-color: rgba(232,184,75,.25); }
+.cs-cal-daynum  { font-size: .78rem; color: #7a7060; display: block; margin-bottom: 4px; }
+.cs-cal-empty   { background: transparent; border-color: transparent; }
+.cs-cal-item    { font-size: .72rem; padding: 3px 6px; border-radius: 4px; margin-bottom: 3px; color: rgba(255,255,255,.75); background: rgba(255,255,255,.06); cursor: default; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cs-cal-empty-msg { margin-top: 20px; }
+.cs-week-grid   { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+.cs-week-col    { background: rgba(255,255,255,.02); border: 1px solid rgba(255,255,255,.05); border-radius: 8px; padding: 10px; min-height: 140px; }
+.cs-week-hdr    { font-size: .75rem; color: #7a7060; letter-spacing: .06em; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,.06); }
+.cs-week-empty  { color: #4a4040; font-size: .78rem; text-align: center; margin-top: 20px; }
+
+/* ── Sources ── */
+.cs-sources-header { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+.cs-sources-lbl    { font-size: .85rem; color: #9a9080; letter-spacing: .06em; }
+.cs-sources-grid   { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.cs-source-col     { }
+.cs-source-hdr     { font-family: 'Cinzel', serif; font-size: .8rem; letter-spacing: .12em; color: #e8b84b; text-transform: uppercase; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid rgba(232,184,75,.15); }
+.cs-source-card    { background: rgba(255,255,255,.02); border: 1px solid rgba(255,255,255,.06); border-radius: 8px; padding: 14px 16px; margin-bottom: 10px; }
+.cs-source-title   { font-size: .9rem; color: #e8e0d4; margin-bottom: 4px; }
+.cs-source-meta    { font-size: .75rem; color: #b09ef8; letter-spacing: .06em; margin-bottom: 4px; }
+.cs-source-summary { font-size: .8rem; color: #9a9080; line-height: 1.5; margin-bottom: 6px; }
+.cs-source-tags    { display: flex; flex-wrap: wrap; gap: 4px; }
+.cs-tag            { padding: 2px 8px; background: rgba(232,184,75,.06); border: 1px solid rgba(232,184,75,.12); border-radius: 10px; font-size: .7rem; color: #a09070; }
+
+/* ── Misc ── */
+.cs-warn  { padding: 12px 16px; background: rgba(255,180,0,.07); border: 1px solid rgba(255,180,0,.2); border-radius: 8px; color: #e8a840; font-size: .84rem; margin-bottom: 20px; }
+.cs-error { padding: 20px; color: #dc9090; font-size: .88rem; text-align: center; }
+.cs-empty { padding: 40px 20px; text-align: center; color: #7a7060; font-size: .88rem; letter-spacing: .05em; }
+.cs-loading { padding: 8px 0; }
+
+@media (max-width: 900px) {
+  .cs-kpi-row      { grid-template-columns: repeat(3, 1fr); }
+  .cs-dash-grid    { grid-template-columns: 1fr; }
+  .cs-sources-grid { grid-template-columns: 1fr; }
+  .cs-cal-grid     { grid-template-columns: repeat(7, 1fr); }
+  .cs-week-grid    { grid-template-columns: repeat(4, 1fr); }
+}
+@media (max-width: 640px) {
+  .cs-kpi-row  { grid-template-columns: repeat(2, 1fr); }
+  .cs-cal-grid { font-size: .65rem; }
+  .cs-week-grid { grid-template-columns: repeat(2, 1fr); }
+}
 </style>
 </head>
 <body>
@@ -2112,6 +2301,9 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
       <div class="ck-nav-section">Knowledge</div>
       <button class="tab ck-nav-item" onclick="showTab('kh')">
         <span class="nav-icon">◈</span><span class="nav-text">KNOWLEDGE HUB</span>
+      </button>
+      <button class="tab ck-nav-item" onclick="showTab('cs')">
+        <span class="nav-icon">✦</span><span class="nav-text">CONTENT STUDIO</span>
       </button>
 
       <div class="ck-nav-divider"></div>
@@ -2495,6 +2687,9 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
 
   <!-- KNOWLEDGE HUB TAB -->
   <div class="tab-content" id="tab-kh"></div>
+
+  <!-- CONTENT STUDIO TAB -->
+  <div class="tab-content" id="tab-cs"></div>
 
 
   <!-- BOOKING TAB -->
@@ -3137,6 +3332,7 @@ function showTab(name) {
   if (name === 'operations')  { try { renderOperationsCenter(); } catch(e){ console.error('renderOperationsCenter', e); } }
   if (name === 'followups')   { try { loadFollowUps(); } catch(e){ console.error('loadFollowUps', e); } }
   if (name === 'kh')             { try { khInit(); } catch(e){ console.error('khInit', e); } }
+  if (name === 'cs')             { try { csInit(); } catch(e){ console.error('csInit', e); } }
   if (name === 'financial')      { try { fcInit(); } catch(e){ console.error('fcInit', e); } }
   if (name === 'communications') { try { cmInit(); } catch(e){ console.error('cmInit', e); } }
 }
@@ -10014,6 +10210,7 @@ purgeTestEntries();
 <script src="sessions-module.js"></script>
 <script src="financial-module.js"></script>
 <script src="kh-module.js"></script>
+<script src="cs-module.js"></script>
 <script src="communications-module.js"></script>
 <script src="pin-lock.js"></script>
 </body>
