@@ -698,7 +698,8 @@ async function recordPayment(sb, body, auth, ip) {
   // ── Invoice: update amount_paid and status ─────────────────────────────
   let invoice = null;
   if (body.invoice_id) {
-    const { data: inv } = await sb.from('invoices').select('*').eq('id', body.invoice_id).single().catch(() => ({ data: null }));
+    let inv = null;
+    try { const { data } = await sb.from('invoices').select('*').eq('id', body.invoice_id).single(); inv = data; } catch {}
     if (inv) {
       const newPaid   = Number(inv.amount_paid || 0) + amount;
       const total     = Number(inv.total || 0);
@@ -752,7 +753,7 @@ async function generateAlerts(sb, auth, ip) {
       .lt('expiration_date', now.toISOString().slice(0, 10))
   );
   for (const pkg of expired) {
-    await sb.from('packages').update({ status: 'expired' }).eq('id', pkg.id).catch(() => {});
+    try { await sb.from('packages').update({ status: 'expired' }).eq('id', pkg.id); } catch {}
     await upsertFinancialAlert(sb, {
       client_id:          pkg.client_id,
       client_name:        pkg.client_name,
@@ -774,7 +775,7 @@ async function generateAlerts(sb, auth, ip) {
       .lt('due_date', now.toISOString().slice(0, 10))
   );
   for (const inv of overdueInvs) {
-    await sb.from('invoices').update({ status: 'overdue' }).eq('id', inv.id).catch(() => {});
+    try { await sb.from('invoices').update({ status: 'overdue' }).eq('id', inv.id); } catch {}
     const balance = Math.max(0, Number(inv.total || 0) - Number(inv.amount_paid || 0));
     await upsertFinancialAlert(sb, {
       client_id:         inv.client_id,
