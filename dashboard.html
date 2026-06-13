@@ -1490,6 +1490,106 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
 }
 </style>
 
+<style>
+/* ── COMMUNICATIONS MODULE ──────────────────────────────────── */
+#cmWrap { padding: 32px 28px 48px; max-width: 1280px; margin: 0 auto; }
+
+.cm-subnav {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid rgba(232,184,75,.4);
+  margin-bottom: 32px;
+}
+.cm-sub {
+  font-family: 'Cinzel', serif;
+  font-size: 13px;
+  letter-spacing: .25em;
+  text-transform: uppercase;
+  padding: 14px 24px;
+  cursor: pointer;
+  color: #e8b84b;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  transition: all .2s;
+}
+.cm-sub:hover { color: #fff; }
+.cm-sub.active { color: #fff; border-bottom-color: #e8b84b; }
+
+.cm-section-title {
+  font-family: 'Cinzel', serif;
+  font-size: 16px;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  color: #e8b84b;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(232,184,75,.25);
+}
+
+/* KPI row */
+.cm-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1px;
+  background: rgba(232,184,75,.15);
+  margin-bottom: 32px;
+}
+.cm-kpi {
+  background: #09050f;
+  padding: 24px 20px;
+  text-align: center;
+}
+.cm-kpi-label {
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  color: rgba(232,184,75,.55);
+  margin-bottom: 10px;
+}
+.cm-kpi-val {
+  font-family: 'Cinzel', serif;
+  font-size: 42px;
+  font-weight: 700;
+  color: #e8b84b;
+  line-height: 1;
+}
+
+/* Compose form */
+.cm-field { margin-bottom: 20px; }
+.cm-lbl {
+  font-family: 'Cinzel', serif;
+  font-size: 12px;
+  letter-spacing: .28em;
+  text-transform: uppercase;
+  color: #e8b84b;
+  display: block;
+  margin-bottom: 9px;
+}
+.cm-input {
+  width: 100%;
+  background: #04020e;
+  border: 1px solid rgba(232,184,75,.2);
+  color: #f0ecff;
+  font-family: 'EB Garamond', serif;
+  font-size: 17px;
+  padding: 12px 16px;
+  border-radius: 2px;
+  box-sizing: border-box;
+  transition: border-color .2s;
+  resize: vertical;
+}
+.cm-input:focus { outline: none; border-color: rgba(232,184,75,.6); background: #0d0820; }
+.cm-input option { background: #0a0612; }
+
+@media (max-width: 800px) {
+  #cmWrap { padding: 20px 14px 40px; }
+  .cm-kpi-row { grid-template-columns: repeat(2, 1fr); }
+  .cm-sub { padding: 12px 14px; font-size: 10px; }
+}
+</style>
+
 <!-- ── KNOWLEDGE HUB STYLES ────────────────────────────────── -->
 <style>
 /* ── KH shell ── */
@@ -1861,6 +1961,9 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
       <button class="tab ck-nav-item" onclick="showTab('financial')">
         <span class="nav-icon">◇</span><span class="nav-text">Financial Center</span>
       </button>
+      <button class="tab ck-nav-item" onclick="showTab('communications')">
+        <span class="nav-icon">✉</span><span class="nav-text">Communications</span>
+      </button>
 
       <div class="ck-nav-divider"></div>
       <div class="ck-nav-section">Knowledge</div>
@@ -2222,6 +2325,26 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
       <div id="fc-ledger"    class="fc-section" style="display:none"></div>
       <div id="fc-invoices"  class="fc-section" style="display:none"></div>
       <div id="fc-revenue"   class="fc-section" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- COMMUNICATIONS TAB -->
+  <div class="tab-content" id="tab-communications">
+    <div id="cmWrap" style="padding:32px 28px 48px;max-width:1280px;margin:0 auto">
+
+      <!-- Sub-nav -->
+      <div class="cm-subnav">
+        <button class="cm-sub active" data-section="overview"  onclick="cmSection('overview')">Overview</button>
+        <button class="cm-sub"        data-section="log"       onclick="cmSection('log')">Log</button>
+        <button class="cm-sub"        data-section="templates" onclick="cmSection('templates')">Templates</button>
+        <button class="cm-sub"        data-section="send"      onclick="cmSection('send')">Compose</button>
+      </div>
+
+      <!-- Section containers -->
+      <div id="cm-overview"  class="cm-section"></div>
+      <div id="cm-log"       class="cm-section" style="display:none"></div>
+      <div id="cm-templates" class="cm-section" style="display:none"></div>
+      <div id="cm-send"      class="cm-section" style="display:none"></div>
     </div>
   </div>
 
@@ -3108,8 +3231,9 @@ function showTab(name) {
   if (name === 'booking')     { try { renderCal(); renderUpcoming(); renderWaitlist(); updateCapacityStats(); renderCancellationLog(); renderBooking(); renderSyncLastRun(); } catch(e){} }
   if (name === 'operations')  { try { renderOperationsCenter(); } catch(e){ console.error('renderOperationsCenter', e); } }
   if (name === 'followups')   { try { loadFollowUps(); } catch(e){ console.error('loadFollowUps', e); } }
-  if (name === 'knowledge')  { try { khInit(); } catch(e){ console.error('khInit', e); } }
-  if (name === 'financial')  { try { fcInit(); } catch(e){ console.error('fcInit', e); } }
+  if (name === 'knowledge')      { try { khInit(); } catch(e){ console.error('khInit', e); } }
+  if (name === 'financial')      { try { fcInit(); } catch(e){ console.error('fcInit', e); } }
+  if (name === 'communications') { try { cmInit(); } catch(e){ console.error('cmInit', e); } }
 }
 
 function approveReview(id) {
@@ -10452,6 +10576,7 @@ purgeTestEntries();
 <script src="clients-module.js"></script>
 <script src="sessions-module.js"></script>
 <script src="financial-module.js"></script>
+<script src="communications-module.js"></script>
 <script src="pin-lock.js"></script>
 </body>
 </html>

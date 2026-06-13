@@ -717,6 +717,11 @@
         '</div>';
 
       // ══════════════════════════════════════════════════════════════════
+      // SECTION 4c — COMMUNICATION HISTORY (from Communications module)
+      // ══════════════════════════════════════════════════════════════════
+      var commHtml = '<div id="crmCommWrap" style="margin-bottom:8px"></div>';
+
+      // ══════════════════════════════════════════════════════════════════
       // SECTIONS 5–7 — RECS / REFS / PLANS (inner content only)
       // ══════════════════════════════════════════════════════════════════
       var recsHtml  = caseSection('🌿', 'Recommendations & Products', buildRecsSection(recs, id),   '#22c98a');
@@ -802,6 +807,7 @@
         '<div id="crmPractitionerTimelineWrap">'+ _timelineLoadingHtml()        + '</div>' +
         sessionDocHtml +
         financialHtml +
+        commHtml +
         recsHtml +
         refsHtml +
         plansHtml +
@@ -814,11 +820,14 @@
             'onclick="crmCloseProfileModal();crmOpenTimeline(\'' + esc(id) + '\')">⏱ Full Timeline</button>' +
         '</div>';
 
-      // Fire all three AI sections + financial summary in parallel
+      // Fire all async sections in parallel
       _loadAttentionFlags(id, _prepBriefPayload);
       _loadPrepBrief(id, _prepBriefPayload);
       _loadPractitionerTimeline(id, _prepBriefPayload);
       _loadClientFinancialSummary(id, cl.full_name);
+      if (typeof window.cmLoadClientHistory === 'function') {
+        window.cmLoadClientHistory(id, cl.full_name, cl.email);
+      }
 
     } catch (e) {
       body.innerHTML = errorHtml('Failed to load case file: ' + e.message);
