@@ -1231,6 +1231,11 @@ async function run() {
       'Soft-deleted note absent from list',
       'RLS blocks anon direct Supabase access',
       'Research tab renders in dashboard',
+      'Pattern Library endpoint returns data',
+      'Tag counts are numeric',
+      'Search filters Pattern Library',
+      'Insights endpoint returns data',
+      'Analytics endpoint returns KPIs',
       'No JS console errors in Research section',
     ].forEach(n => record(RN + ' ' + n, 'SKIP', schemaGateRN));
   } else {
@@ -1364,6 +1369,57 @@ async function run() {
     }, { timeout: TIMEOUT });
     return { detail: 'Research tab rendered without errors' };
   }, page);
+
+  // ── RN-12a  Pattern Library endpoint returns data ────────────────────────
+  await check(RN + ' Pattern Library endpoint returns data', async () => {
+    const r = await finReq('GET', '/.netlify/functions/research?section=pattern_library');
+    if (r.s === 404) return { status: 'SKIP', detail: 'research function not found' };
+    if (r.s !== 200) throw new Error(classifyFinError(r.s, r.b));
+    if (!Array.isArray(r.b.patterns)) throw new Error('Response missing patterns array');
+    return { detail: 'Pattern Library returned ' + r.b.patterns.length + ' tag(s)' };
+  });
+
+  // ── RN-12b  Tag counts are numeric ───────────────────────────────────────
+  await check(RN + ' Tag counts are numeric', async () => {
+    const r = await finReq('GET', '/.netlify/functions/research?section=pattern_library');
+    if (r.s === 404) return { status: 'SKIP', detail: 'research function not found' };
+    if (r.s !== 200) throw new Error(classifyFinError(r.s, r.b));
+    const patterns = r.b.patterns || [];
+    if (patterns.length === 0) return { status: 'SKIP', detail: 'No tagged notes exist yet' };
+    const bad = patterns.filter(p => typeof p.count !== 'number');
+    if (bad.length > 0) throw new Error('Non-numeric count on tags: ' + bad.map(p => p.tag).join(', '));
+    return { detail: 'All ' + patterns.length + ' tag count(s) are numeric' };
+  });
+
+  // ── RN-12c  Search filters Pattern Library ────────────────────────────────
+  await check(RN + ' Search filters Pattern Library', async () => {
+    const r = await finReq('GET', '/.netlify/functions/research?section=pattern_library&search=ZZZNOMATCH');
+    if (r.s === 404) return { status: 'SKIP', detail: 'research function not found' };
+    if (r.s !== 200) throw new Error(classifyFinError(r.s, r.b));
+    if (!Array.isArray(r.b.patterns)) throw new Error('Response missing patterns array');
+    if (r.b.patterns.length !== 0) throw new Error("Search 'ZZZNOMATCH' returned " + r.b.patterns.length + " result(s) — expected 0");
+    return { detail: 'Search correctly returned 0 results for non-matching query' };
+  });
+
+  // ── RN-12d  Insights endpoint returns data ────────────────────────────────
+  await check(RN + ' Insights endpoint returns data', async () => {
+    const r = await finReq('GET', '/.netlify/functions/research?section=insights');
+    if (r.s === 404) return { status: 'SKIP', detail: 'research function not found' };
+    if (r.s !== 200) throw new Error(classifyFinError(r.s, r.b));
+    if (!Array.isArray(r.b.topTags)) throw new Error('Response missing topTags array');
+    return { detail: 'Insights: topTags(' + r.b.topTags.length + '), sharedTags(' + (r.b.sharedTags||[]).length + '), modalities(' + (r.b.modalities||[]).length + ')' };
+  });
+
+  // ── RN-12e  Analytics endpoint returns KPIs ───────────────────────────────
+  await check(RN + ' Analytics endpoint returns KPIs', async () => {
+    const r = await finReq('GET', '/.netlify/functions/research?section=analytics');
+    if (r.s === 404) return { status: 'SKIP', detail: 'research function not found' };
+    if (r.s !== 200) throw new Error(classifyFinError(r.s, r.b));
+    const required = ['totalNotes', 'activeTags', 'notesThisMonth', 'clientsWithNotes', 'topTags'];
+    const missing = required.filter(k => r.b[k] === undefined);
+    if (missing.length > 0) throw new Error('Missing KPI fields: ' + missing.join(', '));
+    return { detail: 'Analytics: ' + r.b.totalNotes + ' notes, ' + r.b.activeTags + ' active tags, ' + r.b.notesThisMonth + ' this month' };
+  });
 
   // ── RN-12  No console errors from research section ───────────────────────
   await check(RN + ' No JS console errors in Research section', async () => {

@@ -1763,6 +1763,51 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
 .rn-btn-delete:hover { background: rgba(220,80,80,.1); }
 .rn-empty       { padding: 40px 20px; text-align: center; color: #7a7060; font-size: .88rem; letter-spacing: .05em; }
 .rn-error       { padding: 20px; color: #dc9090; font-size: .88rem; text-align: center; }
+
+/* ── Research sub-nav ── */
+.rn-subnav      { display: flex; gap: 0; border-bottom: 1px solid rgba(232,184,75,.2); margin-bottom: 24px; overflow-x: auto; }
+.rn-snav        { font-family: Cinzel, serif; font-size: 11px; letter-spacing: .32em; text-transform: uppercase; padding: 13px 20px; cursor: pointer; color: rgba(232,184,75,.5); border-bottom: 2px solid transparent; background: none; border-top: none; border-left: none; border-right: none; white-space: nowrap; transition: color .2s, border-color .2s; }
+.rn-snav:hover  { color: rgba(232,184,75,.8); }
+.rn-snav.active { color: #e8b84b; border-bottom-color: #e8b84b; }
+
+/* ── Research KPI bar ── */
+.rn-kpi-bar     { margin-bottom: 4px; }
+.rn-kpi-row     { display: flex; gap: 12px; flex-wrap: wrap; }
+.rn-kpi         { flex: 1 1 120px; background: rgba(255,255,255,.03); border: 1px solid rgba(232,184,75,.12); border-radius: 8px; padding: 12px 16px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.rn-kpi-val     { font-family: Cinzel, serif; font-size: 1.2rem; color: #e8b84b; letter-spacing: .06em; }
+.rn-kpi-label   { font-size: .7rem; color: #7a7060; letter-spacing: .08em; text-transform: uppercase; text-align: center; }
+
+/* ── Notes section toolbar ── */
+.rn-notes-wrap   { }
+.rn-notes-toolbar { display: flex; gap: 12px; align-items: center; margin-bottom: 20px; }
+.rn-notes-toolbar .rn-search { flex: 1; }
+
+/* ── Pattern Library ── */
+.rn-pl-wrap      { }
+.rn-pl-toolbar   { margin-bottom: 16px; }
+.rn-pl-meta      { font-size: .78rem; color: #7a7060; letter-spacing: .05em; margin-bottom: 16px; }
+.rn-pl-grid      { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+.rn-pl-card      { background: rgba(255,255,255,.03); border: 1px solid rgba(176,158,248,.15); border-radius: 10px; padding: 16px 18px; }
+.rn-pl-tag-row   { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+.rn-pl-tag       { font-family: Cinzel, serif; font-size: .82rem; color: #b09ef8; letter-spacing: .06em; }
+.rn-pl-count     { font-size: .72rem; color: #7a7060; letter-spacing: .04em; }
+.rn-pl-notes     { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.rn-pl-note      { border-top: 1px solid rgba(255,255,255,.06); padding-top: 8px; }
+.rn-pl-note-title{ display: block; font-size: .78rem; color: #e8e0d4; letter-spacing: .03em; margin-bottom: 3px; }
+.rn-pl-note-excerpt { display: block; font-size: .72rem; color: #7a7060; line-height: 1.45; }
+
+/* ── Insights Feed ── */
+.rn-insights-wrap { }
+.rn-insights-meta { font-size: .78rem; color: #7a7060; letter-spacing: .05em; margin-bottom: 20px; }
+.rn-insights-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+.rn-insights-card { background: rgba(255,255,255,.03); border: 1px solid rgba(232,184,75,.12); border-radius: 10px; padding: 18px 20px; }
+.rn-insights-heading { font-family: Cinzel, serif; font-size: .82rem; letter-spacing: .1em; color: #e8b84b; text-transform: uppercase; margin: 0 0 14px; font-weight: normal; }
+.rn-bar-row     { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.rn-bar-label   { font-size: .76rem; color: #c8c0b4; letter-spacing: .04em; width: 110px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rn-bar-track   { flex: 1; height: 6px; background: rgba(255,255,255,.06); border-radius: 3px; overflow: hidden; }
+.rn-bar-fill    { height: 100%; background: rgba(176,158,248,.5); border-radius: 3px; transition: width .3s; }
+.rn-bar-count   { font-size: .72rem; color: #7a7060; width: 24px; text-align: right; flex-shrink: 0; }
+
 .kh-wrap { padding: 0; }
 
 /* ── KH sub-nav ── */
@@ -2137,7 +2182,7 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
       <div class="ck-nav-divider"></div>
       <div class="ck-nav-section">Knowledge</div>
       <button class="tab ck-nav-item" onclick="showTab('research')">
-        <span class="nav-icon">✦</span><span class="nav-text">Research Notes</span>
+        <span class="nav-icon">✦</span><span class="nav-text">Research</span>
       </button>
       <button class="tab ck-nav-item" onclick="showTab('knowledge')">
         <span class="nav-icon">◈</span><span class="nav-text">Knowledge Hub</span>
