@@ -4906,8 +4906,9 @@ function renderBooking() {
       noshow:     { icon: '!', label: 'No-Show Clients',     sev: 'red',   items: [] },
       payment:    { icon: '$', label: 'Payment Unclear',     sev: 'amber', items: [] },
       followup:   { icon: '→', label: 'Follow-Up Due',       sev: 'amber', items: [] },
-      waiver:     { icon: '📋', label: 'Waiver / Intake Missing', sev: 'gold', items: [] },
-      contact:    { icon: '👤', label: 'No Contact Info',    sev: 'gold',  items: [] },
+      waiver:     { icon: '📋', label: 'Waiver Missing',        sev: 'gold', items: [] },
+      fullintake: { icon: '📝', label: 'Full Intake Pending',   sev: 'gold', items: [] },
+      contact:    { icon: '👤', label: 'No Contact Info',       sev: 'gold', items: [] },
     };
 
     // ── Repeated reschedulers (3+) ──
@@ -4987,18 +4988,40 @@ function renderBooking() {
     allSessions.forEach(s => {
       const sessMs = new Date(s.date + 'T12:00:00').getTime();
       const ageDays = Math.floor((todayMs - sessMs) / dayMs);
+      const clientKey = s.client.toLowerCase().trim().replace(/\s+/g,'_');
       const k = 'waiver_' + crmKey(s.client) + '_' + s.date;
-      // Auto-resolve if >60 days old
       if (ageDays > 60) {
-        if (!resolved[k]) resolveIssue(k, 'auto-expired'); // silent auto-resolve
+        if (!resolved[k]) resolveIssue(k, 'auto-expired');
         return;
       }
-      const intakeKey = 'rea_intake_name_' + s.client.toLowerCase().trim().replace(/\s+/g,'_');
-      if (!localStorage.getItem(intakeKey) && notResolved(k)) {
+      // Check new rea_waiver_* key first; fall back to legacy rea_intake_name_*
+      const waiverSigned = !!localStorage.getItem('rea_waiver_' + clientKey)
+                        || !!localStorage.getItem('rea_intake_name_' + clientKey);
+      if (!waiverSigned && notResolved(k)) {
         groups.waiver.items.push({
           key: k, client: s.client, date: s.date,
-          text: `${s.client} — waiver / intake missing`,
-          sub: `Session: ${s.date}`,
+          text: `${s.client} — waiver not signed`,
+          sub: `Session: ${s.date} · Send link: /waiver-esign`,
+          actions: ['resolve','dismiss']
+        });
+      }
+    });
+
+    // ── Full Intake pending — waiver signed but full intake not submitted ──
+    allSessions.forEach(s => {
+      const sessMs = new Date(s.date + 'T12:00:00').getTime();
+      const ageDays = Math.floor((todayMs - sessMs) / dayMs);
+      if (ageDays > 60) return; // only flag upcoming/recent sessions
+      const clientKey = s.client.toLowerCase().trim().replace(/\s+/g,'_');
+      const waiverSigned   = !!localStorage.getItem('rea_waiver_' + clientKey)
+                          || !!localStorage.getItem('rea_intake_name_' + clientKey);
+      const fullIntakeDone = !!localStorage.getItem('rea_fullintake_' + clientKey);
+      const k = 'fullintake_' + crmKey(s.client) + '_' + s.date;
+      if (waiverSigned && !fullIntakeDone && notResolved(k)) {
+        groups.fullintake.items.push({
+          key: k, client: s.client, date: s.date,
+          text: `${s.client} — full intake not yet submitted`,
+          sub: `Session: ${s.date} · Send link: /full-intake`,
           actions: ['resolve','dismiss']
         });
       }
@@ -5070,7 +5093,7 @@ function renderBooking() {
       </div>`;
     }
 
-    const ORDER = ['reschedule','cancel','noshow','payment','followup','waiver','contact'];
+    const ORDER = ['reschedule','cancel','noshow','payment','followup','waiver','fullintake','contact'];
     const groupsHtml = ORDER.map(k => renderGroup(k, groups[k])).join('');
     const totalActive = ORDER.reduce((s, k) => s + groups[k].items.length, 0);
     const resolvedCount = Object.keys(resolved).length;
@@ -6378,17 +6401,21 @@ function calSelectDay(dateStr, inMonth) {
 // ── CLIENT COMPLIANCE CHECK ───────────────────────────────────
 function getClientCompliance(clientName) {
   var key = crmKey(clientName);
-  var intakeDone = false, waiverDone = false, contactDone = false, verified = false;
+  var assessmentDone = false, waiverDone = false, fullIntakeDone = false, contactDone = false, verified = false;
   try {
-    intakeDone = !!localStorage.getItem('rea_intake_name_' + key);
-    waiverDone = !!localStorage.getItem('rea_waiver_' + key) || intakeDone;
+    assessmentDone = !!localStorage.getItem('rea_assessment_' + key);
+    // Waiver: check new rea_waiver_* key; fall back to legacy rea_intake_name_* (backward compat)
+    waiverDone     = !!localStorage.getItem('rea_waiver_' + key)
+                  || !!localStorage.getItem('rea_intake_name_' + key);
+    fullIntakeDone = !!localStorage.getItem('rea_fullintake_' + key);
   } catch(e) {}
   var crec = getCRMClient ? getCRMClient(clientName) : null;
   if (crec && crec.contactInfo) {
     contactDone = !!(crec.contactInfo.email || crec.contactInfo.phone);
     verified    = !!crec.contactInfo.confirmedByDaron;
   }
-  return { intake: intakeDone, waiver: waiverDone, contact: contactDone, verified: verified };
+  // Legacy: if old rea_intake_name_* exists, treat that as waiver (existing clients unaffected)
+  return { assessment: assessmentDone, waiver: waiverDone, fullIntake: fullIntakeDone, contact: contactDone, verified: verified };
 }
 
 function buildComplianceBadges(clientName, compact) {
@@ -6397,7 +6424,7 @@ function buildComplianceBadges(clientName, compact) {
     var col = ok ? '#22c98a' : (warn ? '#e8b84b' : '#ee7070');
     var icon = ok ? '✓' : '✕';
     if (compact) {
-      return '<span title="' + label + ': ' + (ok?'Complete':'Missing') + '" style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:' + col + '18;border:1px solid ' + col + '55;font-size:9px;color:' + col + ';margin-left:3px">' + icon + '</span>';
+      return '<span title="' + label + ': ' + (ok ? 'Complete' : 'Missing') + '" style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:' + col + '18;border:1px solid ' + col + '55;font-size:9px;color:' + col + ';margin-left:3px">' + icon + '</span>';
     }
     return '<div style="display:flex;align-items:center;gap:6px;padding:7px 12px;background:' + col + '0a;border:1px solid ' + col + '22;border-radius:2px">'
       + '<span style="font-size:11px;color:' + col + '">' + icon + '</span>'
@@ -6405,11 +6432,16 @@ function buildComplianceBadges(clientName, compact) {
       + '<div style="font-size:11px;color:' + col + '99">' + (ok ? 'Complete' : 'Missing') + '</div></div></div>';
   }
   if (compact) {
-    return chip('Waiver', c.waiver) + chip('Intake', c.intake) + chip('Contact Info', c.contact) + chip('Verified', c.verified);
+    return chip('Assessment', c.assessment)
+      + chip('Waiver', c.waiver)
+      + chip('Full Intake', c.fullIntake)
+      + chip('Contact Info', c.contact)
+      + chip('Verified', c.verified);
   }
-  return '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px">'
-    + chip('Waiver', c.waiver)
-    + chip('Intake Form', c.intake)
+  return '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:14px">'
+    + chip('Assessment', c.assessment)
+    + chip('Waiver Signed', c.waiver)
+    + chip('Full Intake', c.fullIntake)
     + chip('Contact Info', c.contact)
     + chip('Verified by Daron', c.verified)
     + '</div>';

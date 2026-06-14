@@ -645,7 +645,7 @@ footer a:hover,footer a:focus-visible{color:#fff0b8 !important;border-bottom-col
         <li><a href='/training'>Level Three - Advanced</a></li>
       </ul>
     </li>
-    <li><a href='/waiver-esign' style='color:#e8b84bdd'>Sign Waiver</a></li>
+    <li><a href='/assess' style='color:#e8b84bdd'>Get Started</a></li>
   </ul>
   <a href="#contact" class="nav-book">Book Session</a>
 </nav>
@@ -2940,15 +2940,21 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&modal.clas
 <!-- ═══ ASSESS ═══ -->
 <section class="section sec-teal centered" id="assess">
   <div class="assess-wrap reveal">
-    <span class="sec-label">Your Intake</span>
+    <span class="sec-label">Begin Your Journey</span>
     <h2 class="sec-title">What Are You Carrying?</h2>
-    <p class="sec-body">Answer honestly. This helps Daron understand what you're carrying before your first session. Your responses feed directly into your treatment plan.</p>
+    <p class="sec-body">Start with a short screening so Daron understands what you need. From there you'll sign the consent agreement, book your session, and complete a full intake before your appointment.</p>
 
     <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:20px">
-      <a class='btn-gold' href='/waiver-esign'>Start Full Assessment →</a>
+      <a class='btn-gold' href='/assess'>Start Quick Assessment →</a>
       <a href="#faq" class="btn-outline" onclick="document.getElementById('faq').scrollIntoView({behavior:'smooth'});return false;">Learn How It Works</a>
     </div>
-    <p style="font-family:'EB Garamond',serif;font-size:15px;font-style:italic;color:rgba(180,170,200,.5);line-height:1.7">Complete your intake form and consent before your first session. Takes about 10 minutes.</p>
+    <div style="display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:16px;font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:rgba(180,170,200,.45);text-transform:uppercase">
+      <span>Assessment</span><span style="color:rgba(232,184,75,.25)">→</span>
+      <span>Waiver</span><span style="color:rgba(232,184,75,.25)">→</span>
+      <span>Booking</span><span style="color:rgba(232,184,75,.25)">→</span>
+      <span>Full Intake</span>
+    </div>
+    <p style="font-family:'EB Garamond',serif;font-size:15px;font-style:italic;color:rgba(180,170,200,.5);line-height:1.7">The assessment takes about 5 minutes. Each step is clearly separate.</p>
   </div>
 </section>
 
@@ -3689,7 +3695,7 @@ document.querySelectorAll('.faq2-trigger').forEach(function(btn){
     <span style="color:#e8b84b33;margin:0 10px">·</span>
     <a href="#refund-policy" style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;font-size:11px;color:#ffd977;text-decoration:none;text-transform:uppercase;transition:color .25s;border-bottom:1px solid rgba(255,217,119,.4);text-shadow:0 0 18px rgba(232,184,75,.3);" onmouseover="this.style.color='#fff0b8'" onmouseout="this.style.color='#ffd977'">Cancellation Policy</a>
     <span style="color:#e8b84b33;margin:0 10px">·</span>
-    <a href='/waiver-esign' onmouseout='this.style.color=\'#ffd977\'' onmouseover='this.style.color=\'#fff0b8\'' style='font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:.35em;font-size:11px;color:#ffd977;text-decoration:none;text-transform:uppercase;transition:color .25s;border-bottom:1px solid rgba(255,217,119,.4);text-shadow:0 0 18px rgba(232,184,75,.3);'>Sign Waiver</a>
+    <a href='/assess' onmouseout='this.style.color=\'#ffd977\'' onmouseover='this.style.color=\'#fff0b8\'' style='font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:.35em;font-size:11px;color:#ffd977;text-decoration:none;text-transform:uppercase;transition:color .25s;border-bottom:1px solid rgba(255,217,119,.4);text-shadow:0 0 18px rgba(232,184,75,.3);'>Get Started</a>
   </p>
 </footer>
 

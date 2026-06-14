@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quick Assessment — Royal Energy Alchemy</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--gold:#e8b84b;--gold-light:#f8e090;--deep:#04020e;--text:#f0ecff}
+body{background:#0a0612;color:#f0ecff;font-family:'EB Garamond',serif;line-height:1.7}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:18px 48px;background:rgba(0,4,10,.88);backdrop-filter:blur(14px);border-bottom:1px solid #e8b84b12}
+.nav-brand{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;color:#e8b84bb3;text-transform:uppercase;text-decoration:none}
+.nav-back{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.3em;color:#d8d4f073;text-transform:uppercase;text-decoration:none;transition:color .25s}
+.nav-back:hover{color:var(--gold)}
+
+/* ── Flow indicator ── */
+.flow-bar{display:flex;align-items:center;justify-content:center;gap:0;padding:14px 24px;background:#06030f;border-bottom:1px solid #e8b84b18;flex-wrap:wrap;gap:4px}
+.flow-step{display:flex;align-items:center;gap:8px;font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;text-transform:uppercase;padding:5px 14px;color:#e8b84b55}
+.flow-step.active{color:#e8b84b;border:1px solid #e8b84b55;background:#e8b84b0a}
+.flow-step.done{color:#22c98a88}
+.flow-arrow{color:#e8b84b22;font-size:12px;padding:0 2px}
+
+.wrap{max-width:760px;margin:0 auto;padding:120px 24px 64px}
+
+.header{text-align:center;margin-bottom:44px;padding-bottom:28px;border-bottom:1px solid rgba(232,184,75,.42)}
+.header .step-tag{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.5em;color:#e8b84b80;text-transform:uppercase;display:block;margin-bottom:12px}
+.header h1{font-family:'Cinzel',serif;font-size:clamp(22px,3vw,34px);font-weight:700;color:#fff;letter-spacing:.06em;margin-bottom:8px}
+.header p{font-family:'EB Garamond',serif;font-size:17px;font-style:italic;color:#d8d4f099;line-height:1.7}
+.time-tag{display:inline-block;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#22c98a;text-transform:uppercase;margin-top:12px;border:1px solid #22c98a44;padding:4px 16px}
+
+.sec{margin-bottom:28px;border:1px solid rgba(232,184,75,.32);background:rgba(8,6,22,0.88);box-shadow:0 18px 55px rgba(0,0,0,.24),inset 0 0 0 1px rgba(255,255,255,.02)}
+.sec-head{background:linear-gradient(90deg,rgba(42,31,16,.96),rgba(18,13,28,.96));padding:13px 20px;border-bottom:1px solid rgba(232,184,75,.25);display:flex;align-items:center;gap:10px}
+.sec-num{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#ffd977;text-transform:uppercase;text-shadow:0 0 18px rgba(232,184,75,.24)}
+.sec-title{font-family:'Cinzel',serif;font-size:15px;font-weight:600;color:#f0ecff;letter-spacing:.06em}
+.sec-body{padding:22px 20px}
+
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.form-row.single{grid-template-columns:1fr}
+.fg{display:flex;flex-direction:column;gap:6px}
+.fg label{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.34em;color:#ffd977;text-transform:uppercase}
+.fg input,.fg select,.fg textarea{background:rgba(14,10,36,.98);border:1px solid rgba(232,184,75,.42);padding:13px 14px;font-family:'EB Garamond',serif;font-size:17px;color:#fff;outline:none;transition:border-color .3s,background .3s;width:100%}
+.fg input::placeholder,.fg textarea::placeholder{color:rgba(246,241,255,.45)}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:#ffd977;background:rgba(18,12,42,.98);box-shadow:0 0 0 2px rgba(232,184,75,.12)}
+.fg textarea{min-height:100px;resize:vertical}
+.fg select option{background:#08051c;color:#fff}
+
+.radio-list{display:flex;flex-direction:column;gap:6px}
+.radio-list label{display:flex;align-items:center;gap:10px;font-size:16px;color:rgba(246,241,255,.88);cursor:pointer;padding:10px 14px;border:1px solid rgba(232,184,75,.2);transition:border-color .2s,background .2s}
+.radio-list label:hover{border-color:rgba(232,184,75,.48);background:rgba(232,184,75,.06)}
+.radio-list input[type=radio]{accent-color:var(--gold);width:16px;height:16px;flex-shrink:0}
+
+.urgency-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
+.urgency-opt{position:relative}
+.urgency-opt input{display:none}
+.urgency-opt label{display:block;text-align:center;padding:14px 10px;border:1px solid rgba(232,184,75,.28);font-family:'Cinzel',serif;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#e8b84b88;cursor:pointer;transition:all .2s;background:rgba(14,10,36,.72)}
+.urgency-opt input:checked + label{border-color:#ffd977;color:#160a00;background:linear-gradient(135deg,var(--gold-light),var(--gold))}
+.urgency-opt label:hover{border-color:#e8b84b66;color:#e8b84bcc}
+
+.notice{background:rgba(232,184,75,.08);border-left:3px solid rgba(255,217,119,.5);padding:14px 18px;margin-bottom:16px}
+.notice p{font-size:15px;color:rgba(246,241,255,.8);line-height:1.75}
+
+.req{color:#e8b84b99;margin-left:2px}
+.error-border{border-color:rgba(255,80,80,0.5) !important}
+
+.submit-btn{width:100%;font-family:'Cinzel',serif;font-size:12px;letter-spacing:.4em;color:#160a00;text-transform:uppercase;background:linear-gradient(135deg,var(--gold-light),var(--gold));padding:18px;cursor:pointer;border:none;transition:all .3s;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);font-weight:700;box-shadow:0 10px 30px rgba(232,184,75,.24);margin-top:8px}
+.submit-btn:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.submit-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+.next-step-note{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.28em;color:#e8b84b55;text-transform:uppercase;text-align:center;margin-top:14px}
+
+.success{display:none;text-align:center;padding:52px 28px;border:1px solid #e8b84b33;background:rgba(8,6,22,0.8);margin-top:20px}
+.success h2{font-family:'Cinzel',serif;font-size:26px;color:var(--gold);margin-bottom:16px;letter-spacing:.06em}
+.success p{font-size:17px;color:#d8d4f0b3;line-height:1.8;margin-bottom:10px}
+.success .next-btn{display:inline-block;font-family:'Cinzel',serif;font-size:12px;letter-spacing:.4em;color:#160a00;text-transform:uppercase;text-decoration:none;background:linear-gradient(135deg,var(--gold-light),var(--gold));padding:16px 40px;margin-top:24px;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);font-weight:700;transition:all .3s}
+.success .next-btn:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.success .skip-link{display:block;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#e8b84b55;text-transform:uppercase;text-decoration:none;margin-top:16px;transition:color .2s}
+.success .skip-link:hover{color:#e8b84b}
+
+footer{text-align:center;padding:36px 24px;border-top:1px solid rgba(232,184,75,.28);margin-top:56px;background:linear-gradient(180deg,rgba(4,2,14,.45),rgba(4,2,14,.96))}
+footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.22em;color:rgba(232,228,240,.68);text-transform:uppercase;line-height:2}
+
+@media(max-width:600px){
+  nav{padding:14px 20px}
+  .form-row{grid-template-columns:1fr}
+  .wrap{padding:80px 16px 48px}
+  .flow-step{font-size:9px;padding:4px 10px}
+}
+</style>
+<link rel="stylesheet" href="/site-nav.css">
+<script defer src="/site-nav.js"></script>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-brand">Royal Energy Alchemy</a>
+  <a href="/" class="nav-back">← Back to Site</a>
+</nav>
+
+<!-- ── Flow bar ── -->
+<div class="flow-bar" style="padding-top:72px">
+  <div class="flow-step active">Step 1 · Assessment</div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-step">Step 2 · Waiver</div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-step">Step 3 · Booking</div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-step">Step 4 · Full Intake</div>
+</div>
+
+<div class="wrap">
+
+  <div class="header">
+    <span class="step-tag">Step 1 of 4</span>
+    <h1>Quick Assessment</h1>
+    <p>A brief screening to help Daron understand what you need and confirm this is the right service for you. This is not the full intake — that comes after booking.</p>
+    <span class="time-tag">Approx. 5 minutes</span>
+  </div>
+
+  <form id="assessForm" novalidate>
+
+    <!-- SECTION 1 — Contact -->
+    <div class="sec">
+      <div class="sec-head"><span class="sec-num">Section 1</span><span class="sec-title">Your Contact Information</span></div>
+      <div class="sec-body">
+        <div class="form-row">
+          <div class="fg"><label>First &amp; Last Name <span class="req">*</span></label><input type="text" id="a-name" placeholder="Your full name" required/></div>
+          <div class="fg"><label>Email Address <span class="req">*</span></label><input type="email" id="a-email" placeholder="your@email.com" required/></div>
+        </div>
+        <div class="form-row single">
+          <div class="fg"><label>Phone Number <span class="req">*</span></label><input type="tel" id="a-phone" placeholder="(814) 000-0000" required/></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 2 — Service Interest -->
+    <div class="sec">
+      <div class="sec-head"><span class="sec-num">Section 2</span><span class="sec-title">Service Interest</span></div>
+      <div class="sec-body">
+        <div class="form-row single" style="margin-bottom:20px">
+          <div class="fg">
+            <label>Which service are you interested in? <span class="req">*</span></label>
+            <select id="a-service" required>
+              <option value="">Choose a service</option>
+              <option>Energetic Parasite Removal — $80</option>
+              <option>Lite Session (Clearing &amp; Energy Boost) — from $40</option>
+              <option>Energy Alchemy Exorcism — $100</option>
+              <option>Distance Energy Session — $70</option>
+              <option>House Cleansing &amp; Blessing — $60</option>
+              <option>Emergency Removal Session — $120</option>
+              <option>Spiritual Coaching — $50</option>
+              <option>Youth Sessions (Ages 9–14) — $20–$30</option>
+              <option value="unsure">Not sure — I need guidance on what I need</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row single">
+          <div class="fg">
+            <label>Are you booking for yourself or someone else? <span class="req">*</span></label>
+            <div class="radio-list" id="a-for-radios" style="margin-top:4px">
+              <label><input type="radio" name="a_for" value="self"><span>Myself</span></label>
+              <label><input type="radio" name="a_for" value="other"><span>Someone else (I am the booking party)</span></label>
+              <label><input type="radio" name="a_for" value="both"><span>A session that involves both of us</span></label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 3 — What's going on -->
+    <div class="sec">
+      <div class="sec-head"><span class="sec-num">Section 3</span><span class="sec-title">What's Going On</span></div>
+      <div class="sec-body">
+        <div class="notice"><p>This is a brief screening — not the full intake. Share the overview. You'll go deeper in your Full Intake after booking.</p></div>
+        <div class="form-row single" style="margin-bottom:20px">
+          <div class="fg">
+            <label>Primary concern or reason for seeking a session <span class="req">*</span></label>
+            <textarea id="a-concern" placeholder="What's happening? What are you carrying? A few sentences is fine." required></textarea>
+          </div>
+        </div>
+        <div class="form-row single" style="margin-bottom:20px">
+          <div class="fg">
+            <label>Urgency level <span class="req">*</span></label>
+            <div class="urgency-grid" id="a-urgency-grid" style="margin-top:6px">
+              <div class="urgency-opt"><input type="radio" name="a_urgency" id="urg1" value="crisis"><label for="urg1">Crisis — Need help now</label></div>
+              <div class="urgency-opt"><input type="radio" name="a_urgency" id="urg2" value="this_week"><label for="urg2">This week</label></div>
+              <div class="urgency-opt"><input type="radio" name="a_urgency" id="urg3" value="this_month"><label for="urg3">This month</label></div>
+              <div class="urgency-opt"><input type="radio" name="a_urgency" id="urg4" value="no_rush"><label for="urg4">No rush — exploring</label></div>
+            </div>
+          </div>
+        </div>
+        <div class="form-row single">
+          <div class="fg">
+            <label>Prior experience with energy work</label>
+            <div class="radio-list" style="margin-top:4px">
+              <label><input type="radio" name="a_prior" value="none"><span>None — this would be my first time</span></label>
+              <label><input type="radio" name="a_prior" value="some"><span>Some — I've had a session or two before</span></label>
+              <label><input type="radio" name="a_prior" value="regular"><span>Regular — I practice or receive energy work regularly</span></label>
+              <label><input type="radio" name="a_prior" value="returning"><span>I've worked with Daron before</span></label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button type="submit" class="submit-btn" id="assessSubmitBtn">Submit Assessment → Continue to Waiver</button>
+    <p class="next-step-note">Next: Sign the Waiver &amp; Consent Agreement</p>
+
+  </form>
+
+  <div class="success" id="assessSuccess">
+    <h2>✦ Assessment Received</h2>
+    <p>Thank you. Daron has your screening information.</p>
+    <p style="font-size:15px;color:#e8b84b80;font-family:'Cinzel',serif;letter-spacing:.2em;text-transform:uppercase;margin-top:4px">Next Step</p>
+    <p>Complete the Waiver &amp; Consent Agreement. This is a short legal document — it takes about 3 minutes.</p>
+    <a href="/waiver-esign" class="next-btn">Continue to Waiver →</a>
+    <a href="/" class="skip-link">Return home — I'll complete this later</a>
+  </div>
+
+</div>
+
+<footer>
+  <p>Royal Energy Alchemy LLC · Erie, Pennsylvania · royalenergyalchemy@gmail.com</p>
+  <p>Spiritual and energetic services are complementary wellness offerings and are not medical, legal, or psychological advice.</p>
+</footer>
+
+<script>
+document.getElementById('assessForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  var name    = document.getElementById('a-name').value.trim();
+  var email   = document.getElementById('a-email').value.trim();
+  var phone   = document.getElementById('a-phone').value.trim();
+  var service = document.getElementById('a-service').value;
+  var concern = document.getElementById('a-concern').value.trim();
+  var forWho  = (document.querySelector('input[name="a_for"]:checked') || {}).value || '';
+  var urgency = (document.querySelector('input[name="a_urgency"]:checked') || {}).value || '';
+  var prior   = (document.querySelector('input[name="a_prior"]:checked') || {}).value || '';
+
+  var valid = true;
+
+  function markRequired(id, ok) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    if (ok) el.classList.remove('error-border');
+    else { el.classList.add('error-border'); valid = false; }
+  }
+
+  markRequired('a-name', !!name);
+  markRequired('a-email', !!email);
+  markRequired('a-phone', !!phone);
+  markRequired('a-service', !!service);
+  markRequired('a-concern', !!concern);
+
+  if (!forWho) {
+    document.getElementById('a-for-radios').style.outline = '1px solid rgba(255,80,80,.4)';
+    valid = false;
+  } else {
+    document.getElementById('a-for-radios').style.outline = '';
+  }
+
+  if (!urgency) {
+    document.getElementById('a-urgency-grid').style.outline = '1px solid rgba(255,80,80,.4)';
+    valid = false;
+  } else {
+    document.getElementById('a-urgency-grid').style.outline = '';
+  }
+
+  if (!valid) {
+    alert('Please complete all required fields marked with *');
+    return;
+  }
+
+  var data = {
+    name: name,
+    email: email,
+    phone: phone,
+    service: service,
+    bookingFor: forWho,
+    primaryConcern: concern,
+    urgency: urgency,
+    priorExperience: prior,
+    timestamp: new Date().toISOString(),
+    type: 'quick_assessment'
+  };
+
+  var nameKey = 'rea_assessment_' + name.toLowerCase().trim().replace(/\s+/g, '_');
+  try {
+    localStorage.setItem(nameKey, JSON.stringify(data));
+    // Also store under email key for cross-referencing
+    if (email) localStorage.setItem('rea_assessment_email_' + email.toLowerCase().trim(), JSON.stringify(data));
+    // Pre-fill waiver with name/email so client doesn't re-enter
+    sessionStorage.setItem('rea_prefill_name', name);
+    sessionStorage.setItem('rea_prefill_email', email);
+    sessionStorage.setItem('rea_prefill_phone', phone);
+  } catch(err) { /* localStorage unavailable */ }
+
+  document.getElementById('assessForm').style.display = 'none';
+  document.getElementById('assessSuccess').style.display = 'block';
+  window.scrollTo(0, 0);
+});
+</script>
+</body>
+</html>

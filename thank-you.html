@@ -3,24 +3,46 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Thank You — Royal Energy Alchemy</title>
+<title>Session Requested — Royal Energy Alchemy</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400&family=Cinzel:wght@400;600&family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet"/>
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
-  body{background:#04020e;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:48px 24px;font-family:'EB Garamond',serif}
-  .gold{color:rgb(232,184,75)}
-  h1{font-family:'Cinzel Decorative',serif;font-size:clamp(24px,4vw,42px);color:#f0ecff;margin-bottom:20px;font-weight:400}
-  p{font-size:18px;font-style:italic;color:#d8d4f0a6;line-height:1.85;max-width:520px;margin-bottom:12px}
-  a{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;color:#000;text-transform:uppercase;text-decoration:none;background:linear-gradient(135deg,#f8e090,rgb(232,184,75));padding:14px 36px;display:inline-block;margin-top:28px;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%)}
+  body{background:#04020e;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:56px 24px;font-family:'EB Garamond',serif}
+  .eyebrow{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.5em;color:rgb(232,184,75);text-transform:uppercase;margin-bottom:20px;display:block}
+  h1{font-family:'Cinzel Decorative',serif;font-size:clamp(24px,4vw,40px);color:#f0ecff;margin-bottom:16px;font-weight:400}
+  .sub{font-size:18px;font-style:italic;color:#d8d4f0a6;line-height:1.85;max-width:520px;margin-bottom:10px}
+  .contact{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.3em;color:rgb(232,184,75);text-transform:uppercase;margin-top:4px;margin-bottom:36px}
+
+  /* Intake prompt card */
+  .intake-prompt{max-width:560px;width:100%;border:1px solid rgba(232,184,75,.5);background:rgba(8,6,22,.92);padding:36px 32px;margin-top:8px;margin-bottom:32px}
+  .intake-prompt-step{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.45em;color:#22c98a;text-transform:uppercase;display:block;margin-bottom:10px}
+  .intake-prompt h2{font-family:'Cinzel',serif;font-size:20px;color:#fff;letter-spacing:.06em;margin-bottom:12px}
+  .intake-prompt p{font-size:16px;font-style:italic;color:#d8d4f099;line-height:1.75;margin-bottom:20px}
+  .intake-now{display:inline-block;font-family:'Cinzel',serif;font-size:12px;letter-spacing:.38em;color:#160a00;text-transform:uppercase;text-decoration:none;background:linear-gradient(135deg,#f8e090,rgb(232,184,75));padding:15px 36px;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);transition:all .3s;font-weight:700}
+  .intake-now:hover{filter:brightness(1.1);transform:translateY(-1px)}
+  .intake-later{display:block;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:rgba(232,184,75,.45);text-transform:uppercase;text-decoration:none;margin-top:14px;transition:color .25s}
+  .intake-later:hover{color:rgba(232,184,75,.8)}
+
+  .return-link{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:rgba(232,184,75,.4);text-transform:uppercase;text-decoration:none;transition:color .25s}
+  .return-link:hover{color:rgba(232,184,75,.75)}
 </style>
 <link rel="stylesheet" href="/site-nav.css">
 <script defer src="/site-nav.js"></script>
 </head>
 <body>
-  <span style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.5em;color:rgb(232,184,75);text-transform:uppercase;margin-bottom:20px;display:block">Royal Energy Alchemy</span>
-  <h1>Message Received</h1>
-  <p>Daron will review your request and reach out with the right session match and payment link.</p>
-  <p class="gold" style="font-style:normal;font-size:16px;">royalenergyalchemy@gmail.com &nbsp;·&nbsp; 814-392-2095</p>
-  <a href="/">Return Home</a>
+  <span class="eyebrow">Royal Energy Alchemy</span>
+  <h1>Request Received</h1>
+  <p class="sub">Daron will review your request and reach out with session details and a payment link.</p>
+  <p class="contact">royalenergyalchemy@gmail.com &nbsp;·&nbsp; 814-392-2095</p>
+
+  <div class="intake-prompt">
+    <span class="intake-prompt-step">Step 4 of 4 — Complete Before Your Appointment</span>
+    <h2>Complete Your Full Intake</h2>
+    <p>Your session is confirmed. The Full Intake gives Daron your complete client history — presenting story, timeline, symptoms, environment, and goals. It typically takes 20–30 minutes and should be submitted before your appointment date.</p>
+    <a href="/full-intake" class="intake-now">Complete Full Intake Now →</a>
+    <a href="/" class="intake-later">I'll complete this later — Return home</a>
+  </div>
+
+  <a href="/" class="return-link">← Back to site</a>
 </body>
 </html>

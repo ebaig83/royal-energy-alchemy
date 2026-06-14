@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Full Intake — Royal Energy Alchemy</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--gold:#e8b84b;--gold-light:#f8e090;--deep:#04020e;--text:#f0ecff}
+body{background:#0a0612;color:#f0ecff;font-family:'EB Garamond',serif;line-height:1.7}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:18px 48px;background:rgba(0,4,10,.88);backdrop-filter:blur(14px);border-bottom:1px solid #e8b84b12}
+.nav-brand{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;color:#e8b84bb3;text-transform:uppercase;text-decoration:none}
+.nav-back{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.3em;color:#d8d4f073;text-transform:uppercase;text-decoration:none;transition:color .25s}
+.nav-back:hover{color:var(--gold)}
+
+.flow-bar{display:flex;align-items:center;justify-content:center;padding:14px 24px;background:#06030f;border-bottom:1px solid #e8b84b18;flex-wrap:wrap;gap:4px}
+.flow-step{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;text-transform:uppercase;padding:5px 14px;color:#e8b84b55}
+.flow-step.done{color:#22c98a88}
+.flow-step.active{color:#e8b84b;border:1px solid #e8b84b55;background:#e8b84b0a}
+.flow-arrow{color:#e8b84b22;font-size:12px;padding:0 2px}
+
+.wrap{max-width:820px;margin:0 auto;padding:120px 24px 64px}
+
+.header{text-align:center;margin-bottom:44px;padding-bottom:28px;border-bottom:1px solid rgba(232,184,75,.42)}
+.header .step-tag{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.5em;color:#e8b84b80;text-transform:uppercase;display:block;margin-bottom:10px}
+.header h1{font-family:'Cinzel',serif;font-size:clamp(22px,3vw,32px);font-weight:700;color:#fff;letter-spacing:.06em;margin-bottom:8px}
+.header p{font-size:17px;font-style:italic;color:#d8d4f099;line-height:1.75}
+.time-tag{display:inline-block;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#e8b84b;text-transform:uppercase;margin-top:10px;border:1px solid #e8b84b44;padding:4px 16px}
+
+.sec{margin-bottom:28px;border:1px solid rgba(232,184,75,.32);background:rgba(8,6,22,.88);box-shadow:0 18px 55px rgba(0,0,0,.24),inset 0 0 0 1px rgba(255,255,255,.02)}
+.sec-head{background:linear-gradient(90deg,rgba(42,31,16,.96),rgba(18,13,28,.96));padding:13px 20px;border-bottom:1px solid rgba(232,184,75,.25);display:flex;align-items:center;gap:12px}
+.sec-num{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#ffd977;text-transform:uppercase;min-width:58px;text-shadow:0 0 18px rgba(232,184,75,.24)}
+.sec-title{font-family:'Cinzel',serif;font-size:15px;font-weight:600;color:#f0ecff;letter-spacing:.06em}
+.sec-body{padding:24px 20px}
+
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.form-row.single{grid-template-columns:1fr}
+.form-row.thirds{grid-template-columns:1fr 1fr 1fr}
+.fg{display:flex;flex-direction:column;gap:6px}
+.fg label{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.32em;color:#ffd977;text-transform:uppercase}
+.fg input,.fg select,.fg textarea{background:rgba(14,10,36,.98);border:1px solid rgba(232,184,75,.42);padding:12px 14px;font-family:'EB Garamond',serif;font-size:17px;color:#fff;outline:none;transition:border-color .3s,background .3s;width:100%}
+.fg input::placeholder,.fg textarea::placeholder{color:rgba(246,241,255,.4)}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:#ffd977;background:rgba(18,12,42,.98);box-shadow:0 0 0 2px rgba(232,184,75,.10)}
+.fg textarea{resize:vertical}
+.fg textarea.tall{min-height:140px}
+.fg textarea.short{min-height:80px}
+.fg select option{background:#08051c;color:#fff}
+
+.notice{background:rgba(232,184,75,.08);border-left:3px solid rgba(255,217,119,.5);padding:14px 18px;margin-bottom:16px}
+.notice p{font-size:15px;color:rgba(246,241,255,.8);line-height:1.75}
+.notice.dark{background:rgba(4,2,14,.55);border:1px solid rgba(232,184,75,.25);border-left:3px solid rgba(255,217,119,.5)}
+
+.check-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px;margin-top:6px}
+.check-grid label{display:flex;align-items:center;gap:10px;font-size:16px;color:rgba(246,241,255,.88);cursor:pointer;padding:9px 12px;border:1px solid rgba(232,184,75,.2);transition:border-color .2s,background .2s}
+.check-grid label:hover{border-color:rgba(232,184,75,.45);background:rgba(232,184,75,.05)}
+.check-grid input[type=checkbox]{accent-color:var(--gold);width:16px;height:16px;flex-shrink:0}
+
+.radio-list{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+.radio-list label{display:flex;align-items:center;gap:10px;font-size:16px;color:rgba(246,241,255,.88);cursor:pointer;padding:9px 12px;border:1px solid rgba(232,184,75,.2);transition:border-color .2s,background .2s}
+.radio-list label:hover{border-color:rgba(232,184,75,.45);background:rgba(232,184,75,.05)}
+.radio-list input[type=radio]{accent-color:var(--gold);width:16px;height:16px;flex-shrink:0}
+
+.subsec{margin-top:22px;padding-top:18px;border-top:1px solid #e8b84b14}
+.subsec-title{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.36em;color:#e8b84b99;text-transform:uppercase;margin-bottom:10px;display:block}
+.subsec-note{font-size:15px;font-style:italic;color:#c8c4e077;margin-bottom:10px;line-height:1.6}
+
+.symptom-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px}
+.symptom-grid label{display:flex;align-items:center;gap:8px;font-size:15px;color:rgba(246,241,255,.85);cursor:pointer;padding:8px 12px;border:1px solid rgba(232,184,75,.16);transition:border-color .2s,background .2s}
+.symptom-grid label:hover{border-color:rgba(232,184,75,.4);background:rgba(232,184,75,.05)}
+.symptom-grid input[type=checkbox]{accent-color:var(--gold);width:15px;height:15px;flex-shrink:0}
+
+.check-item{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid rgba(232,184,75,.12)}
+.check-item:last-child{border-bottom:none}
+.check-item input[type=checkbox]{width:18px;height:18px;accent-color:var(--gold);flex-shrink:0;margin-top:3px;cursor:pointer}
+.check-item .check-label{font-size:16px;color:rgba(246,241,255,.88);line-height:1.6}
+
+.req{color:#e8b84b99;margin-left:2px}
+.vol-tag{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b55;text-transform:uppercase;margin-left:6px}
+
+.submit-btn{width:100%;font-family:'Cinzel',serif;font-size:12px;letter-spacing:.4em;color:#160a00;text-transform:uppercase;background:linear-gradient(135deg,var(--gold-light),var(--gold));padding:18px;cursor:pointer;border:none;transition:all .3s;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);font-weight:700;box-shadow:0 10px 30px rgba(232,184,75,.24);margin-top:8px}
+.submit-btn:hover{filter:brightness(1.1);transform:translateY(-1px)}
+
+.success{display:none;text-align:center;padding:52px 28px;border:1px solid #e8b84b33;background:rgba(8,6,22,.8)}
+.success h2{font-family:'Cinzel',serif;font-size:26px;color:var(--gold);margin-bottom:16px;letter-spacing:.06em}
+.success p{font-size:17px;color:#d8d4f0b3;line-height:1.8;margin-bottom:10px}
+.success .done-btn{display:inline-block;font-family:'Cinzel',serif;font-size:12px;letter-spacing:.4em;color:#160a00;text-transform:uppercase;text-decoration:none;background:linear-gradient(135deg,var(--gold-light),var(--gold));padding:16px 40px;margin-top:24px;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);font-weight:700;transition:all .3s}
+.success .done-btn:hover{filter:brightness(1.1);transform:translateY(-1px)}
+
+footer{text-align:center;padding:36px 24px;border-top:1px solid rgba(232,184,75,.28);margin-top:56px;background:linear-gradient(180deg,rgba(4,2,14,.45),rgba(4,2,14,.96))}
+footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.22em;color:rgba(232,228,240,.65);text-transform:uppercase;line-height:2}
+
+@media(max-width:600px){
+  nav{padding:14px 20px}
+  .form-row,.form-row.thirds{grid-template-columns:1fr}
+  .wrap{padding:80px 16px 48px}
+  .flow-step{font-size:9px;padding:4px 10px}
+}
+</style>
+<link rel="stylesheet" href="/site-nav.css">
+<script defer src="/site-nav.js"></script>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-brand">Royal Energy Alchemy</a>
+  <a href="/" class="nav-back">← Return Home</a>
+</nav>
+
+<div class="flow-bar" style="padding-top:72px">
+  <div class="flow-step done">Step 1 · Assessment ✓</div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-step done">Step 2 · Waiver ✓</div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-step done">Step 3 · Booking ✓</div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-step active">Step 4 · Full Intake</div>
+</div>
+
+<div class="wrap">
+
+  <div class="header">
+    <span class="step-tag">Step 4 of 4</span>
+    <h1>Full Intake Application</h1>
+    <p>This is your complete client history. It is confidential, read only by Daron before your session, and gives him everything he needs to work effectively on your behalf. Take your time. Honest, specific answers produce better sessions.</p>
+    <span class="time-tag">Approx. 20–30 minutes</span>
+  </div>
+
+  <div class="notice" style="margin-bottom:28px">
+    <p><strong style="color:#f0ecff">Complete before your appointment.</strong> If you need to save and return, your browser will hold your progress. This form does not auto-submit — only submit when you are ready. If you cannot complete it before your session, contact Daron directly.</p>
+  </div>
+
+  <form id="intakeForm" novalidate>
+
+    <!-- SECTION 1 — Identity -->
+    <div class="sec">
+      <div class="sec-head"><span class="sec-num">Section 1</span><span class="sec-title">Identifying Information</span></div>
+      <div class="sec-body">
+        <div class="form-row">
+          <div class="fg"><label>Full name <span class="req">*</span></label><input type="text" id="i-name" placeholder="Your full name" required/></div>
+          <div class="fg"><label>Email address <span class="req">*</span></label><input type="email" id="i-email" placeholder="your@email.com" required/></div>
+        </div>
+        <div class="form-row">
+          <div class="fg"><label>Phone number</label><input type="tel" id="i-phone" placeholder="(814) 000-0000"/></div>
+          <div class="fg"><label>Date of birth</label><input type="date" id="i-dob"/></div>
+        </div>
+        <div class="form-row single">
+          <div class="fg"><label>Session booked</label><input type="text" id="i-session-type" placeholder="Service name and approximate date"/></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 2 — Presenting Story -->
+    <div class="sec">
+      <div class="sec-head"><span class="sec-num">Section 2</span><span class="sec-title">Presenting Story</span></div>
+      <div class="sec-body">
+        <div class="notice"><p>This is the full version of what you shared in your Quick Assessment. Go deeper here. The more specific you are, the more Daron can tailor the session.</p></div>
+        <div class="form-row single" style="margin-bottom:18px">
+          <div class="fg">
+            <label>What is the primary concern bringing you to this session? <span class="req">*</span></label>
+            <textarea class="tall" id="i-primary" placeholder="Describe in your own words. What is happening? What brought you here? What have you tried?" required></textarea>
+          </div>
+        </div>
+        <div class="form-row single" style="margin-bottom:18px">
+          <div class="fg">
+            <label>How long has this been going on?</label>
+            <input type="text" id="i-duration" placeholder="e.g. a few weeks, since childhood, after a specific event"/>
+          </div>
+        </div>
+        <div class="form-row single">
+          <div class="fg">
+            <label>Is there a specific incident, relationship, place, or event you believe is connected to this?</label>
+            <textarea class="short" id="i-trigger" placeholder="Optional but often useful. You do not need to be certain."></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 3 — Timeline -->
+    <div class="sec">
+      <div class="sec-head"><span class="sec-num">Section 3</span><span class="sec-title">Timeline of Symptoms &amp; Concerns</span></div>
+      <div class="sec-body">
+        <div class="notice dark"><p>Walk Daron through the progression. Even rough timelines help identify what entered when and what shifted over time.</p></div>
+        <div class="form-row single" style="margin-bottom:18px">
+          <div class="fg">
+            <label>When did you first notice something was off? What was happening in your life at that time?</label>
+            <textarea class="tall" id="i-timeline-start" placeholder="As specific as you can be — year, season, life circumstances at the time..."></textarea>
+          </div>
+        </div>
+        <div class="form-row single">
+          <div class="fg">
+            <label>How has it changed or escalated since then?</label>
+            <textarea class="short" id="i-timeline-progress" placeholder="Better at times? Worse after certain events? New symptoms that appeared later?"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 4 — Spiritual & Energetic History -->
+    <div class="sec">
+      <div class="sec-head"><span class="sec-num">Section 4</span><span class="sec-title">Spiritual &amp; Energetic History</span></div>
+      <div class="sec-body">
+        <div class="form-row single" style="margin-bottom:18px">
+          <div class="fg">
+            <label>Describe your spiritual or religious background, if any</label>
+            <textarea class="short" id="i-spiritual-bg" placeholder="Raised in a tradition, currently practicing, exploring, none — whatever applies."></textarea>
+          </div>
+        </div>
+        <div class="form-row single" style="margin-bottom:18px">
+          <div class="fg">
+            <label>Have you had experiences you would describe as spiritual, paranormal, or energetic? <span class="vol-tag">(optional)</span></label>
+            <textarea class="short" id="i-experiences" placeholder="Dreams, visitations, presences, visions, unexplained phenomena, psychic experiences, near-death, etc."></textarea>
+          </div>
+        </div>
+        <div class="form-row single">
+          <div class="fg">
+            <label>Have you engaged in any practices that may have opened energetic channels?</label>
+            <div class="check-grid" style="margin-top:6px">
+              <label><input type="checkbox" name="i_practices" value="meditation"><span>Meditation</span></label>
+              <label><input type="checkbox" name="i_practices" value="channeling"><span>Channeling or mediumship</span></label>
+              <label><input type="checkbox" name="i_practices" value="ouija"><span>Ouija / spirit boards</span></label>
+              <label><input type="checkbox" name="i_practices" value="seances"><span>Séances</span></label>
+              <label><input type="checkbox" name="i_practices" value="tarot"><span>Tarot or divination</span></label>
+              <label><input type="checkbox" name="i_practices" value="astral"><span>Astral projection</span></label>
+              <label><input type="checkbox" name="i_practices" value="ritual"><span>Ritual or ceremonial work</span></label>
+              <label><input type="checkbox" name="i_practices" value="plant_medicine"><span>Plant medicine / psychedelics</span></label>
+              <label><input type="checkbox" name="i_practices" value="reiki"><span>Reiki or energy healing</span></label>
+              <label><input type="checkbox" name="i_practices" value="none"><span>None of these</span></label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 5 — Prior Healing Work -->
+    <div class="sec">
+      <div class="sec-head"><span class="sec-num">Section 5</span><span class="sec-title">Prior Healing &amp; Clearing Work</span></div>
+      <div class="sec-body">
+        <div class="form-row single" style="margin-bottom:18px">
+          <div class="fg">
+            <label>Have you received energy healing, clearing, or spiritual work before?</label>
+            <div class="radio-list">
+              <label><input type="radio" name="i_prior_work" value="none"><span>No — this is my first time</span></label>
+              <label><input type="radio" name="i_prior_work" value="some"><span>Yes — a session or two</span></label>
+              <label><input type="radio" name="i_prior_work" value="regular"><span>Yes — regularly or for a long time</span></label>
+              <label><input type="radio" name="i_prior_work" value="self"><span>I practice on myself</span></label>
+            </div>
+          </div>
+        </div>
+        <div class="form-row single">
+          <div class="fg">
+            <label>If yes — what type of work, with whom, and what were the results?</label>
+            <textarea class="short" id="i-prior-work-desc" placeholder="Type of healing, approximate dates, what shifted or didn't shift..."></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 6 — Medical & Mental Health Context -->
+    <div class="sec">
+      <div class="sec-head"><span class="sec-num">Section 6</span><span class="sec-title">Medical &amp; Mental Health Context</span></div>
+      <div class="sec-body">
+        <div class="notice dark"><p>This information is confidential. It helps Daron work safely and understand the full picture. You are not required to share anything you are not comfortable sharing.</p></div>
+
+        <div class="subsec">
+          <span class="subsec-title">Current care status</span>
+          <div class="radio-list">
+            <label><input type="radio" name="i_care" value="none"><span>Not receiving any professional care</span></label>
+            <label><input type="radio" name="i_care" value="therapist"><span>Seeing a therapist or counselor</span></label>
+            <label><input type="radio" name="i_care" value="psychiatrist"><span>Seeing a psychiatrist</span></label>
+            <label><input type="radio" name="i_care" value="pcp"><span>Seeing a primary care physician</span></label>
+            <label><input type="radio" name="i_care" value="multiple"><span>Multiple providers</span></label>
+            <label><input type="radio" name="i_care" value="combination"><span>Conventional + alternative combination</span></label>
+          </div>
+        </div>
+
+        <div class="subsec">
+          <span class="subsec-title">Physical health concerns <span class="vol-tag">(voluntary)</span></span>
+          <div class="check-grid">
+            <label><input type="checkbox" name="i_physical" value="chronic_pain"><span>Chronic pain</span></label>
+            <label><input type="checkbox" name="i_physical" value="fibromyalgia"><span>Fibromyalgia</span></label>
+            <label><input type="checkbox" name="i_physical" value="autoimmune"><span>Autoimmune disorder</span></label>
+            <label><input type="checkbox" name="i_physical" value="neurological"><span>Neurological condition</span></label>
+            <label><input type="checkbox" name="i_physical" value="sleep_disorder"><span>Sleep disorder</span></label>
+            <label><input type="checkbox" name="i_physical" value="cardiovascular"><span>Cardiovascular condition</span></label>
+            <label><input type="checkbox" name="i_physical" value="prefer_not"><span>Prefer not to say</span></label>
+            <label><input type="checkbox" name="i_physical" value="none"><span>None</span></label>
+          </div>
+        </div>
+
+        <div class="subsec">
+          <span class="subsec-title">Mental health context <span class="vol-tag">(voluntary)</span></span>
+          <div class="check-grid">
+            <label><input type="checkbox" name="i_mental" value="anxiety"><span>Anxiety</span></label>
+            <label><input type="checkbox" name="i_mental" value="depression"><span>Depression</span></label>
+            <label><input type="checkbox" name="i_mental" value="ptsd"><span>PTSD / trauma history</span></label>
+            <label><input type="checkbox" name="i_mental" value="adhd"><span>ADHD</span></label>
+            <label><input type="checkbox" name="i_mental" value="bipolar"><span>Bipolar disorder</span></label>
+            <label><input type="checkbox" name="i_mental" value="psychosis"><span>Psychosis or schizophrenia</span></label>
+            <label><input type="checkbox" name="i_mental" value="personality"><span>Personality disorder</span></label>
+            <label><input type="checkbox" name="i_mental" value="prefer_not"><span>Prefer not to say</span></label>
+            <label><input type="checkbox" name="i_mental" value="none"><span>None</span></label>
+          </div>
+        </div>
+
+        <div class="subsec">
+          <span class="subsec-title">Medications <span class="vol-tag">(voluntary)</span></span>
+          <p class="subsec-note">Are you currently taking prescribed medication related to your concerns?</p>
+          <div class="radio-list">
+            <label><input type="radio" name="i_meds" value="yes"><span>Yes</span></label>
+            <label><input type="radio" name="i_meds" value="no"><span>No</span></label>
+            <label><input type="radio" name="i_meds" value="prefer_not"><span>Prefer not to answer</span></label>
+          </div>
+          <div class="fg" style="margin-top:10px">
+            <input type="text" id="i-meds-detail" placeholder="If yes — you may describe the general category (e.g. antidepressant, mood stabilizer) — specific names not required"/>
+          </div>
+        </div>
+
+        <div class="subsec">
+          <span class="subsec-title">Any major losses, traumas, or life changes in the past 12 months?</span>
+          <textarea class="short" id="i-life-changes" placeholder="Loss of a loved one, relationship ending, job change, move, health crisis, accident — anything significant."></textarea>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- SECTION 7 — Environmental Factors -->
+    <div class="sec">
+      <div class="sec-head"><span class="sec-num">Section 7</span><span class="sec-title">Environmental Factors</span></div>
+      <div class="sec-body">
+        <div class="notice dark"><p>Energetic disturbances are often tied to spaces. Even if you are not sure these are related, share what you notice.</p></div>
+        <div class="form-row single" style="margin-bottom:18px">
+          <div class="fg">
+            <label>Do you notice anything unusual in your home or living space?</label>
+            <textarea class="short" id="i-env-home" placeholder="Temperature fluctuations, sounds, feelings, electronics behaving oddly, animals reacting, rooms that feel heavy..."></textarea>
+          </div>
+        </div>
+        <div class="form-row single" style="margin-bottom:18px">
+          <div class="fg">
+            <label>Are there specific places — inside or outside the home — where symptoms intensify?</label>
+            <textarea class="short" id="i-env-places" placeholder="Certain rooms, workplaces, relationships, locations you avoid..."></textarea>
+          </div>
+        </div>
+        <div class="form-row single">
+          <div class="fg">
+            <label>Have you moved recently or lived somewhere you suspect had prior occupants with difficult histories?</label>
+            <input type="text" id="i-env-history" placeholder="Old house, inherited property, location with a history — anything that comes to mind"/>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 8 — Symptom Inventory -->
+    <div class="sec">
+      <div class="sec-head"><span class="sec-num">Section 8</span><span class="sec-title">Symptom Inventory</span></div>
+      <div class="sec-body">
+        <div class="notice"><p>Check everything that applies. Do not filter — include things that seem unusual or hard to explain. This is exactly the kind of information Daron works with.</p></div>
+
+        <div class="subsec">
+          <span class="subsec-title">Sleep &amp; Dreams</span>
+          <div class="symptom-grid">
+            <label><input type="checkbox" name="i_sym" value="sleep_poor"><span>Poor sleep quality</span></label>
+            <label><input type="checkbox" name="i_sym" value="sleep_terrors"><span>Night terrors</span></label>
+            <label><input type="checkbox" name="i_sym" value="sleep_paralysis"><span>Sleep paralysis</span></label>
+            <label><input type="checkbox" name="i_sym" value="lucid_dreams"><span>Lucid or vivid dreams</span></label>
+            <label><input type="checkbox" name="i_sym" value="recurring_dreams"><span>Recurring dreams</span></label>
+            <label><input type="checkbox" name="i_sym" value="dark_dreams"><span>Dark or disturbing dreams</span></label>
+            <label><input type="checkbox" name="i_sym" value="astral_interference"><span>Feeling of being watched during sleep</span></label>
+            <label><input type="checkbox" name="i_sym" value="exhausted_waking"><span>Wake up exhausted despite sleep</span></label>
+          </div>
+        </div>
+
+        <div class="subsec">
+          <span class="subsec-title">Physical Sensations</span>
+          <div class="symptom-grid">
+            <label><input type="checkbox" name="i_sym" value="heaviness"><span>Heaviness in body or field</span></label>
+            <label><input type="checkbox" name="i_sym" value="pressure"><span>Pressure on chest or head</span></label>
+            <label><input type="checkbox" name="i_sym" value="unexplained_pain"><span>Unexplained physical pain</span></label>
+            <label><input type="checkbox" name="i_sym" value="tingling"><span>Tingling or buzzing sensations</span></label>
+            <label><input type="checkbox" name="i_sym" value="nausea"><span>Nausea without medical cause</span></label>
+            <label><input type="checkbox" name="i_sym" value="fatigue"><span>Chronic fatigue</span></label>
+            <label><input type="checkbox" name="i_sym" value="cold_spots"><span>Sudden cold spots or chills</span></label>
+          </div>
+        </div>
+
+        <div class="subsec">
+          <span class="subsec-title">Emotional &amp; Mental</span>
+          <div class="symptom-grid">
+            <label><input type="checkbox" name="i_sym" value="fear"><span>Persistent fear or dread</span></label>
+            <label><input type="checkbox" name="i_sym" value="rage"><span>Sudden rage or mood shifts</span></label>
+            <label><input type="checkbox" name="i_sym" value="intrusive"><span>Intrusive thoughts</span></label>
+            <label><input type="checkbox" name="i_sym" value="voices"><span>Hearing voices or sounds</span></label>
+            <label><input type="checkbox" name="i_sym" value="dissociation"><span>Dissociation or disconnection</span></label>
+            <label><input type="checkbox" name="i_sym" value="hopelessness"><span>Hopelessness or despair</span></label>
+            <label><input type="checkbox" name="i_sym" value="not_self"><span>Feeling like "not yourself"</span></label>
+            <label><input type="checkbox" name="i_sym" value="compulsions"><span>Compulsive behaviors you don't understand</span></label>
+          </div>
+        </div>
+
+        <div class="subsec">
+          <span class="subsec-title">Energetic &amp; Relational</span>
+          <div class="symptom-grid">
+            <label><input type="checkbox" name="i_sym" value="cords"><span>Feel energetically tied to someone</span></label>
+            <label><input type="checkbox" name="i_sym" value="parasites"><span>Suspect parasitic attachment</span></label>
+            <label><input type="checkbox" name="i_sym" value="entities"><span>Sense of presence or entity</span></label>
+            <label><input type="checkbox" name="i_sym" value="drained"><span>Drained after contact with certain people</span></label>
+            <label><input type="checkbox" name="i_sym" value="cursed"><span>Believe you may be cursed or hexed</span></label>
+            <label><input type="checkbox" name="i_sym" value="grief_stuck"><span>Grief or loss that won't resolve</span></label>
+            <label><input type="checkbox" name="i_sym" value="bad_luck"><span>Pattern of repeated bad luck</span></label>
+            <label><input type="checkbox" name="i_sym" value="self_sabotage"><span>Pattern of self-sabotage</span></label>
+          </div>
+        </div>
+
+        <div class="subsec">
+          <span class="subsec-title">Describe any symptoms not listed above</span>
+          <textarea class="short" id="i-sym-other" placeholder="Anything unusual, hard to explain, or that you haven't found a name for..."></textarea>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- SECTION 9 — Goals -->
+    <div class="sec">
+      <div class="sec-head"><span class="sec-num">Section 9</span><span class="sec-title">Goals &amp; Desired Outcomes</span></div>
+      <div class="sec-body">
+        <div class="form-row single" style="margin-bottom:18px">
+          <div class="fg">
+            <label>What do you want to walk away from this session with? <span class="req">*</span></label>
+            <textarea class="tall" id="i-goals" placeholder="What does success look like? What would change if this worked? Be specific — even physical descriptions are useful." required></textarea>
+          </div>
+        </div>
+        <div class="form-row single">
+          <div class="fg">
+            <label>Is there anything you want Daron to know that hasn't been covered above?</label>
+            <textarea class="short" id="i-extra" placeholder="Anything else that feels relevant — don't filter it."></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 10 — Research Consent -->
+    <div class="sec">
+      <div class="sec-head"><span class="sec-num">Section 10</span><span class="sec-title">Research &amp; Data Consent</span></div>
+      <div class="sec-body">
+        <div class="notice dark">
+          <p>Royal Energy Alchemy LLC tracks de-identified, anonymized client outcomes to improve services, identify patterns, and contribute to understanding of energetic healing. Your identity is never published or shared. Participation is voluntary and does not affect your session.</p>
+        </div>
+        <div style="margin-top:16px">
+          <div class="check-item">
+            <input type="checkbox" id="i-research-consent">
+            <div><div class="check-label">I consent to the de-identified use of my session data for aggregate research, outcome tracking, and service improvement. <span class="vol-tag">(optional)</span></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button type="submit" class="submit-btn" id="intakeSubmitBtn">Submit Full Intake →</button>
+    <p style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#e8b84b44;text-transform:uppercase;text-align:center;margin-top:12px">Your intake is stored securely and reviewed by Daron before your session</p>
+
+  </form>
+
+  <div class="success" id="intakeSuccess">
+    <h2>✦ Intake Complete</h2>
+    <p>Your Full Intake has been submitted. Daron will review it before your session.</p>
+    <p style="font-size:15px;font-family:'Cinzel',serif;letter-spacing:.2em;text-transform:uppercase;color:#22c98a;margin-top:8px">You're all set.</p>
+    <p>If anything changes before your appointment, email <strong style="color:#e8b84b">royalenergyalchemy@gmail.com</strong> or call <strong style="color:#e8b84b">814-392-2095</strong>.</p>
+    <a href="/" class="done-btn">Return to Site →</a>
+    <p style="margin-top:20px;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#e8b84b55;text-transform:uppercase">Royal Energy Alchemy LLC · Erie, Pennsylvania</p>
+  </div>
+
+</div>
+
+<footer>
+  <p>Royal Energy Alchemy LLC · Erie / Waterford, Pennsylvania · royalenergyalchemy@gmail.com · 814-392-2095</p>
+  <p>Spiritual and energetic services are complementary wellness offerings and are not medical, legal, or psychological advice.</p>
+</footer>
+
+<script>
+// Pre-fill name/email from sessionStorage if set
+(function() {
+  try {
+    var n = sessionStorage.getItem('rea_prefill_name');
+    var e = sessionStorage.getItem('rea_prefill_email');
+    var p = sessionStorage.getItem('rea_prefill_phone');
+    if (n) document.getElementById('i-name').value = n;
+    if (e) document.getElementById('i-email').value = e;
+    if (p) document.getElementById('i-phone').value = p;
+  } catch(err) {}
+})();
+
+document.getElementById('intakeForm').addEventListener('submit', function(ev) {
+  ev.preventDefault();
+
+  var name  = document.getElementById('i-name').value.trim();
+  var email = document.getElementById('i-email').value.trim();
+  var primary = document.getElementById('i-primary').value.trim();
+  var goals   = document.getElementById('i-goals').value.trim();
+
+  if (!name || !email || !primary || !goals) {
+    alert('Please complete the required fields: Full Name, Email, Primary Concern, and Goals.');
+    return;
+  }
+
+  function getChecked(name) {
+    return Array.from(document.querySelectorAll('input[name="' + name + '"]:checked')).map(function(el) { return el.value; });
+  }
+  function val(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; }
+  function radioVal(name) { var el = document.querySelector('input[name="' + name + '"]:checked'); return el ? el.value : ''; }
+
+  var data = {
+    name: name,
+    email: email,
+    phone: val('i-phone'),
+    dob: val('i-dob'),
+    sessionType: val('i-session-type'),
+    primaryConcern: primary,
+    duration: val('i-duration'),
+    trigger: val('i-trigger'),
+    spiritualBackground: val('i-spiritual-bg'),
+    priorExperiences: val('i-experiences'),
+    practicesUsed: getChecked('i_practices'),
+    priorHealingWork: radioVal('i_prior_work'),
+    priorWorkDescription: val('i-prior-work-desc'),
+    careStatus: radioVal('i_care'),
+    physicalConcerns: getChecked('i_physical'),
+    mentalHealth: getChecked('i_mental'),
+    medications: radioVal('i_meds'),
+    medsDetail: val('i-meds-detail'),
+    lifeChanges: val('i-life-changes'),
+    envHome: val('i-env-home'),
+    envPlaces: val('i-env-places'),
+    envHistory: val('i-env-history'),
+    symptoms: getChecked('i_sym'),
+    symptomsOther: val('i-sym-other'),
+    goals: goals,
+    extra: val('i-extra'),
+    researchConsent: document.getElementById('i-research-consent').checked,
+    timestamp: new Date().toISOString(),
+    type: 'full_intake'
+  };
+
+  var nameKey = name.toLowerCase().trim().replace(/\s+/g, '_');
+  try {
+    localStorage.setItem('rea_fullintake_' + nameKey, JSON.stringify(data));
+    if (email) localStorage.setItem('rea_fullintake_email_' + email.toLowerCase().trim(), JSON.stringify(data));
+  } catch(err) {}
+
+  document.getElementById('intakeForm').style.display = 'none';
+  document.getElementById('intakeSuccess').style.display = 'block';
+  window.scrollTo(0, 0);
+});
+</script>
+</body>
+</html>
