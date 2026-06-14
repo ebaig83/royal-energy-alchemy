@@ -1104,7 +1104,7 @@ const SPRINT1_SCHEMA = {
       { name: 'application_text', not_null: false, default_contains: null              },
       { name: 'experience',       not_null: false, default_contains: null              },
       { name: 'training_history', not_null: false, default_contains: null              },
-      { name: 'references',       not_null: false, default_contains: null              },
+      { name: 'reference_notes',  not_null: false, default_contains: null              },
       { name: 'review_notes',     not_null: false, default_contains: null              },
       { name: 'status',           not_null: true,  default_contains: 'pending'         },
       { name: 'created_at',       not_null: true,  default_contains: 'now()'           },

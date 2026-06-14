@@ -53,7 +53,7 @@ const VALID_CERT_STATUSES = ['active','expired','revoked','pending'];
 const VALID_REF_STATUSES  = ['pending','accepted','completed','declined','archived'];
 
 const PRAC_COLS = 'id, name, email, phone, location, specialties, bio, status, application_date, approval_date, certification_level, directory_visible, created_at, updated_at';
-const APP_COLS  = 'id, practitioner_id, application_text, experience, training_history, references, review_notes, status, created_at, updated_at';
+const APP_COLS  = 'id, practitioner_id, application_text, experience, training_history, reference_notes, review_notes, status, created_at, updated_at';
 const CERT_COLS = 'id, practitioner_id, training_certification_id, completion_date, expiration_date, status, created_at, updated_at';
 const REF_COLS  = 'id, client_id, practitioner_id, reason, status, created_at, updated_at';
 
@@ -211,7 +211,7 @@ async function createApplication(sb, body, auth) {
     application_text: body.application_text || null,
     experience:       body.experience       || null,
     training_history: body.training_history || null,
-    references:       body.references       || null,
+    reference_notes:  body.reference_notes  || null,
     status: 'pending',
   };
   const { data: app, error: appErr } = await sb.from('practitioner_applications').insert(appRow).select(APP_COLS).single();
@@ -221,7 +221,7 @@ async function createApplication(sb, body, auth) {
 }
 
 async function updateApplication(sb, id, body) {
-  const allowed = ['application_text','experience','training_history','references','review_notes','status'];
+  const allowed = ['application_text','experience','training_history','reference_notes','review_notes','status'];
   const updates = {};
   allowed.forEach(k => { if (k in body) updates[k] = body[k]; });
   if (!Object.keys(updates).length) throw Object.assign(new Error('No updatable fields'), { status: 400 });

@@ -194,6 +194,7 @@
         <div class="pn-form-row"><label class="pn-label">Specialties (comma-separated)</label><input class="pn-input" id="pna-specialties" placeholder="Reiki, Sound Healing, Energy Work"></div>
         <div class="pn-form-row"><label class="pn-label">Application / Cover Letter</label><textarea class="pn-input pn-textarea-sm" id="pna-text" rows="4" placeholder="Why do you want to join the REA network?"></textarea></div>
         <div class="pn-form-row"><label class="pn-label">Experience</label><textarea class="pn-input pn-textarea-sm" id="pna-exp" rows="3" placeholder="Relevant healing experience…"></textarea></div>
+        <div class="pn-form-row"><label class="pn-label">References</label><textarea class="pn-input pn-textarea-sm" id="pna-ref-notes" rows="2" placeholder="Names and contact info for professional references…"></textarea></div>
         <div class="pn-form-actions">
           <button class="pn-btn-primary" id="pna-submit">Submit Application</button>
           <button class="pn-btn-cancel" onclick="document.getElementById('pn-app-form').remove()">Cancel</button>
@@ -211,6 +212,7 @@
       name, email: v('pna-email'), phone: v('pna-phone'), location: v('pna-location'),
       specialties: v('pna-specialties').split(',').map(s => s.trim()).filter(Boolean),
       application_text: v('pna-text'), experience: v('pna-exp'),
+      reference_notes: v('pna-ref-notes') || undefined,
     });
     if (r.error) { toast(r.error, true); btn.disabled = false; btn.textContent = 'Submit Application'; return; }
     toast('Application submitted');
