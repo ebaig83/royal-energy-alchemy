@@ -1151,6 +1151,55 @@ const SPRINT1_SCHEMA = {
     indexes:           ['pr_client_idx','pr_practitioner_idx','pr_status_idx','pr_deleted_idx','pr_created_idx'],
     grants:            ['SELECT','INSERT','UPDATE','DELETE'],
   },
+
+  // ── Sprint 9: Lead Pipeline ────────────────────────────────────────────────
+  referral_sources: {
+    column_contracts: [
+      { name: 'id',           not_null: true,  default_contains: 'gen_random_uuid' },
+      { name: 'name',         not_null: true,  default_contains: null              },
+      { name: 'source_type',  not_null: true,  default_contains: 'other'           },
+      { name: 'contact_info', not_null: false, default_contains: null              },
+      { name: 'notes',        not_null: false, default_contains: null              },
+      { name: 'active',       not_null: true,  default_contains: 'true'            },
+      { name: 'created_at',   not_null: true,  default_contains: 'now()'           },
+      { name: 'updated_at',   not_null: true,  default_contains: 'now()'           },
+    ],
+    check_constraints: ['rs_type_check'],
+    fk_columns:        [],
+    indexes:           ['rs_type_idx','rs_active_idx','rs_created_idx'],
+    grants:            ['SELECT','INSERT','UPDATE','DELETE'],
+  },
+
+  leads: {
+    column_contracts: [
+      { name: 'id',                  not_null: true,  default_contains: 'gen_random_uuid' },
+      { name: 'first_name',          not_null: true,  default_contains: null              },
+      { name: 'last_name',           not_null: false, default_contains: null              },
+      { name: 'email',               not_null: false, default_contains: null              },
+      { name: 'phone',               not_null: false, default_contains: null              },
+      { name: 'source',              not_null: true,  default_contains: 'other'           },
+      { name: 'source_detail',       not_null: false, default_contains: null              },
+      { name: 'referral_source_id',  not_null: false, default_contains: null              },
+      { name: 'interested_service',  not_null: false, default_contains: null              },
+      { name: 'status',              not_null: true,  default_contains: 'new'             },
+      { name: 'notes',               not_null: false, default_contains: null              },
+      { name: 'assigned_to',         not_null: false, default_contains: null              },
+      { name: 'first_contact_date',  not_null: false, default_contains: null              },
+      { name: 'last_contact_date',   not_null: false, default_contains: null              },
+      { name: 'converted_client_id', not_null: false, default_contains: null              },
+      { name: 'converted_at',        not_null: false, default_contains: null              },
+      { name: 'converted_service',   not_null: false, default_contains: null              },
+      { name: 'converted_revenue',   not_null: false, default_contains: null              },
+      { name: 'contact_count',       not_null: true,  default_contains: '0'              },
+      { name: 'created_at',          not_null: true,  default_contains: 'now()'           },
+      { name: 'updated_at',          not_null: true,  default_contains: 'now()'           },
+      { name: 'deleted_at',          not_null: false, default_contains: null              },
+    ],
+    check_constraints: ['leads_status_check','leads_source_check'],
+    fk_columns:        ['referral_source_id'],
+    indexes:           ['leads_status_idx','leads_source_idx','leads_email_idx','leads_deleted_idx','leads_created_idx','leads_referral_idx','leads_converted_idx','leads_contact_idx'],
+    grants:            ['SELECT','INSERT','UPDATE','DELETE'],
+  },
 };
 
 async function validateSprint1Schema(sb) {

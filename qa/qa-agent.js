@@ -3177,6 +3177,481 @@ async function run() {
     return { detail: cleaned.join(', ') };
   });
 
+  // ── Phase 18: Lead Pipeline QA (Suite 19) ────────────────────────────────
+  const LP = 'LP:';
+  let lpLeadId = null;
+  let lpRsId   = null;
+  let lpLead2  = null;   // second lead for lost test
+
+  console.log('\n-- Phase 18: Lead Pipeline QA (Suite 19)');
+
+  // ── Schema checks ──
+
+  // LP-01: referral_sources schema
+  await check(LP + ' referral_sources schema valid', async () => {
+    const t = svData && svData['referral_sources'];
+    if (!t) return { status: 'WARN', detail: 'referral_sources not in schema — run migration 2026-06-13-lead-pipeline.sql' };
+    if (!t.exists) return { status: 'WARN', detail: 'referral_sources table not yet created in Supabase' };
+    const issues = [
+      ...(t.missing_columns || []).map(c => 'missing col: ' + c),
+      ...(t.missing_check_constraints || []).map(c => 'missing constraint: ' + c),
+    ];
+    if (issues.length) throw new Error(issues.join('; '));
+    return { detail: 'referral_sources schema valid' };
+  });
+
+  // LP-02: leads schema
+  await check(LP + ' leads schema valid', async () => {
+    const t = svData && svData['leads'];
+    if (!t) return { status: 'WARN', detail: 'leads not in schema — run migration 2026-06-13-lead-pipeline.sql' };
+    if (!t.exists) return { status: 'WARN', detail: 'leads table not yet created in Supabase' };
+    const issues = [
+      ...(t.missing_columns || []).map(c => 'missing col: ' + c),
+      ...(t.missing_check_constraints || []).map(c => 'missing constraint: ' + c),
+    ];
+    if (issues.length) throw new Error(issues.join('; '));
+    return { detail: 'leads schema valid — cols OK, constraints OK' };
+  });
+
+  // ── Referral Sources ──
+
+  // LP-03: create referral source
+  await check(LP + ' create_referral_source creates record', async () => {
+    const r = await finReq('POST', '/.netlify/functions/lead-pipeline?action=create_referral_source', {
+      name: 'QA Test Partner ' + Date.now(),
+      source_type: 'client',
+      contact_info: 'qa@test.local',
+      notes: 'QA test referral source',
+    });
+    if (r.b.migration_needed) return { status: 'WARN', detail: 'migration needed — run 2026-06-13-lead-pipeline.sql' };
+    if (r.s !== 201) throw new Error('HTTP ' + r.s + ': ' + (r.b.error || JSON.stringify(r.b)));
+    if (!r.b.referral_source || !r.b.referral_source.id) throw new Error('referral_source.id missing');
+    lpRsId = r.b.referral_source.id;
+    return { detail: 'rs=' + lpRsId.slice(0,8) + ' type=' + r.b.referral_source.source_type };
+  });
+
+  // LP-04: referral_sources list includes new record
+  await check(LP + ' referral_sources list returns records', async () => {
+    const r = await finReq('GET', '/.netlify/functions/lead-pipeline?section=referral_sources');
+    if (r.b.migration_needed) return { status: 'WARN', detail: 'migration needed' };
+    if (r.s !== 200) throw new Error('HTTP ' + r.s);
+    if (!Array.isArray(r.b.referral_sources)) throw new Error('referral_sources not an array');
+    if (lpRsId) {
+      const found = r.b.referral_sources.find(rs => rs.id === lpRsId);
+      if (!found) throw new Error('new referral source not found in list');
+    }
+    return { detail: 'list OK, count=' + r.b.count };
+  });
+
+  // LP-05: invalid source_type rejected
+  await check(LP + ' invalid referral source_type returns 400', async () => {
+    const r = await finReq('POST', '/.netlify/functions/lead-pipeline?action=create_referral_source', {
+      name: 'Invalid Type Test', source_type: 'alien',
+    });
+    if (r.b.migration_needed) return { status: 'WARN', detail: 'migration needed' };
+    if (r.s !== 400) throw new Error('expected 400, got ' + r.s);
+    return { detail: 'invalid source_type correctly rejected with 400' };
+  });
+
+  // ── Lead CRUD ──
+
+  // LP-06: create lead
+  await check(LP + ' create_lead creates record', async () => {
+    const r = await finReq('POST', '/.netlify/functions/lead-pipeline?action=create_lead', {
+      first_name: 'QA',
+      last_name:  'TestLead',
+      email:      'qa-lead@test.local',
+      phone:      '555-0199',
+      source:     'website',
+      source_detail: 'homepage contact form',
+      interested_service: 'Reiki Session',
+      notes: 'QA automated lead',
+      referral_source_id: lpRsId || null,
+    });
+    if (r.b.migration_needed) return { status: 'WARN', detail: 'migration needed' };
+    if (r.s !== 201) throw new Error('HTTP ' + r.s + ': ' + (r.b.error || JSON.stringify(r.b)));
+    if (!r.b.lead || !r.b.lead.id) throw new Error('lead.id missing');
+    if (r.b.lead.status !== 'new') throw new Error('expected status=new, got ' + r.b.lead.status);
+    lpLeadId = r.b.lead.id;
+    return { detail: 'lead=' + lpLeadId.slice(0,8) + ' status=new source=website' };
+  });
+
+  // LP-07: leads list returns new lead
+  await check(LP + ' leads list includes new lead', async () => {
+    if (!lpLeadId) return { status: 'SKIP', detail: 'no lpLeadId' };
+    const r = await finReq('GET', '/.netlify/functions/lead-pipeline?section=leads');
+    if (r.b.migration_needed) return { status: 'WARN', detail: 'migration needed' };
+    if (r.s !== 200) throw new Error('HTTP ' + r.s);
+    const found = (r.b.leads || []).find(l => l.id === lpLeadId);
+    if (!found) throw new Error('new lead not found in list');
+    return { detail: 'lead found, status=' + found.status };
+  });
+
+  // LP-08: search lead by name
+  await check(LP + ' search leads by name returns result', async () => {
+    if (!lpLeadId) return { status: 'SKIP', detail: 'no lpLeadId' };
+    const r = await finReq('GET', '/.netlify/functions/lead-pipeline?section=leads&search=QA');
+    if (r.b.migration_needed) return { status: 'WARN', detail: 'migration needed' };
+    if (r.s !== 200) throw new Error('HTTP ' + r.s);
+    const found = (r.b.leads || []).find(l => l.id === lpLeadId);
+    if (!found) throw new Error('search did not return QA lead');
+    return { detail: 'search OK, found lead in results' };
+  });
+
+  // LP-09: edit lead (update_lead)
+  await check(LP + ' update_lead updates fields', async () => {
+    if (!lpLeadId) return { status: 'SKIP', detail: 'no lpLeadId' };
+    const r = await finReq('PATCH', '/.netlify/functions/lead-pipeline?action=update_lead&id=' + lpLeadId, {
+      notes: 'QA updated notes',
+      interested_service: 'Distance Healing',
+    });
+    if (r.b.migration_needed) return { status: 'WARN', detail: 'migration needed' };
+    if (r.s !== 200) throw new Error('HTTP ' + r.s + ': ' + (r.b.error || JSON.stringify(r.b)));
+    if (r.b.lead.notes !== 'QA updated notes') throw new Error('notes not updated');
+    return { detail: 'notes and service updated' };
+  });
+
+  // LP-10: change status — new → contacted
+  await check(LP + ' update_status new → contacted', async () => {
+    if (!lpLeadId) return { status: 'SKIP', detail: 'no lpLeadId' };
+    const r = await finReq('PATCH', '/.netlify/functions/lead-pipeline?action=update_status&id=' + lpLeadId, {
+      status: 'contacted',
+    });
+    if (r.b.migration_needed) return { status: 'WARN', detail: 'migration needed' };
+    if (r.s !== 200) throw new Error('HTTP ' + r.s + ': ' + (r.b.error || JSON.stringify(r.b)));
+    if (r.b.lead.status !== 'contacted') throw new Error('status not contacted: ' + r.b.lead.status);
+    return { detail: 'status → contacted' };
+  });
+
+  // LP-11: change status — contacted → consultation
+  await check(LP + ' update_status contacted → consultation', async () => {
+    if (!lpLeadId) return { status: 'SKIP', detail: 'no lpLeadId' };
+    const r = await finReq('PATCH', '/.netlify/functions/lead-pipeline?action=update_status&id=' + lpLeadId, {
+      status: 'consultation',
+    });
+    if (r.b.migration_needed) return { status: 'WARN', detail: 'migration needed' };
+    if (r.s !== 200) throw new Error('HTTP ' + r.s);
+    if (r.b.lead.status !== 'consultation') throw new Error('status not consultation: ' + r.b.lead.status);
+    return { detail: 'status → consultation' };
+  });
+
+  // LP-12: log contact increments contact_count
+  await check(LP + ' log_contact increments contact_count', async () => {
+    if (!lpLeadId) return { status: 'SKIP', detail: 'no lpLeadId' };
+    const r = await finReq('PATCH', '/.netlify/functions/lead-pipeline?action=log_contact&id=' + lpLeadId, {});
+    if (r.b.migration_needed) return { status: 'WARN', detail: 'migration needed' };
+    if (r.s !== 200) throw new Error('HTTP ' + r.s + ': ' + (r.b.error || JSON.stringify(r.b)));
+    if ((r.b.lead.contact_count || 0) < 1) throw new Error('contact_count not incremented: ' + r.b.lead.contact_count);
+    return { detail: 'contact_count=' + r.b.lead.contact_count };
+  });
+
+  // LP-13: filter leads by status
+  await check(LP + ' filter leads by status=consultation', async () => {
+    if (!lpLeadId) return { status: 'SKIP', detail: 'no lpLeadId' };
+    const r = await finReq('GET', '/.netlify/functions/lead-pipeline?section=leads&status=consultation');
+    if (r.b.migration_needed) return { status: 'WARN', detail: 'migration needed' };
+    if (r.s !== 200) throw new Error('HTTP ' + r.s);
+    const found = (r.b.leads || []).find(l => l.id === lpLeadId);
+    if (!found) throw new Error('lead not found in consultation filter');
+    return { detail: 'filter by status=consultation returned lead' };
+  });
+
+  // LP-14: filter leads by source
+  await check(LP + ' filter leads by source=website', async () => {
+    if (!lpLeadId) return { status: 'SKIP', detail: 'no lpLeadId' };
+    const r = await finReq('GET', '/.netlify/functions/lead-pipeline?section=leads&source=website');
+    if (r.b.migration_needed) return { status: 'WARN', detail: 'migration needed' };
+    if (r.s !== 200) throw new Error('HTTP ' + r.s);
+    const all = r.b.leads || [];
+    if (!all.every(l => l.source === 'website')) throw new Error('non-website leads returned in source filter');
+    return { detail: 'source filter OK, count=' + all.length };
+  });
+
+  // LP-15: pipeline groups leads by status
+  await check(LP + ' pipeline section groups leads correctly', async () => {
+    const r = await finReq('GET', '/.netlify/functions/lead-pipeline?section=pipeline');
+    if (r.b.migration_needed) return { status: 'WARN', detail: 'migration needed' };
+    if (r.s !== 200) throw new Error('HTTP ' + r.s);
+    const p = r.b.pipeline;
+    if (!p) throw new Error('pipeline object missing');
+    const required = ['new','contacted','consultation','booked'];
+    const missing  = required.filter(s => !Array.isArray(p[s]));
+    if (missing.length) throw new Error('missing pipeline stages: ' + missing.join(', '));
+    return { detail: 'pipeline stages: new=' + p.new.length + ' contacted=' + p.contacted.length + ' consultation=' + p.consultation.length };
+  });
+
+  // LP-16: dashboard returns all KPIs
+  await check(LP + ' dashboard returns all KPI fields', async () => {
+    const r = await finReq('GET', '/.netlify/functions/lead-pipeline?section=dashboard');
+    if (r.b.migration_needed) return { status: 'WARN', detail: 'migration needed' };
+    if (r.s !== 200) throw new Error('HTTP ' + r.s);
+    const k = r.b.kpis;
+    if (!k) throw new Error('kpis missing');
+    const required = ['total_leads','new_leads','active_leads','converted_leads','lost_leads','conversion_rate','referral_sources','revenue_from_leads'];
+    const missing  = required.filter(f => k[f] === undefined);
+    if (missing.length) throw new Error('missing KPI fields: ' + missing.join(', '));
+    return { detail: 'KPIs OK — total=' + k.total_leads + ' conv_rate=' + k.conversion_rate + '%' };
+  });
+
+  // LP-17: dashboard returns status_counts
+  await check(LP + ' dashboard status_counts present', async () => {
+    const r = await finReq('GET', '/.netlify/functions/lead-pipeline?section=dashboard');
+    if (r.b.migration_needed) return { status: 'WARN', detail: 'migration needed' };
+    if (r.s !== 200) throw new Error('HTTP ' + r.s);
+    const sc = r.b.status_counts;
+    if (!sc) throw new Error('status_counts missing');
+    const required = ['new','contacted','consultation','booked','converted','lost'];
+    const missing  = required.filter(f => sc[f] === undefined);
+    if (missing.length) throw new Error('missing status_count fields: ' + missing.join(', '));
+    return { detail: 'status_counts: ' + JSON.stringify(sc) };
+  });
+
+  // LP-18: convert lead
+  await check(LP + ' convert_lead sets status=converted', async () => {
+    if (!lpLeadId) return { status: 'SKIP', detail: 'no lpLeadId' };
+    const r = await finReq('PATCH', '/.netlify/functions/lead-pipeline?action=convert_lead&id=' + lpLeadId, {
+      converted_service: 'Reiki Session',
+      converted_revenue: 150,
+    });
+    if (r.b.migration_needed) return { status: 'WARN', detail: 'migration needed' };
+    if (r.s !== 200) throw new Error('HTTP ' + r.s + ': ' + (r.b.error || JSON.stringify(r.b)));
+    if (r.b.lead.status !== 'converted') throw new Error('status not converted: ' + r.b.lead.status);
+    if (!r.b.lead.converted_at) throw new Error('converted_at not set');
+    return { detail: 'converted — service=' + r.b.lead.converted_service + ' revenue=' + r.b.lead.converted_revenue };
+  });
+
+  // LP-19: converted lead appears in conversions view
+  await check(LP + ' converted lead appears in status=converted filter', async () => {
+    if (!lpLeadId) return { status: 'SKIP', detail: 'no lpLeadId' };
+    const r = await finReq('GET', '/.netlify/functions/lead-pipeline?section=leads&status=converted');
+    if (r.b.migration_needed) return { status: 'WARN', detail: 'migration needed' };
+    if (r.s !== 200) throw new Error('HTTP ' + r.s);
+    const found = (r.b.leads || []).find(l => l.id === lpLeadId);
+    if (!found) throw new Error('converted lead not found in status=converted filter');
+    return { detail: 'converted lead visible in conversions view' };
+  });
+
+  // LP-20: analytics returns by_source breakdown
+  await check(LP + ' analytics section returns revenue by source', async () => {
+    const r = await finReq('GET', '/.netlify/functions/lead-pipeline?section=analytics');
+    if (r.b.migration_needed) return { status: 'WARN', detail: 'migration needed' };
+    if (r.s !== 200) throw new Error('HTTP ' + r.s);
+    const an = r.b.analytics;
+    if (!an) throw new Error('analytics object missing');
+    if (!an.by_source) throw new Error('by_source missing from analytics');
+    if (an.conversion_rate_pct === undefined) throw new Error('conversion_rate_pct missing');
+    return { detail: 'analytics OK — conv_rate=' + an.conversion_rate_pct + '% revenue=' + an.total_revenue };
+  });
+
+  // LP-21: analytics source attribution for website shows revenue
+  await check(LP + ' analytics website source shows converted revenue', async () => {
+    if (!lpLeadId) return { status: 'SKIP', detail: 'no lpLeadId' };
+    const r = await finReq('GET', '/.netlify/functions/lead-pipeline?section=analytics');
+    if (r.b.migration_needed) return { status: 'WARN', detail: 'migration needed' };
+    if (r.s !== 200) throw new Error('HTTP ' + r.s);
+    const webData = (r.b.analytics.by_source || {}).website;
+    if (!webData) throw new Error('website source not in by_source');
+    if (webData.revenue < 150) throw new Error('expected revenue ≥ 150 for website source, got ' + webData.revenue);
+    return { detail: 'website source: leads=' + webData.leads + ' clients=' + webData.clients + ' revenue=$' + webData.revenue };
+  });
+
+  // LP-22: create second lead for lost test
+  await check(LP + ' create second lead for lost test', async () => {
+    const r = await finReq('POST', '/.netlify/functions/lead-pipeline?action=create_lead', {
+      first_name: 'QA Lost',
+      last_name:  'Prospect',
+      source:     'facebook',
+      notes:      'Will be marked lost',
+    });
+    if (r.b.migration_needed) return { status: 'WARN', detail: 'migration needed' };
+    if (r.s !== 201) throw new Error('HTTP ' + r.s);
+    lpLead2 = r.b.lead.id;
+    return { detail: 'lead2=' + (lpLead2 || '').slice(0,8) };
+  });
+
+  // LP-23: mark lead as lost
+  await check(LP + ' lose_lead sets status=lost', async () => {
+    if (!lpLead2) return { status: 'SKIP', detail: 'no lpLead2' };
+    const r = await finReq('PATCH', '/.netlify/functions/lead-pipeline?action=lose_lead&id=' + lpLead2, {
+      reason: 'Not ready to commit',
+    });
+    if (r.b.migration_needed) return { status: 'WARN', detail: 'migration needed' };
+    if (r.s !== 200) throw new Error('HTTP ' + r.s + ': ' + (r.b.error || JSON.stringify(r.b)));
+    if (r.b.lead.status !== 'lost') throw new Error('status not lost: ' + r.b.lead.status);
+    return { detail: 'lead marked lost' };
+  });
+
+  // LP-24: lost leads appear in /lost section
+  await check(LP + ' lost section includes lost lead', async () => {
+    if (!lpLead2) return { status: 'SKIP', detail: 'no lpLead2' };
+    const r = await finReq('GET', '/.netlify/functions/lead-pipeline?section=lost');
+    if (r.b.migration_needed) return { status: 'WARN', detail: 'migration needed' };
+    if (r.s !== 200) throw new Error('HTTP ' + r.s);
+    const found = (r.b.leads || []).find(l => l.id === lpLead2);
+    if (!found) throw new Error('lost lead not found in /lost section');
+    return { detail: 'lost lead visible in lost section' };
+  });
+
+  // LP-25: invalid status rejected
+  await check(LP + ' invalid lead status returns 400', async () => {
+    const r = await finReq('POST', '/.netlify/functions/lead-pipeline?action=create_lead', {
+      first_name: 'Invalid Status Test',
+      source:     'website',
+      status:     'unicorn',
+    });
+    if (r.b.migration_needed) return { status: 'WARN', detail: 'migration needed' };
+    if (r.s !== 400) throw new Error('expected 400, got ' + r.s);
+    return { detail: 'invalid status correctly rejected with 400' };
+  });
+
+  // LP-26: invalid source rejected
+  await check(LP + ' invalid lead source returns 400', async () => {
+    const r = await finReq('POST', '/.netlify/functions/lead-pipeline?action=create_lead', {
+      first_name: 'Bad Source',
+      source:     'carrier_pigeon',
+    });
+    if (r.b.migration_needed) return { status: 'WARN', detail: 'migration needed' };
+    if (r.s !== 400) throw new Error('expected 400, got ' + r.s);
+    return { detail: 'invalid source correctly rejected with 400' };
+  });
+
+  // LP-27: missing first_name rejected
+  await check(LP + ' missing first_name returns 400', async () => {
+    const r = await finReq('POST', '/.netlify/functions/lead-pipeline?action=create_lead', {
+      source: 'website', email: 'no-name@test.local',
+    });
+    if (r.b.migration_needed) return { status: 'WARN', detail: 'migration needed' };
+    if (r.s !== 400) throw new Error('expected 400, got ' + r.s);
+    return { detail: 'missing first_name correctly rejected' };
+  });
+
+  // LP-28: unknown section returns 400
+  await check(LP + ' unknown section returns 400', async () => {
+    const r = await finReq('GET', '/.netlify/functions/lead-pipeline?section=nonexistent');
+    if (r.b.migration_needed) return { status: 'WARN', detail: 'migration needed' };
+    if (r.s !== 400) throw new Error('expected 400, got ' + r.s);
+    return { detail: 'unknown section correctly returns 400' };
+  });
+
+  // ── UI checks ──
+
+  // LP-29: Lead Pipeline tab renders
+  await check(LP + ' Lead Pipeline tab renders', async () => {
+    await page.evaluate(() => { showTab('lp'); });
+    await page.waitForSelector('#tab-lp', { timeout: AI_TIMEOUT });
+    await page.waitForFunction(
+      () => document.querySelector('#tab-lp') && document.querySelector('#tab-lp').innerHTML.trim().length > 50,
+      { timeout: AI_TIMEOUT }
+    );
+    const text = await page.$eval('#tab-lp', el => el.innerText);
+    if (!text || text.length < 10) throw new Error('tab-lp appears empty');
+    return { detail: 'LP tab rendered, chars=' + text.length };
+  });
+
+  // LP-30: subnav renders all 6 sections
+  await check(LP + ' subnav renders all 6 sections', async () => {
+    const buttons = await page.$$eval('#lp-subnav .lp-snav', btns => btns.map(b => b.textContent.trim()));
+    const expected = ['Dashboard','Pipeline','All Leads','Referral Sources','Conversions','Lost Opportunities'];
+    const missing  = expected.filter(s => !buttons.includes(s));
+    if (missing.length) throw new Error('missing subnav buttons: ' + missing.join(', '));
+    return { detail: 'subnav: ' + buttons.join(', ') };
+  });
+
+  // LP-31: KPI tiles render
+  await check(LP + ' KPI tiles render on dashboard', async () => {
+    await page.evaluate(() => { showTab('lp'); });
+    await page.waitForSelector('#tab-lp .lp-kpi', { timeout: AI_TIMEOUT });
+    const count = await page.$$eval('#tab-lp .lp-kpi', els => els.length);
+    if (count < 6) throw new Error('expected ≥6 KPI tiles, found ' + count);
+    return { detail: count + ' KPI tiles visible' };
+  });
+
+  // LP-32: Pipeline section renders stage columns
+  await check(LP + ' Pipeline section renders columns', async () => {
+    await page.evaluate(() => {
+      document.querySelector('#lp-subnav [data-s="pipeline"]')?.click();
+    });
+    await page.waitForSelector('.lp-pipeline-cols', { timeout: AI_TIMEOUT });
+    const cols = await page.$$eval('.lp-pipeline-col', els => els.length);
+    if (cols < 4) throw new Error('expected 4 pipeline columns, found ' + cols);
+    return { detail: cols + ' pipeline columns rendered' };
+  });
+
+  // LP-33: All Leads section renders with search + filter
+  await check(LP + ' All Leads section renders with filters', async () => {
+    await page.evaluate(() => {
+      document.querySelector('#lp-subnav [data-s="leads"]')?.click();
+    });
+    await page.waitForSelector('#lp-lead-search', { timeout: AI_TIMEOUT });
+    const searchEl = await page.$('#lp-lead-search');
+    const statusEl = await page.$('#lp-lead-status');
+    if (!searchEl) throw new Error('#lp-lead-search not found');
+    if (!statusEl) throw new Error('#lp-lead-status not found');
+    return { detail: 'All Leads section + search + status filter rendered' };
+  });
+
+  // LP-34: Referral Sources section renders
+  await check(LP + ' Referral Sources section renders', async () => {
+    await page.evaluate(() => {
+      document.querySelector('#lp-subnav [data-s="referrals"]')?.click();
+    });
+    await page.waitForFunction(
+      () => document.querySelector('#lp-body') && document.querySelector('#lp-body').innerHTML.includes('Referral Source'),
+      { timeout: AI_TIMEOUT }
+    );
+    return { detail: 'Referral Sources section rendered' };
+  });
+
+  // LP-35: Conversions section renders revenue table
+  await check(LP + ' Conversions section renders revenue table', async () => {
+    await page.evaluate(() => {
+      document.querySelector('#lp-subnav [data-s="conversions"]')?.click();
+    });
+    await page.waitForFunction(
+      () => document.querySelector('#lp-body') && document.querySelector('#lp-body').innerHTML.includes('Revenue'),
+      { timeout: AI_TIMEOUT }
+    );
+    return { detail: 'Conversions section rendered with revenue content' };
+  });
+
+  // ── Soft-delete & cleanup ──
+
+  // LP-36: soft-delete verified — deleted lead excluded from list
+  await check(LP + ' soft-delete excludes lead from list', async () => {
+    // Create a throwaway lead and delete it
+    const r1 = await finReq('POST', '/.netlify/functions/lead-pipeline?action=create_lead', {
+      first_name: 'QA Delete Test', source: 'other',
+    });
+    if (r1.b.migration_needed) return { status: 'WARN', detail: 'migration needed' };
+    if (r1.s !== 201) throw new Error('create failed: HTTP ' + r1.s);
+    const delId = r1.b.lead.id;
+    const r2 = await finReq('PATCH', '/.netlify/functions/lead-pipeline?action=delete_lead&id=' + delId);
+    if (r2.s !== 200) throw new Error('delete failed: HTTP ' + r2.s);
+    const r3 = await finReq('GET', '/.netlify/functions/lead-pipeline?section=leads');
+    const found = (r3.b.leads || []).find(l => l.id === delId);
+    if (found) throw new Error('soft-deleted lead still appears in list');
+    return { detail: 'soft-deleted lead excluded from list (deleted_at set)' };
+  });
+
+  // LP-37: cleanup QA test data
+  await check(LP + ' Cleanup — delete QA leads and referral source', async () => {
+    const cleaned = [];
+    if (lpLeadId) {
+      await finReq('PATCH', '/.netlify/functions/lead-pipeline?action=delete_lead&id=' + lpLeadId);
+      cleaned.push('lead1 deleted');
+    }
+    if (lpLead2) {
+      await finReq('PATCH', '/.netlify/functions/lead-pipeline?action=delete_lead&id=' + lpLead2);
+      cleaned.push('lead2 deleted');
+    }
+    if (lpRsId) {
+      await finReq('PATCH', '/.netlify/functions/lead-pipeline?action=delete_referral_source&id=' + lpRsId);
+      cleaned.push('referral source deleted');
+    }
+    if (!cleaned.length) return { status: 'SKIP', detail: 'nothing to clean up' };
+    return { detail: cleaned.join(', ') };
+  });
+
   await browser.close();
 
   // Final report
@@ -3278,6 +3753,18 @@ async function run() {
     console.log('\n=== CONTENT GENERATION ENGINE QA (Suite 16) ===');
     cdResults.forEach(r => console.log(`  ${SICONS[r.status] || '?'} ${r.status.padEnd(5)} ${r.name.replace('CD: ', '')}`));
     console.log(`\n  CD totals : PASS ${cdPass}  FAIL ${cdFail}  WARN ${cdWarn}  SKIP ${cdSkip}  / ${cdResults.length} checks`);
+  }
+
+  // Lead Pipeline sub-report (Suite 19)
+  const lpResults = results.filter(r => r.name.startsWith('LP:'));
+  const lpPass    = lpResults.filter(r => r.status === 'PASS').length;
+  const lpFail    = lpResults.filter(r => r.status === 'FAIL').length;
+  const lpWarn    = lpResults.filter(r => r.status === 'WARN').length;
+  const lpSkip    = lpResults.filter(r => r.status === 'SKIP').length;
+  if (lpResults.length > 0) {
+    console.log('\n=== LEAD PIPELINE QA (Suite 19) ===');
+    lpResults.forEach(r => console.log(`  ${SICONS[r.status] || '?'} ${r.status.padEnd(5)} ${r.name.replace('LP: ', '')}`));
+    console.log(`\n  LP totals : PASS ${lpPass}  FAIL ${lpFail}  WARN ${lpWarn}  SKIP ${lpSkip}  / ${lpResults.length} checks`);
   }
 
   // Practitioner Network sub-report (Suite 18)
