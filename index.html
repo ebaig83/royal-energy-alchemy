@@ -796,8 +796,9 @@ footer a:hover,footer a:focus-visible{color:#fff0b8 !important;border-bottom-col
 
     <!-- ── CANVAS ── -->
     <div class="reveal reveal-d1 dist-canvas-wrap">
-      <div class="dist-canvas-frame">
-        <svg id="dist-canvas" viewBox="0 0 920 378" xmlns="http://www.w3.org/2000/svg" aria-label="Distance Energy Session - Two beings connected through sacred geometry portal" role="img">
+      <div class="dist-canvas-frame dist-canvas-frame--photo">
+        <img src="assets/distance-healing-photo.png" alt="Distance energy healing — practitioner sends healing energy across any distance" class="dist-canvas-photo">
+        <div style="display:none"><svg id="dist-canvas" viewBox="0 0 920 378" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <defs>
             <radialGradient id="dSky" cx="50%" cy="35%" r="70%">
               <stop offset="0%" stop-color="#0d0a1e"/>
@@ -1239,7 +1240,7 @@ footer a:hover,footer a:focus-visible{color:#fff0b8 !important;border-bottom-col
             <rect y="320" width="920" height="58" fill="#010108" opacity="0.75"/>
             <rect width="920" height="40" fill="#010108" opacity="0.4"/>
           </g>
-        </svg>
+        </svg></div>
       </div>
     </div>
 
@@ -1484,6 +1485,8 @@ footer a:hover,footer a:focus-visible{color:#fff0b8 !important;border-bottom-col
     inset 0 0 60px rgba(0,0,0,0.5);
   background: radial-gradient(ellipse at center, rgba(4,10,32,0.9) 0%, rgba(0,2,10,1) 100%);
 }
+.dist-canvas-frame--photo { display: block; max-width: 920px; margin: 0 auto; }
+.dist-canvas-photo { width: 100%; display: block; max-width: 920px; height: auto; }
 .dist-canvas-frame::before, .dist-canvas-frame::after {
   content: '';
   position: absolute;
