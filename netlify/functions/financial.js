@@ -1071,6 +1071,86 @@ const SPRINT1_SCHEMA = {
     indexes:    ['tcert_status_idx','tcert_deleted_idx','tcert_created_idx'],
     grants:     ['SELECT','INSERT','UPDATE','DELETE'],
   },
+
+  // ── Sprint 8: Practitioner Network ─────────────────────────────────────────
+  practitioners: {
+    column_contracts: [
+      { name: 'id',                  not_null: true,  default_contains: 'gen_random_uuid' },
+      { name: 'name',                not_null: true,  default_contains: null              },
+      { name: 'email',               not_null: false, default_contains: null              },
+      { name: 'phone',               not_null: false, default_contains: null              },
+      { name: 'location',            not_null: false, default_contains: null              },
+      { name: 'specialties',         not_null: true,  default_contains: '{}'             },
+      { name: 'bio',                 not_null: false, default_contains: null              },
+      { name: 'status',              not_null: true,  default_contains: 'applied'         },
+      { name: 'application_date',    not_null: false, default_contains: 'CURRENT_DATE'    },
+      { name: 'approval_date',       not_null: false, default_contains: null              },
+      { name: 'certification_level', not_null: true,  default_contains: 'none'            },
+      { name: 'directory_visible',   not_null: true,  default_contains: 'false'           },
+      { name: 'created_at',          not_null: true,  default_contains: 'now()'           },
+      { name: 'updated_at',          not_null: true,  default_contains: 'now()'           },
+      { name: 'deleted_at',          not_null: false, default_contains: null              },
+    ],
+    check_constraints: ['pn_status_check','pn_cert_level_check'],
+    fk_columns:        [],
+    indexes:           ['pn_status_idx','pn_email_idx','pn_deleted_idx','pn_specialties_idx','pn_directory_idx','pn_created_idx'],
+    grants:            ['SELECT','INSERT','UPDATE','DELETE'],
+  },
+
+  practitioner_applications: {
+    column_contracts: [
+      { name: 'id',               not_null: true,  default_contains: 'gen_random_uuid' },
+      { name: 'practitioner_id',  not_null: false, default_contains: null              },
+      { name: 'application_text', not_null: false, default_contains: null              },
+      { name: 'experience',       not_null: false, default_contains: null              },
+      { name: 'training_history', not_null: false, default_contains: null              },
+      { name: 'references',       not_null: false, default_contains: null              },
+      { name: 'review_notes',     not_null: false, default_contains: null              },
+      { name: 'status',           not_null: true,  default_contains: 'pending'         },
+      { name: 'created_at',       not_null: true,  default_contains: 'now()'           },
+      { name: 'updated_at',       not_null: true,  default_contains: 'now()'           },
+      { name: 'deleted_at',       not_null: false, default_contains: null              },
+    ],
+    check_constraints: ['pa_status_check'],
+    fk_columns:        ['practitioner_id'],
+    indexes:           ['pa_practitioner_idx','pa_status_idx','pa_deleted_idx','pa_created_idx'],
+    grants:            ['SELECT','INSERT','UPDATE','DELETE'],
+  },
+
+  practitioner_certifications: {
+    column_contracts: [
+      { name: 'id',                        not_null: true,  default_contains: 'gen_random_uuid' },
+      { name: 'practitioner_id',           not_null: false, default_contains: null              },
+      { name: 'training_certification_id', not_null: false, default_contains: null              },
+      { name: 'completion_date',           not_null: false, default_contains: null              },
+      { name: 'expiration_date',           not_null: false, default_contains: null              },
+      { name: 'status',                    not_null: true,  default_contains: 'active'          },
+      { name: 'created_at',               not_null: true,  default_contains: 'now()'           },
+      { name: 'updated_at',               not_null: true,  default_contains: 'now()'           },
+      { name: 'deleted_at',               not_null: false, default_contains: null              },
+    ],
+    check_constraints: ['pc_status_check'],
+    fk_columns:        ['practitioner_id'],
+    indexes:           ['pc_practitioner_idx','pc_cert_idx','pc_status_idx','pc_deleted_idx'],
+    grants:            ['SELECT','INSERT','UPDATE','DELETE'],
+  },
+
+  practitioner_referrals: {
+    column_contracts: [
+      { name: 'id',              not_null: true,  default_contains: 'gen_random_uuid' },
+      { name: 'client_id',       not_null: false, default_contains: null              },
+      { name: 'practitioner_id', not_null: false, default_contains: null              },
+      { name: 'reason',          not_null: false, default_contains: null              },
+      { name: 'status',          not_null: true,  default_contains: 'pending'         },
+      { name: 'created_at',      not_null: true,  default_contains: 'now()'           },
+      { name: 'updated_at',      not_null: true,  default_contains: 'now()'           },
+      { name: 'deleted_at',      not_null: false, default_contains: null              },
+    ],
+    check_constraints: ['pr_status_check'],
+    fk_columns:        ['practitioner_id'],
+    indexes:           ['pr_client_idx','pr_practitioner_idx','pr_status_idx','pr_deleted_idx','pr_created_idx'],
+    grants:            ['SELECT','INSERT','UPDATE','DELETE'],
+  },
 };
 
 async function validateSprint1Schema(sb) {

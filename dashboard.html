@@ -2445,6 +2445,105 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
 @media (max-width: 640px) {
   .tc-kpi-row  { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ══ PRACTITIONER NETWORK MODULE (pn-module.js) ══════════════════════════ */
+.pn-wrap       { padding: 0; }
+.pn-subnav     { display: flex; gap: 0; border-bottom: 1px solid rgba(34,201,138,.2); margin-bottom: 24px; overflow-x: auto; }
+.pn-snav       { padding: 11px 20px; background: transparent; border: none; border-bottom: 2px solid transparent; color: #9a9080; font-size: .78rem; letter-spacing: .1em; cursor: pointer; white-space: nowrap; transition: color .2s; }
+.pn-snav:hover        { color: #22c98a; }
+.pn-snav-active       { color: #22c98a; border-bottom-color: #22c98a; }
+.pn-body       { padding: 0 2px; }
+
+/* ── Dashboard ── */
+.pn-kpi-row    { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 24px; }
+.pn-kpi        { background: rgba(20,30,25,.6); border: 1px solid rgba(34,201,138,.12); border-radius: 10px; padding: 16px 12px; text-align: center; }
+.pn-kpi-icon   { font-size: 1.4rem; margin-bottom: 4px; }
+.pn-kpi-num    { font-size: 1.8rem; font-weight: 700; color: #22c98a; }
+.pn-kpi-lbl    { font-size: .7rem; color: #7a9080; text-transform: uppercase; letter-spacing: .08em; margin-top: 2px; }
+.pn-dash-grid  { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+.pn-dash-card  { background: rgba(20,30,25,.5); border: 1px solid rgba(34,201,138,.1); border-radius: 12px; padding: 18px 20px; }
+.pn-dash-card-title { font-size: .8rem; letter-spacing: .1em; color: #22c98a; text-transform: uppercase; margin-bottom: 14px; }
+.pn-pipeline   { display: flex; flex-direction: column; gap: 8px; }
+.pn-pipe-item  { display: flex; align-items: center; gap: 10px; }
+.pn-pipe-dot   { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.pn-pipe-lbl   { font-size: .83rem; color: #9a9080; flex: 1; }
+.pn-pipe-count { font-size: .88rem; font-weight: 600; color: #e0d8cc; }
+.pn-quick-actions { display: flex; flex-direction: column; gap: 8px; }
+.pn-quick-btn  { padding: 9px 14px; background: rgba(34,201,138,.06); border: 1px solid rgba(34,201,138,.18); border-radius: 7px; color: #22c98a; font-size: .8rem; cursor: pointer; text-align: left; transition: background .2s; }
+.pn-quick-btn:hover { background: rgba(34,201,138,.14); }
+
+/* ── Section header / filters ── */
+.pn-section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; flex-wrap: wrap; gap: 10px; }
+.pn-section-title  { font-size: 1.05rem; font-weight: 600; color: #e0d8cc; }
+.pn-header-actions { display: flex; gap: 8px; }
+.pn-filters    { display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
+.pn-search     { flex: 1; min-width: 180px; padding: 8px 14px; background: rgba(255,255,255,.04); border: 1px solid rgba(34,201,138,.2); border-radius: 6px; color: #e8e0d4; font-size: .88rem; outline: none; }
+.pn-filter-select { padding: 8px 12px; background: rgba(255,255,255,.04); border: 1px solid rgba(34,201,138,.2); border-radius: 6px; color: #e8e0d4; font-size: .82rem; cursor: pointer; }
+
+/* ── Practitioner card ── */
+.pn-prac-card  { background: rgba(20,30,25,.7); border: 1px solid rgba(34,201,138,.1); border-radius: 12px; padding: 16px 18px; margin-bottom: 14px; }
+.pn-prac-top   { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.pn-prac-name  { font-size: 1rem; font-weight: 600; color: #e0d8cc; }
+.pn-prac-email { font-size: .78rem; color: #7a9080; }
+.pn-prac-loc   { font-size: .78rem; color: #7a9080; }
+.pn-prac-meta  { font-size: .72rem; color: #5a6050; margin-top: 8px; }
+.pn-prac-bio   { font-size: .82rem; color: #7a9080; margin: 6px 0; line-height: 1.5; }
+.pn-prac-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-left: auto; }
+.pn-spec-chip  { padding: 2px 8px; background: rgba(34,201,138,.07); border: 1px solid rgba(34,201,138,.18); border-radius: 12px; font-size: .7rem; color: #22c98a; }
+.pn-dir-badge  { padding: 2px 8px; border-radius: 12px; font-size: .68rem; font-weight: 700; background: rgba(34,201,138,.15); color: #22c98a; border: 1px solid rgba(34,201,138,.3); }
+
+/* ── Status badges ── */
+.pn-status-badge { padding: 2px 9px; border-radius: 12px; font-size: .68rem; font-weight: 700; letter-spacing: .08em; color: #fff; }
+.pn-level-badge  { padding: 2px 8px; border-radius: 10px; font-size: .68rem; font-weight: 600; border: 1px solid; }
+
+/* ── Buttons ── */
+.pn-btn-primary   { padding: 9px 18px; background: rgba(34,201,138,.12); border: 1px solid rgba(34,201,138,.3); border-radius: 6px; color: #22c98a; font-size: .8rem; letter-spacing: .06em; cursor: pointer; transition: background .2s; }
+.pn-btn-primary:hover  { background: rgba(34,201,138,.22); }
+.pn-btn-secondary { padding: 9px 16px; background: transparent; border: 1px solid rgba(34,201,138,.2); border-radius: 6px; color: rgba(34,201,138,.65); font-size: .8rem; letter-spacing: .06em; cursor: pointer; }
+.pn-btn-cancel    { padding: 7px 14px; background: transparent; border: 1px solid rgba(255,255,255,.1); border-radius: 6px; color: #7a7060; font-size: .78rem; cursor: pointer; }
+.pn-btn-edit      { padding: 4px 10px; border-radius: 6px; font-size: .75rem; cursor: pointer; border: 1px solid rgba(255,255,255,.12); background: transparent; color: #a09080; }
+.pn-btn-delete    { padding: 4px 10px; border-radius: 6px; font-size: .75rem; cursor: pointer; border: 1px solid rgba(200,80,80,.25); background: transparent; color: #c07070; }
+.pn-btn-approve   { padding: 4px 10px; border-radius: 6px; font-size: .75rem; cursor: pointer; border: 1px solid rgba(34,201,138,.3); background: rgba(34,201,138,.1); color: #22c98a; }
+.pn-btn-approve:hover  { background: rgba(34,201,138,.2); }
+.pn-btn-reject    { padding: 4px 10px; border-radius: 6px; font-size: .75rem; cursor: pointer; border: 1px solid rgba(220,80,80,.25); background: rgba(220,80,80,.07); color: #dc9090; }
+.pn-btn-suspend   { padding: 4px 10px; border-radius: 6px; font-size: .75rem; cursor: pointer; border: 1px solid rgba(255,180,0,.25); background: rgba(255,180,0,.07); color: #e8a840; }
+.pn-btn-activate  { padding: 4px 10px; border-radius: 6px; font-size: .75rem; cursor: pointer; border: 1px solid rgba(34,201,138,.3); background: rgba(34,201,138,.08); color: #22c98a; }
+
+/* ── Form ── */
+.pn-form        { background: rgba(255,255,255,.03); border: 1px solid rgba(34,201,138,.2); border-radius: 10px; padding: 22px 24px; margin-bottom: 20px; }
+.pn-form-title  { font-size: .9rem; font-weight: 600; color: #22c98a; letter-spacing: .06em; margin-bottom: 18px; }
+.pn-form-row    { margin-bottom: 14px; }
+.pn-form-row-2  { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.pn-form-actions { display: flex; gap: 10px; margin-top: 18px; }
+.pn-label       { display: block; font-size: .75rem; letter-spacing: .08em; color: #22c98a; text-transform: uppercase; margin-bottom: 5px; }
+.pn-input       { width: 100%; padding: 9px 14px; background: rgba(255,255,255,.04); border: 1px solid rgba(34,201,138,.2); border-radius: 6px; color: #e8e0d4; font-size: .88rem; outline: none; box-sizing: border-box; }
+.pn-input:focus { border-color: rgba(34,201,138,.45); }
+.pn-textarea-sm { resize: vertical; font-family: 'EB Garamond', serif; min-height: 80px; }
+
+/* ── Directory cards ── */
+.pn-dir-grid   { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.pn-dir-card   { background: rgba(20,30,25,.7); border: 1px solid rgba(34,201,138,.12); border-radius: 12px; padding: 20px; position: relative; }
+.pn-dir-name   { font-size: 1rem; font-weight: 600; color: #e0d8cc; margin-bottom: 4px; }
+.pn-dir-loc    { font-size: .78rem; color: #7a9080; margin-bottom: 8px; }
+.pn-dir-bio    { font-size: .82rem; color: #7a9080; line-height: 1.5; margin-bottom: 10px; }
+.pn-dir-specs  { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+.pn-dir-level  { font-size: .7rem; padding: 2px 8px; background: rgba(232,184,75,.07); border: 1px solid rgba(232,184,75,.18); border-radius: 10px; color: #e8b84b; }
+
+/* ── States ── */
+.pn-shimmer    { padding: 8px 0; }
+.pn-shimmer-row { display: flex; gap: 12px; margin-bottom: 12px; }
+.pn-shimmer-cell { height: 60px; flex: 1; border-radius: 8px; background: linear-gradient(90deg, rgba(34,201,138,.04) 25%, rgba(34,201,138,.08) 50%, rgba(34,201,138,.04) 75%); background-size: 200% 100%; animation: pn-shimmer 1.5s infinite; }
+@keyframes pn-shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+.pn-warn       { padding: 12px 16px; background: rgba(255,180,0,.07); border: 1px solid rgba(255,180,0,.2); border-radius: 8px; color: #e8a840; font-size: .84rem; margin-bottom: 20px; }
+.pn-error      { padding: 20px; color: #dc9090; font-size: .88rem; text-align: center; }
+.pn-empty      { padding: 40px 20px; text-align: center; color: #7a9080; font-size: .88rem; letter-spacing: .04em; border: 1px dashed rgba(34,201,138,.1); border-radius: 10px; }
+.pn-toast      { position: fixed; bottom: 28px; right: 24px; padding: 12px 20px; background: rgba(12,20,16,.95); border: 1px solid rgba(34,201,138,.3); border-radius: 8px; color: #22c98a; font-size: .83rem; z-index: 9999; animation: pn-fadein .25s ease; }
+.pn-toast-err  { border-color: rgba(220,80,80,.4); color: #dc9090; }
+@keyframes pn-fadein { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+
+@media (max-width: 1100px) { .pn-kpi-row { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 900px)  { .pn-dash-grid { grid-template-columns: 1fr; } .pn-form-row-2 { grid-template-columns: 1fr; } }
+@media (max-width: 640px)  { .pn-kpi-row { grid-template-columns: repeat(2, 1fr); } }
 </style>
 </head>
 <body>
@@ -2525,6 +2624,9 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
       </button>
       <button class="tab ck-nav-item" onclick="showTab('tc')">
         <span class="nav-icon">🎓</span><span class="nav-text">TRAINING CENTER</span>
+      </button>
+      <button class="tab ck-nav-item" onclick="showTab('pn')">
+        <span class="nav-icon">🌐</span><span class="nav-text">PRACTITIONER NETWORK</span>
       </button>
 
       <div class="ck-nav-divider"></div>
@@ -2914,6 +3016,9 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
 
   <!-- TRAINING CENTER TAB -->
   <div class="tab-content" id="tab-tc"></div>
+
+  <!-- PRACTITIONER NETWORK TAB -->
+  <div class="tab-content" id="tab-pn"></div>
 
 
   <!-- BOOKING TAB -->
@@ -3558,6 +3663,7 @@ function showTab(name) {
   if (name === 'kh')             { try { khInit(); } catch(e){ console.error('khInit', e); } }
   if (name === 'cs')             { try { csInit(); } catch(e){ console.error('csInit', e); } }
   if (name === 'tc')             { try { tcInit(); } catch(e){ console.error('tcInit', e); } }
+  if (name === 'pn')             { try { pnInit(); } catch(e){ console.error('pnInit', e); } }
   if (name === 'financial')      { try { fcInit(); } catch(e){ console.error('fcInit', e); } }
   if (name === 'communications') { try { cmInit(); } catch(e){ console.error('cmInit', e); } }
 }
@@ -10437,6 +10543,7 @@ purgeTestEntries();
 <script src="kh-module.js"></script>
 <script src="cs-module.js"></script>
 <script src="tc-module.js"></script>
+<script src="pn-module.js"></script>
 <script src="communications-module.js"></script>
 <script src="pin-lock.js"></script>
 </body>
