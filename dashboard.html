@@ -3309,6 +3309,7 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
         <button class="intake-filter-btn" data-filter="review_pending" onclick="setIntakeFilter('review_pending',this)">Review Pending</button>
         <button class="intake-filter-btn" data-filter="ready" onclick="setIntakeFilter('ready',this)">✦ Ready to Schedule</button>
         <button class="intake-filter-btn" data-filter="scheduled" onclick="setIntakeFilter('scheduled',this)">Scheduled</button>
+        <button class="intake-filter-btn" data-filter="reschedule_requested" onclick="setIntakeFilter('reschedule_requested',this)">🔄 Reschedule Requests</button>
         <button class="intake-filter-btn" data-filter="completed" onclick="setIntakeFilter('completed',this)">Completed</button>
         <button class="intake-filter-btn" data-filter="cancelled" onclick="setIntakeFilter('cancelled',this)">Cancelled</button>
       </div>
@@ -11049,14 +11050,16 @@ var LIFECYCLE_COLORS={
   submitted:'#aaa8cc',payment_requested:'#e8b84b',payment_pending:'#f0a050',
   payment_received:'#44cc88',intake_pending:'#e8b84b',intake_complete:'#66ddaa',
   review_pending:'#b08ae0',review_complete:'#66ddaa',session_ready:'#00ffaa',
-  session_scheduled:'#44cc88',session_completed:'#4488cc',aftercare_sent:'#66aacc',
+  session_scheduled:'#44cc88',reschedule_requested:'#f0a050',rescheduled:'#9b7fe8',
+  session_completed:'#4488cc',aftercare_sent:'#66aacc',
   closed:'#4a4580',cancelled:'#cc4455'
 };
 var LIFECYCLE_LABELS={
   submitted:'New Submission',payment_requested:'Payment Link Sent',payment_pending:'Payment Claimed',
   payment_received:'Payment Confirmed',intake_pending:'Intake Pending',intake_complete:'Intake Complete',
   review_pending:'Review Pending',review_complete:'Review Complete',session_ready:'READY TO SCHEDULE',
-  session_scheduled:'Session Scheduled',session_completed:'Session Complete',aftercare_sent:'Aftercare Sent',
+  session_scheduled:'Session Scheduled',reschedule_requested:'Reschedule Requested',
+  rescheduled:'Rescheduled',session_completed:'Session Complete',aftercare_sent:'Aftercare Sent',
   closed:'Closed',cancelled:'Cancelled'
 };
 
@@ -11071,6 +11074,8 @@ function saveLC(id,lc){var s=getLCStore();lc.updated_at=new Date().toISOString()
 function computeStage(lc){
   if(lc.stage==='cancelled')return 'cancelled';
   if(lc.session_status==='completed')return 'session_completed';
+  if(lc.session_status==='reschedule_requested')return 'reschedule_requested';
+  if(lc.session_status==='rescheduled')return 'rescheduled';
   if(lc.session_status==='scheduled')return 'session_scheduled';
   var payOk=lc.payment_status==='paid'||lc.payment_status==='waived';
   var intakeOk=lc.intake_status==='complete'||lc.intake_status==='skipped';
@@ -11087,6 +11092,7 @@ function computeStage(lc){
 function stageToFilter(stage){
   if(stage==='cancelled')return 'cancelled';
   if(stage==='session_completed'||stage==='aftercare_sent'||stage==='closed')return 'completed';
+  if(stage==='reschedule_requested'||stage==='rescheduled')return 'reschedule_requested';
   if(stage==='session_scheduled')return 'scheduled';
   if(stage==='session_ready')return 'ready';
   if(stage==='review_pending'||stage==='review_complete')return 'review_pending';
@@ -11102,7 +11108,7 @@ function setIntakeFilter(filter,btn){
 
 function renderIntakeMetrics(all){
   var el=document.getElementById('intakeMetrics');if(!el)return;
-  var counts={awaiting_payment:0,intake_pending:0,review_pending:0,ready:0,scheduled:0,completed:0,cancelled:0};
+  var counts={awaiting_payment:0,intake_pending:0,review_pending:0,ready:0,scheduled:0,reschedule_requested:0,completed:0,cancelled:0};
   var now=Date.now();var weekMs=7*24*60*60*1000;var thisWeek=0;
   all.forEach(function(r){
     var lc=getLC(r.ts);var stage=computeStage(lc);var f=stageToFilter(stage);
@@ -11116,6 +11122,7 @@ function renderIntakeMetrics(all){
     {label:'Intake Pending',value:counts.intake_pending,color:'#e8b84b'},
     {label:'Review Pending',value:counts.review_pending,color:'#b08ae0'},
     {label:'Ready to Schedule',value:counts.ready,color:'#00ffaa'},
+    {label:'Reschedule Requests',value:counts.reschedule_requested,color:'#f0a050'},
     {label:'This Week',value:thisWeek,color:'#66ddaa'},
     {label:'Conversion',value:conversion+'%',color:'#4488cc'}
   ];
@@ -11265,6 +11272,124 @@ function cancelBookingLC(id){
   var lc=getLC(id);lc.stage='cancelled';saveLC(id,lc);renderIntake();
 }
 
+/* ====== RESCHEDULE MODAL ====== */
+var _reschedBookingId=null;var _reschedSlotId=null;
+
+function openReschedModal(bookingId){
+  _reschedBookingId=bookingId;_reschedSlotId=null;
+  var pending=[];try{pending=JSON.parse(localStorage.getItem('rea_pending_bookings')||'[]');}catch(e){}
+  var waitlist=[];try{waitlist=JSON.parse(localStorage.getItem('rea_waitlist')||'[]');}catch(e){}
+  var r=pending.concat(waitlist).filter(function(b){return b.ts==bookingId;})[0]||{};
+  var lc=getLC(bookingId);
+  // Mark as reschedule_requested immediately
+  lc.session_status='reschedule_requested';
+  lc.reschedule_requested_at=new Date().toISOString();
+  saveLC(bookingId,lc);
+  document.getElementById('reschedClientName').textContent=r.name||'Client';
+  document.getElementById('reschedService').textContent=r.service||'Energy Session';
+  var curDate=lc.scheduled_date||'Not on file';
+  var curTime=lc.scheduled_time||'';
+  document.getElementById('reschedCurrentAppt').textContent=curDate+(curTime?' at '+curTime:'');
+  document.getElementById('reschedReason').value='';
+  document.getElementById('reschedNewDate').value='';
+  document.getElementById('reschedNewTime').value='';
+  document.getElementById('reschedSlots').innerHTML=reschedSlotsPlaceholder();
+  document.getElementById('reschedError').style.display='none';
+  document.getElementById('reschedModal').style.display='flex';
+  renderIntake();
+}
+function reschedSlotsPlaceholder(){return '<p style="font-family:EB Garamond,serif;font-size:13px;color:#6662aa;font-style:italic">Pick a new date to see available slots.</p>';}
+function closeReschedModal(){document.getElementById('reschedModal').style.display='none';_reschedBookingId=null;_reschedSlotId=null;}
+
+function cancelReschedRequest(id){
+  var lc=getLC(id);
+  lc.session_status='scheduled';
+  delete lc.reschedule_requested_at;
+  saveLC(id,lc);renderIntake();
+}
+
+function reschedLoadSlots(){
+  var date=document.getElementById('reschedNewDate').value;if(!date)return;
+  _reschedSlotId=null;document.getElementById('reschedNewTime').value='';
+  var el=document.getElementById('reschedSlots');
+  el.innerHTML='<p style="font-family:EB Garamond,serif;font-size:13px;color:#6662aa">Loading...</p>';
+  fetch('/.netlify/functions/availability?date='+date+'&_='+Date.now())
+    .then(function(r){return r.json();})
+    .then(function(resp){
+      var available=(resp.slots||[]).filter(function(s){return s.status==='available';});
+      if(!available.length){
+        el.innerHTML='<p style="font-family:EB Garamond,serif;font-size:13px;color:#e8b84b;font-style:italic">No open slots on this date — enter time manually below.</p>';
+        return;
+      }
+      el.innerHTML=available.map(function(s){
+        return '<button onclick="reschedPickSlot(\''+s.id+'\',\''+s.time+'\',this)" data-rslot="'+s.id+'" style="display:block;width:100%;text-align:left;padding:10px 14px;margin-bottom:6px;background:#0a0818;border:1px solid #4a458077;color:#c0bde0;border-radius:6px;cursor:pointer;font-family:EB Garamond,serif;font-size:14px">'+s.displayTime+' <span style="color:#44cc88;font-size:12px;margin-left:6px">Available</span></button>';
+      }).join('');
+    })
+    .catch(function(){el.innerHTML='<p style="font-family:EB Garamond,serif;font-size:13px;color:#cc4455">Could not load slots — enter time manually.</p>';});
+}
+
+function reschedPickSlot(slotId,slotTime,btn){
+  _reschedSlotId=slotId;
+  document.getElementById('reschedNewTime').value=slotTime;
+  document.querySelectorAll('[data-rslot]').forEach(function(b){b.style.borderColor='#4a458077';b.style.background='#0a0818';b.style.color='#c0bde0';});
+  btn.style.borderColor='#f0a050';btn.style.background='#f0a05012';btn.style.color='#f0a050';
+}
+
+function confirmReschedule(){
+  var newDate=document.getElementById('reschedNewDate').value;
+  var newTime=document.getElementById('reschedNewTime').value;
+  var reason=document.getElementById('reschedReason').value||'Not specified';
+  var errEl=document.getElementById('reschedError');
+  if(!newDate||!newTime){errEl.textContent='Please select a new date and time.';errEl.style.display='block';return;}
+  errEl.style.display='none';
+  var lc=getLC(_reschedBookingId);
+  var sessionId=lc.supabase_session_id;
+  var token=sessionStorage.getItem('rea_api_token');
+  var confirmBtn=document.querySelector('#reschedModal button[onclick="confirmReschedule()"]');
+  if(confirmBtn){confirmBtn.textContent='Rescheduling...';confirmBtn.disabled=true;}
+
+  var doReschedule=function(){
+    // Update lifecycle locally
+    lc.prev_scheduled_date=lc.scheduled_date;
+    lc.prev_scheduled_time=lc.scheduled_time;
+    lc.scheduled_date=newDate;
+    lc.scheduled_time=newTime;
+    lc.session_status='rescheduled';
+    lc.reschedule_count=(lc.reschedule_count||0)+1;
+    lc.reschedule_reason=reason;
+    lc.last_rescheduled_at=new Date().toISOString();
+    saveLC(_reschedBookingId,lc);
+    closeReschedModal();renderIntake();
+    syncSlotsFromAPI();
+    showToast('Session rescheduled to '+newDate,'#f0a050');
+  };
+
+  if(sessionId){
+    // Call sessions.js PATCH with reschedule action
+    fetch('/.netlify/functions/sessions?id='+sessionId,{
+      method:'PATCH',
+      headers:{'Content-Type':'application/json','X-Dashboard-Token':token},
+      body:JSON.stringify({
+        action:'reschedule',
+        new_date:newDate,
+        new_time:newTime,
+        new_slot_id:_reschedSlotId||null,
+        reason:reason,
+        requested_by:'practitioner',
+      }),
+    })
+    .then(function(res){return res.json();})
+    .then(function(resp){
+      if(resp.error){errEl.textContent=resp.error;errEl.style.display='block';if(confirmBtn){confirmBtn.textContent='CONFIRM RESCHEDULE';confirmBtn.disabled=false;}return;}
+      doReschedule();
+    })
+    .catch(function(e){errEl.textContent='Error: '+e.message;errEl.style.display='block';if(confirmBtn){confirmBtn.textContent='CONFIRM RESCHEDULE';confirmBtn.disabled=false;}});
+  }else{
+    // No Supabase session yet — just update locally
+    doReschedule();
+  }
+}
+
 function renderIntake(){
   var pending=[];try{pending=JSON.parse(localStorage.getItem('rea_pending_bookings')||'[]');}catch(e){}
   var waitlist=[];try{waitlist=JSON.parse(localStorage.getItem('rea_waitlist')||'[]');}catch(e){}
@@ -11330,8 +11455,12 @@ function renderIntake(){
               '<button onclick="advanceReview(\''+r.ts+'\',\'skip\')" style="'+lcBtnStyle('#6662aa')+'">Skip Review</button>';
     }else if(stage==='session_ready'){
       actions='<button onclick="advanceSession(\''+r.ts+'\',\'schedule\')" style="'+lcBtnStyle('#00ffaa')+'">✦ Mark as Scheduled</button>';
-    }else if(stage==='session_scheduled'){
-      actions='<button onclick="advanceSession(\''+r.ts+'\',\'complete\')" style="'+lcBtnStyle('#4488cc')+'">Mark Session Complete</button>';
+    }else if(stage==='session_scheduled'||stage==='rescheduled'){
+      actions='<button onclick="advanceSession(\''+r.ts+'\',\'complete\')" style="'+lcBtnStyle('#4488cc')+'">Mark Session Complete</button>'+
+              '<button onclick="openReschedModal(\''+r.ts+'\')" style="'+lcBtnStyle('#f0a050')+'">🔄 Reschedule</button>';
+    }else if(stage==='reschedule_requested'){
+      actions='<button onclick="openReschedModal(\''+r.ts+'\')" style="'+lcBtnStyle('#f0a050')+'">🔄 Select New Time</button>'+
+              '<button onclick="cancelReschedRequest(\''+r.ts+'\')" style="'+lcBtnStyle('#6662aa')+'">Keep Original</button>';
     }else if(stage==='session_completed'){
       actions='<button onclick="advanceSession(\''+r.ts+'\',\'aftercare\')" style="'+lcBtnStyle('#66aacc')+'">Mark Aftercare Sent</button>';
     }
@@ -11743,6 +11872,51 @@ purgeTestEntries();
 <script src="lp-module.js"></script>
 <script src="communications-module.js"></script>
 <script src="pin-lock.js"></script>
+<!-- ====== RESCHEDULE MODAL ====== -->
+<div id="reschedModal" style="display:none;position:fixed;inset:0;background:#00000099;z-index:9500;align-items:center;justify-content:center">
+  <div style="background:#0d0b1e;border:1px solid #f0a05055;border-radius:14px;padding:30px 32px;width:92%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 0 60px #f0a05014">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px">
+      <div>
+        <div style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#f0a050;margin-bottom:6px">🔄 RESCHEDULE SESSION</div>
+        <div id="reschedClientName" style="font-family:'Cinzel',serif;font-size:20px;color:#e0ddf8"></div>
+        <div id="reschedService" style="font-family:'EB Garamond',serif;font-size:13px;color:#8a88c0;margin-top:3px"></div>
+      </div>
+      <button onclick="closeReschedModal()" style="background:transparent;border:1px solid #3a3860;color:#6662aa;border-radius:6px;padding:6px 10px;cursor:pointer;font-size:16px">&#x2715;</button>
+    </div>
+
+    <div style="background:#f0a05010;border:1px solid #f0a05033;border-radius:8px;padding:12px 14px;margin-bottom:18px">
+      <div style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.15em;color:#f0a050;margin-bottom:4px">CURRENT APPOINTMENT</div>
+      <div id="reschedCurrentAppt" style="font-family:'EB Garamond',serif;font-size:15px;color:#e0ddf8"></div>
+    </div>
+
+    <label style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.18em;color:#f0a050;display:block;margin-bottom:6px">REASON FOR RESCHEDULE</label>
+    <select id="reschedReason" style="width:100%;box-sizing:border-box;background:#0a0818;border:1px solid #4a4580;color:#e0ddf8;padding:11px 14px;border-radius:6px;font-family:'EB Garamond',serif;font-size:15px;margin-bottom:16px">
+      <option value="client_request">Client Request</option>
+      <option value="practitioner_initiated">Practitioner Initiated</option>
+      <option value="emergency">Emergency</option>
+      <option value="administrative">Administrative</option>
+    </select>
+
+    <label style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.18em;color:#f0a050;display:block;margin-bottom:6px">NEW DATE</label>
+    <input type="date" id="reschedNewDate" onchange="reschedLoadSlots()" style="width:100%;box-sizing:border-box;background:#0a0818;border:1px solid #4a4580;color:#e0ddf8;padding:11px 14px;border-radius:6px;font-family:'EB Garamond',serif;font-size:15px;margin-bottom:16px">
+
+    <label style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.18em;color:#f0a050;display:block;margin-bottom:8px">OPEN SLOTS ON NEW DATE</label>
+    <div id="reschedSlots" style="margin-bottom:16px"><p style="font-family:'EB Garamond',serif;font-size:13px;color:#6662aa;font-style:italic">Pick a date above to see available slots.</p></div>
+
+    <label style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.18em;color:#f0a050;display:block;margin-bottom:6px">NEW TIME (24h or from slot above)</label>
+    <input type="time" id="reschedNewTime" style="width:100%;box-sizing:border-box;background:#0a0818;border:1px solid #4a4580;color:#e0ddf8;padding:11px 14px;border-radius:6px;font-family:'EB Garamond',serif;font-size:15px;margin-bottom:20px">
+
+    <div id="reschedError" style="display:none;font-family:'EB Garamond',serif;font-size:13px;color:#cc4455;margin-bottom:14px;padding:10px;background:#cc445514;border-radius:6px;border:1px solid #cc445544"></div>
+
+    <div style="display:flex;gap:10px">
+      <button onclick="confirmReschedule()" style="flex:1;padding:13px;background:#f0a05018;border:1px solid #f0a05088;color:#f0a050;font-family:'Cinzel',serif;font-size:10px;letter-spacing:.18em;border-radius:6px;cursor:pointer">🔄 CONFIRM RESCHEDULE</button>
+      <button onclick="closeReschedModal()" style="padding:13px 18px;background:transparent;border:1px solid #3a3860;color:#6662aa;font-family:'Cinzel',serif;font-size:10px;border-radius:6px;cursor:pointer">Cancel</button>
+    </div>
+
+    <p style="font-family:'EB Garamond',serif;font-size:12px;color:#3a3860;margin-top:16px;margin-bottom:0;text-align:center">Old slot is released and new slot reserved automatically.</p>
+  </div>
+</div>
+
 <!-- ====== SCHEDULING MODAL ====== -->
 <div id="schedModal" style="display:none;position:fixed;inset:0;background:#00000099;z-index:9500;align-items:center;justify-content:center">
   <div style="background:#0d0b1e;border:1px solid #00ffaa55;border-radius:14px;padding:30px 32px;width:92%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 0 60px #00ffaa14">

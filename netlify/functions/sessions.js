@@ -105,6 +105,76 @@ exports.handler = async function(event) {
 
     const { data: old } = await sb.from('sessions').select('*').eq('id', params.id).single();
 
+    // ── RESCHEDULE action — atomic slot swap ─────────────────────────
+    if (body.action === 'reschedule') {
+      if (!body.new_date || !body.new_time) {
+        return respond(400, { error: 'new_date and new_time are required for reschedule.' });
+      }
+
+      // 1. Release old slot (matched by session_id link)
+      await sb.from('availability_slots')
+        .update({ status: 'available', session_id: null })
+        .eq('session_id', params.id);
+
+      // 2. Reserve new slot — prefer explicit slot ID, fall back to date+time lookup
+      const timeNorm = body.new_time.length === 5 ? body.new_time + ':00' : body.new_time;
+      if (body.new_slot_id) {
+        const { data: newSlot } = await sb
+          .from('availability_slots').select('id,status').eq('id', body.new_slot_id).single();
+        if (newSlot && newSlot.status === 'booked') {
+          return respond(409, { error: 'That slot is already booked. Choose a different time.' });
+        }
+        await sb.from('availability_slots')
+          .update({ status: 'booked', session_id: params.id })
+          .eq('id', body.new_slot_id);
+      } else {
+        const { data: slotByTime } = await sb
+          .from('availability_slots')
+          .select('id,status')
+          .eq('slot_date', body.new_date)
+          .eq('slot_time', timeNorm)
+          .maybeSingle();
+        if (slotByTime) {
+          if (slotByTime.status === 'booked') {
+            return respond(409, { error: 'That time slot is already booked. Choose a different time.' });
+          }
+          await sb.from('availability_slots')
+            .update({ status: 'booked', session_id: params.id })
+            .eq('id', slotByTime.id);
+        }
+      }
+
+      // 3. Update session record
+      const reschedCount = (old?.reschedule_count || 0) + 1;
+      const { data: rescheduled, error: rErr } = await sb.from('sessions')
+        .update({
+          session_date:          body.new_date,
+          session_time:          body.new_time,
+          status:                'confirmed',
+          reschedule_count:      reschedCount,
+          reschedule_reason:     body.reason     || null,
+          last_rescheduled_at:   new Date().toISOString(),
+          last_rescheduled_by:   body.requested_by === 'client'
+                                   ? (old?.client_name || 'client')
+                                   : auth.user.email,
+        })
+        .eq('id', params.id)
+        .select().single();
+      if (rErr) return respond(500, { error: rErr.message });
+
+      await log({
+        actor: auth.user.email, action: 'session_rescheduled',
+        tableName: 'sessions', recordId: params.id,
+        oldData: { session_date: old?.session_date, session_time: old?.session_time },
+        newData: { session_date: body.new_date, session_time: body.new_time, reschedule_count: reschedCount },
+        context: `Session rescheduled ${old?.session_date} → ${body.new_date}. Reason: ${body.reason || 'not specified'}`,
+        ip,
+      });
+
+      return respond(200, { session: rescheduled, rescheduled: true, reschedule_count: reschedCount });
+    }
+
+    // ── Generic field update ─────────────────────────────────────────
     const allowed = ['status','payment_status','amount_due','amount_paid','session_date','session_time','service','location_type','seller_notes','square_booking_id','state_before','state_after'];
     const updates = {};
     allowed.forEach(k => { if (body[k] !== undefined) updates[k] = body[k]; });
