@@ -279,11 +279,11 @@ footer a:hover,footer a:focus-visible{color:#fff0b8 !important;border-bottom-col
 .pay-method-btn:hover{border-color:#e8b84b88;color:#e8b84bcc}
 
 /* Client booking calendar */
-.client-cal-day{border-radius:6px;padding:7px 3px;text-align:center;min-height:52px;cursor:pointer;transition:all .15s;border:1px solid #2a2850;background:transparent}
+.client-cal-day{border-radius:6px;padding:7px 3px;text-align:center;min-height:52px;cursor:pointer;transition:all .15s;border:1px solid #3a3870;background:#0a0820}
 .client-cal-day.has-slots{background:#0d2a1a;border-color:#22cc6644;cursor:pointer}
 .client-cal-day.has-slots:hover{border-color:#44cc88;background:#0f3320}
-.client-cal-day.no-slots{opacity:.35;cursor:default}
-.client-cal-day.past{opacity:.2;cursor:default}
+.client-cal-day.no-slots{opacity:.6;cursor:default;border-color:#2a2860}
+.client-cal-day.past{opacity:.5;cursor:default;border-color:#2a2860}
 .client-cal-day.selected-date{border-color:#e8b84b!important;background:#1a1206!important}
 .client-time-btn{border-radius:6px;padding:10px 6px;text-align:center;cursor:pointer;transition:all .15s;border:1px solid #2a2850;background:transparent;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.05em;color:#aaa8cc}
 .client-time-btn.available{border-color:#22cc6644;color:#88ddaa;background:#0d2a1a}
@@ -4027,7 +4027,7 @@ function renderClientCal(){
     var isToday=cellDate.getTime()===today.getTime();
     var cell=document.createElement('div');
     cell.className='client-cal-day'+(isPast?' past':(hasSlots?(isSelected?' has-slots selected-date':' has-slots'):(cellDate>=today?' no-slots':' past')));
-    var dayColor=isPast?'#3a3860':(hasSlots?'#88ddaa':'#4a4870');
+    var dayColor=isPast?'#7070a0':(hasSlots?'#88ddaa':'#8888bb');
     if(isSelected){dayColor='#e8b84b';}
     cell.innerHTML='<div style="font-family:Cinzel,serif;font-size:12px;color:'+dayColor+(isToday?';font-weight:700':'')+'">'+(isToday?'<span style="border-bottom:2px solid #e8b84b">'+day+'</span>':day)+'</div>'+
       (!isPast&&hasSlots?'<div style="font-size:9px;color:#44cc8888;margin-top:2px">'+daySlots.length+' slot'+(daySlots.length!==1?'s':'')+'</div>':'');
