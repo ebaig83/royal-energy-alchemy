@@ -161,46 +161,45 @@ VALUES
   ('22222222-0001-0000-0000-000000000025','11111111-0025-0000-0000-000000000025','Renata Silva','Distance Healing','remote','2026-03-18','13:00','completed',2,4,150,150,'paid','Energy healing and revitalization. Good clearing. Warm field.','2026-03-18')
 ON CONFLICT (id) DO NOTHING;
 
--- ── 3. SESSION NOTES (40 notes covering key sessions) ────────
--- chief_concern is critical for pattern detection
-INSERT INTO session_notes (id, session_id, client_id, chief_concern, energy_findings, removals_done, created_at)
+-- ── 3. SESSION NOTES (23 notes — chief_concern + energy_findings for pattern detection) ──
+INSERT INTO session_notes (id, session_id, client_id, chief_concern, energy_findings, created_at)
 VALUES
-  ('33333333-0001-0000-0000-000000000001','22222222-0001-0000-0000-000000000001','11111111-0001-0000-0000-000000000001','energetic overwhelm and anxiety','Dense energy in upper chakras. Solar plexus blocked.','Cleared anxiety imprints from field. Released tension cords.','2025-10-01'),
-  ('33333333-0002-0000-0000-000000000001','22222222-0002-0000-0000-000000000001','11111111-0001-0000-0000-000000000001','energetic overwhelm and anxiety','Solar plexus clearing progressing. Lighter field.','Deepened chakra clearing. Released residual anxiety patterns.','2025-11-01'),
-  ('33333333-0003-0000-0000-000000000001','22222222-0003-0000-0000-000000000001','11111111-0001-0000-0000-000000000001','energetic overwhelm and anxiety','Field now clear. Client maintaining grounding.','Final anxiety clearing. Grounding cords installed.','2026-01-15'),
+  ('33333333-0001-0000-0000-000000000001','22222222-0001-0000-0000-000000000001','11111111-0001-0000-0000-000000000001','energetic overwhelm and anxiety','Dense energy in upper chakras. Solar plexus blocked.','2025-10-01'),
+  ('33333333-0002-0000-0000-000000000001','22222222-0002-0000-0000-000000000001','11111111-0001-0000-0000-000000000001','energetic overwhelm and anxiety','Solar plexus clearing progressing. Lighter field.','2025-11-01'),
+  ('33333333-0003-0000-0000-000000000001','22222222-0003-0000-0000-000000000001','11111111-0001-0000-0000-000000000001','energetic overwhelm and anxiety','Field now clear. Client maintaining grounding.','2026-01-15'),
 
-  ('33333333-0001-0000-0000-000000000002','22222222-0001-0000-0000-000000000002','11111111-0002-0000-0000-000000000002','chronic pain and root chakra blockage','Root chakra severely blocked. Pain imprints throughout lower field.','Cleared pain imprints. Root chakra activation.','2025-10-10'),
-  ('33333333-0002-0000-0000-000000000002','22222222-0002-0000-0000-000000000002','11111111-0002-0000-0000-000000000002','chronic pain and root chakra blockage','Root chakra opening. Pain response reducing.','Continued root work. Removed etheric pain attachments.','2025-11-15'),
+  ('33333333-0001-0000-0000-000000000002','22222222-0001-0000-0000-000000000002','11111111-0002-0000-0000-000000000002','chronic pain and root chakra blockage','Root chakra severely blocked. Pain imprints throughout lower field.','2025-10-10'),
+  ('33333333-0002-0000-0000-000000000002','22222222-0002-0000-0000-000000000002','11111111-0002-0000-0000-000000000002','chronic pain and root chakra blockage','Root chakra opening. Pain response reducing.','2025-11-15'),
 
-  ('33333333-0001-0000-0000-000000000005','22222222-0001-0000-0000-000000000005','11111111-0005-0000-0000-000000000005','trauma and energetic overwhelm','Multiple energy bodies disrupted. Strong trauma imprinting.','Deep trauma clearing. Multiple energy body alignment.','2025-10-05'),
-  ('33333333-0002-0000-0000-000000000005','22222222-0002-0000-0000-000000000005','11111111-0005-0000-0000-000000000005','trauma and energetic overwhelm','Trauma field lightening. Emotional body responding well.','Second layer trauma removal. Emotional body support.','2025-11-10'),
-  ('33333333-0003-0000-0000-000000000005','22222222-0003-0000-0000-000000000005','11111111-0005-0000-0000-000000000005','trauma and energetic overwhelm','Major shift in trauma field. Client lighter than ever.','Trauma clearing near complete. Integration support.','2026-01-05'),
+  ('33333333-0001-0000-0000-000000000005','22222222-0001-0000-0000-000000000005','11111111-0005-0000-0000-000000000005','trauma and energetic overwhelm','Multiple energy bodies disrupted. Strong trauma imprinting.','2025-10-05'),
+  ('33333333-0002-0000-0000-000000000005','22222222-0002-0000-0000-000000000005','11111111-0005-0000-0000-000000000005','trauma and energetic overwhelm','Trauma field lightening. Emotional body responding well.','2025-11-10'),
+  ('33333333-0003-0000-0000-000000000005','22222222-0003-0000-0000-000000000005','11111111-0005-0000-0000-000000000005','trauma and energetic overwhelm','Major shift in trauma field. Client lighter than ever.','2026-01-05'),
 
-  ('33333333-0001-0000-0000-000000000006','22222222-0001-0000-0000-000000000006','11111111-0006-0000-0000-000000000006','anxiety and sleep disruption','Crown chakra overactive. Mental field scattered.','Calmed crown chakra. Cleared anxiety loops from mental field.','2025-11-05'),
-  ('33333333-0002-0000-0000-000000000006','22222222-0002-0000-0000-000000000006','11111111-0006-0000-0000-000000000006','anxiety and sleep disruption','Crown settling. Sleep field improving.','Reinforced sleep patterns. Anxiety reduction continued.','2025-12-10'),
+  ('33333333-0001-0000-0000-000000000006','22222222-0001-0000-0000-000000000006','11111111-0006-0000-0000-000000000006','anxiety and sleep disruption','Crown chakra overactive. Mental field scattered.','2025-11-05'),
+  ('33333333-0002-0000-0000-000000000006','22222222-0002-0000-0000-000000000006','11111111-0006-0000-0000-000000000006','anxiety and sleep disruption','Crown settling. Sleep field improving.','2025-12-10'),
 
-  ('33333333-0001-0000-0000-000000000007','22222222-0001-0000-0000-000000000007','11111111-0007-0000-0000-000000000007','chronic fatigue and energy depletion','Root and sacral severely depleted. Energetic drain attachments present.','Removed drain attachments. Root and sacral rebuilding.','2025-11-20'),
+  ('33333333-0001-0000-0000-000000000007','22222222-0001-0000-0000-000000000007','11111111-0007-0000-0000-000000000007','chronic fatigue and energy depletion','Root and sacral severely depleted. Energetic drain attachments present.','2025-11-20'),
 
-  ('33333333-0001-0000-0000-000000000009','22222222-0001-0000-0000-000000000009','11111111-0009-0000-0000-000000000009','grief and emotional overwhelm','Heart chakra heavily blocked with grief energy. Dense emotional field.','Cleared grief energy from heart chakra. Emotional field support.','2025-11-25'),
-  ('33333333-0002-0000-0000-000000000009','22222222-0002-0000-0000-000000000009','11111111-0009-0000-0000-000000000009','grief and emotional overwhelm','Heart chakra opening. Significant emotional release in session.','Deeper grief clearing. Unexpected emotional release facilitated.','2026-01-10'),
-  ('33333333-0003-0000-0000-000000000009','22222222-0003-0000-0000-000000000009','11111111-0009-0000-0000-000000000009','grief and emotional overwhelm','Heart field now clear. Client integrating beautifully.','Final grief clearing. Heart energy restored.','2026-03-05'),
+  ('33333333-0001-0000-0000-000000000009','22222222-0001-0000-0000-000000000009','11111111-0009-0000-0000-000000000009','grief and emotional overwhelm','Heart chakra heavily blocked with grief energy. Dense emotional field.','2025-11-25'),
+  ('33333333-0002-0000-0000-000000000009','22222222-0002-0000-0000-000000000009','11111111-0009-0000-0000-000000000009','grief and emotional overwhelm','Heart chakra opening. Significant emotional release in session.','2026-01-10'),
+  ('33333333-0003-0000-0000-000000000009','22222222-0003-0000-0000-000000000009','11111111-0009-0000-0000-000000000009','grief and emotional overwhelm','Heart field now clear. Client integrating beautifully.','2026-03-05'),
 
-  ('33333333-0001-0000-0000-000000000011','22222222-0001-0000-0000-000000000011','11111111-0011-0000-0000-000000000011','energetic overwhelm and anxiety','Overwhelm patterns throughout field. Root ungrounded.','Cleared overwhelm imprints. Installed grounding cords.','2025-12-15'),
-  ('33333333-0002-0000-0000-000000000011','22222222-0002-0000-0000-000000000011','11111111-0011-0000-0000-000000000011','energetic overwhelm and anxiety','Field grounding better. Anxiety reducing.','Reinforced grounding. Continued anxiety clearing.','2026-02-01'),
+  ('33333333-0001-0000-0000-000000000011','22222222-0001-0000-0000-000000000011','11111111-0011-0000-0000-000000000011','energetic overwhelm and anxiety','Overwhelm patterns throughout field. Root ungrounded.','2025-12-15'),
+  ('33333333-0002-0000-0000-000000000011','22222222-0002-0000-0000-000000000011','11111111-0011-0000-0000-000000000011','energetic overwhelm and anxiety','Field grounding better. Anxiety reducing.','2026-02-01'),
 
-  ('33333333-0001-0000-0000-000000000012','22222222-0001-0000-0000-000000000012','11111111-0012-0000-0000-000000000012','trauma and energetic overwhelm','Complex trauma layering across multiple energy bodies. Dense field.','Initial trauma layer removed. Multiple body alignment begun.','2026-01-03'),
-  ('33333333-0002-0000-0000-000000000012','22222222-0002-0000-0000-000000000012','11111111-0012-0000-0000-000000000012','trauma and energetic overwhelm','Second trauma layer clearing. Remarkable resilience.','Second layer cleared. Emotional body stabilizing.','2026-02-05'),
+  ('33333333-0001-0000-0000-000000000012','22222222-0001-0000-0000-000000000012','11111111-0012-0000-0000-000000000012','trauma and energetic overwhelm','Complex trauma layering across multiple energy bodies. Dense field.','2026-01-03'),
+  ('33333333-0002-0000-0000-000000000012','22222222-0002-0000-0000-000000000012','11111111-0012-0000-0000-000000000012','trauma and energetic overwhelm','Second trauma layer clearing. Remarkable resilience.','2026-02-05'),
 
-  ('33333333-0001-0000-0000-000000000015','22222222-0001-0000-0000-000000000015','11111111-0015-0000-0000-000000000015','spiritual disconnect and lack of grounding','Spiritual connection pathways dimmed. Root unanchored.','Cleared spiritual blocks. Reconnected higher self pathways.','2026-01-18'),
+  ('33333333-0001-0000-0000-000000000015','22222222-0001-0000-0000-000000000015','11111111-0015-0000-0000-000000000015','spiritual disconnect and lack of grounding','Spiritual connection pathways dimmed. Root unanchored.','2026-01-18'),
 
-  ('33333333-0001-0000-0000-000000000017','22222222-0001-0000-0000-000000000017','11111111-0017-0000-0000-000000000017','anxiety and sleep disruption','Scattered mental field. Crown overactive. Root disconnected.','Mental field clearing. Sleep patterns addressed.','2026-01-28'),
+  ('33333333-0001-0000-0000-000000000017','22222222-0001-0000-0000-000000000017','11111111-0017-0000-0000-000000000017','anxiety and sleep disruption','Scattered mental field. Crown overactive. Root disconnected.','2026-01-28'),
 
-  ('33333333-0001-0000-0000-000000000019','22222222-0001-0000-0000-000000000019','11111111-0019-0000-0000-000000000019','trauma and energetic overwhelm','Most complex case to date. Childhood trauma deeply imprinted across all energy bodies.','Initial assessment and first-layer clearing. Careful, methodical work.','2026-02-06'),
-  ('33333333-0002-0000-0000-000000000019','22222222-0002-0000-0000-000000000019','11111111-0019-0000-0000-000000000019','trauma and energetic overwhelm','Field opening significantly post-assessment. Client feeling lighter.','Major clearing session. Trauma patterns visibly shifting.','2026-03-12'),
+  ('33333333-0001-0000-0000-000000000019','22222222-0001-0000-0000-000000000019','11111111-0019-0000-0000-000000000019','trauma and energetic overwhelm','Most complex case to date. Childhood trauma deeply imprinted across all energy bodies.','2026-02-06'),
+  ('33333333-0002-0000-0000-000000000019','22222222-0002-0000-0000-000000000019','11111111-0019-0000-0000-000000000019','trauma and energetic overwhelm','Field opening significantly post-assessment. Client feeling lighter.','2026-03-12'),
 
-  ('33333333-0001-0000-0000-000000000021','22222222-0001-0000-0000-000000000021','11111111-0021-0000-0000-000000000021','energetic overwhelm and anxiety','Anxiety loops present in mental and emotional fields.','Cleared anxiety loops. Grounding foundation installed.','2026-02-14'),
+  ('33333333-0001-0000-0000-000000000021','22222222-0001-0000-0000-000000000021','11111111-0021-0000-0000-000000000021','energetic overwhelm and anxiety','Anxiety loops present in mental and emotional fields.','2026-02-14'),
 
-  ('33333333-0001-0000-0000-000000000022','22222222-0001-0000-0000-000000000022','11111111-0022-0000-0000-000000000022','grief and emotional overwhelm','Profound grief imprinting. Heart and solar plexus both affected.','Heart chakra clearing begun. Grief energy gently released.','2026-02-18')
+  ('33333333-0001-0000-0000-000000000022','22222222-0001-0000-0000-000000000022','11111111-0022-0000-0000-000000000022','grief and emotional overwhelm','Profound grief imprinting. Heart and solar plexus both affected.','2026-02-18')
 ON CONFLICT (id) DO NOTHING;
 
 -- ── 4. SESSION OUTCOMES (40 records) ─────────────────────────
