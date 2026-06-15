@@ -90,7 +90,10 @@ exports.handler = async function(event) {
         content_tags:     body.content_tags     || null,
       };
       const { data, error } = await sb.from('patterns').insert(insert).select().single();
-      if (error) return respond(500, { error: error.message });
+      if (error) {
+        if (error.code === '23505') return respond(409, { error: 'Pattern with this title already exists.', duplicate: true });
+        return respond(500, { error: error.message });
+      }
       await log({ actor: auth.user.email, action: 'created', tableName: 'patterns', recordId: data.id, newData: data, context: `Pattern created: ${data.title}`, ip });
       return respond(201, { pattern: data });
     }
@@ -247,7 +250,11 @@ async function getRecIntelligence(sb) {
     if (!productMap[name]) productMap[name] = { category: r.category, total: 0, helpful: 0, purchased: 0, declined: 0, recommended: 0 };
     productMap[name].total++;
     const s = r.outcome_status || 'recommended';
-    if (productMap[name][s] !== undefined) productMap[name][s]++;
+    // Track specific status buckets (not 'helpful' — that's tracked via HELPFUL_STATUSES to avoid double-counting)
+    if (s === 'purchased') productMap[name].purchased++;
+    else if (s === 'declined') productMap[name].declined++;
+    else if (s === 'recommended') productMap[name].recommended++;
+    // Helpful aggregate — counts helpful, tried, and purchased
     if (HELPFUL_STATUSES.includes(s)) productMap[name].helpful++;
   });
 
@@ -259,7 +266,7 @@ async function getRecIntelligence(sb) {
       purchased:   d.purchased,
       helpful:     d.helpful,
       declined:    d.declined,
-      helpfulRate: d.total > 0 ? Math.round(d.helpful / d.total * 100) : 0,
+      helpfulRate: d.total > 0 ? Math.max(0, Math.min(100, Math.round(d.helpful / d.total * 100))) : 0,
       adoptionRate: d.total > 0 ? Math.round(d.purchased / d.total * 100) : 0,
     }))
     .sort((a, b) => b.helpfulRate - a.helpfulRate || b.total - a.total);
@@ -495,7 +502,7 @@ async function detectPatterns(sb, actor, ip) {
   // Upsert candidates (conflict on title — update count if higher)
   const saved = [];
   for (const candidate of candidates) {
-    const { data: existing } = await sb.from('patterns').select('id,supporting_count').eq('title', candidate.title).maybeSingle();
+    const { data: existing } = await sb.from('patterns').select('*').eq('title', candidate.title).maybeSingle();
     if (existing) {
       if (candidate.supporting_count > existing.supporting_count) {
         const { data } = await sb.from('patterns').update({
