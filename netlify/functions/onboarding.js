@@ -282,7 +282,21 @@ exports.handler = async function(event) {
       .from('intakes').select('*').eq('id', prm.id).single();
     if (fetchErr || !current) return respond(404, { error: 'Intake not found.' });
 
-    // ── Guard: ready_for_session requires completed review ───────────
+    // ── Guard: reviewed requires intake content ──────────────────────
+    if (updates.intake_status === 'reviewed') {
+      const hasResponses = current.responses &&
+        Object.values(current.responses).some(Boolean);
+      const hasSummary   = !!(current.summary || updates.summary);
+      if (!hasResponses && !hasSummary) {
+        return respond(422, {
+          error: 'Cannot mark reviewed — no intake content exists.',
+          detail: 'The intake has no questionnaire responses or summary to review.',
+          rule:   'review_complete:requires_intake_data',
+        });
+      }
+    }
+
+    // ── Guard: ready_for_session requires review + payment eligibility ─
     if (updates.intake_status === 'ready_for_session') {
       const hasResponses = current.responses &&
         Object.values(current.responses).some(Boolean);
@@ -294,25 +308,49 @@ exports.handler = async function(event) {
         return respond(422, {
           error: 'Intake must be completed and reviewed before the session can proceed.',
           detail: 'Written intake requires questionnaire responses and a generated summary.',
+          rule:   'ready_for_session:requires_written_intake',
         });
       }
       if (!wasReviewed) {
         return respond(422, {
           error: 'Intake must be completed and reviewed before the session can proceed.',
           detail: 'Mark the intake as Reviewed before advancing to Ready for Session.',
+          rule:   'ready_for_session:requires_review',
+        });
+      }
+
+      // Payment eligibility: unpaid/pending blocks session confirmation
+      const { data: pkg } = await sb
+        .from('onboarding_packages').select('payment_status').eq('intake_id', prm.id).single();
+      const payStatus = pkg?.payment_status || 'unpaid';
+      if (payStatus === 'unpaid') {
+        return respond(422, {
+          error: 'Session cannot be confirmed until payment is received.',
+          detail: 'Payment status is unpaid. Mark payment as Pending or Paid before advancing.',
+          payment_status: payStatus,
+          rule:   'ready_for_session:requires_payment_not_unpaid',
         });
       }
     }
 
-    // ── Guard: reviewed requires content ─────────────────────────────
-    if (updates.intake_status === 'reviewed') {
-      const hasResponses = current.responses &&
-        Object.values(current.responses).some(Boolean);
-      const hasSummary   = !!(current.summary || updates.summary);
-      if (!hasResponses && !hasSummary) {
+    // ── Guard: AI intake requires consent + scheduling fields ─────────
+    if (current.method === 'ai_call' &&
+        ['completed', 'ready_for_session', 'reviewed'].includes(updates.intake_status)) {
+      const hasDate    = !!(current.intake_date   || updates.intake_date);
+      const hasTime    = !!(current.intake_time   || updates.intake_time);
+      const hasConsent = current.call_consent && current.ai_consent;
+      if (!hasDate || !hasTime) {
         return respond(422, {
-          error: 'Cannot mark reviewed — no intake content exists.',
-          detail: 'The intake has no questionnaire responses or summary to review.',
+          error: 'AI intake call cannot be advanced — scheduling fields are missing.',
+          detail: 'intake_date and intake_time must be set before advancing an AI intake.',
+          rule:   'ai_intake:requires_scheduling',
+        });
+      }
+      if (!hasConsent) {
+        return respond(422, {
+          error: 'AI intake call cannot be advanced — client consent is missing.',
+          detail: 'call_consent and ai_consent must both be true before advancing.',
+          rule:   'ai_intake:requires_consent',
         });
       }
     }

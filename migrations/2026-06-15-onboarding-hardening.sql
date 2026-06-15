@@ -41,3 +41,45 @@ ALTER TABLE onboarding_packages
   ));
 
 COMMIT;
+
+-- ============================================================
+-- VERIFICATION — run after COMMIT to confirm migration applied
+-- ============================================================
+
+-- 1. Column presence + types
+SELECT column_name, data_type, is_nullable, column_default
+FROM information_schema.columns
+WHERE table_name IN ('intakes', 'onboarding_packages')
+  AND column_name IN (
+    'time_zone',
+    'call_consent',
+    'ai_consent',
+    'recording_consent',
+    'intake_duration_min',
+    'payment_status',
+    'amount_due',
+    'payment_method',
+    'payment_ref',
+    'paid_at'
+  )
+ORDER BY table_name, column_name;
+
+-- Expected: 10 rows
+-- intakes      → ai_consent, call_consent, intake_duration_min, recording_consent, time_zone
+-- onboarding_packages → amount_due, paid_at, payment_method, payment_ref, payment_status
+
+-- 2. Package status constraint (must include needs_followup)
+SELECT conname, pg_get_constraintdef(oid) AS constraint_definition
+FROM pg_constraint
+WHERE conrelid = 'onboarding_packages'::regclass
+  AND conname = 'onboarding_packages_package_status_check';
+
+-- Expected: 1 row, constraint includes 'needs_followup' and 'cancelled'
+
+-- 3. Payment index
+SELECT indexname, indexdef
+FROM pg_indexes
+WHERE tablename = 'onboarding_packages'
+  AND indexname = 'idx_ob_pkg_payment';
+
+-- Expected: 1 row
