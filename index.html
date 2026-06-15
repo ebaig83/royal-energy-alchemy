@@ -278,19 +278,80 @@ footer a:hover,footer a:focus-visible{color:#fff0b8 !important;border-bottom-col
 .pay-method-btn.active{background:#e8b84b18;border-color:#e8b84b;color:#e8b84b}
 .pay-method-btn:hover{border-color:#e8b84b88;color:#e8b84bcc}
 
-/* Client booking calendar */
-.client-cal-day{border-radius:8px;padding:8px 4px;text-align:center;min-height:62px;cursor:default;transition:all .18s;border:1px solid #3a3870;background:#0c0a22}
-.client-cal-day.has-slots{background:#082018;border:2px solid #33ee88;box-shadow:0 0 10px #22cc6633;cursor:pointer}
-.client-cal-day.has-slots:hover{background:#0d2e20;border-color:#66ffaa;box-shadow:0 0 16px #44ee8855;transform:scale(1.04)}
-.client-cal-day.no-slots{background:#0e0c22;border-color:#2e2a58;cursor:default}
-.client-cal-day.past{background:#080618;border-color:#1e1c38;cursor:default;opacity:.55}
-.client-cal-day.selected-date{border:2px solid #e8b84b!important;background:#1c1608!important;box-shadow:0 0 14px #e8b84b66!important}
-.client-time-btn{border-radius:8px;padding:12px 8px;text-align:center;cursor:pointer;transition:all .15s;border:1px solid #3a3870;background:#0c0a22;font-family:'Cinzel',serif;font-size:12px;letter-spacing:.04em;color:#c0bedd}
-.client-time-btn.available{border:2px solid #33ee8888;color:#aaffd0;background:#082018}
-.client-time-btn.available:hover{border-color:#66ffaa;background:#0d2e20;color:#ccffe8;box-shadow:0 0 10px #33ee8844}
-.client-time-btn.sel-primary{border:2px solid #e8b84b!important;background:#1c1608!important;color:#f8e090!important;box-shadow:0 0 12px #e8b84b55!important}
-.client-time-btn.sel-backup{border:2px solid #b08ae0!important;background:#120a28!important;color:#d4b8f8!important}
-.client-time-btn.booked{opacity:.28;cursor:default;text-decoration:line-through;border-color:#2a2850}
+/* ── CLIENT BOOKING CALENDAR ── */
+.rea-cal-wrap{width:100%;max-width:680px;margin:0 auto}
+.rea-next-avail{display:none;background:linear-gradient(135deg,#082e18,#0a1a08);border:2px solid #33ee88;border-radius:12px;padding:18px 22px;margin-bottom:20px;text-align:center}
+.rea-next-avail-label{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.35em;color:#44ffaa;text-transform:uppercase;margin-bottom:8px}
+.rea-next-avail-date{font-family:'Cinzel',serif;font-size:17px;color:#f0fcf4;font-weight:600;margin-bottom:2px}
+.rea-next-avail-time{font-family:'EB Garamond',serif;font-size:15px;color:#88ffcc;margin-bottom:12px}
+.rea-next-avail-btn{display:inline-block;background:#1a4a28;border:2px solid #33ee88;color:#aaffd0;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.22em;padding:9px 22px;border-radius:6px;cursor:pointer;transition:all .2s;text-transform:uppercase}
+.rea-next-avail-btn:hover{background:#22cc66;color:#fff;box-shadow:0 0 14px #22cc6688}
+/* legend */
+.rea-cal-legend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px;font-family:'EB Garamond',serif;font-size:14px;align-items:center}
+.rea-legend-dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:middle}
+/* nav */
+.rea-cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:10px}
+.rea-cal-nav-btn{background:#14103a;border:1px solid #5550a0;color:#e8b84b;width:40px;height:40px;border-radius:8px;cursor:pointer;font-size:22px;line-height:1;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+.rea-cal-nav-btn:hover{background:#22186a;border-color:#e8b84b}
+.rea-cal-month{font-family:'Cinzel',serif;font-size:17px;letter-spacing:.2em;color:#f0ecff;font-weight:700;text-align:center;flex:1}
+/* dow headers */
+.rea-cal-dow{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:6px}
+.rea-cal-dow-cell{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.12em;color:#8888cc;text-align:center;padding:5px 0}
+/* grid */
+.rea-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+/* base cell */
+.rea-day{border-radius:10px;padding:8px 4px 6px;text-align:center;min-height:68px;cursor:pointer;transition:transform .12s,box-shadow .12s,border-color .12s;border:1px solid #2a2860;background:#0c0a22;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;box-sizing:border-box}
+.rea-day-num{font-family:'Cinzel',serif;font-size:16px;font-weight:700;line-height:1;margin-bottom:5px}
+.rea-day-badge{font-size:9px;font-weight:700;letter-spacing:.06em;padding:2px 5px;border-radius:4px;line-height:1.3;text-transform:uppercase;margin-bottom:2px}
+.rea-day-count{font-size:10px;line-height:1.2}
+/* states */
+.rea-day.day-past{background:#07060f;border-color:#1a1838;cursor:default;opacity:.45}
+.rea-day.day-past .rea-day-num{color:#4a4880}
+.rea-day.day-avail{background:#071d10;border:2px solid #22ee7755;cursor:pointer}
+.rea-day.day-avail:hover{border-color:#44ff99;box-shadow:0 0 14px #22ee7744;transform:scale(1.05)}
+.rea-day.day-avail .rea-day-num{color:#ccffee}
+.rea-day.day-avail .rea-day-badge{background:#0f3a1e;color:#44ffaa;border:1px solid #33ee7755}
+.rea-day.day-avail .rea-day-count{color:#66cc99}
+.rea-day.day-limited{background:#1a1208;border:2px solid #e8b84b77;cursor:pointer}
+.rea-day.day-limited:hover{border-color:#f8d060;box-shadow:0 0 14px #e8b84b44;transform:scale(1.05)}
+.rea-day.day-limited .rea-day-num{color:#f8e0a0}
+.rea-day.day-limited .rea-day-badge{background:#2a1e04;color:#f8c84a;border:1px solid #e8b84b55}
+.rea-day.day-limited .rea-day-count{color:#c8a050}
+.rea-day.day-full{background:#1a0808;border:1px solid #cc334455;cursor:pointer}
+.rea-day.day-full:hover{border-color:#ee5566;box-shadow:0 0 10px #cc334422}
+.rea-day.day-full .rea-day-num{color:#e0a0a8}
+.rea-day.day-full .rea-day-badge{background:#280a0c;color:#ee6677;border:1px solid #cc334455}
+.rea-day.day-blocked{background:#0c0a1a;border:1px solid #1e1c38;cursor:pointer}
+.rea-day.day-blocked:hover{border-color:#3a3870}
+.rea-day.day-blocked .rea-day-num{color:#6060a0}
+.rea-day.day-blocked .rea-day-badge{background:transparent;color:#4a4888;border:none}
+.rea-day.day-selected{border:2px solid #e8b84b!important;background:#1c1008!important;box-shadow:0 0 16px #e8b84b55!important}
+.rea-day.day-selected .rea-day-num{color:#f8e090!important}
+/* time picker panel */
+.rea-time-panel{display:none;margin-top:14px;padding:20px;background:#080614;border:2px solid #e8b84b33;border-radius:12px}
+.rea-time-panel-date{font-family:'Cinzel',serif;font-size:15px;letter-spacing:.15em;color:#f0ecff;font-weight:700;margin-bottom:4px}
+.rea-time-panel-sub{font-family:'EB Garamond',serif;font-size:15px;color:#a0a0cc;margin-bottom:16px}
+.rea-time-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.rea-time-btn{border-radius:8px;padding:13px 6px;text-align:center;cursor:pointer;transition:all .15s;border:2px solid #33ee8866;background:#071d10;font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:#aaffd0;min-height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.rea-time-btn:hover{border-color:#66ffaa;background:#0d2e20;box-shadow:0 0 10px #33ee8844;color:#ccffe8}
+.rea-time-btn.sel-primary{border-color:#e8b84b!important;background:#1c1008!important;color:#f8e090!important;box-shadow:0 0 12px #e8b84b55!important}
+.rea-time-btn.sel-backup{border-color:#b08ae0!important;background:#120a28!important;color:#d4b8f8!important}
+.rea-time-btn-label{font-size:10px;font-weight:400;letter-spacing:.06em}
+/* empty state inside panel */
+.rea-time-empty{padding:20px;text-align:center;font-family:'EB Garamond',serif;font-size:16px;color:#a0a0cc}
+/* selection summary */
+.rea-slot-summary{margin-top:14px;padding:16px 18px;background:#0d1a12;border:1px solid #22cc6633;border-radius:10px;display:none}
+/* mobile */
+@media(max-width:520px){
+  .rea-day{min-height:54px;padding:6px 2px 4px;border-radius:7px}
+  .rea-day-num{font-size:13px;margin-bottom:3px}
+  .rea-day-badge{font-size:8px;padding:2px 3px}
+  .rea-day-count{font-size:9px}
+  .rea-cal-month{font-size:14px;letter-spacing:.12em}
+  .rea-time-grid{grid-template-columns:repeat(2,1fr)}
+  .rea-time-btn{padding:11px 4px;font-size:12px}
+  .rea-next-avail-date{font-size:15px}
+}
 </style>
 
 <style>
@@ -3112,55 +3173,65 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&modal.clas
         <input type="hidden" id="cf-window1" name="window-1"/>
         <input type="hidden" id="cf-window2" name="window-2"/>
 
-        <div style="margin-bottom:10px">
-          <label style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:#e8b84b88;text-transform:uppercase;display:block;margin-bottom:10px">Select Your Appointment Time</label>
+        <div class="rea-cal-wrap">
+          <label style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:#e8b84b88;text-transform:uppercase;display:block;margin-bottom:14px">Select Your Appointment Time</label>
+
+          <!-- Next Available Banner -->
+          <div class="rea-next-avail" id="nextAvailBanner">
+            <div class="rea-next-avail-label">Next Available Appointment</div>
+            <div class="rea-next-avail-date" id="nextAvailDate"></div>
+            <div class="rea-next-avail-time" id="nextAvailTime"></div>
+            <button type="button" class="rea-next-avail-btn" id="nextAvailBtn">Book This Time</button>
+          </div>
 
           <!-- Legend -->
-          <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:16px;font-family:'EB Garamond',serif;font-size:15px;color:#d0cce8;align-items:center">
-            <span style="display:flex;align-items:center;gap:7px"><span style="display:inline-block;width:14px;height:14px;background:#082018;border:2px solid #33ee88;border-radius:3px;box-shadow:0 0 6px #22cc6633"></span>Available / Open</span>
-            <span style="display:flex;align-items:center;gap:7px"><span style="display:inline-block;width:14px;height:14px;background:#1c1608;border:2px solid #e8b84b;border-radius:3px;box-shadow:0 0 6px #e8b84b33"></span>Selected</span>
-            <span style="display:flex;align-items:center;gap:7px"><span style="display:inline-block;width:14px;height:14px;background:#0c0a22;border:1px solid #3a3870;border-radius:3px"></span>Booked / Unavailable</span>
+          <div class="rea-cal-legend">
+            <span><span class="rea-legend-dot" style="background:#22ee77;box-shadow:0 0 5px #22ee7788"></span>Available</span>
+            <span><span class="rea-legend-dot" style="background:#e8b84b;box-shadow:0 0 5px #e8b84b88"></span>Limited</span>
+            <span><span class="rea-legend-dot" style="background:#cc3344"></span>Full</span>
+            <span><span class="rea-legend-dot" style="background:#2a2860"></span>Unavailable</span>
+            <span><span class="rea-legend-dot" style="background:#e8b84b;border:2px solid #fff;box-shadow:0 0 6px #e8b84b"></span>Selected</span>
           </div>
 
           <!-- Calendar nav -->
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-            <button type="button" onclick="clientCalPrev()" style="background:#1a1640;border:1px solid #6662aa;color:#e8b84b;padding:7px 20px;border-radius:6px;cursor:pointer;font-size:22px;line-height:1;transition:all .15s" onmouseover="this.style.background='#2a2460'" onmouseout="this.style.background='#1a1640'">&#8249;</button>
-            <div id="clientCalTitle" style="font-family:'Cinzel',serif;font-size:16px;letter-spacing:.22em;color:#f0ecff;font-weight:600"></div>
-            <button type="button" onclick="clientCalNext()" style="background:#1a1640;border:1px solid #6662aa;color:#e8b84b;padding:7px 20px;border-radius:6px;cursor:pointer;font-size:22px;line-height:1;transition:all .15s" onmouseover="this.style.background='#2a2460'" onmouseout="this.style.background='#1a1640'">&#8250;</button>
+          <div class="rea-cal-nav">
+            <button type="button" class="rea-cal-nav-btn" onclick="clientCalPrev()">&#8249;</button>
+            <div class="rea-cal-month" id="clientCalTitle"></div>
+            <button type="button" class="rea-cal-nav-btn" onclick="clientCalNext()">&#8250;</button>
           </div>
 
-          <!-- Day headers -->
-          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:6px">
-            <div style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.12em;color:#9990cc;text-align:center;padding:4px 0">SUN</div>
-            <div style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.12em;color:#9990cc;text-align:center;padding:4px 0">MON</div>
-            <div style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.12em;color:#9990cc;text-align:center;padding:4px 0">TUE</div>
-            <div style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.12em;color:#9990cc;text-align:center;padding:4px 0">WED</div>
-            <div style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.12em;color:#9990cc;text-align:center;padding:4px 0">THU</div>
-            <div style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.12em;color:#9990cc;text-align:center;padding:4px 0">FRI</div>
-            <div style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.12em;color:#9990cc;text-align:center;padding:4px 0">SAT</div>
+          <!-- Day-of-week headers -->
+          <div class="rea-cal-dow">
+            <div class="rea-cal-dow-cell">SUN</div>
+            <div class="rea-cal-dow-cell">MON</div>
+            <div class="rea-cal-dow-cell">TUE</div>
+            <div class="rea-cal-dow-cell">WED</div>
+            <div class="rea-cal-dow-cell">THU</div>
+            <div class="rea-cal-dow-cell">FRI</div>
+            <div class="rea-cal-dow-cell">SAT</div>
           </div>
-          <div id="clientCalGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px"></div>
+          <div class="rea-cal-grid" id="clientCalGrid"></div>
 
-          <!-- Time slots panel -->
-          <div id="clientTimePicker" style="display:none;margin-top:14px;padding:18px;background:#080e18;border:2px solid #e8b84b44;border-radius:10px">
-            <div style="font-family:'Cinzel',serif;font-size:14px;letter-spacing:.18em;color:#f0ecff;margin-bottom:6px;font-weight:600" id="clientPickerDateLabel"></div>
-            <p style="font-family:'EB Garamond',serif;font-size:15px;color:#c0bcdc;margin:0 0 14px 0">Select your preferred time. You may also pick a backup.</p>
-            <div id="clientTimeGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px"></div>
+          <!-- Time picker panel (shared for all states) -->
+          <div class="rea-time-panel" id="clientTimePicker">
+            <div class="rea-time-panel-date" id="clientPickerDateLabel"></div>
+            <div class="rea-time-panel-sub" id="clientPickerSub">Select your preferred time. You may also pick a backup.</div>
+            <div class="rea-time-grid" id="clientTimeGrid"></div>
           </div>
 
           <!-- Selection summary -->
-          <div id="clientSlotSummary" style="margin-top:14px;display:none;padding:14px 16px;background:#0d1a12;border:1px solid #22cc6633;border-radius:8px">
+          <div class="rea-slot-summary" id="clientSlotSummary">
             <div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#44cc88;margin-bottom:8px">YOUR SELECTIONS</div>
-            <div id="clientSlot1Display" style="font-family:'EB Garamond',serif;font-size:15px;color:#c0e8d0;margin-bottom:4px"></div>
+            <div id="clientSlot1Display" style="font-family:'EB Garamond',serif;font-size:16px;color:#c0e8d0;margin-bottom:4px"></div>
             <div id="clientSlot2Display" style="font-family:'EB Garamond',serif;font-size:14px;color:#88aa90"></div>
-            <button type="button" onclick="clearClientSlots()" style="margin-top:8px;background:transparent;border:none;color:#cc4455;font-family:'EB Garamond',serif;font-size:13px;cursor:pointer;padding:0;text-decoration:underline">Clear selections</button>
+            <button type="button" onclick="clearClientSlots()" style="margin-top:10px;background:transparent;border:none;color:#cc4455;font-family:'EB Garamond',serif;font-size:14px;cursor:pointer;padding:0;text-decoration:underline">Clear selections</button>
           </div>
-        </div>
 
-        <!-- No slots notice -->
-        <div id="no-slots-banner" style="display:none;margin-top:12px;padding:16px 20px;border:1px solid #b08ae055;background:#b08ae00a;border-radius:8px;text-align:center">
-          <div id="no-slots-title" style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.25em;color:#b08ae0;margin-bottom:8px">NO OPEN SLOTS THIS MONTH</div>
-          <p id="no-slots-msg" style="font-family:'EB Garamond',serif;font-size:16px;color:#d0cce8;margin:0">No open slots this month — use the <strong style="color:#e8b84b">›</strong> arrow above to check future availability, or <button type="button" onclick="showWaitlistOnly()" style="background:none;border:none;color:#b08ae0;text-decoration:underline;cursor:pointer;font-family:'EB Garamond',serif;font-size:16px;padding:0">join the waitlist</button>.</p>
+          <!-- No slots notice -->
+          <div id="no-slots-banner" style="display:none;margin-top:14px;padding:18px 20px;border:1px solid #b08ae055;background:#b08ae00a;border-radius:10px;text-align:center">
+            <div id="no-slots-title" style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.25em;color:#b08ae0;margin-bottom:8px">NO AVAILABILITY PUBLISHED YET</div>
+            <p id="no-slots-msg" style="font-family:'EB Garamond',serif;font-size:16px;color:#d0cce8;margin:0">Submit the form below and Daron will reach out with available times — or <button type="button" onclick="showWaitlistOnly()" style="background:none;border:none;color:#b08ae0;text-decoration:underline;cursor:pointer;font-family:'EB Garamond',serif;font-size:16px;padding:0">join the waitlist</button>.</p>
+          </div>
         </div>
       </div>
       <!-- PAYMENT METHOD -->
@@ -3969,52 +4040,86 @@ document.querySelectorAll('.reveal').forEach(r=>obs.observe(r));
 <script src="clients-data.js"></script>
 <script src="booking-check.js"></script>
 <script>
-/* populate booking slot dropdowns from dashboard localStorage */
 /* ── CLIENT BOOKING CALENDAR ── */
 var _clientCalYear=new Date().getFullYear(), _clientCalMonth=new Date().getMonth();
 var _clientSelectedDate=null, _clientSlot1=null, _clientSlot2=null;
 
-var _publicSlotsCache=null;
+var _publicSlotsCache=null;   /* available slots only — used for booking logic */
+var _allSlotsRaw=[];           /* all slots from API — used for calendar display */
 var _publicSlotsFetched=false;
+
 function getPublicSlots(){
   return (_publicSlotsCache||[]).filter(function(s){
-    if(s.booked)return false;
     var d=new Date(s.date+'T12:00');
     var today=new Date();today.setHours(0,0,0,0);
     return d>=today;
   });
 }
+
+/* Return status object for a given date string based on full slot data */
+function getDayStatus(dateStr){
+  var dayAll=_allSlotsRaw.filter(function(s){return s.date===dateStr;});
+  var avail=dayAll.filter(function(s){return s.status==='available';});
+  var blocked=dayAll.filter(function(s){return s.status==='blocked';});
+  var booked=dayAll.filter(function(s){return s.status==='booked';});
+  if(blocked.length) return {type:'blocked',count:0};
+  if(avail.length===0&&booked.length>0) return {type:'full',count:0};
+  if(avail.length===1||avail.length===2) return {type:'limited',count:avail.length};
+  if(avail.length>=3) return {type:'avail',count:avail.length};
+  return {type:'blocked',count:0}; /* no records = not yet published */
+}
+
 function fetchPublicSlots(cb){
   fetch('/.netlify/functions/availability?_='+Date.now())
     .then(function(r){return r.json();})
     .then(function(resp){
-      // API returns { slots: [...] }; filter to only available (not booked/blocked)
       var all=Array.isArray(resp.slots)?resp.slots:(Array.isArray(resp)?resp:[]);
-      _publicSlotsCache=all.filter(function(s){return s.status==='available'||(!s.status&&!s.booked);});
+      _allSlotsRaw=all;
+      _publicSlotsCache=all.filter(function(s){return s.status==='available';});
       _publicSlotsFetched=true;
       if(cb)cb();
     })
     .catch(function(){
-      /* fallback to localStorage if API unreachable */
       try{_publicSlotsCache=JSON.parse(localStorage.getItem('rea_available_slots')||'[]');}catch(e){_publicSlotsCache=[];}
+      _allSlotsRaw=_publicSlotsCache;
       _publicSlotsFetched=true;
       if(cb)cb();
     });
 }
 
-function clientCalPrev(){_clientCalMonth--;if(_clientCalMonth<0){_clientCalMonth=11;_clientCalYear--;}renderClientCal();updateCalBanner();}
-function clientCalNext(){_clientCalMonth++;if(_clientCalMonth>11){_clientCalMonth=0;_clientCalYear++;}renderClientCal();updateCalBanner();}
+function clientCalPrev(){
+  _clientCalMonth--;
+  if(_clientCalMonth<0){_clientCalMonth=11;_clientCalYear--;}
+  _clientSelectedDate=null;
+  document.getElementById('clientTimePicker').style.display='none';
+  renderClientCal();
+  updateCalBanner();
+}
+function clientCalNext(){
+  _clientCalMonth++;
+  if(_clientCalMonth>11){_clientCalMonth=0;_clientCalYear++;}
+  _clientSelectedDate=null;
+  document.getElementById('clientTimePicker').style.display='none';
+  renderClientCal();
+  updateCalBanner();
+}
+
 function updateCalBanner(){
-  var allSlots=getPublicSlots();
+  var allAvail=getPublicSlots();
   var banner=document.getElementById('no-slots-banner');
   var bannerTitle=document.getElementById('no-slots-title');
   var bannerMsg=document.getElementById('no-slots-msg');
-  if(!allSlots.length){if(banner)banner.style.display='block';return;}
-  var thisMonthStr=_clientCalYear+'-'+String(_clientCalMonth+1).padStart(2,'0');
-  var slotsThisMonth=allSlots.filter(function(s){return s.date&&s.date.startsWith(thisMonthStr);});
-  if(!slotsThisMonth.length){
+  if(!allAvail.length){
+    if(bannerTitle)bannerTitle.textContent='NO AVAILABILITY PUBLISHED YET';
+    if(bannerMsg)bannerMsg.innerHTML='Submit the form below and Daron will reach out with available times — or <button type="button" onclick="showWaitlistOnly()" style="background:none;border:none;color:#b08ae0;text-decoration:underline;cursor:pointer;font-family:\'EB Garamond\',serif;font-size:16px;padding:0">join the waitlist</button>.';
+    if(banner)banner.style.display='block';
+    return;
+  }
+  var mo=_clientCalYear+'-'+String(_clientCalMonth+1).padStart(2,'0');
+  var thisMonthSlots=allAvail.filter(function(s){return s.date&&s.date.startsWith(mo);});
+  if(!thisMonthSlots.length){
     if(bannerTitle)bannerTitle.textContent='NO OPEN SLOTS THIS MONTH';
-    if(bannerMsg)bannerMsg.innerHTML='No openings this month — use the <strong style="color:#e8b84b;font-size:18px">›</strong> arrow above to see future availability.';
+    if(bannerMsg)bannerMsg.innerHTML='No openings this month — tap <strong style="color:#e8b84b;font-size:18px">›</strong> to see future availability.';
     if(banner)banner.style.display='block';
   } else {
     if(banner)banner.style.display='none';
@@ -4022,48 +4127,58 @@ function updateCalBanner(){
 }
 
 function renderClientCal(){
-  var months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
   var title=document.getElementById('clientCalTitle');
-  if(title)title.textContent=months[_clientCalMonth]+' '+_clientCalYear;
+  if(title)title.textContent=MONTHS[_clientCalMonth]+' '+_clientCalYear;
   var grid=document.getElementById('clientCalGrid');
   if(!grid)return;
-  var slots=getPublicSlots();
   var today=new Date();today.setHours(0,0,0,0);
   var firstDay=new Date(_clientCalYear,_clientCalMonth,1).getDay();
   var daysInMonth=new Date(_clientCalYear,_clientCalMonth+1,0).getDate();
   grid.innerHTML='';
-  for(var b=0;b<firstDay;b++){var bl=document.createElement('div');bl.style.minHeight='62px';grid.appendChild(bl);}
+  /* blank filler cells */
+  for(var b=0;b<firstDay;b++){
+    var bl=document.createElement('div');bl.style.minHeight='68px';grid.appendChild(bl);
+  }
   for(var day=1;day<=daysInMonth;day++){
     var dateStr=_clientCalYear+'-'+String(_clientCalMonth+1).padStart(2,'0')+'-'+String(day).padStart(2,'0');
     var cellDate=new Date(_clientCalYear,_clientCalMonth,day);cellDate.setHours(0,0,0,0);
     var isPast=cellDate<today;
-    var daySlots=slots.filter(function(s){return s.date===dateStr;});
-    var hasSlots=daySlots.length>0;
-    var isSelected=_clientSelectedDate===dateStr;
     var isToday=cellDate.getTime()===today.getTime();
+    var isSelected=_clientSelectedDate===dateStr;
+
     var cell=document.createElement('div');
-    var cls='client-cal-day';
-    if(isPast) cls+=' past';
-    else if(hasSlots) cls+=isSelected?' has-slots selected-date':' has-slots';
-    else cls+=' no-slots';
-    cell.className=cls;
+    var todayRing=isToday?' style="outline:2px solid #e8b84b;outline-offset:-2px;border-radius:10px"':'';
 
-    var numColor=isPast?'#7878a8':(hasSlots?(isSelected?'#f8e090':'#ccffee'):'#9090be');
-    var numWeight=hasSlots?'700':'500';
-    var todayStyle=isToday?'border-bottom:2px solid #e8b84b;':'';
-    var inner='<div style="font-size:15px;font-weight:'+numWeight+';font-family:Cinzel,serif;color:'+numColor+';line-height:1;'+todayStyle+'">'+day+'</div>';
+    if(isPast){
+      cell.className='rea-day day-past';
+      if(isToday)cell.className='rea-day day-past day-selected';
+      cell.innerHTML='<div class="rea-day-num" style="color:#4a4880">'+day+'</div>';
+    } else {
+      var st=getDayStatus(dateStr);
+      var cls='rea-day day-'+st.type+(isSelected?' day-selected':'');
+      cell.className=cls;
 
-    if(!isPast&&hasSlots&&isSelected){
-      inner+='<div style="font-size:10px;font-weight:700;letter-spacing:.08em;color:#e8b84b;margin-top:4px">SELECTED</div>';
-      inner+='<div style="font-size:10px;color:#e8b84b99;margin-top:2px">'+daySlots.length+' slot'+(daySlots.length!==1?'s':'')+'</div>';
-    } else if(!isPast&&hasSlots){
-      inner+='<div style="font-size:10px;font-weight:700;letter-spacing:.08em;color:#44ffaa;margin-top:4px">OPEN</div>';
-      inner+='<div style="font-size:11px;color:#88ffcc;margin-top:2px">'+daySlots.length+' slot'+(daySlots.length!==1?'s':'')+'</div>';
-    } else if(!isPast){
-      inner+='<div style="font-size:9px;color:#5555aa;margin-top:4px">Booked</div>';
-    }
-    cell.innerHTML=inner;
-    if(!isPast&&hasSlots){
+      var numHtml='<div class="rea-day-num"'+(isToday?' style="text-decoration:underline;text-underline-offset:3px"':'')+'>'+day+'</div>';
+      var badgeHtml='';
+      var countHtml='';
+
+      if(st.type==='avail'){
+        badgeHtml='<div class="rea-day-badge">Open</div>';
+        countHtml='<div class="rea-day-count">'+st.count+' slot'+(st.count!==1?'s':'')+'</div>';
+      } else if(st.type==='limited'){
+        badgeHtml='<div class="rea-day-badge">Limited</div>';
+        countHtml='<div class="rea-day-count">'+st.count+' slot'+(st.count!==1?'s':'')+' left</div>';
+      } else if(st.type==='full'){
+        badgeHtml='<div class="rea-day-badge">Full</div>';
+      } else {
+        badgeHtml='<div class="rea-day-badge">—</div>';
+      }
+      if(isSelected){
+        badgeHtml='<div class="rea-day-badge" style="background:#2a1c08;color:#f8d060;border:1px solid #e8b84b55">Selected</div>';
+        countHtml='';
+      }
+      cell.innerHTML=numHtml+badgeHtml+countHtml;
       cell.dataset.date=dateStr;
       cell.addEventListener('click',function(){openClientTimePicker(this.dataset.date);});
     }
@@ -4075,7 +4190,7 @@ function openClientTimePicker(dateStr){
   _clientSelectedDate=dateStr;
   renderClientCal();
   var parts=dateStr.split('-');
-  var label=new Date(parseInt(parts[0]),parseInt(parts[1])-1,parseInt(parts[2])).toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+  var label=new Date(parseInt(parts[0]),parseInt(parts[1])-1,parseInt(parts[2])).toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
   var lbl=document.getElementById('clientPickerDateLabel');
   if(lbl)lbl.textContent=label;
   var picker=document.getElementById('clientTimePicker');
@@ -4085,24 +4200,70 @@ function openClientTimePicker(dateStr){
 }
 
 function renderClientTimeGrid(dateStr){
-  var slots=getPublicSlots().filter(function(s){return s.date===dateStr;});
   var grid=document.getElementById('clientTimeGrid');
+  var sub=document.getElementById('clientPickerSub');
   if(!grid)return;
-  if(!slots.length){grid.innerHTML='<p style="font-family:EB Garamond,serif;color:#aaa8cc;font-size:14px;grid-column:span 3">No available times for this date.</p>';return;}
+
+  var st=getDayStatus(dateStr);
+  /* Non-bookable states — show informational message, no buttons */
+  if(st.type==='full'){
+    grid.innerHTML='';
+    if(sub){sub.innerHTML='<div class="rea-time-empty"><strong style="color:#ee6677">No Available Appointments</strong><br><span style="font-size:14px;color:#a0a0cc">This day is fully booked. Please choose another date.</span></div>';}
+    return;
+  }
+  if(st.type==='blocked'){
+    grid.innerHTML='';
+    if(sub){sub.innerHTML='<div class="rea-time-empty"><strong style="color:#8888cc">Unavailable</strong><br><span style="font-size:14px;color:#a0a0cc">Appointments are not available on this date.</span></div>';}
+    return;
+  }
+  if(sub)sub.textContent='Select your preferred time. Tap again to set a backup.';
+
+  var slots=getPublicSlots().filter(function(s){return s.date===dateStr;});
+  if(!slots.length){
+    grid.innerHTML='<div class="rea-time-empty" style="grid-column:span 3">No times available for this date.</div>';
+    return;
+  }
   grid.innerHTML='';
   slots.forEach(function(sl){
     var isPrimary=_clientSlot1&&_clientSlot1.id===sl.id;
     var isBackup=_clientSlot2&&_clientSlot2.id===sl.id;
     var btn=document.createElement('div');
-    btn.className='client-time-btn available'+(isPrimary?' sel-primary':(isBackup?' sel-backup':''));
-    btn.innerHTML='<div style="font-size:14px;font-weight:700">'+sl.displayTime+'</div>'+
-      (isPrimary?'<div style="font-size:10px;margin-top:4px;color:#e8b84b;font-weight:700">★ PREFERRED</div>':
-       isBackup?'<div style="font-size:10px;margin-top:4px;color:#b08ae0;font-weight:700">◆ BACKUP</div>':
-       '<div style="font-size:10px;margin-top:4px;color:#44ffaa">Available</div>');
+    btn.className='rea-time-btn'+(isPrimary?' sel-primary':isBackup?' sel-backup':'');
+    var statusLabel=isPrimary?'<div class="rea-time-btn-label" style="color:#f8d060">★ Preferred</div>':
+                    isBackup?'<div class="rea-time-btn-label" style="color:#d4b8f8">◆ Backup</div>':
+                    '<div class="rea-time-btn-label" style="color:#44ffaa">Available</div>';
+    btn.innerHTML='<div>'+sl.displayTime+'</div>'+statusLabel;
     btn.dataset.slotId=sl.id;
     (function(slot){btn.addEventListener('click',function(){selectClientSlot(slot);});})(sl);
     grid.appendChild(btn);
   });
+}
+
+function renderNextAvailable(){
+  var slots=getPublicSlots();
+  var banner=document.getElementById('nextAvailBanner');
+  if(!banner)return;
+  if(!slots.length){banner.style.display='none';return;}
+  var next=slots[0];
+  var parts=next.date.split('-');
+  var dateLabel=new Date(parseInt(parts[0]),parseInt(parts[1])-1,parseInt(parts[2])).toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  var dateEl=document.getElementById('nextAvailDate');
+  var timeEl=document.getElementById('nextAvailTime');
+  var btn=document.getElementById('nextAvailBtn');
+  if(dateEl)dateEl.textContent=dateLabel;
+  if(timeEl)timeEl.textContent=next.displayTime||next.time;
+  banner.style.display='block';
+  if(btn){
+    btn.onclick=function(){
+      /* Navigate to the right month then open the picker */
+      var d=new Date(parseInt(parts[0]),parseInt(parts[1])-1,parseInt(parts[2]));
+      _clientCalYear=d.getFullYear();_clientCalMonth=d.getMonth();
+      renderClientCal();updateCalBanner();
+      openClientTimePicker(next.date);
+      var cal=document.getElementById('clientCalGrid');
+      if(cal)cal.scrollIntoView({behavior:'smooth',block:'start'});
+    };
+  }
 }
 
 function selectClientSlot(sl){
@@ -4147,27 +4308,8 @@ function clearClientSlots(){
 
 function loadBookingSlots(){
   fetchPublicSlots(function(){
-    var allSlots=getPublicSlots();
-    var banner=document.getElementById('no-slots-banner');
-    var bannerTitle=document.getElementById('no-slots-title');
-    var bannerMsg=document.getElementById('no-slots-msg');
-    if(!allSlots.length){
-      // Truly no future slots at all
-      if(bannerTitle)bannerTitle.textContent='NO OPEN APPOINTMENTS';
-      if(bannerMsg)bannerMsg.innerHTML='Daron has no open times right now. Submit this form and he will reach out with available times — or <button type="button" onclick="showWaitlistOnly()" style="background:none;border:none;color:#b08ae0;text-decoration:underline;cursor:pointer;font-family:\'EB Garamond\',serif;font-size:16px;padding:0">join the waitlist</button>.';
-      if(banner)banner.style.display='block';
-    } else {
-      // Has future slots — check if any are in the currently displayed month
-      var thisMonthStr=_clientCalYear+'-'+String(_clientCalMonth+1).padStart(2,'0');
-      var slotsThisMonth=allSlots.filter(function(s){return s.date&&s.date.startsWith(thisMonthStr);});
-      if(!slotsThisMonth.length){
-        if(bannerTitle)bannerTitle.textContent='NO OPEN SLOTS THIS MONTH';
-        if(bannerMsg)bannerMsg.innerHTML='No openings this month — use the <strong style="color:#e8b84b;font-size:18px">›</strong> arrow above to see future availability.';
-        if(banner)banner.style.display='block';
-      } else {
-        if(banner)banner.style.display='none';
-      }
-    }
+    renderNextAvailable();
+    updateCalBanner();
     renderClientCal();
   });
 }
