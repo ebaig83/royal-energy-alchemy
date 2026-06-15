@@ -7,6 +7,14 @@
 
 BEGIN;
 
+-- ── 0. ADD MISSING session_notes COLUMNS ─────────────────────
+-- chief_concern and energy_findings are referenced by pattern detection
+-- (knowledge-engine.js) but were never formally migrated.
+ALTER TABLE session_notes
+  ADD COLUMN IF NOT EXISTS chief_concern   text DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS energy_findings text DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS removals_done   text DEFAULT NULL;
+
 -- ── 1. CLIENTS (25) ──────────────────────────────────────────
 -- Uses client email as dedup key
 INSERT INTO clients (id, full_name, email, phone, status, tags, created_at)
