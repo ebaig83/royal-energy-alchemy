@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Knowledge & Content Center — Royal Energy Alchemy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#e8b84b;--gold-light:#f8e090;--teal:#22c98a;--red:#ee4444;
+  --purple:#b09ef8;--bg:#04020e;--surface:#0d0a1a;--surface2:#16112a;
+  --border:rgba(232,184,75,.18);--text:#f0ecff;--muted:#9990c0;
+  --radius:6px;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'EB Garamond',serif;font-size:18px;min-height:100vh}
+
+/* ── Gate ──────────────────────────────────────────────── */
+#accessGate{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px}
+#accessGate.hidden{display:none}
+.gate-box{text-align:center;max-width:360px;width:100%}
+.gate-eyebrow{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.55em;color:var(--gold);text-transform:uppercase;opacity:.8}
+.gate-title{font-family:'Cinzel',serif;font-size:28px;font-weight:700;color:var(--gold-light);margin:10px 0 6px}
+.gate-sub{font-size:15px;color:var(--muted);margin-bottom:28px}
+.gate-input{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'Cinzel',serif;font-size:18px;letter-spacing:.4em;text-align:center;padding:14px;outline:none;border-radius:var(--radius);margin-bottom:12px;transition:border-color .2s}
+.gate-input:focus{border-color:var(--gold)}
+.gate-btn{width:100%;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.45em;color:#000;text-transform:uppercase;background:linear-gradient(135deg,#f5d98a,#e8b84b);padding:14px;border:none;cursor:pointer;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);transition:filter .3s}
+.gate-btn:hover{filter:brightness(1.1)}
+.gate-err{font-size:13px;color:var(--red);margin-top:10px;min-height:18px}
+
+/* ── Cockpit ────────────────────────────────────────────── */
+#cockpit{display:none;grid-template-columns:220px 1fr;min-height:100vh}
+#cockpit.visible{display:grid}
+
+/* ── Sidebar ────────────────────────────────────────────── */
+.ck-sidebar{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:0 0 24px}
+.sidebar-brand{padding:22px 20px 18px;border-bottom:1px solid var(--border)}
+.sidebar-brand-eye{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.5em;color:var(--gold);opacity:.7;text-transform:uppercase}
+.sidebar-brand-title{font-family:'Cinzel',serif;font-size:14px;color:var(--gold-light);margin-top:4px;line-height:1.2}
+.sidebar-brand-sub{font-size:12px;color:var(--muted);margin-top:3px}
+.ck-nav{flex:1;padding:16px 0;overflow-y:auto}
+.ck-nav-section{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.45em;color:var(--muted);text-transform:uppercase;padding:14px 20px 6px;opacity:.7}
+.ck-nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;cursor:pointer;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.06em;color:var(--muted);transition:all .2s;border-left:2px solid transparent;text-transform:uppercase}
+.ck-nav-item:hover{color:var(--text);background:rgba(232,184,75,.06)}
+.ck-nav-item.active{color:var(--gold);border-left-color:var(--gold);background:rgba(232,184,75,.08)}
+.ck-nav-item .nav-icon{font-size:14px;width:16px;text-align:center}
+.sidebar-footer{padding:16px 20px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);display:flex;flex-direction:column;gap:8px}
+.sidebar-footer a{color:var(--gold);text-decoration:none;font-family:'Cinzel',serif;font-size:10px;letter-spacing:.1em}
+
+/* ── Main ───────────────────────────────────────────────── */
+.ck-main{overflow-y:auto;background:var(--bg)}
+.ck-topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 32px;border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:10}
+.topbar-title{font-family:'Cinzel',serif;font-size:16px;color:var(--gold-light);letter-spacing:.05em}
+.topbar-actions{display:flex;gap:10px;align-items:center}
+.btn-refresh{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.4em;color:var(--gold);background:transparent;border:1px solid var(--border);padding:7px 14px;cursor:pointer;text-transform:uppercase;transition:all .2s;border-radius:var(--radius)}
+.btn-refresh:hover{border-color:var(--gold);background:rgba(232,184,75,.08)}
+.ck-content{padding:28px 32px;max-width:1100px}
+
+/* ── Section visibility ─────────────────────────────────── */
+.sec{display:none}
+.sec.active{display:block}
+
+/* ── KPI Cards ──────────────────────────────────────────── */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:28px}
+.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;text-align:center}
+.kpi-val{font-family:'Cinzel',serif;font-size:28px;color:var(--gold);font-weight:700}
+.kpi-lbl{font-size:12px;color:var(--muted);margin-top:4px;font-family:'Cinzel',serif;letter-spacing:.06em;text-transform:uppercase}
+.kpi-sub{font-size:12px;color:var(--teal);margin-top:6px}
+
+/* ── Generic card ───────────────────────────────────────── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:14px}
+.card-title{font-family:'Cinzel',serif;font-size:13px;color:var(--gold);letter-spacing:.06em;margin-bottom:12px;text-transform:uppercase}
+.card-2col{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}
+
+/* ── Tables ─────────────────────────────────────────────── */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.12em;color:var(--muted);text-transform:uppercase;padding:8px 12px;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid rgba(232,184,75,.07);vertical-align:top}
+tr:hover td{background:rgba(255,255,255,.02)}
+
+/* ── Badges ─────────────────────────────────────────────── */
+.badge{display:inline-block;font-family:'Cinzel',serif;font-size:9px;letter-spacing:.12em;text-transform:uppercase;padding:3px 8px;border-radius:3px;font-weight:600}
+.badge-draft{background:rgba(232,184,75,.1);color:var(--gold)}
+.badge-published{background:rgba(34,201,138,.15);color:var(--teal)}
+.badge-approved{background:rgba(34,201,138,.1);color:var(--teal)}
+.badge-review{background:rgba(176,158,248,.12);color:var(--purple)}
+.badge-archived{background:rgba(153,144,192,.1);color:var(--muted)}
+.badge-critical{background:rgba(238,68,68,.12);color:var(--red)}
+.badge-high{background:rgba(232,184,75,.15);color:var(--gold)}
+.badge-medium{background:rgba(34,201,138,.1);color:var(--teal)}
+.badge-low{background:rgba(153,144,192,.1);color:var(--muted)}
+.badge-active{background:rgba(34,201,138,.15);color:var(--teal)}
+.badge-new{background:rgba(176,158,248,.12);color:var(--purple)}
+.badge-planning{background:rgba(232,184,75,.1);color:var(--gold)}
+.badge-rising{background:rgba(34,201,138,.15);color:var(--teal)}
+.badge-stable{background:rgba(153,144,192,.1);color:var(--muted)}
+
+/* ── States ─────────────────────────────────────────────── */
+.state-loading{text-align:center;padding:48px;color:var(--muted);font-family:'Cinzel',serif;font-size:12px;letter-spacing:.2em;text-transform:uppercase}
+.state-empty{text-align:center;padding:48px;color:var(--muted);font-size:15px}
+.state-error{background:rgba(238,68,68,.08);border:1px solid rgba(238,68,68,.2);color:var(--red);padding:14px 18px;border-radius:var(--radius);font-size:14px;margin-bottom:16px}
+.state-warn{background:rgba(232,184,75,.08);border:1px solid rgba(232,184,75,.2);color:var(--gold);padding:14px 18px;border-radius:var(--radius);font-size:14px;margin-bottom:16px}
+
+/* ── KB Entry cards ─────────────────────────────────────── */
+.kb-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:12px;transition:border-color .2s}
+.kb-card:hover{border-color:rgba(232,184,75,.35)}
+.kb-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:6px}
+.kb-card-title{font-family:'Cinzel',serif;font-size:14px;color:var(--gold-light);letter-spacing:.03em}
+.kb-card-meta{font-size:12px;color:var(--muted);margin-bottom:8px}
+.kb-card-summary{font-size:14px;color:var(--text);line-height:1.5}
+.kb-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.tag{font-size:11px;background:rgba(176,158,248,.1);color:var(--purple);padding:2px 8px;border-radius:3px}
+.pin-icon{color:var(--gold);font-size:13px;flex-shrink:0}
+
+/* ── Search bar ─────────────────────────────────────────── */
+.search-bar{display:flex;gap:10px;margin-bottom:20px;align-items:center}
+.search-input{flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'EB Garamond',serif;font-size:16px;padding:10px 14px;outline:none;border-radius:var(--radius);transition:border-color .2s}
+.search-input:focus{border-color:var(--gold)}
+.search-input::placeholder{color:var(--muted)}
+.btn-search{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.35em;color:#000;background:linear-gradient(135deg,#f5d98a,#e8b84b);border:none;padding:10px 18px;cursor:pointer;clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%);text-transform:uppercase}
+.search-filters{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.filter-btn{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.2em;padding:6px 12px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;text-transform:uppercase;border-radius:var(--radius);transition:all .2s}
+.filter-btn.active,.filter-btn:hover{border-color:var(--gold);color:var(--gold);background:rgba(232,184,75,.06)}
+
+/* ── Content idea card ──────────────────────────────────── */
+.idea-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:10px}
+.idea-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:6px}
+.idea-card-title{font-size:14px;color:var(--text)}
+.idea-badges{display:flex;gap:5px;flex-shrink:0;flex-wrap:wrap}
+.idea-meta{font-size:12px;color:var(--muted)}
+
+/* ── Draft pipeline ─────────────────────────────────────── */
+.pipeline-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px}
+.pipeline-col{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;text-align:center}
+.pipeline-count{font-family:'Cinzel',serif;font-size:24px;font-weight:700;margin-bottom:4px}
+.pipeline-lbl{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+
+/* ── Book project card ──────────────────────────────────── */
+.book-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:14px}
+.book-card-title{font-family:'Cinzel',serif;font-size:15px;color:var(--gold-light);letter-spacing:.04em;margin-bottom:6px}
+.book-card-sub{font-size:13px;color:var(--muted);margin-bottom:8px}
+.book-evidence{margin-top:14px}
+.evidence-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:10px}
+.evidence-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px}
+.evidence-cat{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.1em;color:var(--gold);text-transform:uppercase;margin-bottom:6px}
+.evidence-count{font-family:'Cinzel',serif;font-size:20px;font-weight:700;color:var(--teal)}
+.evidence-excerpt{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.4}
+
+/* ── Insight publishing card ────────────────────────────── */
+.insight-pub-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:14px}
+.insight-pub-title{font-family:'Cinzel',serif;font-size:14px;color:var(--gold-light);letter-spacing:.04em;margin-bottom:8px}
+.insight-pub-desc{font-size:14px;color:var(--text);margin-bottom:12px;line-height:1.5}
+.pub-channels{display:flex;gap:8px;flex-wrap:wrap}
+.channel-tag{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.15em;padding:4px 10px;border-radius:3px;text-transform:uppercase;cursor:default}
+.channel-book{background:rgba(232,184,75,.12);color:var(--gold)}
+.channel-youtube{background:rgba(238,68,68,.1);color:#ff6b6b}
+.channel-social{background:rgba(176,158,248,.12);color:var(--purple)}
+.channel-training{background:rgba(34,201,138,.12);color:var(--teal)}
+.channel-research{background:rgba(255,255,255,.07);color:var(--text)}
+
+/* ── Intelligence cards ─────────────────────────────────── */
+.intel-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.topic-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(232,184,75,.07);font-size:14px}
+.topic-item:last-child{border-bottom:none}
+.topic-name{color:var(--text)}
+.topic-freq{font-family:'Cinzel',serif;font-size:12px;color:var(--gold)}
+
+/* ── Search results ─────────────────────────────────────── */
+.search-result{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:10px}
+.search-result-source{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin-bottom:4px}
+.search-result-title{font-size:15px;color:var(--gold-light);margin-bottom:6px}
+.search-result-excerpt{font-size:13px;color:var(--muted);line-height:1.5}
+
+/* ── Calendar placeholder ───────────────────────────────── */
+.calendar-placeholder{background:var(--surface);border:1px dashed rgba(232,184,75,.25);border-radius:var(--radius);padding:48px;text-align:center}
+.calendar-placeholder-icon{font-size:40px;margin-bottom:16px;opacity:.4}
+.calendar-placeholder-title{font-family:'Cinzel',serif;font-size:16px;color:var(--muted);margin-bottom:8px}
+.calendar-placeholder-sub{font-size:14px;color:var(--muted);opacity:.7}
+.platform-list{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:20px}
+.platform-pill{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.2em;padding:6px 14px;border:1px solid var(--border);border-radius:16px;color:var(--muted);text-transform:uppercase}
+
+/* ── Scrollbar ──────────────────────────────────────────── */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(232,184,75,.2);border-radius:3px}
+</style>
+</head>
+<body>
+
+<!-- ─── Auth Gate ────────────────────────────────────────── -->
+<div id="accessGate">
+  <div class="gate-box">
+    <span class="gate-eyebrow">Knowledge & Content Center</span>
+    <h1 class="gate-title">Royal Energy Alchemy</h1>
+    <p class="gate-sub">Enter practitioner PIN to access knowledge systems</p>
+    <input type="password" id="gatePass" class="gate-input" placeholder="••••••" maxlength="6" autocomplete="off"
+           onkeydown="if(event.key==='Enter')doLogin()"/>
+    <button class="gate-btn" id="gateBtn" onclick="doLogin()">Unlock Knowledge Center</button>
+    <div class="gate-err" id="gateErr"></div>
+  </div>
+</div>
+
+<!-- ─── Cockpit ──────────────────────────────────────────── -->
+<div id="cockpit">
+
+  <aside class="ck-sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-eye">Royal Energy Alchemy</div>
+      <div class="sidebar-brand-title">Knowledge & Content</div>
+      <div class="sidebar-brand-sub">Publishing Workspace</div>
+    </div>
+
+    <nav class="ck-nav">
+      <div class="ck-nav-section">Knowledge</div>
+      <div class="ck-nav-item active" data-sec="overview" onclick="showSec('overview',this)">
+        <span class="nav-icon">◈</span> Overview
+      </div>
+      <div class="ck-nav-item" data-sec="kb" onclick="showSec('kb',this)">
+        <span class="nav-icon">▣</span> Knowledge Hub
+      </div>
+      <div class="ck-nav-item" data-sec="search" onclick="showSec('search',this)">
+        <span class="nav-icon">◎</span> Knowledge Search
+      </div>
+
+      <div class="ck-nav-section">Content</div>
+      <div class="ck-nav-item" data-sec="studio" onclick="showSec('studio',this)">
+        <span class="nav-icon">✦</span> Content Studio
+      </div>
+      <div class="ck-nav-item" data-sec="pipeline" onclick="showSec('pipeline',this)">
+        <span class="nav-icon">◉</span> Publication Pipeline
+      </div>
+      <div class="ck-nav-item" data-sec="publishing" onclick="showSec('publishing',this)">
+        <span class="nav-icon">◆</span> Insight Publishing
+      </div>
+      <div class="ck-nav-item" data-sec="intelligence" onclick="showSec('intelligence',this)">
+        <span class="nav-icon">▲</span> Content Intelligence
+      </div>
+      <div class="ck-nav-item" data-sec="calendar" onclick="showSec('calendar',this)">
+        <span class="nav-icon">⊞</span> Content Calendar
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a href="/dashboard">← Practitioner OS</a>
+      <a href="/research.html">↗ Research Center</a>
+    </div>
+  </aside>
+
+  <main class="ck-main">
+    <div class="ck-topbar">
+      <div class="topbar-title" id="topbarTitle">Overview Dashboard</div>
+      <div class="topbar-actions">
+        <button class="btn-refresh" onclick="refreshCurrent()">↺ Refresh</button>
+      </div>
+    </div>
+
+    <div class="ck-content">
+
+      <!-- ── OVERVIEW ──────────────────────────────────── -->
+      <div id="sec-overview" class="sec active">
+        <div id="overview-content"><div class="state-loading">Loading overview…</div></div>
+      </div>
+
+      <!-- ── KNOWLEDGE HUB ─────────────────────────────── -->
+      <div id="sec-kb" class="sec">
+        <div id="kb-content"><div class="state-loading">Loading knowledge base…</div></div>
+      </div>
+
+      <!-- ── KNOWLEDGE SEARCH ──────────────────────────── -->
+      <div id="sec-search" class="sec">
+        <div class="search-bar">
+          <input type="text" id="searchInput" class="search-input" placeholder="Search knowledge base, insights, case studies…"
+                 onkeydown="if(event.key==='Enter')runSearch()"/>
+          <button class="btn-search" onclick="runSearch()">Search</button>
+        </div>
+        <div class="search-filters">
+          <button class="filter-btn active" data-filter="all" onclick="setSearchFilter('all',this)">All</button>
+          <button class="filter-btn" data-filter="kb" onclick="setSearchFilter('kb',this)">Knowledge Base</button>
+          <button class="filter-btn" data-filter="insights" onclick="setSearchFilter('insights',this)">Research Insights</button>
+          <button class="filter-btn" data-filter="case_studies" onclick="setSearchFilter('case_studies',this)">Case Studies</button>
+        </div>
+        <div id="search-content"><div class="state-empty">Enter a search term above to search across all knowledge systems.</div></div>
+      </div>
+
+      <!-- ── CONTENT STUDIO ────────────────────────────── -->
+      <div id="sec-studio" class="sec">
+        <div id="studio-content"><div class="state-loading">Loading content studio…</div></div>
+      </div>
+
+      <!-- ── PUBLICATION PIPELINE ──────────────────────── -->
+      <div id="sec-pipeline" class="sec">
+        <div id="pipeline-content"><div class="state-loading">Loading publication pipeline…</div></div>
+      </div>
+
+      <!-- ── INSIGHT PUBLISHING ────────────────────────── -->
+      <div id="sec-publishing" class="sec">
+        <div id="publishing-content"><div class="state-loading">Loading insight publishing…</div></div>
+      </div>
+
+      <!-- ── CONTENT INTELLIGENCE ──────────────────────── -->
+      <div id="sec-intelligence" class="sec">
+        <div id="intelligence-content"><div class="state-loading">Loading content intelligence…</div></div>
+      </div>
+
+      <!-- ── CONTENT CALENDAR ──────────────────────────── -->
+      <div id="sec-calendar" class="sec">
+        <div id="calendar-content"><div class="state-loading">Loading calendar…</div></div>
+      </div>
+
+    </div><!-- /.ck-content -->
+  </main>
+</div><!-- /#cockpit -->
+
+<script>
+'use strict';
+
+var _tok = sessionStorage.getItem('rea_api_token') || '';
+var _loaded = {};
+var _currentSec = 'overview';
+var _searchFilter = 'all';
+var _kbCategories = [];
+
+/* ── Auth ──────────────────────────────────────────────── */
+async function doLogin() {
+  const btn = document.getElementById('gateBtn');
+  const err = document.getElementById('gateErr');
+  const pin = document.getElementById('gatePass').value.trim();
+  if (!pin) return;
+  btn.textContent = 'Verifying…';
+  btn.disabled = true;
+  err.textContent = '';
+  try {
+    const r = await fetch('/.netlify/functions/verify-pin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pin })
+    });
+    const d = await r.json();
+    if (d.token) {
+      _tok = d.token;
+      sessionStorage.setItem('rea_api_token', _tok);
+      document.getElementById('accessGate').classList.add('hidden');
+      document.getElementById('cockpit').classList.add('visible');
+      initKnowledge();
+    } else {
+      err.textContent = d.error || 'Invalid PIN';
+      btn.textContent = 'Unlock Knowledge Center';
+      btn.disabled = false;
+    }
+  } catch (e) {
+    err.textContent = 'Connection error — try again';
+    btn.textContent = 'Unlock Knowledge Center';
+    btn.disabled = false;
+  }
+}
+
+/* ── API helper ────────────────────────────────────────── */
+async function api(path) {
+  const r = await fetch(path, { headers: { 'X-Dashboard-Token': _tok } });
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  return r.json();
+}
+
+/* ── Init ──────────────────────────────────────────────── */
+function initKnowledge() {
+  loadSec('overview');
+}
+
+/* ── Nav ───────────────────────────────────────────────── */
+var TITLES = {
+  overview:     'Overview Dashboard',
+  kb:           'Knowledge Hub',
+  search:       'Knowledge Search',
+  studio:       'Content Studio',
+  pipeline:     'Publication Pipeline',
+  publishing:   'Insight Publishing',
+  intelligence: 'Content Intelligence',
+  calendar:     'Content Calendar'
+};
+
+function showSec(id, el) {
+  document.querySelectorAll('.sec').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.ck-nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('sec-' + id).classList.add('active');
+  el.classList.add('active');
+  document.getElementById('topbarTitle').textContent = TITLES[id] || id;
+  _currentSec = id;
+  if (!_loaded[id]) loadSec(id);
+}
+
+function refreshCurrent() {
+  delete _loaded[_currentSec];
+  if (_currentSec !== 'search') {
+    setContent(_currentSec, '<div class="state-loading">Refreshing…</div>');
+  }
+  loadSec(_currentSec);
+}
+
+function setContent(sec, html) {
+  const el = document.getElementById(sec + '-content');
+  if (el) el.innerHTML = html;
+}
+
+/* ── Section loader dispatch ───────────────────────────── */
+async function loadSec(id) {
+  if (id === 'search') { _loaded[id] = true; return; }
+  _loaded[id] = true;
+  try {
+    switch(id) {
+      case 'overview':     await loadOverview(); break;
+      case 'kb':           await loadKB(); break;
+      case 'studio':       await loadStudio(); break;
+      case 'pipeline':     await loadPipeline(); break;
+      case 'publishing':   await loadPublishing(); break;
+      case 'intelligence': await loadIntelligence(); break;
+      case 'calendar':     await loadCalendar(); break;
+    }
+  } catch(e) {
+    setContent(id, '<div class="state-error">Failed to load: ' + esc(e.message) + '</div>');
+    _loaded[id] = false;
+  }
+}
+
+/* ── Overview ──────────────────────────────────────────── */
+async function loadOverview() {
+  const [hub, cs] = await Promise.all([
+    api('/.netlify/functions/knowledge-hub?section=insights'),
+    api('/.netlify/functions/content-studio?section=dashboard').catch(() => null)
+  ]);
+
+  const csKpis = cs?.kpis || {};
+
+  let html = '<div class="kpi-row">';
+  html += kpiCard(hub.knowledge_assets_total ?? '—', 'Knowledge Assets', '');
+  html += kpiCard(hub.content_opportunities ?? csKpis.total ?? '—', 'Content Ideas', csKpis.critical ? csKpis.critical + ' critical' : '');
+  html += kpiCard(hub.active_books ?? '—', 'Active Books', '');
+  html += kpiCard(hub.active_courses ?? '—', 'Courses', '');
+  html += kpiCard(hub.scripts_in_vault ?? '—', 'Scripts in Vault', '');
+  html += kpiCard(hub.open_research_opps ?? '—', 'Research Opps', '');
+  html += '</div>';
+
+  if (csKpis.total !== undefined) {
+    html += '<div class="kpi-row">';
+    html += kpiCard(csKpis.draft ?? '—', 'Draft Ideas', '');
+    html += kpiCard(csKpis.approved ?? '—', 'Approved Ideas', '');
+    html += kpiCard(csKpis.critical ?? '—', 'Critical Priority', '');
+    html += kpiCard(csKpis.high ?? '—', 'High Priority', '');
+    html += kpiCard(csKpis.source_articles ?? '—', 'KB Articles', '');
+    html += kpiCard(csKpis.ext_sources ?? '—', 'Ext Sources', '');
+    html += '</div>';
+  }
+
+  html += '<div class="card-2col">';
+
+  // Recent generated ideas
+  const recent = cs?.recent_generated || [];
+  html += '<div class="card"><div class="card-title">Recent Content Ideas</div>';
+  if (recent.length) {
+    recent.slice(0,6).forEach(i => {
+      html += '<div style="padding:7px 0;border-bottom:1px solid rgba(232,184,75,.07)">';
+      html += '<div style="font-size:14px;color:var(--text)">' + esc(i.title) + '</div>';
+      html += '<div style="font-size:12px;color:var(--muted);margin-top:2px">' + badge(i.priority) + ' <span style="opacity:.7">' + esc(i.content_type||'') + '</span></div>';
+      html += '</div>';
+    });
+  } else {
+    html += '<div class="state-empty" style="padding:24px">No ideas yet</div>';
+  }
+  html += '</div>';
+
+  // Recently approved
+  const approved = cs?.recent_approved || [];
+  html += '<div class="card"><div class="card-title">Approved for Production</div>';
+  if (approved.length) {
+    approved.slice(0,6).forEach(i => {
+      html += '<div style="padding:7px 0;border-bottom:1px solid rgba(232,184,75,.07)">';
+      html += '<div style="font-size:14px;color:var(--teal)">' + esc(i.title) + '</div>';
+      html += '<div style="font-size:12px;color:var(--muted);margin-top:2px">' + esc(i.content_type||'') + '</div>';
+      html += '</div>';
+    });
+  } else {
+    html += '<div class="state-empty" style="padding:24px">No approved ideas yet</div>';
+  }
+  html += '</div>';
+
+  html += '</div>';
+  setContent('overview', html);
+}
+
+/* ── Knowledge Hub ─────────────────────────────────────── */
+async function loadKB() {
+  const [data, catData] = await Promise.all([
+    api('/.netlify/functions/kb?section=entries'),
+    api('/.netlify/functions/kb?section=categories').catch(() => ({ categories: [] }))
+  ]);
+
+  _kbCategories = catData.categories || [];
+  const entries = data.entries || [];
+
+  if (data.migration_needed) {
+    setContent('kb', '<div class="state-warn">Knowledge base tables are not yet created. Run the KB migration in Supabase first.</div>');
+    return;
+  }
+
+  let html = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">';
+  html += '<div><div style="font-family:Cinzel,serif;font-size:18px;color:var(--gold-light)">Knowledge Hub</div><div style="font-size:14px;color:var(--muted)">' + entries.length + ' entr' + (entries.length!==1?'ies':'y') + '</div></div>';
+  html += '</div>';
+
+  // Category filters
+  if (_kbCategories.length) {
+    html += '<div class="search-filters" id="kbCatFilters">';
+    html += '<button class="filter-btn active" onclick="filterKBEntries(null,this)">All</button>';
+    _kbCategories.forEach(c => {
+      html += '<button class="filter-btn" onclick="filterKBEntries(' + JSON.stringify(c) + ',this)">' + esc(c) + '</button>';
+    });
+    html += '</div>';
+  }
+
+  html += '<div id="kbEntryList">';
+  if (!entries.length) {
+    html += '<div class="state-empty">No knowledge entries yet. Create your first article in the dashboard.</div>';
+  } else {
+    html += renderKBEntries(entries);
+  }
+  html += '</div>';
+
+  setContent('kb', html);
+  window._kbAllEntries = entries;
+}
+
+function renderKBEntries(entries) {
+  if (!entries.length) return '<div class="state-empty">No entries match this filter.</div>';
+  return entries.map(e => {
+    let h = '<div class="kb-card">';
+    h += '<div class="kb-card-head">';
+    h += '<div class="kb-card-title">' + esc(e.title) + (e.is_pinned ? ' <span class="pin-icon">📌</span>' : '') + '</div>';
+    h += '<div style="display:flex;gap:6px;flex-shrink:0">' + badge(e.status) + '</div>';
+    h += '</div>';
+    if (e.category || e.created_at) {
+      h += '<div class="kb-card-meta">';
+      if (e.category) h += '<span style="color:var(--gold)">' + esc(e.category) + '</span>';
+      if (e.category && e.created_at) h += ' · ';
+      if (e.created_at) h += fmtDate(e.created_at);
+      h += '</div>';
+    }
+    if (e.summary) h += '<div class="kb-card-summary">' + esc(e.summary) + '</div>';
+    if (e.tags && e.tags.length) {
+      h += '<div class="kb-tags">' + e.tags.map(t => '<span class="tag">' + esc(t) + '</span>').join('') + '</div>';
+    }
+    h += '</div>';
+    return h;
+  }).join('');
+}
+
+function filterKBEntries(cat, el) {
+  document.querySelectorAll('#kbCatFilters .filter-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  const all = window._kbAllEntries || [];
+  const filtered = cat ? all.filter(e => e.category === cat) : all;
+  const list = document.getElementById('kbEntryList');
+  if (list) list.innerHTML = renderKBEntries(filtered);
+}
+
+/* ── Content Studio ────────────────────────────────────── */
+async function loadStudio() {
+  const [ideas, library] = await Promise.all([
+    api('/.netlify/functions/content-studio?section=ideas'),
+    api('/.netlify/functions/content-studio?section=library').catch(() => null)
+  ]);
+
+  if (ideas.migration_needed) {
+    setContent('studio', '<div class="state-warn">Content Studio tables not yet created. Run the Content Studio migration first.</div>');
+    return;
+  }
+
+  const lib = library || { counts: {}, recent: {} };
+  const counts = lib.counts || {};
+
+  let html = '';
+
+  // Draft pipeline counts
+  html += '<div class="card-title" style="font-family:Cinzel,serif;font-size:13px;color:var(--gold);letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px">Draft Pipeline</div>';
+  html += '<div class="pipeline-row">';
+  const stages = [
+    { key: 'draft',     label: 'Draft',     color: 'var(--gold)' },
+    { key: 'review',    label: 'Review',    color: 'var(--purple)' },
+    { key: 'approved',  label: 'Approved',  color: 'var(--teal)' },
+    { key: 'published', label: 'Published', color: 'var(--teal)' },
+    { key: 'archived',  label: 'Archived',  color: 'var(--muted)' }
+  ];
+  stages.forEach(s => {
+    html += '<div class="pipeline-col"><div class="pipeline-count" style="color:' + s.color + '">' + (counts[s.key] ?? '—') + '</div><div class="pipeline-lbl">' + s.label + '</div></div>';
+  });
+  html += '</div>';
+
+  // Content ideas
+  const ideaList = ideas.ideas || [];
+  html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">';
+  html += '<div style="font-family:Cinzel,serif;font-size:16px;color:var(--gold-light)">Content Ideas</div>';
+  html += '<div style="font-size:13px;color:var(--muted)">' + ideaList.length + ' total</div>';
+  html += '</div>';
+
+  if (!ideaList.length) {
+    html += '<div class="state-empty">No content ideas yet. Use the Generate Ideas feature in the dashboard to get started.</div>';
+  } else {
+    ideaList.forEach(i => {
+      html += '<div class="idea-card">';
+      html += '<div class="idea-card-head"><div class="idea-card-title">' + esc(i.title) + '</div>';
+      html += '<div class="idea-badges">' + badge(i.priority) + badge(i.status) + '</div></div>';
+      html += '<div class="idea-meta">';
+      if (i.content_type) html += '<span style="color:var(--purple)">' + esc(i.content_type) + '</span>';
+      if (i.topic) html += ' · ' + esc(i.topic);
+      html += '</div>';
+      if (i.summary) html += '<div style="font-size:13px;color:var(--muted);margin-top:6px;line-height:1.4">' + esc(i.summary) + '</div>';
+      html += '</div>';
+    });
+  }
+
+  setContent('studio', html);
+}
+
+/* ── Publication Pipeline ──────────────────────────────── */
+async function loadPipeline() {
+  const d = await api('/.netlify/functions/knowledge-hub?section=books');
+  const projects = d.book_projects || [];
+  const chapters = d.book_chapters || [];
+  const evComputed = d.evidence_vault_computed || {};
+
+  let html = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">';
+  html += '<div><div style="font-family:Cinzel,serif;font-size:18px;color:var(--gold-light)">Publication Pipeline</div>';
+  html += '<div style="font-size:14px;color:var(--muted)">' + projects.length + ' project' + (projects.length!==1?'s':'') + ' · ' + chapters.length + ' chapter' + (chapters.length!==1?'s':'') + ' · ' + (d.total_notes_analyzed||0) + ' session notes analyzed</div></div>';
+  html += '</div>';
+
+  // Status flow
+  html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:24px;font-family:Cinzel,serif;font-size:10px;letter-spacing:.15em;color:var(--muted);text-transform:uppercase;flex-wrap:wrap">';
+  ['Idea', 'Draft', 'Review', 'Published'].forEach((s, i, arr) => {
+    html += '<span style="color:var(--gold)">' + s + '</span>';
+    if (i < arr.length - 1) html += '<span>↓</span>';
+  });
+  html += '</div>';
+
+  if (!projects.length) {
+    html += '<div class="state-empty">No book projects yet. Create one from the knowledge hub.</div>';
+  } else {
+    projects.forEach(p => {
+      const pChapters = chapters.filter(c => c.book_project_id === p.id);
+      html += '<div class="book-card">';
+      html += '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">';
+      html += '<div><div class="book-card-title">' + esc(p.title) + '</div>';
+      if (p.subtitle) html += '<div class="book-card-sub">' + esc(p.subtitle) + '</div>';
+      if (p.description) html += '<div style="font-size:14px;color:var(--text);margin-top:4px">' + esc(p.description) + '</div>';
+      html += '</div>' + badge(p.status) + '</div>';
+      if (pChapters.length) {
+        html += '<div style="margin-top:12px"><div style="font-family:Cinzel,serif;font-size:10px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin-bottom:8px">Chapters</div>';
+        html += '<div class="tbl-wrap"><table><thead><tr><th>#</th><th>Title</th><th>Status</th></tr></thead><tbody>';
+        pChapters.forEach(c => {
+          html += '<tr><td style="color:var(--muted)">' + (c.chapter_number||'—') + '</td><td>' + esc(c.title||'Untitled') + '</td><td>' + badge(c.status) + '</td></tr>';
+        });
+        html += '</tbody></table></div></div>';
+      }
+      html += '</div>';
+    });
+  }
+
+  // Evidence vault
+  const evKeys = Object.keys(evComputed);
+  if (evKeys.length) {
+    html += '<div class="book-evidence"><div style="font-family:Cinzel,serif;font-size:13px;color:var(--gold);letter-spacing:.06em;text-transform:uppercase;margin-bottom:12px">Session Evidence Vault</div>';
+    html += '<div class="evidence-row">';
+    evKeys.forEach(cat => {
+      const ev = evComputed[cat];
+      html += '<div class="evidence-card">';
+      html += '<div class="evidence-cat">' + esc(cat) + '</div>';
+      html += '<div class="evidence-count">' + (ev.count||0) + '</div>';
+      html += '<div style="font-size:11px;color:var(--muted)">session notes</div>';
+      if (ev.recent_finding) html += '<div class="evidence-excerpt">' + esc(ev.recent_finding) + '…</div>';
+      html += '</div>';
+    });
+    html += '</div></div>';
+  }
+
+  setContent('pipeline', html);
+}
+
+/* ── Insight Publishing ────────────────────────────────── */
+async function loadPublishing() {
+  const [insights, social] = await Promise.all([
+    api('/.netlify/functions/knowledge-engine?section=insights'),
+    api('/.netlify/functions/knowledge-hub?section=social').catch(() => null)
+  ]);
+
+  const list = insights.insights || [];
+  const scripts = social?.script_vault || [];
+
+  const CHANNELS = [
+    { key: 'book',     label: 'Book',     cls: 'channel-book' },
+    { key: 'youtube',  label: 'YouTube',  cls: 'channel-youtube' },
+    { key: 'social',   label: 'Social',   cls: 'channel-social' },
+    { key: 'training', label: 'Training', cls: 'channel-training' },
+    { key: 'research', label: 'Research', cls: 'channel-research' },
+  ];
+
+  let html = '<div style="font-family:Cinzel,serif;font-size:13px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px">Research Insights → Content Channels</div>';
+  html += '<div style="font-size:14px;color:var(--muted);margin-bottom:20px">Each insight below can be tagged for publication channels. Use this view to identify which insights are ready to become content.</div>';
+
+  if (!list.length) {
+    html += '<div class="state-empty">No research insights available. Add insights in the Research Intelligence Center first.</div>';
+  } else {
+    list.forEach(i => {
+      html += '<div class="insight-pub-card">';
+      html += '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px">';
+      html += '<div class="insight-pub-title">' + esc(i.title) + '</div>';
+      html += '<div style="display:flex;gap:6px;flex-shrink:0">' + badge(i.status) + badge(i.confidence_level) + '</div>';
+      html += '</div>';
+      if (i.description) html += '<div class="insight-pub-desc">' + esc(i.description) + '</div>';
+      html += '<div style="font-size:12px;color:var(--muted);margin-bottom:8px">' + esc(i.category||'') + '</div>';
+      html += '<div class="pub-channels">';
+      CHANNELS.forEach(ch => {
+        html += '<span class="channel-tag ' + ch.cls + '">' + ch.label + '</span>';
+      });
+      html += '</div>';
+      if (i.content_tags && i.content_tags.length) {
+        html += '<div class="kb-tags" style="margin-top:10px">' + i.content_tags.map(t => '<span class="tag">' + esc(t) + '</span>').join('') + '</div>';
+      }
+      html += '</div>';
+    });
+  }
+
+  if (scripts.length) {
+    html += '<div style="font-family:Cinzel,serif;font-size:13px;color:var(--gold);letter-spacing:.06em;text-transform:uppercase;margin:24px 0 12px">Script Vault</div>';
+    html += '<div class="tbl-wrap"><table><thead><tr><th>Title</th><th>Type</th><th>Topic</th><th>Status</th></tr></thead><tbody>';
+    scripts.forEach(s => {
+      html += '<tr><td>' + esc(s.title||'—') + '</td><td style="font-size:12px;color:var(--muted)">' + esc(s.content_type||'—') + '</td><td style="font-size:12px;color:var(--muted)">' + esc(s.topic||'—') + '</td><td>' + badge(s.status) + '</td></tr>';
+    });
+    html += '</tbody></table></div>';
+  }
+
+  setContent('publishing', html);
+}
+
+/* ── Content Intelligence ──────────────────────────────── */
+async function loadIntelligence() {
+  const [intel, social] = await Promise.all([
+    api('/.netlify/functions/content-studio?section=intelligence').catch(() => null),
+    api('/.netlify/functions/knowledge-hub?section=social').catch(() => null)
+  ]);
+
+  let html = '';
+
+  const trendingTopics = intel?.trending_topics || social?.trending_topics || [];
+  const internalPatterns = intel?.internal_patterns || [];
+  const patternMatches = intel?.pattern_matches || [];
+  const underserved = intel?.underserved_topics || [];
+  const faqOpps = intel?.faq_opportunities || [];
+  const summary = intel?.summary || {};
+
+  if (summary.ext_sources_count !== undefined) {
+    html += '<div class="kpi-row">';
+    html += kpiCard(summary.ext_sources_count, 'External Sources', '');
+    html += kpiCard(summary.internal_notes_count, 'Research Notes', '');
+    html += kpiCard(summary.kb_count, 'KB Articles', '');
+    html += kpiCard(summary.trending_count, 'Trending Topics', '');
+    html += kpiCard(summary.underserved_count, 'Content Gaps', '');
+    html += '</div>';
+  }
+
+  html += '<div class="intel-grid">';
+
+  // Trending topics
+  html += '<div class="card"><div class="card-title">Top Trending Topics</div>';
+  if (trendingTopics.length) {
+    trendingTopics.slice(0,10).forEach(t => {
+      const freq = t.frequency || t.count || 0;
+      const trend = t.trend || t.growth_trend || 'stable';
+      html += '<div class="topic-item"><span class="topic-name">' + esc(t.topic||t.tag||'') + '</span>';
+      html += '<span>' + badge(trend) + ' <span class="topic-freq">' + freq + '</span></span></div>';
+    });
+  } else {
+    html += '<div class="state-empty" style="padding:24px">No trending topics yet.</div>';
+  }
+  html += '</div>';
+
+  // Internal patterns
+  html += '<div class="card"><div class="card-title">Internal Pattern Tags</div>';
+  if (internalPatterns.length) {
+    internalPatterns.slice(0,10).forEach(p => {
+      html += '<div class="topic-item"><span class="topic-name">' + esc(p.tag||p.topic||'') + '</span><span class="topic-freq">' + (p.count||p.frequency||0) + '</span></div>';
+    });
+  } else if (trendingTopics.length) {
+    trendingTopics.slice(0,10).forEach(t => {
+      html += '<div class="topic-item"><span class="topic-name">' + esc(t.topic||t.tag||'') + '</span><span class="topic-freq">' + (t.frequency||t.count||0) + '</span></div>';
+    });
+  } else {
+    html += '<div class="state-empty" style="padding:24px">No internal patterns yet.</div>';
+  }
+  html += '</div>';
+
+  html += '</div>';
+
+  // Pattern matches
+  if (patternMatches.length) {
+    html += '<div class="card" style="margin-bottom:14px"><div class="card-title">Internal ↔ External Pattern Matches</div>';
+    html += '<div class="tbl-wrap"><table><thead><tr><th>Pattern</th><th>Internal Count</th><th>External Matches</th><th>Opportunity</th></tr></thead><tbody>';
+    patternMatches.forEach(p => {
+      const oColor = p.opportunity === 'supported' ? 'var(--teal)' : 'var(--muted)';
+      html += '<tr><td>' + esc(p.pattern) + '</td><td style="text-align:center">' + p.internal_count + '</td><td style="text-align:center">' + p.external_matches + '</td><td style="color:' + oColor + ';font-size:13px">' + esc(p.opportunity) + '</td></tr>';
+    });
+    html += '</tbody></table></div></div>';
+  }
+
+  // Content gaps
+  if (underserved.length) {
+    html += '<div class="card" style="margin-bottom:14px"><div class="card-title">Content Opportunity Areas</div>';
+    html += '<div style="font-size:13px;color:var(--muted);margin-bottom:12px">High external interest with low internal coverage — prime content creation opportunities.</div>';
+    underserved.forEach(t => {
+      html += '<div class="topic-item"><span class="topic-name" style="color:var(--gold)">' + esc(t.tag||t.topic||'') + '</span><span class="topic-freq">' + (t.count||t.frequency||0) + ' external mentions</span></div>';
+    });
+    html += '</div>';
+  }
+
+  // FAQ opportunities
+  if (faqOpps.length) {
+    html += '<div class="card"><div class="card-title">FAQ Opportunities</div>';
+    faqOpps.forEach(f => {
+      html += '<div style="padding:8px 0;border-bottom:1px solid rgba(232,184,75,.07)"><div style="font-size:14px;color:var(--text)">' + esc(f.title||'') + '</div>';
+      html += '<div style="font-size:12px;color:var(--muted);margin-top:2px">' + esc(f.type||'') + '</div></div>';
+    });
+    html += '</div>';
+  }
+
+  if (!trendingTopics.length && !patternMatches.length) {
+    html = '<div class="state-empty">No intelligence data yet. Add KB articles, research notes, and external sources to populate content intelligence.</div>';
+  }
+
+  setContent('intelligence', html);
+}
+
+/* ── Content Calendar ──────────────────────────────────── */
+async function loadCalendar() {
+  const d = await api('/.netlify/functions/content-studio?section=calendar').catch(() => null);
+  const cal = d?.calendar || [];
+
+  let html = '';
+
+  if (cal.length) {
+    html += '<div style="margin-bottom:20px"><div style="font-family:Cinzel,serif;font-size:18px;color:var(--gold-light);margin-bottom:6px">Scheduled Content</div>';
+    html += '<div style="font-size:14px;color:var(--muted)">' + cal.length + ' item' + (cal.length!==1?'s':'') + ' scheduled</div></div>';
+    html += '<div class="tbl-wrap"><table><thead><tr><th>Scheduled Date</th><th>Title</th><th>Type</th><th>Priority</th><th>Status</th></tr></thead><tbody>';
+    cal.forEach(i => {
+      html += '<tr><td style="font-size:13px;color:var(--gold)">' + fmtDate(i.scheduled_date) + '</td>';
+      html += '<td>' + esc(i.title) + '</td>';
+      html += '<td style="font-size:12px;color:var(--muted)">' + esc(i.content_type||'—') + '</td>';
+      html += '<td>' + badge(i.priority) + '</td>';
+      html += '<td>' + badge(i.status) + '</td></tr>';
+    });
+    html += '</tbody></table></div>';
+    html += '<div style="margin-top:28px"></div>';
+  }
+
+  html += '<div class="calendar-placeholder">';
+  html += '<div class="calendar-placeholder-icon">📅</div>';
+  html += '<div class="calendar-placeholder-title">Full Calendar Coming Soon</div>';
+  html += '<div class="calendar-placeholder-sub">The full editorial calendar with platform-specific scheduling will be built in a future sprint. Current scheduled items appear above.</div>';
+  html += '<div class="platform-list">';
+  ['YouTube', 'Facebook', 'Instagram', 'Blog', 'Newsletter'].forEach(p => {
+    html += '<span class="platform-pill">' + p + '</span>';
+  });
+  html += '</div></div>';
+
+  setContent('calendar', html);
+}
+
+/* ── Knowledge Search ──────────────────────────────────── */
+function setSearchFilter(filter, el) {
+  _searchFilter = filter;
+  document.querySelectorAll('.search-filters .filter-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+}
+
+async function runSearch() {
+  const q = document.getElementById('searchInput').value.trim();
+  if (!q) {
+    setContent('search', '<div class="state-empty">Enter a search term above.</div>');
+    return;
+  }
+  setContent('search', '<div class="state-loading">Searching…</div>');
+
+  try {
+    const queries = [];
+    if (_searchFilter === 'all' || _searchFilter === 'kb') {
+      queries.push(api('/.netlify/functions/kb?section=entries&search=' + encodeURIComponent(q)).catch(() => ({ entries: [] })));
+    } else {
+      queries.push(Promise.resolve({ entries: [] }));
+    }
+    if (_searchFilter === 'all' || _searchFilter === 'insights') {
+      queries.push(api('/.netlify/functions/knowledge-engine?section=insights').catch(() => ({ insights: [] })));
+    } else {
+      queries.push(Promise.resolve({ insights: [] }));
+    }
+    if (_searchFilter === 'all' || _searchFilter === 'case_studies') {
+      queries.push(api('/.netlify/functions/knowledge-engine?section=case_studies').catch(() => ({ caseStudies: [] })));
+    } else {
+      queries.push(Promise.resolve({ caseStudies: [] }));
+    }
+
+    const [kbRes, insRes, csRes] = await Promise.all(queries);
+    const ql = q.toLowerCase();
+
+    const kbMatches = (kbRes.entries || []).filter(e =>
+      (e.title||'').toLowerCase().includes(ql) ||
+      (e.summary||'').toLowerCase().includes(ql) ||
+      (e.content||'').toLowerCase().includes(ql) ||
+      (e.category||'').toLowerCase().includes(ql)
+    );
+
+    const insMatches = (insRes.insights || []).filter(i =>
+      (i.title||'').toLowerCase().includes(ql) ||
+      (i.description||'').toLowerCase().includes(ql) ||
+      (i.category||'').toLowerCase().includes(ql)
+    );
+
+    const csMatches = (csRes.caseStudies || csRes.case_studies || []).filter(c =>
+      (c.title||'').toLowerCase().includes(ql) ||
+      (c.problem||'').toLowerCase().includes(ql) ||
+      (c.outcome||'').toLowerCase().includes(ql) ||
+      (c.service||'').toLowerCase().includes(ql)
+    );
+
+    const total = kbMatches.length + insMatches.length + csMatches.length;
+    let html = '<div style="font-size:14px;color:var(--muted);margin-bottom:16px">' + total + ' result' + (total!==1?'s':'') + ' for <span style="color:var(--gold)">"' + esc(q) + '"</span></div>';
+
+    if (!total) {
+      html += '<div class="state-empty">No results found. Try different keywords.</div>';
+    } else {
+      kbMatches.forEach(e => {
+        html += '<div class="search-result"><div class="search-result-source">Knowledge Base</div>';
+        html += '<div class="search-result-title">' + esc(e.title) + '</div>';
+        if (e.summary) html += '<div class="search-result-excerpt">' + esc(e.summary.slice(0,200)) + (e.summary.length>200?'…':'') + '</div>';
+        html += '</div>';
+      });
+      insMatches.forEach(i => {
+        html += '<div class="search-result"><div class="search-result-source">Research Insight</div>';
+        html += '<div class="search-result-title">' + esc(i.title) + ' ' + badge(i.status) + '</div>';
+        if (i.description) html += '<div class="search-result-excerpt">' + esc(i.description.slice(0,200)) + (i.description.length>200?'…':'') + '</div>';
+        html += '</div>';
+      });
+      csMatches.forEach(c => {
+        html += '<div class="search-result"><div class="search-result-source">Case Study</div>';
+        html += '<div class="search-result-title">' + esc(c.title||'Untitled Case Study') + ' ' + badge(c.status) + '</div>';
+        const excerpt = (c.problem||c.outcome||'').slice(0,200);
+        if (excerpt) html += '<div class="search-result-excerpt">' + esc(excerpt) + (excerpt.length>=200?'…':'') + '</div>';
+        html += '</div>';
+      });
+    }
+
+    setContent('search', html);
+  } catch(e) {
+    setContent('search', '<div class="state-error">Search failed: ' + esc(e.message) + '</div>');
+  }
+}
+
+/* ── Helpers ───────────────────────────────────────────── */
+function kpiCard(val, lbl, sub) {
+  return '<div class="kpi-card"><div class="kpi-val">' + val + '</div><div class="kpi-lbl">' + lbl + '</div>' + (sub ? '<div class="kpi-sub">' + sub + '</div>' : '') + '</div>';
+}
+
+function badge(s) {
+  if (!s) return '';
+  return '<span class="badge badge-' + s + '">' + s + '</span>';
+}
+
+function esc(str) {
+  if (str === null || str === undefined) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function fmtDate(str) {
+  if (!str) return '—';
+  try { return new Date(str).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
+  catch(e) { return str; }
+}
+
+/* ── Boot ──────────────────────────────────────────────── */
+if (_tok) {
+  document.getElementById('accessGate').classList.add('hidden');
+  document.getElementById('cockpit').classList.add('visible');
+  initKnowledge();
+}
+</script>
+</body>
+</html>
