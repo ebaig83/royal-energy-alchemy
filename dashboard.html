@@ -3262,7 +3262,7 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
         <p style="font-family:'EB Garamond',serif;font-size:14px;color:#aaa8cc;margin:0">Click any date to add time slots. Green = open, gold = booked, grey = past.</p>
-        <button onclick="pullSlotsFromGitHub()" style="background:#0e0c22;border:1px solid #44cc8855;color:#44cc88;font-family:'Cinzel',serif;font-size:10px;letter-spacing:.15em;padding:7px 14px;border-radius:4px;cursor:pointer">&#8635; SYNC FROM WEBSITE</button>
+        <button onclick="syncSlotsFromAPI()" style="background:#0e0c22;border:1px solid #44cc8855;color:#44cc88;font-family:'Cinzel',serif;font-size:10px;letter-spacing:.15em;padding:7px 14px;border-radius:4px;cursor:pointer">&#8635; SYNC FROM SUPABASE</button>
       </div>
 
       <!-- SLOT CALENDAR -->
@@ -3502,6 +3502,18 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
       <!-- ⑥ PRACTITIONER LOAD -->
       <div id="bk-load"></div>
 
+    </div>
+
+    <!-- CANCELLATION REQUESTS (from public /cancel-session portal) -->
+    <div class="booking-section" style="border:1px solid #ee707055;margin-bottom:24px">
+      <div class="booking-section-header">
+        <div class="section-title" style="color:#ee7070">⚠ Cancellation Requests</div>
+        <button onclick="loadCancelRequests()" style="background:#0e0c22;border:1px solid #ee707055;color:#ee7070;font-family:'Cinzel',serif;font-size:10px;letter-spacing:.15em;padding:7px 14px;border-radius:4px;cursor:pointer">&#8635; REFRESH</button>
+      </div>
+      <p style="font-family:'EB Garamond',serif;font-size:14px;color:#aaa8cc;margin:0 0 14px 0">Clients who submitted a cancellation request from the website. Review and take action below.</p>
+      <div id="cancelRequestsBody">
+        <p class="cal-no-sessions" style="font-style:italic">Loading cancellation requests…</p>
+      </div>
     </div>
 
     <!-- CANCELLATIONS LOG -->
@@ -3769,7 +3781,7 @@ function showTab(name) {
   // Tab-specific renders
   if (name === 'home')        { try { renderHomeDashboard(); } catch(e){ console.error('renderHomeDashboard', e); } }
   if (name === 'environment') { try { renderTodayEnvCard(); } catch(e){} try { renderEnvLog(); } catch(e){} try { renderPatterns(); } catch(e){} }
-  if (name === 'booking')     { try { renderCal(); renderUpcoming(); renderWaitlist(); updateCapacityStats(); renderCancellationLog(); renderBooking(); renderSyncLastRun(); } catch(e){} }
+  if (name === 'booking')     { try { renderCal(); renderUpcoming(); renderWaitlist(); updateCapacityStats(); renderCancellationLog(); renderBooking(); renderSyncLastRun(); loadCancelRequests(); } catch(e){ console.error('booking tab',e); } }
   if (name === 'operations')  { try { renderOperationsCenter(); } catch(e){ console.error('renderOperationsCenter', e); } }
   if (name === 'followups')   { try { loadFollowUps(); } catch(e){ console.error('loadFollowUps', e); } }
   if (name === 'kh')             { try { khInit(); } catch(e){ console.error('khInit', e); } }
@@ -7203,6 +7215,85 @@ function confirmReschedule(id) {
   renderCal();
 }
 
+// ── CANCELLATION REQUESTS (from public portal) ────────────────────────────────
+
+function loadCancelRequests() {
+  var el = document.getElementById('cancelRequestsBody');
+  if (!el) return;
+  el.innerHTML = '<p class="cal-no-sessions" style="font-style:italic">Loading…</p>';
+  var tok = sessionStorage.getItem('rea_api_token') || '';
+  fetch('/.netlify/functions/cancellations', { headers: { 'X-Dashboard-Token': tok } })
+    .then(function(r) { return r.json(); })
+    .then(function(resp) { renderCancelRequests(resp.requests || []); })
+    .catch(function(e) { el.innerHTML = '<p class="cal-no-sessions" style="color:#ee7070">Error loading requests: ' + e.message + '</p>'; });
+}
+
+function renderCancelRequests(requests) {
+  var el = document.getElementById('cancelRequestsBody');
+  if (!el) return;
+  if (!requests.length) {
+    el.innerHTML = '<p class="cal-no-sessions">No cancellation requests.</p>';
+    return;
+  }
+  var pending   = requests.filter(function(r) { return r.status === 'pending'; });
+  var resolved  = requests.filter(function(r) { return r.status !== 'pending'; });
+  var html = '';
+
+  if (pending.length) {
+    html += '<div style="font-family:Cinzel,serif;font-size:10px;letter-spacing:.25em;color:#ee7070;margin-bottom:10px">PENDING — ' + pending.length + '</div>';
+    html += pending.map(function(r) { return cancelRequestCard(r, true); }).join('');
+  }
+  if (resolved.length) {
+    html += '<div style="font-family:Cinzel,serif;font-size:10px;letter-spacing:.25em;color:#6662aa;margin:18px 0 10px">RESOLVED — ' + resolved.length + '</div>';
+    html += resolved.map(function(r) { return cancelRequestCard(r, false); }).join('');
+  }
+  el.innerHTML = html;
+}
+
+function cancelRequestCard(r, isPending) {
+  var refundColor = r.refund_eligible ? '#44cc88' : '#ee7070';
+  var statusColor = { pending: '#ee7070', approved: '#44cc88', denied: '#aaa8cc', rescheduled: '#9b7fe8', no_show: '#cc4455' }[r.status] || '#aaa8cc';
+  return '<div style="padding:16px 18px;margin-bottom:12px;background:#0e0c22;border:1px solid ' + (isPending ? '#ee707055' : '#2a2850') + ';border-left:4px solid ' + statusColor + '">' +
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:10px">' +
+      '<div>' +
+        '<div style="font-family:Cinzel,serif;font-size:14px;color:#f0ecff;margin-bottom:3px">' + esc(r.client_name) + '</div>' +
+        '<div style="font-family:EB Garamond,serif;font-size:13px;color:#aaa8cc">' + esc(r.email) + (r.phone ? ' · ' + esc(r.phone) : '') + '</div>' +
+      '</div>' +
+      '<div style="font-family:Cinzel,serif;font-size:10px;letter-spacing:.2em;color:' + statusColor + ';text-transform:uppercase;padding:3px 10px;border:1px solid ' + statusColor + '44">' + r.status + '</div>' +
+    '</div>' +
+    '<div style="font-family:EB Garamond,serif;font-size:14px;color:#d0cce8;margin-bottom:6px">' +
+      '📅 ' + (r.appointment_date||'—') + (r.appointment_time ? ' at ' + r.appointment_time.slice(0,5) : '') +
+      (r.service ? ' &nbsp;·&nbsp; ' + esc(r.service) : '') +
+    '</div>' +
+    '<div style="font-family:EB Garamond,serif;font-size:13px;color:#aaa8cc;margin-bottom:6px">Reason: ' + esc(r.reason) + (r.additional_notes ? ' — ' + esc(r.additional_notes) : '') + '</div>' +
+    '<div style="font-family:EB Garamond,serif;font-size:13px;color:#aaa8cc;margin-bottom:4px">Wants Reschedule: <strong style="color:#d0cce8">' + (r.wants_reschedule ? 'Yes' : 'No') + '</strong></div>' +
+    '<div style="font-family:Cinzel,serif;font-size:11px;letter-spacing:.12em;color:' + refundColor + ';margin-bottom:' + (isPending ? '14' : '0') + 'px">Refund Estimate: ' + esc(r.refund_estimate||'—') + '</div>' +
+    (isPending ? '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
+      '<input id="refamt_' + r.id + '" type="number" placeholder="Refund $" style="background:#06030f;border:1px solid #e8b84b44;color:#fff;padding:6px 10px;font-family:EB Garamond,serif;font-size:14px;width:110px">' +
+      '<button onclick="actOnCancel(\'' + r.id + '\',\'approved\')" style="background:transparent;border:1px solid #44cc6655;color:#44cc66;font-family:Cinzel,serif;font-size:10px;letter-spacing:.15em;padding:7px 14px;cursor:pointer">✓ APPROVE</button>' +
+      '<button onclick="actOnCancel(\'' + r.id + '\',\'rescheduled\')" style="background:transparent;border:1px solid #9b7fe855;color:#9b7fe8;font-family:Cinzel,serif;font-size:10px;letter-spacing:.15em;padding:7px 14px;cursor:pointer">↺ RESCHEDULE</button>' +
+      '<button onclick="actOnCancel(\'' + r.id + '\',\'denied\')" style="background:transparent;border:1px solid #ee707055;color:#ee7070;font-family:Cinzel,serif;font-size:10px;letter-spacing:.15em;padding:7px 14px;cursor:pointer">✕ DENY REFUND</button>' +
+      '<button onclick="actOnCancel(\'' + r.id + '\',\'no_show\')" style="background:transparent;border:1px solid #cc445544;color:#cc4455;font-family:Cinzel,serif;font-size:10px;letter-spacing:.15em;padding:7px 14px;cursor:pointer">NO-SHOW</button>' +
+    '</div>' : '') +
+  '</div>';
+}
+
+function actOnCancel(id, status) {
+  var tok = sessionStorage.getItem('rea_api_token') || '';
+  var amtEl = document.getElementById('refamt_' + id);
+  var body = { status: status };
+  if (amtEl && amtEl.value) body.refund_approved_amt = parseFloat(amtEl.value);
+  fetch('/.netlify/functions/cancellations?id=' + id, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', 'X-Dashboard-Token': tok },
+    body: JSON.stringify(body),
+  }).then(function(r) { return r.json(); })
+    .then(function() { showToast('Request ' + status + ' ✓', '#44cc88'); loadCancelRequests(); })
+    .catch(function(e) { showToast('Error: ' + e.message, '#cc4455'); });
+}
+
+function esc(s) { return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
 function renderCancellationLog() {
   const el = document.getElementById('cancellationLog');
   if (!el) return;
@@ -10018,43 +10109,62 @@ var _slotCalYear=new Date().getFullYear(), _slotCalMonth=new Date().getMonth();
 var _slotPickerDate=null;
 var SLOT_TIMES=['7:00 AM','7:30 AM','8:00 AM','8:30 AM','9:00 AM','9:30 AM','10:00 AM','10:30 AM','11:00 AM','11:30 AM','12:00 PM','12:30 PM','1:00 PM','1:30 PM','2:00 PM','2:30 PM','3:00 PM','3:30 PM','4:00 PM','4:30 PM','5:00 PM','5:30 PM','6:00 PM','6:30 PM','7:00 PM','7:30 PM','8:00 PM'];
 
-function getSlots(){return JSON.parse(localStorage.getItem('rea_available_slots')||'[]');}
-function pushSlotsToGitHub(arr){
-  var st=getSettings();
-  var token=st.githubToken||'';
-  if(!token)return; // silently skip if not configured
-  var owner='ebaig83', repo='royal-energy-alchemy', path='website/slots.json';
-  var apiUrl='https://api.github.com/repos/'+owner+'/'+repo+'/contents/'+path;
-  var content=btoa(unescape(encodeURIComponent(JSON.stringify(arr,null,2))));
-  // get current SHA first
-  fetch(apiUrl,{headers:{'Authorization':'token '+token,'Accept':'application/vnd.github.v3+json'}})
+// ── Slot management — Supabase-backed via availability API ───────────────────
+// _slotsCache is the in-memory/localStorage mirror; Supabase is source of truth.
+
+function getSlots(){
+  try{return JSON.parse(localStorage.getItem('rea_available_slots')||'[]');}catch(e){return [];}
+}
+function _setSlots(arr){
+  localStorage.setItem('rea_available_slots',JSON.stringify(arr));
+}
+
+function _apiHeaders(){
+  var tok=sessionStorage.getItem('rea_api_token')||'';
+  return {'Content-Type':'application/json','X-Dashboard-Token':tok};
+}
+
+/* Pull slots from Supabase availability API and refresh UI */
+function pullSlotsFromGitHub(){syncSlotsFromAPI();}  // legacy alias
+function syncSlotsFromAPI(){
+  fetch('/.netlify/functions/availability?_='+Date.now())
     .then(function(r){return r.json();})
-    .then(function(meta){
-      return fetch(apiUrl,{
-        method:'PUT',
-        headers:{'Authorization':'token '+token,'Content-Type':'application/json','Accept':'application/vnd.github.v3+json'},
-        body:JSON.stringify({message:'Update available slots',content:content,sha:meta.sha||undefined})
+    .then(function(resp){
+      var arr=resp.slots||[];
+      // Map API shape to dashboard shape
+      var mapped=arr.map(function(s){
+        return {
+          id:          s.id,
+          date:        s.date||s.slot_date,
+          time:        s.time||'',
+          displayTime: s.displayTime||s.display_time||s.time||'',
+          label:       s.label||'',
+          booked:      s.status!=='available',
+          status:      s.status||'available',
+        };
       });
-    })
-    .then(function(r){return r.json();})
-    .then(function(){showToast('Slots synced to website ✓','#44cc88');})
-    .catch(function(e){console.warn('GitHub slot sync failed:',e);});
-}
-function saveSlots(arr){localStorage.setItem('rea_available_slots',JSON.stringify(arr));pushSlotsToGitHub(arr);}
-
-
-/* Pull latest slots.json from GitHub into localStorage + re-render */
-function pullSlotsFromGitHub(){
-  fetch('https://raw.githubusercontent.com/ebaig83/royal-energy-alchemy/main/website/slots.json?_='+Date.now())
-    .then(function(r){return r.json();})
-    .then(function(arr){
-      if(!Array.isArray(arr))return;
-      localStorage.setItem('rea_available_slots',JSON.stringify(arr));
+      _setSlots(mapped);
       renderSlotCal();renderSlots();
-      showToast('Slots refreshed from website ✓','#44cc88');
+      showToast('Slots synced from Supabase ✓','#44cc88');
     })
-    .catch(function(e){showToast('Could not refresh slots: '+e.message,'#cc4455');});
+    .catch(function(e){showToast('Could not sync slots: '+e.message,'#cc4455');});
 }
+
+function _buildLabel(dateStr,timeLabel){
+  var parts=dateStr.split('-');
+  var d=new Date(parseInt(parts[0]),parseInt(parts[1])-1,parseInt(parts[2]));
+  return d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})+' at '+timeLabel+' EST';
+}
+function _displayToTime24(label){
+  var m=label.match(/^(\d+)(?::(\d+))?\s*(AM|PM)$/i);
+  if(!m)return '00:00:00';
+  var h=parseInt(m[1]),mn=m[2]||'00',ap=m[3].toUpperCase();
+  if(ap==='PM'&&h!==12)h+=12;
+  if(ap==='AM'&&h===12)h=0;
+  return String(h).padStart(2,'0')+':'+mn+':00';
+}
+
+function saveSlots(arr){_setSlots(arr);} // local-only for legacy callers
 function slotCalPrev(){_slotCalMonth--;if(_slotCalMonth<0){_slotCalMonth=11;_slotCalYear--;}renderSlotCal();}
 function slotCalNext(){_slotCalMonth++;if(_slotCalMonth>11){_slotCalMonth=0;_slotCalYear++;}renderSlotCal();}
 
@@ -10159,15 +10269,31 @@ function renderTimeGrid(dateStr){
 function addTimeSlot(dateStr,timeLabel){
   var typeFilter=(document.getElementById('slotTypeGlobal')||{}).value||'';
   var slots=getSlots();
-  // check not already added
-  if(slots.some(function(s){return s.date===dateStr&&s.displayTime===timeLabel&&!s.booked;})){return;}
-  var parts=dateStr.split('-');
-  var label=new Date(parseInt(parts[0]),parseInt(parts[1])-1,parseInt(parts[2])).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})+' at '+timeLabel+' EST'+(typeFilter?' ('+typeFilter+')':'');
-  slots.push({id:Date.now(),date:dateStr,displayTime:timeLabel,type:typeFilter,label:label,booked:false});
+  if(slots.some(function(s){return s.date===dateStr&&s.displayTime===timeLabel&&s.status==='available';})){return;}
+  var label=_buildLabel(dateStr,timeLabel)+(typeFilter?' ('+typeFilter+')':'');
+  var time24=_displayToTime24(timeLabel);
+  // Optimistic local update
+  var tempId='tmp_'+Date.now();
+  slots.push({id:tempId,date:dateStr,time:time24,displayTime:timeLabel,label:label,booked:false,status:'available'});
   slots.sort(function(a,b){return a.date.localeCompare(b.date)||a.displayTime.localeCompare(b.displayTime);});
-  saveSlots(slots);
-  renderTimeGrid(dateStr);
-  renderSlotCal();
+  _setSlots(slots);
+  renderTimeGrid(dateStr);renderSlotCal();
+  // Push to API
+  fetch('/.netlify/functions/availability',{
+    method:'POST',
+    headers:_apiHeaders(),
+    body:JSON.stringify({date:dateStr,time:time24,display_time:timeLabel,label:label,status:'available'})
+  }).then(function(r){return r.json();})
+    .then(function(resp){
+      if(resp.slots&&resp.slots[0]){
+        // Replace temp id with real UUID
+        var arr=getSlots();
+        arr.forEach(function(s){if(s.id===tempId)s.id=resp.slots[0].id;});
+        _setSlots(arr);
+        showToast('Slot added ✓','#44cc88');
+      }
+    })
+    .catch(function(e){showToast('Could not save slot: '+e.message,'#cc4455');});
 }
 
 function addCustomSlot(){
@@ -10183,17 +10309,39 @@ function addCustomSlot(){
 }
 
 function removeSlotByTime(dateStr,timeLabel){
-  var slots=getSlots().filter(function(s){return !(s.date===dateStr&&s.displayTime===timeLabel&&!s.booked);});
-  saveSlots(slots);renderTimeGrid(dateStr);renderSlotCal();
+  var toRemove=getSlots().filter(function(s){return s.date===dateStr&&s.displayTime===timeLabel&&s.status==='available';});
+  var remaining=getSlots().filter(function(s){return !(s.date===dateStr&&s.displayTime===timeLabel&&s.status==='available');});
+  _setSlots(remaining);renderTimeGrid(dateStr);renderSlotCal();
+  toRemove.forEach(function(s){
+    if(s.id&&!String(s.id).startsWith('tmp_')){
+      fetch('/.netlify/functions/availability?id='+s.id,{method:'DELETE',headers:_apiHeaders()})
+        .catch(function(e){showToast('Remove failed: '+e.message,'#cc4455');});
+    }
+  });
 }
 
 function removeSlot(id){
-  saveSlots(getSlots().filter(function(s){return s.id!==id;}));
+  _setSlots(getSlots().filter(function(s){return s.id!==id;}));
   renderSlotCal();if(_slotPickerDate)renderTimeGrid(_slotPickerDate);
+  if(id&&!String(id).startsWith('tmp_')){
+    fetch('/.netlify/functions/availability?id='+id,{method:'DELETE',headers:_apiHeaders()})
+      .catch(function(e){showToast('Remove failed: '+e.message,'#cc4455');});
+  }
 }
 function markSlotBooked(id){
-  var arr=getSlots();arr.forEach(function(s){if(s.id===id)s.booked=!s.booked;});
-  saveSlots(arr);renderSlotCal();if(_slotPickerDate)renderTimeGrid(_slotPickerDate);
+  var arr=getSlots();
+  var slot=arr.find(function(s){return s.id===id;});
+  if(!slot)return;
+  var newStatus=slot.status==='available'?'booked':'available';
+  slot.status=newStatus;slot.booked=newStatus!=='available';
+  _setSlots(arr);renderSlotCal();if(_slotPickerDate)renderTimeGrid(_slotPickerDate);
+  if(!String(id).startsWith('tmp_')){
+    fetch('/.netlify/functions/availability?id='+id,{
+      method:'PATCH',headers:_apiHeaders(),
+      body:JSON.stringify({status:newStatus})
+    }).then(function(){showToast('Slot updated ✓','#44cc88');})
+      .catch(function(e){showToast('Update failed: '+e.message,'#cc4455');});
+  }
 }
 
 function renderSlots(){
@@ -10237,7 +10385,9 @@ function saveSlot(){if(_slotPickerDate)return;
   addTimeSlot(d.value,h12+':'+mn+' '+ampm);
 }
 function toggleSlotForm(){openSlotPicker(new Date().toISOString().slice(0,10));}
+// Initial render from localStorage cache, then refresh from API
 renderSlotCal();
+syncSlotsFromAPI();
 
 
 /* ====== PAYMENT LINKS ====== */

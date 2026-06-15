@@ -35,6 +35,12 @@
           '<li><a href="/training.html#advanced">Level Three - Advanced</a></li>' +
         '</ul></li>' +
       '<li><a href="/waiver-esign.html">Sign Waiver</a></li>' +
+      '<li class="rea-nav-dropdown"><a href="/#faq">More</a>' +
+        '<ul class="rea-nav-menu" aria-label="More">' +
+          '<li><a href="/provider-apply" style="color:#22c98a">Provider Application</a></li>' +
+          '<li><a href="/community">Join the Fight</a></li>' +
+          '<li><a href="/cancel-session" style="color:#ee7070">Need to Cancel?</a></li>' +
+        '</ul></li>' +
     '</ul>' +
     '<a href="/#contact" class="rea-nav-book">Book Session</a>';
 

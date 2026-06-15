@@ -7,7 +7,7 @@
 function requireAdmin(event) {
   const secret = process.env.DASHBOARD_API_SECRET;
   if (!secret) {
-    return { error: respond(500, { error: 'DASHBOARD_API_SECRET is not configured.' }) };
+    return { error: respond(500, { error: 'Server configuration error.' }) };
   }
 
   const token = (
@@ -20,7 +20,7 @@ function requireAdmin(event) {
     return { error: respond(401, { error: 'Unauthorized.' }) };
   }
 
-  return { user: { email: process.env.ADMIN_EMAIL || 'droyal168@gmail.com' } };
+  return { user: { email: process.env.ADMIN_EMAIL } };
 }
 
 function respond(status, body) {

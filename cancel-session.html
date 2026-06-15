@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cancel Session — Royal Energy Alchemy</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--gold:#e8b84b;--gold-light:#f8e090;--teal:#22c98a;--deep:#04020e;--text:#f0ecff}
+body{background:#0a0612;color:#f0ecff;font-family:'EB Garamond',serif;line-height:1.7}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:18px 48px;background:rgba(0,4,10,.88);backdrop-filter:blur(14px);border-bottom:1px solid #e8b84b12}
+.nav-brand{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;color:#e8b84bb3;text-transform:uppercase;text-decoration:none}
+.nav-back{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.3em;color:#d8d4f073;text-transform:uppercase;text-decoration:none;transition:color .25s}
+.nav-back:hover{color:var(--gold)}
+
+.wrap{max-width:760px;margin:0 auto;padding:110px 24px 80px}
+
+.header{text-align:center;margin-bottom:44px;padding-bottom:28px;border-bottom:1px solid rgba(232,184,75,.32)}
+.header .step-tag{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.5em;color:#e8b84b80;text-transform:uppercase;display:block;margin-bottom:12px}
+.header h1{font-family:'Cinzel',serif;font-size:clamp(22px,3vw,32px);font-weight:700;color:#fff;letter-spacing:.06em;margin-bottom:12px}
+.header p{font-family:'EB Garamond',serif;font-size:17px;font-style:italic;color:#d8d4f099;line-height:1.8}
+
+/* ── Panel sections ─────────────────────────────────── */
+.sec{margin-bottom:24px;border:1px solid rgba(232,184,75,.32);background:rgba(8,6,22,0.88);box-shadow:0 18px 55px rgba(0,0,0,.24),inset 0 0 0 1px rgba(255,255,255,.02)}
+.sec-head{background:linear-gradient(90deg,rgba(42,31,16,.96),rgba(18,13,28,.96));padding:13px 20px;border-bottom:1px solid rgba(232,184,75,.25);display:flex;align-items:center;gap:10px}
+.sec-num{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#ffd977;text-transform:uppercase}
+.sec-title{font-family:'Cinzel',serif;font-size:15px;font-weight:600;color:#f0ecff;letter-spacing:.06em}
+.sec-body{padding:22px 20px}
+
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.form-row.single{grid-template-columns:1fr}
+.fg{display:flex;flex-direction:column;gap:6px}
+.fg label{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.34em;color:#ffd977;text-transform:uppercase}
+.fg input,.fg select,.fg textarea{background:rgba(14,10,36,.98);border:1px solid rgba(232,184,75,.42);padding:13px 14px;font-family:'EB Garamond',serif;font-size:17px;color:#fff;outline:none;transition:border-color .3s,background .3s;width:100%}
+.fg input::placeholder,.fg textarea::placeholder{color:rgba(246,241,255,.45)}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:#ffd977;background:rgba(18,12,42,.98);box-shadow:0 0 0 2px rgba(232,184,75,.12)}
+.fg textarea{min-height:90px;resize:vertical}
+.fg select option{background:#08051c;color:#fff}
+.fg input[type="date"]{color-scheme:dark}
+
+/* ── Refund Calculator ──────────────────────────────── */
+.refund-box{margin-top:24px;border:1px solid rgba(34,201,138,.28);background:rgba(8,22,14,.85);padding:0;overflow:hidden}
+.refund-box-head{background:linear-gradient(90deg,rgba(10,34,22,.95),rgba(8,14,28,.95));padding:12px 20px;border-bottom:1px solid rgba(34,201,138,.2);display:flex;align-items:center;gap:10px}
+.refund-box-head span{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;color:var(--teal);text-transform:uppercase}
+.refund-body{padding:20px}
+.refund-estimate{font-family:'Cinzel',serif;font-size:14px;letter-spacing:.08em;color:#fff;margin-bottom:8px}
+.refund-estimate.eligible{color:var(--teal)}
+.refund-estimate.ineligible{color:#ee7070}
+.refund-estimate.unknown{color:#e8b84b88}
+.refund-sub{font-family:'EB Garamond',serif;font-size:15px;color:#d8d4f088;line-height:1.7}
+.refund-disclaimer{font-family:'EB Garamond',serif;font-size:13px;font-style:italic;color:#6662aa;margin-top:10px;line-height:1.6}
+
+/* ── Radio / Intent ─────────────────────────────────── */
+.intent-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+.intent-opt{position:relative}
+.intent-opt input{display:none}
+.intent-opt label{display:block;padding:14px 16px;border:1px solid rgba(232,184,75,.28);font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;text-transform:uppercase;color:#e8b84b88;cursor:pointer;transition:all .22s;background:rgba(14,10,36,.72);text-align:center}
+.intent-opt input:checked + label{border-color:var(--teal);color:#fff;background:rgba(34,201,138,.12)}
+.intent-opt label:hover{border-color:#e8b84b66;color:#e8b84b}
+
+/* ── Policy notice ──────────────────────────────────── */
+.policy-notice{background:rgba(232,184,75,.06);border-left:3px solid rgba(232,184,75,.45);padding:16px 18px;margin-bottom:20px}
+.policy-notice p{font-size:15px;color:rgba(246,241,255,.8);line-height:1.75;margin-bottom:6px}
+.policy-notice p:last-child{margin-bottom:0}
+.policy-notice strong{color:var(--gold)}
+
+/* ── Consent ────────────────────────────────────────── */
+.consent-block{background:rgba(34,201,138,.06);border:1px solid rgba(34,201,138,.22);padding:16px 18px;margin-bottom:14px;display:flex;align-items:flex-start;gap:14px}
+.consent-block input[type=checkbox]{accent-color:var(--teal);width:18px;height:18px;flex-shrink:0;margin-top:3px}
+.consent-block label{font-family:'EB Garamond',serif;font-size:15px;color:rgba(246,241,255,.88);line-height:1.65;cursor:pointer}
+
+/* ── Submit ─────────────────────────────────────────── */
+.submit-btn{width:100%;font-family:'Cinzel',serif;font-size:12px;letter-spacing:.4em;color:#fff;text-transform:uppercase;background:linear-gradient(135deg,rgba(34,201,138,.95),rgba(34,201,138,.75));padding:18px;cursor:pointer;border:none;transition:all .3s;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);font-weight:700;box-shadow:0 10px 30px rgba(34,201,138,.18);margin-top:8px}
+.submit-btn:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.submit-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.submit-note{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#e8b84b55;text-transform:uppercase;text-align:center;margin-top:12px}
+
+/* ── Success state ──────────────────────────────────── */
+.success-panel{display:none;text-align:center;padding:56px 28px;border:1px solid rgba(34,201,138,.3);background:rgba(8,22,14,0.85);margin-top:24px}
+.success-panel .icon{font-size:48px;margin-bottom:20px;opacity:.85}
+.success-panel h2{font-family:'Cinzel',serif;font-size:26px;color:var(--teal);margin-bottom:16px;letter-spacing:.06em}
+.success-panel p{font-size:17px;color:#d8d4f0b3;line-height:1.85;margin-bottom:10px}
+.success-panel .refund-line{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.12em;padding:12px 20px;margin:16px auto;max-width:500px;border:1px solid rgba(34,201,138,.3);color:var(--teal);background:rgba(34,201,138,.06)}
+.success-panel .home-btn{display:inline-block;font-family:'Cinzel',serif;font-size:12px;letter-spacing:.4em;color:#160a00;text-transform:uppercase;text-decoration:none;background:linear-gradient(135deg,var(--gold-light),var(--gold));padding:16px 40px;margin-top:24px;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);font-weight:700;transition:all .3s}
+
+@media(max-width:600px){
+  nav{padding:14px 20px}
+  .wrap{padding:100px 16px 60px}
+  .form-row{grid-template-columns:1fr}
+  .intent-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-brand">Royal Energy Alchemy</a>
+  <a href="/" class="nav-back">← Back to Home</a>
+</nav>
+
+<div class="wrap">
+  <div class="header">
+    <span class="step-tag">Session Management</span>
+    <h1>Need to Cancel?</h1>
+    <p>Submit your cancellation request below. Daron reviews every request personally and will confirm any refund or reschedule details within 24 hours.</p>
+  </div>
+
+  <!-- Policy notice -->
+  <div class="policy-notice">
+    <p><strong>72+ hours notice:</strong> You may be eligible for a 50% refund or session credit.</p>
+    <p><strong>Less than 72 hours:</strong> Sessions within 72 hours of the appointment are non-refundable.</p>
+    <p><strong>No-show / no-call:</strong> No refund. A prepayment is required to rebook.</p>
+    <p><strong>One free reschedule</strong> may be available with Daron's approval.</p>
+  </div>
+
+  <form id="cancelForm">
+
+    <!-- Section 1: Contact Information -->
+    <div class="sec">
+      <div class="sec-head">
+        <span class="sec-num">01</span>
+        <span class="sec-title">Your Information</span>
+      </div>
+      <div class="sec-body">
+        <div class="form-row">
+          <div class="fg">
+            <label for="c-name">Full Name <span style="color:#ee7070">*</span></label>
+            <input id="c-name" type="text" name="client_name" placeholder="First and last name" required>
+          </div>
+          <div class="fg">
+            <label for="c-phone">Phone Number</label>
+            <input id="c-phone" type="tel" name="phone" placeholder="(814) 000-0000">
+          </div>
+        </div>
+        <div class="form-row single">
+          <div class="fg">
+            <label for="c-email">Email Address <span style="color:#ee7070">*</span></label>
+            <input id="c-email" type="email" name="email" placeholder="The email used when booking" required>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: Appointment Details -->
+    <div class="sec">
+      <div class="sec-head">
+        <span class="sec-num">02</span>
+        <span class="sec-title">Appointment Details</span>
+      </div>
+      <div class="sec-body">
+        <div class="form-row">
+          <div class="fg">
+            <label for="c-date">Appointment Date <span style="color:#ee7070">*</span></label>
+            <input id="c-date" type="date" name="appointment_date" required>
+          </div>
+          <div class="fg">
+            <label for="c-time">Appointment Time</label>
+            <input id="c-time" type="time" name="appointment_time">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="fg">
+            <label for="c-service">Service</label>
+            <select id="c-service" name="service">
+              <option value="">Select service if known</option>
+              <option>Energetic Parasite Removal — $80</option>
+              <option>Lite Session — From $40</option>
+              <option>Energy Alchemy Exorcism — $100</option>
+              <option>Distance Energy Session — $70</option>
+              <option>House Cleansing &amp; Blessing — $60</option>
+              <option>Emergency Removal Session — $120</option>
+              <option>Removal + Tarot Bundle — $100</option>
+              <option>Spiritual Coaching — $50</option>
+              <option>Youth Sessions (Ages 9–14) — $20–$30</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label for="c-payment">Payment Method Used</label>
+            <select id="c-payment" name="payment_method">
+              <option value="">Select if applicable</option>
+              <option value="square">Square / Card</option>
+              <option value="paypal">PayPal</option>
+              <option value="cash_app">Cash App</option>
+              <option value="venmo">Venmo</option>
+              <option value="zelle">Zelle</option>
+              <option value="cash">Cash</option>
+              <option value="none">No payment made yet</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Live Refund Calculator -->
+        <div class="refund-box" id="refundBox">
+          <div class="refund-box-head">
+            <span>Estimated Refund Eligibility</span>
+          </div>
+          <div class="refund-body">
+            <div class="refund-estimate unknown" id="refundEstimate">Enter your appointment date above to calculate eligibility.</div>
+            <div class="refund-sub" id="refundSub"></div>
+            <div class="refund-disclaimer">This is an estimate. Final approval is handled by Royal Energy Alchemy.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3: Cancellation Details -->
+    <div class="sec">
+      <div class="sec-head">
+        <span class="sec-num">03</span>
+        <span class="sec-title">Cancellation Details</span>
+      </div>
+      <div class="sec-body">
+        <div class="form-row single" style="margin-bottom:20px">
+          <div class="fg">
+            <label for="c-reason">Reason for Cancellation <span style="color:#ee7070">*</span></label>
+            <select id="c-reason" name="reason" required>
+              <option value="">Select a reason</option>
+              <option value="schedule_conflict">Schedule conflict</option>
+              <option value="financial">Financial reason</option>
+              <option value="personal_emergency">Personal emergency</option>
+              <option value="health">Health / illness</option>
+              <option value="no_longer_needed">No longer needed</option>
+              <option value="rescheduling">Want to reschedule to different time</option>
+              <option value="dissatisfied">Concerns about the service</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row single" style="margin-bottom:20px">
+          <div class="fg">
+            <label>What would you like to do? <span style="color:#ee7070">*</span></label>
+            <div class="intent-grid">
+              <div class="intent-opt">
+                <input type="radio" name="wants_reschedule" id="intent-cancel" value="false" checked>
+                <label for="intent-cancel">Cancel Fully</label>
+              </div>
+              <div class="intent-opt">
+                <input type="radio" name="wants_reschedule" id="intent-reschedule" value="true">
+                <label for="intent-reschedule">Request Reschedule</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="form-row single">
+          <div class="fg">
+            <label for="c-notes">Additional Notes</label>
+            <textarea id="c-notes" name="additional_notes" placeholder="Any additional context Daron should know..."></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 4: Confirm & Submit -->
+    <div class="sec">
+      <div class="sec-head">
+        <span class="sec-num">04</span>
+        <span class="sec-title">Confirm Request</span>
+      </div>
+      <div class="sec-body">
+        <div class="consent-block">
+          <input type="checkbox" id="c-policy" required>
+          <label for="c-policy">I understand the cancellation policy. I acknowledge that sessions within 72 hours of the appointment time are non-refundable, and no-show / no-call sessions are not eligible for a refund or credit.</label>
+        </div>
+        <div id="formError" style="display:none;background:rgba(238,112,112,.1);border:1px solid rgba(238,112,112,.4);padding:12px 16px;margin-bottom:14px;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.2em;color:#ee7070;text-transform:uppercase"></div>
+        <button type="submit" class="submit-btn" id="submitBtn">Submit Cancellation Request →</button>
+        <p class="submit-note">Your request is reviewed by Daron personally</p>
+      </div>
+    </div>
+
+  </form>
+
+  <!-- Success Panel -->
+  <div class="success-panel" id="successPanel">
+    <div class="icon">✦</div>
+    <h2>Request Submitted</h2>
+    <p>Your cancellation request has been submitted. Royal Energy Alchemy will review your request and confirm any refund or reschedule details within 24 hours.</p>
+    <div class="refund-line" id="successRefundLine"></div>
+    <p style="font-size:15px;color:#6662aa;margin-top:4px">Final approval is handled by Royal Energy Alchemy.</p>
+    <a href="/" class="home-btn">Return to Home →</a>
+  </div>
+
+</div><!-- /wrap -->
+
+<script>
+// ── Live refund calculator ────────────────────────────────────────────────────
+
+function calcRefund(dateStr, timeStr) {
+  if (!dateStr) return { eligible: null, estimate: 'Enter your appointment date above to calculate eligibility.', sub: '' };
+  var parts = dateStr.split('-');
+  var hm    = timeStr ? timeStr.split(':') : ['12','00'];
+  var appt  = new Date(+parts[0], +parts[1]-1, +parts[2], +hm[0], +hm[1]);
+  var hours = (appt - Date.now()) / 3600000;
+
+  if (hours >= 72) {
+    return {
+      eligible: true,
+      estimate: 'Eligible for 50% Refund or Session Credit',
+      sub:      'Your appointment is ' + Math.round(hours) + ' hours away. You provided 72+ hours notice — you may receive a 50% refund or apply the value as a session credit.',
+    };
+  } else if (hours > 0) {
+    return {
+      eligible: false,
+      estimate: 'Not Eligible — Within 72-Hour Window',
+      sub:      'Your appointment is ' + Math.round(hours) + ' hours away. The cancellation policy requires 72+ hours notice for a refund. This session falls within the non-refundable window.',
+    };
+  } else {
+    return {
+      eligible: false,
+      estimate: 'Appointment Has Passed — No-Show / No-Call Policy May Apply',
+      sub:      'This appointment date has already passed. If you did not attend without notice, the no-show / no-call policy applies — no refund, and a prepayment is required to rebook.',
+    };
+  }
+}
+
+function updateRefundBox() {
+  var dateVal = document.getElementById('c-date').value;
+  var timeVal = document.getElementById('c-time').value;
+  var el      = document.getElementById('refundEstimate');
+  var sub     = document.getElementById('refundSub');
+  var result  = calcRefund(dateVal, timeVal);
+  el.textContent  = result.estimate;
+  sub.textContent = result.sub || '';
+  el.className    = 'refund-estimate ' + (result.eligible === true ? 'eligible' : result.eligible === false ? 'ineligible' : 'unknown');
+}
+
+document.getElementById('c-date').addEventListener('change', updateRefundBox);
+document.getElementById('c-time').addEventListener('change', updateRefundBox);
+
+// ── Form submission ───────────────────────────────────────────────────────────
+
+document.getElementById('cancelForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  var errEl = document.getElementById('formError');
+  errEl.style.display = 'none';
+
+  var name    = document.getElementById('c-name').value.trim();
+  var email   = document.getElementById('c-email').value.trim();
+  var date    = document.getElementById('c-date').value;
+  var reason  = document.getElementById('c-reason').value;
+  var policy  = document.getElementById('c-policy').checked;
+
+  if (!name || !email || !date || !reason) {
+    errEl.textContent = 'Please fill in all required fields.';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (!policy) {
+    errEl.textContent = 'You must acknowledge the cancellation policy.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  var wantsReschedule = document.querySelector('input[name="wants_reschedule"]:checked')?.value === 'true';
+
+  var payload = {
+    client_name:      name,
+    email:            email,
+    phone:            document.getElementById('c-phone').value.trim() || null,
+    appointment_date: date,
+    appointment_time: document.getElementById('c-time').value || null,
+    service:          document.getElementById('c-service').value || null,
+    payment_method:   document.getElementById('c-payment').value || null,
+    reason:           reason,
+    wants_reschedule: wantsReschedule,
+    additional_notes: document.getElementById('c-notes').value.trim() || null,
+  };
+
+  var btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting…';
+
+  try {
+    var res  = await fetch('/.netlify/functions/cancellations', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(payload),
+    });
+    var data = await res.json();
+
+    if (!res.ok) {
+      errEl.textContent = data.error || 'An error occurred. Please try again.';
+      errEl.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Submit Cancellation Request →';
+      return;
+    }
+
+    // Show success
+    document.getElementById('cancelForm').style.display = 'none';
+    var refundLine = document.getElementById('successRefundLine');
+    if (data.refund_estimate) {
+      refundLine.textContent = 'Estimated Eligibility: ' + data.refund_estimate;
+      refundLine.style.display = 'block';
+    } else {
+      refundLine.style.display = 'none';
+    }
+    document.getElementById('successPanel').style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  } catch (err) {
+    errEl.textContent = 'Network error. Please check your connection and try again.';
+    errEl.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Submit Cancellation Request →';
+  }
+});
+</script>
+</body>
+</html>

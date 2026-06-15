@@ -1,10 +1,12 @@
 // /.netlify/functions/analytics
-// GET ?section=recommendations  — Recommendation Intelligence
-// GET ?section=outcomes          — Outcome Intelligence (state_before/state_after)
-// GET ?section=retention         — Retention Intelligence
-// GET ?section=cross-client      — Cross-Client Intelligence (NO PII)
-// GET ?section=data-quality      — Data Quality Audit (counts + severity)
-// GET ?section=audit-detail      — Full record-level audit data for investigation
+// GET ?section=recommendations       — Recommendation Intelligence
+// GET ?section=outcomes              — Outcome Intelligence (state_before/state_after)
+// GET ?section=retention             — Retention Intelligence
+// GET ?section=cross-client          — Cross-Client Intelligence (NO PII)
+// GET ?section=data-quality          — Data Quality Audit (counts + severity)
+// GET ?section=audit-detail          — Full record-level audit data for investigation
+// GET ?section=outcome-attribution   — Which recommendations correlate with highest improvement?
+// GET ?section=practitioner-outcomes — Which practitioners generate strongest outcomes + retention?
 
 const { requireAdmin, respond } = require('./lib/auth');
 const { getClient }             = require('./lib/supabase');
@@ -19,6 +21,24 @@ const MIN = {
 
 function insufficientData(minimumRequired, currentCount, context) {
   return { status: 'insufficient_data', minimumRequired, currentCount, context };
+}
+
+// Returns a Set of client_ids tagged as QA/test data.
+// All analytics intelligence sections exclude these clients so metrics reflect
+// only real practitioner-client records.
+async function loadQAClientIds(sb) {
+  const QA_TAGS  = ['qa', 'test', 'seed', 'demo'];
+  const QA_NAMES = /qa|test|seed|demo|sample|fake|automation|workflow.audit/i;
+  const { data: clients } = await sb.from('clients').select('id, full_name, tags');
+  if (!clients) return new Set();
+  return new Set(
+    clients
+      .filter(c => {
+        const tags = (c.tags || []).map(t => (t || '').toLowerCase());
+        return QA_TAGS.some(q => tags.includes(q)) || QA_NAMES.test(c.full_name || '');
+      })
+      .map(c => c.id)
+  );
 }
 
 exports.handler = async function(event) {
@@ -41,7 +61,9 @@ exports.handler = async function(event) {
     if (section === 'retention')       return respond(200, await retentionIntelligence(sb));
     if (section === 'cross-client')    return respond(200, await crossClientIntelligence(sb));
     if (section === 'data-quality')    return respond(200, await dataQualityAudit(sb));
-    if (section === 'audit-detail')    return respond(200, await auditDetail(sb));
+    if (section === 'audit-detail')         return respond(200, await auditDetail(sb));
+    if (section === 'outcome-attribution')  return respond(200, await outcomeAttributionIntelligence(sb));
+    if (section === 'practitioner-outcomes') return respond(200, await practitionerOutcomeIntelligence(sb));
     return respond(400, { error: `Unknown section: ${section}` });
   } catch (err) {
     console.error('[analytics] Error in section', section, err.message);
@@ -51,13 +73,20 @@ exports.handler = async function(event) {
 
 // ── PHASE 2: RECOMMENDATION INTELLIGENCE ────────────────────────────────────
 async function recommendationIntelligence(sb) {
-  const { data: recs, error } = await sb
-    .from('recommendations')
-    .select('id, product_name, category, outcome_status, outcome_date, recommended_at, created_at, client_id')
-    .order('created_at', { ascending: false });
+  const [qaClientIds, recRes] = await Promise.all([
+    loadQAClientIds(sb),
+    sb.from('recommendations')
+      .select('id, product_name, category, outcome_status, outcome_date, recommended_at, created_at, client_id')
+      .order('created_at', { ascending: false }),
+  ]);
 
+  const error = recRes.error;
   if (error) throw new Error(error.message);
-  if (!recs || recs.length === 0) {
+
+  // Exclude QA/test client recommendations
+  const recs = (recRes.data || []).filter(r => !qaClientIds.has(r.client_id));
+
+  if (recs.length === 0) {
     return insufficientData(MIN.REC_WITH_OUTCOME, 0, 'No recommendations found');
   }
 
@@ -143,15 +172,19 @@ async function recommendationIntelligence(sb) {
 
 // ── PHASE 3: OUTCOME INTELLIGENCE ───────────────────────────────────────────
 async function outcomeIntelligence(sb) {
-  const { data: sessions, error } = await sb
-    .from('sessions')
-    .select('id, service, location_type, session_date, state_before, state_after, status, client_id')
-    .eq('status', 'completed')
-    .order('session_date', { ascending: false });
+  const [qaClientIds, sessRes] = await Promise.all([
+    loadQAClientIds(sb),
+    sb.from('sessions')
+      .select('id, service, location_type, session_date, state_before, state_after, status, client_id')
+      .eq('status', 'completed')
+      .order('session_date', { ascending: false }),
+  ]);
 
-  if (error) throw new Error(error.message);
+  if (sessRes.error) throw new Error(sessRes.error.message);
 
-  const totalCompleted = (sessions || []).length;
+  // Exclude QA/test client sessions
+  const sessions = (sessRes.data || []).filter(s => !qaClientIds.has(s.client_id));
+  const totalCompleted = sessions.length;
   // Only valid if both state values are present and in range 1-5
   const withState = (sessions || []).filter(s =>
     s.state_before != null && s.state_after != null &&
@@ -224,7 +257,8 @@ async function outcomeIntelligence(sb) {
 
 // ── PHASE 4: RETENTION INTELLIGENCE ─────────────────────────────────────────
 async function retentionIntelligence(sb) {
-  const [sessRes, acRes] = await Promise.all([
+  const [qaClientIds, sessRes, acRes] = await Promise.all([
+    loadQAClientIds(sb),
     sb.from('sessions').select('id, client_id, session_date, status').order('session_date', { ascending: true }),
     sb.from('aftercare').select('id, client_id, status, scheduled_for, followup_type'),
   ]);
@@ -232,8 +266,9 @@ async function retentionIntelligence(sb) {
   if (sessRes.error) throw new Error(sessRes.error.message);
   if (acRes.error)   throw new Error(acRes.error.message);
 
-  const sessions = (sessRes.data || []).filter(s => s.status === 'completed');
-  const aftercare = acRes.data || [];
+  // Exclude QA/test client sessions and follow-ups
+  const sessions = (sessRes.data || []).filter(s => s.status === 'completed' && !qaClientIds.has(s.client_id));
+  const aftercare = (acRes.data || []).filter(a => !qaClientIds.has(a.client_id));
 
   // Client session map
   const clientSessions = {};
@@ -312,20 +347,22 @@ async function retentionIntelligence(sb) {
 
 // ── PHASE 5: CROSS-CLIENT INTELLIGENCE (NO PII) ──────────────────────────────
 async function crossClientIntelligence(sb) {
-  const [sessRes, recRes, snRes, acRes] = await Promise.all([
-    sb.from('sessions').select('id, service, location_type, session_date, state_before, state_after, status, seller_notes'),
-    sb.from('recommendations').select('id, product_name, category, outcome_status, recommended_at'),
-    sb.from('session_notes').select('id, chief_concern, env_notes, snm_json'),
-    sb.from('aftercare').select('id, followup_type, status'),
+  const [qaClientIds, sessRes, recRes, snRes, acRes] = await Promise.all([
+    loadQAClientIds(sb),
+    sb.from('sessions').select('id, client_id, service, location_type, session_date, state_before, state_after, status, seller_notes'),
+    sb.from('recommendations').select('id, client_id, product_name, category, outcome_status, recommended_at'),
+    sb.from('session_notes').select('id, client_id, chief_concern, env_notes, snm_json'),
+    sb.from('aftercare').select('id, client_id, followup_type, status'),
   ]);
 
   if (sessRes.error) throw new Error(sessRes.error.message);
   if (recRes.error)  throw new Error(recRes.error.message);
 
-  const sessions  = sessRes.data || [];
-  const recs      = recRes.data  || [];
-  const notes     = snRes.data   || [];
-  const aftercare = acRes.data   || [];
+  // Exclude QA/test client records — cross-client must only reflect real sessions
+  const sessions  = (sessRes.data || []).filter(s => !qaClientIds.has(s.client_id));
+  const recs      = (recRes.data  || []).filter(r => !qaClientIds.has(r.client_id));
+  const notes     = (snRes.data   || []).filter(n => !qaClientIds.has(n.client_id));
+  const aftercare = (acRes.data   || []).filter(a => !qaClientIds.has(a.client_id));
 
   // Guard: need MIN.CROSS_CLIENT_RECORDS aggregate service records
   const serviceSet = new Set(sessions.map(s => s.service).filter(Boolean));
@@ -464,7 +501,13 @@ async function dataQualityAudit(sb) {
     issues.push({ severity: 'Critical', table: 'sessions', issue: 'Orphaned sessions (no client record)', count: orphanedSessions.length, detail: `${orphanedSessions.length} session(s) reference a client_id that does not exist.` });
   }
 
-  const stalePending = sessions.filter(s => s.status === 'pending' && (now - new Date(s.session_date)) > staleThreshold);
+  // Require a real session_date — new Date(null) evaluates to Jan 1 1970 (false positive)
+  const stalePending = sessions.filter(s =>
+    s.status === 'pending' &&
+    s.session_date &&
+    !isNaN(new Date(s.session_date)) &&
+    (now - new Date(s.session_date)) > staleThreshold
+  );
   if (stalePending.length > 0) {
     issues.push({ severity: 'Medium', table: 'sessions', issue: 'Stale pending sessions (90+ days)', count: stalePending.length, detail: `${stalePending.length} session(s) in "pending" status older than 90 days.` });
   }
@@ -765,5 +808,233 @@ async function auditDetail(sb) {
     intakes: { unmatched: unmatchedIntakes, duplicates: dupIntakes },
     testData: { clients: testClients, sessions: testSessions, recommendations: testRecs, aftercare: testAftercate },
     analyticsReadiness,
+  };
+}
+
+// ── SPRINT 10A: OUTCOME ATTRIBUTION INTELLIGENCE ─────────────────────────────
+// Primary question: which recommendations correlate with the highest client improvement?
+// Joins recommendations → sessions via session_id, uses state_before/state_after delta.
+async function outcomeAttributionIntelligence(sb) {
+  const [qaClientIds, recRes] = await Promise.all([
+    loadQAClientIds(sb),
+    sb.from('recommendations')
+      .select('id, product_name, category, outcome_status, session_id, client_id, recommended_at, created_at')
+      .not('session_id', 'is', null),
+  ]);
+
+  if (recRes.error) throw new Error(recRes.error.message);
+
+  const recsWithSession = (recRes.data || []).filter(r => !qaClientIds.has(r.client_id));
+
+  if (recsWithSession.length === 0) {
+    return insufficientData(MIN.REC_WITH_OUTCOME, 0, 'Recommendations linked to sessions');
+  }
+
+  const sessionIds = [...new Set(recsWithSession.map(r => r.session_id))];
+  const { data: sessions, error: sessErr } = await sb
+    .from('sessions')
+    .select('id, state_before, state_after, status')
+    .in('id', sessionIds)
+    .eq('status', 'completed');
+
+  if (sessErr) throw new Error(sessErr.message);
+
+  // Only sessions with valid 1–5 state scores on both fields
+  const sessionMap = {};
+  (sessions || []).forEach(s => {
+    if (s.state_before != null && s.state_after != null &&
+        s.state_before >= 1 && s.state_before <= 5 &&
+        s.state_after  >= 1 && s.state_after  <= 5) {
+      sessionMap[s.id] = s;
+    }
+  });
+
+  const recsWithOutcome = recsWithSession.filter(r => sessionMap[r.session_id]);
+
+  if (recsWithOutcome.length < MIN.REC_WITH_OUTCOME) {
+    return insufficientData(MIN.REC_WITH_OUTCOME, recsWithOutcome.length, 'Recommendations linked to scored completed sessions');
+  }
+
+  const productMap = {};
+  const catMap     = {};
+
+  recsWithOutcome.forEach(r => {
+    const sess      = sessionMap[r.session_id];
+    const delta     = sess.state_after - sess.state_before;
+    const name      = r.product_name || 'Unknown';
+    const cat       = r.category     || 'Uncategorized';
+    const isHelpful    = ['helpful', 'tried'].includes(r.outcome_status);
+    const isNotHelpful = r.outcome_status === 'not_helpful';
+
+    if (!productMap[name]) {
+      productMap[name] = { count: 0, deltaSum: 0, beforeSum: 0, afterSum: 0, helpful: 0, not_helpful: 0, category: cat };
+    }
+    productMap[name].count++;
+    productMap[name].deltaSum  += delta;
+    productMap[name].beforeSum += sess.state_before;
+    productMap[name].afterSum  += sess.state_after;
+    if (isHelpful)    productMap[name].helpful++;
+    if (isNotHelpful) productMap[name].not_helpful++;
+
+    if (!catMap[cat]) catMap[cat] = { count: 0, deltaSum: 0, helpful: 0, not_helpful: 0 };
+    catMap[cat].count++;
+    catMap[cat].deltaSum += delta;
+    if (isHelpful)    catMap[cat].helpful++;
+    if (isNotHelpful) catMap[cat].not_helpful++;
+  });
+
+  const recommendations = Object.entries(productMap)
+    .map(([name, d]) => {
+      const feedbackTotal = d.helpful + d.not_helpful;
+      return {
+        name,
+        category:       d.category,
+        sessionCount:   d.count,
+        avgStateBefore: Math.round((d.beforeSum / d.count) * 100) / 100,
+        avgStateAfter:  Math.round((d.afterSum  / d.count) * 100) / 100,
+        avgDelta:       Math.round((d.deltaSum  / d.count) * 100) / 100,
+        helpfulCount:   d.helpful,
+        notHelpfulCount: d.not_helpful,
+        helpfulRate:    feedbackTotal > 0 ? Math.round((d.helpful / feedbackTotal) * 100) : null,
+      };
+    })
+    .sort((a, b) => b.avgDelta - a.avgDelta);
+
+  const categories = Object.entries(catMap)
+    .map(([category, d]) => {
+      const feedbackTotal = d.helpful + d.not_helpful;
+      return {
+        category,
+        sessionCount:   d.count,
+        avgDelta:       Math.round((d.deltaSum / d.count) * 100) / 100,
+        helpfulCount:   d.helpful,
+        notHelpfulCount: d.not_helpful,
+        helpfulRate:    feedbackTotal > 0 ? Math.round((d.helpful / feedbackTotal) * 100) : null,
+      };
+    })
+    .sort((a, b) => b.avgDelta - a.avgDelta);
+
+  const top    = recommendations[0] || null;
+  const topCat = categories[0]      || null;
+
+  return {
+    summary: {
+      totalLinkedRecommendations: recsWithOutcome.length,
+      topRecommendation:      top    ? top.name         : null,
+      topRecommendationDelta: top    ? top.avgDelta      : null,
+      topCategory:            topCat ? topCat.category   : null,
+      topCategoryDelta:       topCat ? topCat.avgDelta   : null,
+    },
+    recommendations,
+    categories,
+  };
+}
+
+// ── SPRINT 10A: PRACTITIONER OUTCOME INTELLIGENCE ────────────────────────────
+// Primary questions: which practitioners generate the strongest outcomes and retention?
+// Groups sessions.practitioner_id → computes avg delta, repeat rate, follow-up completion.
+async function practitionerOutcomeIntelligence(sb) {
+  const [qaClientIds, sessRes, pracRes, acRes] = await Promise.all([
+    loadQAClientIds(sb),
+    sb.from('sessions')
+      .select('id, client_id, practitioner_id, session_date, state_before, state_after, status')
+      .not('practitioner_id', 'is', null)
+      .eq('status', 'completed'),
+    sb.from('practitioners')
+      .select('id, name, specialties, certification_level')
+      .is('deleted_at', null),
+    sb.from('aftercare')
+      .select('id, client_id, session_id, status'),
+  ]);
+
+  if (sessRes.error) throw new Error(sessRes.error.message);
+  if (pracRes.error) throw new Error(pracRes.error.message);
+
+  const sessions     = (sessRes.data || []).filter(s => !qaClientIds.has(s.client_id));
+  const practitioners = pracRes.data || [];
+  const aftercare    = acRes.data    || [];
+
+  if (sessions.length === 0) {
+    return insufficientData(3, 0, 'Completed sessions with practitioner_id assigned');
+  }
+
+  const pracMap = {};
+  practitioners.forEach(p => { pracMap[p.id] = p; });
+
+  const sentSessionIds        = new Set(aftercare.filter(a => a.status === 'sent').map(a => a.session_id).filter(Boolean));
+  const sessionsWithAftercate = new Set(aftercare.map(a => a.session_id).filter(Boolean));
+
+  // Group sessions by practitioner
+  const byPractitioner = {};
+  sessions.forEach(s => {
+    const pid = s.practitioner_id;
+    if (!byPractitioner[pid]) byPractitioner[pid] = [];
+    byPractitioner[pid].push(s);
+  });
+
+  const practitionerRows = Object.entries(byPractitioner).map(([pid, sesses]) => {
+    const prac         = pracMap[pid];
+    const totalSessions = sesses.length;
+
+    const withState = sesses.filter(s =>
+      s.state_before != null && s.state_after != null &&
+      s.state_before >= 1 && s.state_before <= 5 &&
+      s.state_after  >= 1 && s.state_after  <= 5
+    );
+
+    const avg = arr => arr.length > 0 ? Math.round((arr.reduce((a, b) => a + b, 0) / arr.length) * 100) / 100 : null;
+
+    const avgStateBefore = avg(withState.map(s => s.state_before));
+    const avgStateAfter  = avg(withState.map(s => s.state_after));
+    const avgDelta       = avg(withState.map(s => s.state_after - s.state_before));
+
+    // Repeat client rate within this practitioner's sessions
+    const clientCounts = {};
+    sesses.forEach(s => { if (s.client_id) clientCounts[s.client_id] = (clientCounts[s.client_id] || 0) + 1; });
+    const uniqueClients  = Object.keys(clientCounts).length;
+    const repeatClients  = Object.values(clientCounts).filter(c => c > 1).length;
+    const repeatClientRate = uniqueClients > 0 ? Math.round((repeatClients / uniqueClients) * 100) : 0;
+
+    // Follow-up completion rate for this practitioner's sessions
+    const sessionsWithFollowUp = sesses.filter(s => sessionsWithAftercate.has(s.id)).length;
+    const sessionsWithSentFollowUp = sesses.filter(s => sentSessionIds.has(s.id)).length;
+    const followUpCompletionRate = sessionsWithFollowUp > 0
+      ? Math.round((sessionsWithSentFollowUp / sessionsWithFollowUp) * 100)
+      : null;
+
+    return {
+      practitionerId:       pid,
+      name:                 prac ? prac.name               : 'Unknown',
+      certificationLevel:   prac ? prac.certification_level : null,
+      totalSessions,
+      scoredSessions:       withState.length,
+      avgStateBefore,
+      avgStateAfter,
+      avgDelta,
+      uniqueClients,
+      repeatClients,
+      repeatClientRate,
+      followUpCompletionRate,
+    };
+  }).sort((a, b) => (b.avgDelta ?? -99) - (a.avgDelta ?? -99));
+
+  // Overall weighted avg delta across all scored sessions
+  const allScored = practitionerRows.filter(p => p.avgDelta !== null);
+  const totalScoredSessions = allScored.reduce((s, p) => s + p.scoredSessions, 0);
+  const overallAvgDelta = totalScoredSessions > 0
+    ? Math.round((allScored.reduce((s, p) => s + p.avgDelta * p.scoredSessions, 0) / totalScoredSessions) * 100) / 100
+    : null;
+
+  const top = practitionerRows[0] || null;
+
+  return {
+    summary: {
+      totalPractitioners:    practitionerRows.length,
+      totalSessions:         sessions.length,
+      overallAvgDelta,
+      topPractitioner:       top ? top.name     : null,
+      topPractitionerDelta:  top ? top.avgDelta : null,
+    },
+    practitioners: practitionerRows,
   };
 }
