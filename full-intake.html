@@ -455,6 +455,90 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.22em;color:rg
       </div>
     </div>
 
+    <!-- SECTION 11 — Current Practices & Self-Management -->
+    <div class="sec">
+      <div class="sec-head"><span class="sec-num">Section 11</span><span class="sec-title">Current Practices &amp; Self-Management</span></div>
+      <div class="sec-body">
+
+        <div class="form-row single" style="margin-bottom:22px">
+          <div class="fg">
+            <label>Which of the following methods have you already tried for your concern? <span style="color:#e8b84b55;font-size:11px">(select all that apply)</span></label>
+            <div class="check-grid" style="margin-top:10px">
+              <label><input type="checkbox" name="i_methods_tried" value="Prayer"> Prayer</label>
+              <label><input type="checkbox" name="i_methods_tried" value="Meditation"> Meditation</label>
+              <label><input type="checkbox" name="i_methods_tried" value="Breathwork"> Breathwork</label>
+              <label><input type="checkbox" name="i_methods_tried" value="Grounding"> Grounding</label>
+              <label><input type="checkbox" name="i_methods_tried" value="Journaling"> Journaling</label>
+              <label><input type="checkbox" name="i_methods_tried" value="Therapy"> Therapy</label>
+              <label><input type="checkbox" name="i_methods_tried" value="Coaching"> Coaching</label>
+              <label><input type="checkbox" name="i_methods_tried" value="Reiki"> Reiki</label>
+              <label><input type="checkbox" name="i_methods_tried" value="Energy Healing"> Energy Healing</label>
+              <label><input type="checkbox" name="i_methods_tried" value="Sound Healing"> Sound Healing</label>
+              <label><input type="checkbox" name="i_methods_tried" value="Crystal Work"> Crystal Work</label>
+              <label><input type="checkbox" name="i_methods_tried" value="Nature Exposure"> Nature Exposure</label>
+              <label><input type="checkbox" name="i_methods_tried" value="Exercise"> Exercise</label>
+              <label><input type="checkbox" name="i_methods_tried" value="Supplements"> Supplements</label>
+              <label><input type="checkbox" name="i_methods_tried" value="Other"> Other</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row" style="margin-bottom:22px">
+          <div class="fg">
+            <label for="i-methods-effective">Which of these have been most effective for you?</label>
+            <textarea id="i-methods-effective" placeholder="Describe what has helped, even partially..."></textarea>
+          </div>
+          <div class="fg">
+            <label for="i-methods-ineffective">Which methods have not helped or have made things worse?</label>
+            <textarea id="i-methods-ineffective" placeholder="Be honest — this helps Daron tailor your session..."></textarea>
+          </div>
+        </div>
+
+        <div class="form-row single" style="margin-bottom:22px">
+          <div class="fg">
+            <label>Which spiritual protection or clearing practices do you currently use? <span style="color:#e8b84b55;font-size:11px">(select all that apply)</span></label>
+            <div class="check-grid" style="margin-top:10px">
+              <label><input type="checkbox" name="i_protection" value="Prayer"> Prayer</label>
+              <label><input type="checkbox" name="i_protection" value="Scripture / Quran Recitation"> Scripture / Quran Recitation</label>
+              <label><input type="checkbox" name="i_protection" value="Visualization"> Visualization</label>
+              <label><input type="checkbox" name="i_protection" value="Energy Shielding"> Energy Shielding</label>
+              <label><input type="checkbox" name="i_protection" value="Salt Baths"> Salt Baths</label>
+              <label><input type="checkbox" name="i_protection" value="Cleansing Practices"> Cleansing Practices</label>
+              <label><input type="checkbox" name="i_protection" value="Crystals"> Crystals</label>
+              <label><input type="checkbox" name="i_protection" value="Spiritual Mentor"> Spiritual Mentor</label>
+              <label><input type="checkbox" name="i_protection" value="Community Support"> Community Support</label>
+              <label><input type="checkbox" name="i_protection" value="None"> None</label>
+              <label><input type="checkbox" name="i_protection" value="Other"> Other</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row single" style="margin-bottom:22px">
+          <div class="fg">
+            <label>How consistent are you with your current practices?</label>
+            <div style="margin-top:12px">
+              <div class="scale" style="justify-content:flex-start;gap:8px">
+                <div class="scale-opt"><input type="radio" name="i_consistency" id="ic1" value="1"><label for="ic1">1</label></div>
+                <div class="scale-opt"><input type="radio" name="i_consistency" id="ic2" value="2"><label for="ic2">2</label></div>
+                <div class="scale-opt"><input type="radio" name="i_consistency" id="ic3" value="3"><label for="ic3">3</label></div>
+                <div class="scale-opt"><input type="radio" name="i_consistency" id="ic4" value="4"><label for="ic4">4</label></div>
+                <div class="scale-opt"><input type="radio" name="i_consistency" id="ic5" value="5"><label for="ic5">5</label></div>
+              </div>
+              <div class="scale-labels" style="max-width:260px;margin-top:6px"><span>Rarely / Never</span><span>Daily / Consistent</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row single">
+          <div class="fg">
+            <label for="i-patterns-noticed">Have you noticed any recurring patterns, triggers, or cycles related to your concern?</label>
+            <textarea id="i-patterns-noticed" style="min-height:110px" placeholder="E.g. symptoms worse at certain times, after certain people, in certain places, around specific life events..."></textarea>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
     <button type="submit" class="submit-btn" id="intakeSubmitBtn">Submit Full Intake →</button>
     <p style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#e8b84b44;text-transform:uppercase;text-align:center;margin-top:12px">Your intake is stored securely and reviewed by Daron before your session</p>
 
@@ -536,6 +620,12 @@ document.getElementById('intakeForm').addEventListener('submit', function(ev) {
     goals: goals,
     extra: val('i-extra'),
     researchConsent: document.getElementById('i-research-consent').checked,
+    methodsTried:        getChecked('i_methods_tried'),
+    methodsEffective:    val('i-methods-effective'),
+    methodsIneffective:  val('i-methods-ineffective'),
+    protectionPractices: getChecked('i_protection'),
+    practiceConsistency: radioVal('i_consistency'),
+    patternsNoticed:     val('i-patterns-noticed'),
     timestamp: new Date().toISOString(),
     type: 'full_intake'
   };

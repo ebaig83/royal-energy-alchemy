@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Business Reporting Center — Royal Energy Alchemy</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--gold:#e8b84b;--gold-light:#f8e090;--teal:#22c98a;--purple:#b09ef8;--red:#ee4444;--bg:#04020e;--surface:#0d0a1a;--surface2:#16112a;--text:#f0ecff}
+body{background:var(--bg);color:var(--text);font-family:'EB Garamond',serif;min-height:100vh;overflow-x:hidden}
+
+/* ── Access Gate ─── */
+#accessGate{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;background:radial-gradient(ellipse at 50% 60%,rgba(232,184,75,.04) 0%,transparent 60%)}
+.gate-box{max-width:380px;width:100%;text-align:center}
+.gate-brand{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.55em;color:rgba(232,184,75,.55);text-transform:uppercase;margin-bottom:22px}
+.gate-title{font-family:'Cinzel',serif;font-size:22px;font-weight:700;color:var(--gold-light);margin-bottom:8px}
+.gate-sub{font-size:16px;font-style:italic;color:#9990c0;margin-bottom:30px}
+.gate-input{width:100%;background:rgba(14,10,36,.98);border:1px solid rgba(232,184,75,.38);padding:16px 18px;font-family:'Cinzel',serif;font-size:20px;letter-spacing:.35em;color:#fff;text-align:center;outline:none;margin-bottom:14px}
+.gate-input:focus{border-color:#e8b84b;box-shadow:0 0 0 2px rgba(232,184,75,.12)}
+.gate-btn{width:100%;padding:16px;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.5em;text-transform:uppercase;color:#000;background:linear-gradient(135deg,#f5d98a,#e8b84b);border:none;cursor:pointer;transition:opacity .2s}
+.gate-btn:hover{opacity:.88}
+.gate-err{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#ee7070;margin-top:10px;min-height:18px}
+
+/* ── Cockpit ─── */
+#cockpit{display:none;grid-template-columns:220px 1fr;min-height:100vh}
+#cockpit.visible{display:grid}
+
+/* Sidebar */
+.sidebar{background:var(--surface);border-right:1px solid rgba(232,184,75,.1);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+.sidebar-brand{padding:24px 20px 20px;border-bottom:1px solid rgba(232,184,75,.1)}
+.sidebar-brand .brand-name{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.45em;color:rgba(232,184,75,.65);text-transform:uppercase;display:block;margin-bottom:4px}
+.sidebar-brand .brand-page{font-family:'Cinzel',serif;font-size:14px;color:var(--gold-light);letter-spacing:.04em}
+.nav-group{padding:16px 12px 0}
+.nav-group-label{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.5em;color:rgba(153,144,192,.5);text-transform:uppercase;padding:0 8px;margin-bottom:8px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.1em;color:#9990c0;cursor:pointer;transition:all .2s;border-left:2px solid transparent;margin-bottom:2px}
+.nav-item:hover{color:var(--text);background:rgba(232,184,75,.04)}
+.nav-item.active{color:var(--gold-light);border-left-color:var(--gold);background:rgba(232,184,75,.06)}
+.nav-item .nav-icon{font-size:14px;width:18px;text-align:center}
+.sidebar-footer{margin-top:auto;padding:16px 12px;border-top:1px solid rgba(232,184,75,.08)}
+.sidebar-footer a{display:block;font-family:'Cinzel',serif;font-size:10px;letter-spacing:.25em;color:#6660a0;text-transform:uppercase;text-decoration:none;padding:7px 10px;transition:color .2s;margin-bottom:2px}
+.sidebar-footer a:hover{color:var(--gold)}
+
+/* Main */
+.main{background:var(--bg);overflow-y:auto;min-height:100vh}
+.main-header{padding:24px 32px 20px;border-bottom:1px solid rgba(232,184,75,.08);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.main-header .page-title{font-family:'Cinzel',serif;font-size:18px;color:var(--gold-light);letter-spacing:.06em}
+.main-header .page-sub{font-size:14px;color:#6660a0;margin-top:2px}
+.year-picker{display:flex;align-items:center;gap:8px}
+.year-picker label{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:#9990c0;text-transform:uppercase}
+.year-picker select{background:rgba(14,10,36,.98);border:1px solid rgba(232,184,75,.3);padding:7px 12px;font-family:'Cinzel',serif;font-size:12px;color:#f0ecff;outline:none}
+.year-picker select option{background:#08051c}
+
+/* Section content */
+.section{display:none;padding:28px 32px}
+.section.active{display:block}
+
+/* Stat cards */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:28px}
+.stat-card{background:var(--surface);border:1px solid rgba(232,184,75,.15);padding:18px 20px}
+.stat-label{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.4em;color:#6660a0;text-transform:uppercase;margin-bottom:8px}
+.stat-value{font-family:'Cinzel',serif;font-size:26px;color:var(--gold-light);letter-spacing:.03em}
+.stat-sub{font-size:13px;color:#6660a0;margin-top:4px}
+.stat-card.teal{border-color:rgba(34,201,138,.2)}
+.stat-card.teal .stat-value{color:#22c98a}
+.stat-card.purple{border-color:rgba(176,158,248,.2)}
+.stat-card.purple .stat-value{color:#b09ef8}
+.stat-card.red{border-color:rgba(238,68,68,.2)}
+.stat-card.red .stat-value{color:#ee7070}
+
+/* Tables */
+.report-table{width:100%;border-collapse:collapse;margin-bottom:24px}
+.report-table th{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.35em;color:#9990c0;text-transform:uppercase;padding:10px 14px;text-align:left;border-bottom:1px solid rgba(232,184,75,.12);background:rgba(13,10,26,.6)}
+.report-table td{padding:11px 14px;font-size:16px;color:#d8d4f0;border-bottom:1px solid rgba(232,184,75,.06)}
+.report-table tr:hover td{background:rgba(232,184,75,.02)}
+.report-table td.num{font-family:'Cinzel',serif;font-size:14px;letter-spacing:.05em;color:#f8e090}
+.report-table td.dim{color:#6660a0;font-size:14px}
+
+/* Panel */
+.panel{background:var(--surface);border:1px solid rgba(232,184,75,.12);margin-bottom:24px;overflow:hidden}
+.panel-head{background:linear-gradient(90deg,rgba(42,31,16,.8),rgba(18,13,28,.8));padding:12px 20px;border-bottom:1px solid rgba(232,184,75,.12)}
+.panel-head h3{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.35em;color:var(--gold);text-transform:uppercase}
+.panel-body{padding:20px}
+
+/* Export button */
+.export-btn{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.35em;text-transform:uppercase;padding:9px 18px;border:1px solid rgba(232,184,75,.35);background:transparent;color:#e8b84b;cursor:pointer;transition:all .2s}
+.export-btn:hover{background:rgba(232,184,75,.08)}
+
+/* Loading/error */
+.section-loading{text-align:center;padding:48px;color:#6660a0;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;text-transform:uppercase}
+.section-error{background:rgba(238,68,68,.06);border:1px solid rgba(238,68,68,.2);padding:16px 20px;color:#ee7070;font-size:15px;margin-bottom:16px;display:none}
+
+/* Bar chart */
+.bar-row{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.bar-label{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.15em;color:#9990c0;text-transform:uppercase;width:90px;flex-shrink:0;text-align:right}
+.bar-track{flex:1;background:rgba(232,184,75,.06);height:22px;position:relative}
+.bar-fill{height:100%;background:linear-gradient(90deg,rgba(232,184,75,.3),rgba(232,184,75,.7));transition:width .5s}
+.bar-fill.teal{background:linear-gradient(90deg,rgba(34,201,138,.3),rgba(34,201,138,.7))}
+.bar-val{font-family:'Cinzel',serif;font-size:11px;color:#f8e090;position:absolute;right:8px;top:50%;transform:translateY(-50%)}
+
+.section-title{font-family:'Cinzel',serif;font-size:15px;letter-spacing:.08em;color:var(--gold-light);margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid rgba(232,184,75,.12)}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:800px){.two-col{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- ── ACCESS GATE ─────────────────────────────────────────────────────────── -->
+<div id="accessGate">
+  <div class="gate-box">
+    <p class="gate-brand">Royal Energy Alchemy</p>
+    <h1 class="gate-title">Business Reports</h1>
+    <p class="gate-sub">Tax, performance &amp; analytics</p>
+    <input class="gate-input" id="pinInput" type="password" maxlength="10" placeholder="· · · · ·" autocomplete="current-password">
+    <button class="gate-btn" id="pinBtn" onclick="doLogin()">Enter →</button>
+    <p class="gate-err" id="gateErr"></p>
+  </div>
+</div>
+
+<!-- ── COCKPIT ─────────────────────────────────────────────────────────────── -->
+<div id="cockpit">
+
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <span class="brand-name">Royal Energy Alchemy</span>
+      <span class="brand-page">Business Reports</span>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-label">Tax Filing</div>
+      <div class="nav-item active" data-sec="tax-overview" onclick="nav(this,'tax-overview')">
+        <span class="nav-icon">💰</span> Tax Overview
+      </div>
+      <div class="nav-item" data-sec="tax-monthly" onclick="nav(this,'tax-monthly')">
+        <span class="nav-icon">📅</span> Monthly Breakdown
+      </div>
+      <div class="nav-item" data-sec="tax-services" onclick="nav(this,'tax-services')">
+        <span class="nav-icon">🗂</span> Revenue by Service
+      </div>
+      <div class="nav-item" data-sec="tax-expenses" onclick="nav(this,'tax-expenses')">
+        <span class="nav-icon">🧾</span> Deductible Expenses
+      </div>
+    </div>
+
+    <div class="nav-group" style="margin-top:16px">
+      <div class="nav-group-label">Performance</div>
+      <div class="nav-item" data-sec="annual-summary" onclick="nav(this,'annual-summary')">
+        <span class="nav-icon">📊</span> Annual Summary
+      </div>
+      <div class="nav-item" data-sec="practitioner" onclick="nav(this,'practitioner')">
+        <span class="nav-icon">✦</span> Practitioner Stats
+      </div>
+    </div>
+
+    <div class="nav-group" style="margin-top:16px">
+      <div class="nav-group-label">Research &amp; Content</div>
+      <div class="nav-item" data-sec="research" onclick="nav(this,'research')">
+        <span class="nav-icon">🔬</span> Research Metrics
+      </div>
+      <div class="nav-item" data-sec="content" onclick="nav(this,'content')">
+        <span class="nav-icon">📚</span> Content Metrics
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <a href="/dashboard.html">← Practitioner OS</a>
+      <a href="/research.html">↗ Research Center</a>
+      <a href="/knowledge.html">↗ Knowledge Center</a>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="main-header">
+      <div>
+        <div class="page-title" id="mainTitle">Tax Overview</div>
+        <div class="page-sub" id="mainSub">Annual revenue &amp; net income summary</div>
+      </div>
+      <div class="year-picker">
+        <label>Year</label>
+        <select id="yearSelect" onchange="onYearChange()">
+          <option value="2026">2026</option>
+          <option value="2025">2025</option>
+          <option value="2024">2024</option>
+        </select>
+        <button class="export-btn" onclick="logExport()">↓ Export CSV</button>
+      </div>
+    </div>
+
+    <div class="section-error" id="globalError"></div>
+
+    <!-- Tax Overview -->
+    <div class="section active" id="sec-tax-overview">
+      <div class="section-title">Annual Tax Summary</div>
+      <div class="stat-grid" id="taxAnnualStats">
+        <div class="section-loading">Loading...</div>
+      </div>
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-head"><h3>Revenue Summary</h3></div>
+          <div class="panel-body" id="taxRevSummary"><div class="section-loading">Loading...</div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>Expense Summary</h3></div>
+          <div class="panel-body" id="taxExpSummary"><div class="section-loading">Loading...</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Monthly Breakdown -->
+    <div class="section" id="sec-tax-monthly">
+      <div class="section-title">Monthly Revenue Breakdown</div>
+      <div id="monthlyChart" style="margin-bottom:24px"></div>
+      <div class="panel">
+        <div class="panel-head"><h3>Month by Month</h3></div>
+        <div class="panel-body" style="padding:0">
+          <table class="report-table">
+            <thead><tr><th>Month</th><th>Sessions</th><th>Revenue</th><th>Paid</th><th>Unpaid</th></tr></thead>
+            <tbody id="monthlyTableBody"><tr><td colspan="5" class="section-loading">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Revenue by Service -->
+    <div class="section" id="sec-tax-services">
+      <div class="section-title">Revenue by Service Type</div>
+      <div id="serviceChart" style="margin-bottom:24px"></div>
+      <div class="panel">
+        <div class="panel-head"><h3>Service Breakdown</h3></div>
+        <div class="panel-body" style="padding:0">
+          <table class="report-table">
+            <thead><tr><th>Service</th><th>Sessions</th><th>Total Revenue</th><th>Collected</th></tr></thead>
+            <tbody id="serviceTableBody"><tr><td colspan="4" class="section-loading">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Deductible Expenses -->
+    <div class="section" id="sec-tax-expenses">
+      <div class="section-title">Deductible Expenses</div>
+      <div class="stat-grid" id="expenseStats">
+        <div class="section-loading">Loading...</div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h3>Expense Detail</h3></div>
+        <div class="panel-body" style="padding:0">
+          <table class="report-table">
+            <thead><tr><th>Date</th><th>Category</th><th>Description</th><th>Amount</th></tr></thead>
+            <tbody id="expenseTableBody"><tr><td colspan="4" class="section-loading">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Annual Summary -->
+    <div class="section" id="sec-annual-summary">
+      <div class="section-title">Annual Business Summary</div>
+      <div class="stat-grid" id="annualStats">
+        <div class="section-loading">Loading...</div>
+      </div>
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-head"><h3>Session Outcomes</h3></div>
+          <div class="panel-body" id="annualOutcomes"><div class="section-loading">Loading...</div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>Check-In Types</h3></div>
+          <div class="panel-body" id="annualCheckins"><div class="section-loading">Loading...</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Practitioner Performance -->
+    <div class="section" id="sec-practitioner">
+      <div class="section-title">Practitioner Performance</div>
+      <div class="stat-grid" id="pracStats">
+        <div class="section-loading">Loading...</div>
+      </div>
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-head"><h3>By Service</h3></div>
+          <div class="panel-body" id="pracByService"><div class="section-loading">Loading...</div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>By Source</h3></div>
+          <div class="panel-body" id="pracBySource"><div class="section-loading">Loading...</div></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h3>Monthly Sessions</h3></div>
+        <div class="panel-body" id="pracMonthlyChart"></div>
+      </div>
+    </div>
+
+    <!-- Research Metrics -->
+    <div class="section" id="sec-research">
+      <div class="section-title">Research Metrics</div>
+      <div class="stat-grid" id="researchStats">
+        <div class="section-loading">Loading...</div>
+      </div>
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-head"><h3>Pattern Types</h3></div>
+          <div class="panel-body" id="researchPatternTypes"><div class="section-loading">Loading...</div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>Recent Case Studies</h3></div>
+          <div class="panel-body" id="researchCaseStudies"><div class="section-loading">Loading...</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content Metrics -->
+    <div class="section" id="sec-content">
+      <div class="section-title">Content &amp; Knowledge Metrics</div>
+      <div class="stat-grid" id="contentStats">
+        <div class="section-loading">Loading...</div>
+      </div>
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-head"><h3>Content Calendar</h3></div>
+          <div class="panel-body" id="contentCalPanel"><div class="section-loading">Loading...</div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>Content Pipeline</h3></div>
+          <div class="panel-body" id="contentPipeline"><div class="section-loading">Loading...</div></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div><!-- /cockpit -->
+
+<script>
+'use strict';
+
+var _tok      = '';
+var _year     = new Date().getFullYear();
+var _loaded   = {};
+var _curSec   = 'tax-overview';
+var _secMeta  = {
+  'tax-overview':   { title:'Tax Overview',            sub:'Annual revenue & net income summary' },
+  'tax-monthly':    { title:'Monthly Breakdown',       sub:'Revenue month by month' },
+  'tax-services':   { title:'Revenue by Service',      sub:'Income broken down by service type' },
+  'tax-expenses':   { title:'Deductible Expenses',     sub:'Expenses eligible for tax deduction' },
+  'annual-summary': { title:'Annual Summary',          sub:'Full-year business metrics' },
+  'practitioner':   { title:'Practitioner Performance',sub:'Session volume, delivery, and revenue' },
+  'research':       { title:'Research Metrics',        sub:'Patterns, insights, case studies' },
+  'content':        { title:'Content Metrics',         sub:'Knowledge base, books, calendar' },
+};
+
+// ── Auth ─────────────────────────────────────────────────────────────────────
+
+document.getElementById('pinInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') doLogin();
+});
+
+async function doLogin() {
+  var pin = document.getElementById('pinInput').value.trim();
+  if (!pin) return;
+  document.getElementById('pinBtn').textContent = '...';
+  try {
+    var r = await fetch('/.netlify/functions/verify-pin', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({pin})
+    });
+    var j = await r.json();
+    if (!r.ok || !j.token) {
+      document.getElementById('gateErr').textContent = 'Incorrect PIN. Please try again.';
+      document.getElementById('pinBtn').textContent = 'Enter →';
+      return;
+    }
+    _tok = j.token;
+    document.getElementById('accessGate').style.display  = 'none';
+    document.getElementById('cockpit').classList.add('visible');
+    document.getElementById('yearSelect').value = _year;
+    loadSection(_curSec);
+  } catch(err) {
+    document.getElementById('gateErr').textContent = 'Connection error. Try again.';
+    document.getElementById('pinBtn').textContent = 'Enter →';
+  }
+}
+
+// ── API ───────────────────────────────────────────────────────────────────────
+
+async function api(path) {
+  var r = await fetch(path, { headers:{'X-Dashboard-Token':_tok} });
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  return r.json();
+}
+
+// ── Navigation ────────────────────────────────────────────────────────────────
+
+function nav(el, sec) {
+  document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
+  el.classList.add('active');
+  document.querySelectorAll('.section').forEach(function(s){ s.classList.remove('active'); });
+  var target = document.getElementById('sec-' + sec);
+  if (target) target.classList.add('active');
+  _curSec = sec;
+  var meta = _secMeta[sec] || {};
+  document.getElementById('mainTitle').textContent = meta.title || sec;
+  document.getElementById('mainSub').textContent   = meta.sub   || '';
+  loadSection(sec);
+}
+
+function onYearChange() {
+  _year   = parseInt(document.getElementById('yearSelect').value, 10);
+  _loaded = {};
+  loadSection(_curSec);
+}
+
+function loadSection(sec) {
+  if (_loaded[sec]) return;
+  _loaded[sec] = true;
+  ({
+    'tax-overview':   loadTaxOverview,
+    'tax-monthly':    loadTaxMonthly,
+    'tax-services':   loadTaxServices,
+    'tax-expenses':   loadTaxExpenses,
+    'annual-summary': loadAnnualSummary,
+    'practitioner':   loadPractitioner,
+    'research':       loadResearch,
+    'content':        loadContent,
+  }[sec] || function(){})();
+}
+
+// ── Loaders ───────────────────────────────────────────────────────────────────
+
+async function loadTaxOverview() {
+  try {
+    var d = await api('/.netlify/functions/reporting?section=tax_annual&year=' + _year);
+    document.getElementById('taxAnnualStats').innerHTML = [
+      statCard('Gross Revenue',   '$' + fmt(d.gross_revenue),    'Total invoiced'),
+      statCard('Collected',       '$' + fmt(d.collected_revenue),'Actually received','teal'),
+      statCard('Uncollected',     '$' + fmt(d.uncollected),      'Outstanding balance','red'),
+      statCard('Deductible Exp',  '$' + fmt(d.deductible_expenses),'Tax-deductible expenses','purple'),
+      statCard('Net Taxable',     '$' + fmt(d.net_taxable_income),'Collected minus deductibles','teal'),
+      statCard('Sessions',        d.session_count || 0,          'Total non-cancelled'),
+    ].join('');
+
+    document.getElementById('taxRevSummary').innerHTML =
+      '<div class="bar-row"><span class="bar-label">Gross</span><div class="bar-track"><div class="bar-fill" style="width:100%"><span class="bar-val">$' + fmt(d.gross_revenue) + '</span></div></div></div>' +
+      '<div class="bar-row"><span class="bar-label">Collected</span><div class="bar-track"><div class="bar-fill teal" style="width:' + pct(d.collected_revenue,d.gross_revenue) + '%"><span class="bar-val">$' + fmt(d.collected_revenue) + '</span></div></div></div>' +
+      '<div class="bar-row"><span class="bar-label">Net Taxable</span><div class="bar-track"><div class="bar-fill" style="width:' + pct(d.net_taxable_income,d.gross_revenue) + '%;opacity:.7"><span class="bar-val">$' + fmt(d.net_taxable_income) + '</span></div></div></div>';
+
+    document.getElementById('taxExpSummary').innerHTML =
+      '<p style="font-family:Cinzel,serif;font-size:11px;letter-spacing:.3em;color:#9990c0;text-transform:uppercase;margin-bottom:12px">Expense Breakdown</p>' +
+      '<div class="bar-row"><span class="bar-label">Total Exp</span><div class="bar-track"><div class="bar-fill" style="width:100%;opacity:.5"><span class="bar-val">$' + fmt(d.total_expenses) + '</span></div></div></div>' +
+      '<div class="bar-row"><span class="bar-label">Deductible</span><div class="bar-track"><div class="bar-fill teal" style="width:' + pct(d.deductible_expenses,d.total_expenses) + '%"><span class="bar-val">$' + fmt(d.deductible_expenses) + '</span></div></div></div>';
+  } catch(e) { showErr(e); }
+}
+
+async function loadTaxMonthly() {
+  try {
+    var d = await api('/.netlify/functions/reporting?section=tax_monthly&year=' + _year);
+    var max = Math.max(...d.months.map(function(m){ return m.revenue; }), 1);
+    document.getElementById('monthlyChart').innerHTML = d.months.map(function(m) {
+      return '<div class="bar-row"><span class="bar-label">' + (m.label||'').slice(0,3) + '</span>' +
+        '<div class="bar-track"><div class="bar-fill teal" style="width:' + pct(m.revenue,max) + '%"><span class="bar-val">$' + fmt(m.revenue) + '</span></div></div></div>';
+    }).join('');
+    document.getElementById('monthlyTableBody').innerHTML = d.months.map(function(m) {
+      return '<tr><td>' + (m.label||m.month) + '</td>' +
+        '<td class="num">' + m.sessions + '</td>' +
+        '<td class="num">$' + fmt(m.revenue) + '</td>' +
+        '<td class="num" style="color:#22c98a">$' + fmt(m.paid) + '</td>' +
+        '<td class="num" style="color:#ee7070">$' + fmt(m.unpaid) + '</td></tr>';
+    }).join('') +
+    '<tr style="border-top:1px solid rgba(232,184,75,.2)">' +
+      '<td><strong>Total</strong></td>' +
+      '<td class="num">' + d.totals.sessions + '</td>' +
+      '<td class="num">$' + fmt(d.totals.revenue) + '</td>' +
+      '<td class="num" style="color:#22c98a">—</td><td class="num" style="color:#ee7070">—</td></tr>';
+  } catch(e) { showErr(e); }
+}
+
+async function loadTaxServices() {
+  try {
+    var d = await api('/.netlify/functions/reporting?section=tax_by_service&year=' + _year);
+    var max = Math.max(...d.services.map(function(s){ return s.revenue; }), 1);
+    document.getElementById('serviceChart').innerHTML = d.services.slice(0,8).map(function(s) {
+      return '<div class="bar-row"><span class="bar-label" style="width:140px;font-size:9px">' + (s.service||'—').slice(0,18) + '</span>' +
+        '<div class="bar-track"><div class="bar-fill" style="width:' + pct(s.revenue,max) + '%"><span class="bar-val">$' + fmt(s.revenue) + '</span></div></div></div>';
+    }).join('');
+    document.getElementById('serviceTableBody').innerHTML = d.services.map(function(s) {
+      return '<tr><td>' + (s.service||'—') + '</td>' +
+        '<td class="num">' + s.sessions + '</td>' +
+        '<td class="num">$' + fmt(s.revenue) + '</td>' +
+        '<td class="num" style="color:#22c98a">$' + fmt(s.paid) + '</td></tr>';
+    }).join('') || '<tr><td colspan="4" class="dim" style="padding:20px">No service data for ' + _year + '</td></tr>';
+  } catch(e) { showErr(e); }
+}
+
+async function loadTaxExpenses() {
+  try {
+    var d = await api('/.netlify/functions/reporting?section=expenses_deductible&year=' + _year);
+    if (d.migration_needed) {
+      document.getElementById('expenseStats').innerHTML = '<div class="section-loading" style="color:#ee7070">Run migration first</div>';
+      document.getElementById('expenseTableBody').innerHTML = '<tr><td colspan="4" class="dim" style="padding:20px">Expenses table not yet created. Run 2026-06-20-sprint13a.sql.</td></tr>';
+      return;
+    }
+    document.getElementById('expenseStats').innerHTML = [
+      statCard('Total Deductible', '$' + fmt(d.total), 'Tax-deductible expenses', 'teal'),
+      statCard('Expenses', d.expenses.length, 'Individual line items'),
+      statCard('Categories', d.by_category.length, 'Unique categories'),
+    ].join('');
+    document.getElementById('expenseTableBody').innerHTML = d.expenses.map(function(e) {
+      return '<tr><td class="dim">' + (e.expense_date||'—') + '</td>' +
+        '<td>' + (e.category||'—') + '</td>' +
+        '<td>' + (e.description||'—') + '</td>' +
+        '<td class="num">$' + fmt(e.amount) + '</td></tr>';
+    }).join('') || '<tr><td colspan="4" class="dim" style="padding:20px">No deductible expenses recorded for ' + _year + '</td></tr>';
+  } catch(e) { showErr(e); }
+}
+
+async function loadAnnualSummary() {
+  try {
+    var d = await api('/.netlify/functions/reporting?section=annual_summary&year=' + _year);
+    document.getElementById('annualStats').innerHTML = [
+      statCard('Total Sessions', d.sessions.total,           'All sessions booked'),
+      statCard('Completed',      d.sessions.completed,       'Sessions delivered', 'teal'),
+      statCard('Completion Rate',d.sessions.completion_rate+'%','vs. all booked','teal'),
+      statCard('New Clients',    d.clients.new_this_year,    'Clients joined this year','purple'),
+      statCard('Intakes',        d.intakes,                  'Full intake forms submitted'),
+      statCard('Follow-Ups',     d.followups,                'Check-ins completed'),
+    ].join('');
+    document.getElementById('annualOutcomes').innerHTML =
+      '<div class="bar-row"><span class="bar-label">Gross Rev</span><div class="bar-track"><div class="bar-fill" style="width:100%"><span class="bar-val">$' + fmt(d.revenue.gross) + '</span></div></div></div>' +
+      '<div class="bar-row"><span class="bar-label">Collected</span><div class="bar-track"><div class="bar-fill teal" style="width:' + (d.revenue.collection_rate||0) + '%"><span class="bar-val">$' + fmt(d.revenue.collected) + '</span></div></div></div>' +
+      '<p style="margin-top:14px;font-size:14px;color:#6660a0">Avg per session: <strong style="color:#f8e090">$' + fmt(d.revenue.avg_per_session) + '</strong></p>';
+    var ct = d.checkin_types || {};
+    document.getElementById('annualCheckins').innerHTML = Object.keys(ct).length
+      ? Object.keys(ct).map(function(k){ return '<div class="bar-row"><span class="bar-label" style="font-size:9px">' + k + '</span><div class="bar-track"><div class="bar-fill teal" style="width:' + pct(ct[k], Math.max(...Object.values(ct))) + '%"><span class="bar-val">' + ct[k] + '</span></div></div></div>'; }).join('')
+      : '<p style="color:#6660a0;font-size:15px">No check-ins recorded</p>';
+  } catch(e) { showErr(e); }
+}
+
+async function loadPractitioner() {
+  try {
+    var d = await api('/.netlify/functions/reporting?section=practitioner_performance&year=' + _year);
+    document.getElementById('pracStats').innerHTML = [
+      statCard('Completed',     d.completed_sessions,           'Sessions delivered','teal'),
+      statCard('Completion Rate',d.completion_rate+'%',         'vs. all booked','teal'),
+      statCard('Total Hours',   d.total_hours + 'h',            'Practitioner hours'),
+      statCard('Avg Length',    d.avg_session_length_minutes + 'min','Average session'),
+      statCard('Remote',        d.delivery.remote,              'Remote sessions','purple'),
+      statCard('In-Person',     d.delivery.in_person,           'In-person sessions'),
+    ].join('');
+    var svcMax = Math.max(...(d.by_service||[]).map(function(s){return s.revenue;}),1);
+    document.getElementById('pracByService').innerHTML = (d.by_service||[]).map(function(s){
+      return '<div class="bar-row"><span class="bar-label" style="font-size:9px">' + (s.service||'—').slice(0,14) + '</span>' +
+        '<div class="bar-track"><div class="bar-fill" style="width:' + pct(s.revenue,svcMax) + '%"><span class="bar-val">$' + fmt(s.revenue) + '</span></div></div></div>';
+    }).join('') || '<p class="dim">No service data</p>';
+    var src = d.by_source || {};
+    document.getElementById('pracBySource').innerHTML = Object.keys(src).length
+      ? Object.keys(src).map(function(k){
+          return '<div class="bar-row"><span class="bar-label" style="font-size:9px">' + k + '</span><div class="bar-track"><div class="bar-fill teal" style="width:' + pct(src[k],Math.max(...Object.values(src))) + '%"><span class="bar-val">' + src[k] + '</span></div></div></div>';
+        }).join('')
+      : '<p class="dim" style="font-size:15px">No source data</p>';
+    var mMax = Math.max(...(d.by_month||[]).map(function(m){return m.sessions;}),1);
+    document.getElementById('pracMonthlyChart').innerHTML = (d.by_month||[]).map(function(m){
+      return '<div class="bar-row"><span class="bar-label">' + (m.month||'').slice(5) + '</span>' +
+        '<div class="bar-track"><div class="bar-fill teal" style="width:' + pct(m.sessions,mMax) + '%"><span class="bar-val">' + m.sessions + ' sessions</span></div></div></div>';
+    }).join('') || '<p class="dim" style="font-size:15px">No monthly data</p>';
+  } catch(e) { showErr(e); }
+}
+
+async function loadResearch() {
+  try {
+    var d = await api('/.netlify/functions/reporting?section=research_metrics');
+    document.getElementById('researchStats').innerHTML = [
+      statCard('Patterns',       d.patterns.total,             'Detected patterns','purple'),
+      statCard('Avg Confidence', (d.patterns.avg_confidence||0).toFixed(2), 'Pattern confidence','purple'),
+      statCard('Insights',       d.insights.total,             'Healing insights'),
+      statCard('Case Studies',   d.case_studies.total,         'Case studies','teal'),
+      statCard('Outcomes',       d.outcomes.total,             'Session outcomes tracked'),
+      statCard('Avg Outcome',    (d.outcomes.avg_rating||0).toFixed(1)+'/10','Average outcome rating','teal'),
+    ].join('');
+    var pt = d.patterns.by_type || {};
+    document.getElementById('researchPatternTypes').innerHTML = Object.keys(pt).length
+      ? Object.keys(pt).map(function(k){
+          return '<div class="bar-row"><span class="bar-label" style="font-size:9px;width:110px">' + k + '</span>' +
+            '<div class="bar-track"><div class="bar-fill" style="width:' + pct(pt[k],Math.max(...Object.values(pt))) + '%"><span class="bar-val">' + pt[k] + '</span></div></div></div>';
+        }).join('')
+      : '<p style="color:#6660a0;font-size:15px">No patterns yet</p>';
+    document.getElementById('researchCaseStudies').innerHTML = (d.recent_case_studies||[]).length
+      ? (d.recent_case_studies||[]).map(function(c){
+          return '<div style="padding:10px 0;border-bottom:1px solid rgba(232,184,75,.06)"><p style="font-family:Cinzel,serif;font-size:10px;letter-spacing:.2em;color:#9990c0">Case Study</p><p style="font-size:15px;color:#d8d4f0">' + (c.id||'').slice(0,8) + '… · Score: ' + (c.outcome_score||'—') + '</p></div>';
+        }).join('')
+      : '<p style="color:#6660a0;font-size:15px">No case studies yet</p>';
+  } catch(e) { showErr(e); }
+}
+
+async function loadContent() {
+  try {
+    var d = await api('/.netlify/functions/reporting?section=content_metrics');
+    var kb = d.knowledge_base || {}, bk = d.books || {}, cal = d.content_calendar || {};
+    document.getElementById('contentStats').innerHTML = [
+      statCard('KB Articles',    kb.total||0,             'Knowledge base entries','teal'),
+      statCard('Books / Scripts',bk.total||0,             'Book and script projects','purple'),
+      statCard('Scheduled',      cal.scheduled||0,        'Content ready to post'),
+      statCard('Published',      cal.published||0,        'Content published'),
+    ].join('');
+    var pl = cal.by_platform || {};
+    document.getElementById('contentCalPanel').innerHTML = Object.keys(pl).length
+      ? Object.keys(pl).map(function(k){
+          return '<div class="bar-row"><span class="bar-label" style="font-size:9px">' + k + '</span><div class="bar-track"><div class="bar-fill teal" style="width:' + pct(pl[k],Math.max(...Object.values(pl))) + '%"><span class="bar-val">' + pl[k] + '</span></div></div></div>';
+        }).join('')
+      : '<p style="color:#6660a0;font-size:15px">No calendar entries</p>';
+    var bs = kb.by_status || {};
+    document.getElementById('contentPipeline').innerHTML = Object.keys(bs).length
+      ? Object.keys(bs).map(function(k){
+          return '<div class="bar-row"><span class="bar-label" style="font-size:9px">' + k + '</span><div class="bar-track"><div class="bar-fill" style="width:' + pct(bs[k],Math.max(...Object.values(bs))) + '%"><span class="bar-val">' + bs[k] + '</span></div></div></div>';
+        }).join('')
+      : '<p style="color:#6660a0;font-size:15px">No KB entries</p>';
+  } catch(e) { showErr(e); }
+}
+
+// ── Export ────────────────────────────────────────────────────────────────────
+
+async function logExport() {
+  try {
+    await fetch('/.netlify/functions/reporting?action=log_export', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'X-Dashboard-Token':_tok },
+      body: JSON.stringify({ report_type: _curSec.replace('-','_'), report_period: String(_year) }),
+    });
+    alert('Export logged for ' + _curSec + ' / ' + _year + '. Implement CSV download as needed.');
+  } catch(e) {}
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function fmt(n) {
+  n = parseFloat(n) || 0;
+  return n.toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 });
+}
+
+function pct(v, max) {
+  if (!max) return 0;
+  return Math.max(4, Math.round(parseFloat(v||0) / parseFloat(max) * 100));
+}
+
+function statCard(label, value, sub, cls) {
+  return '<div class="stat-card ' + (cls||'') + '"><div class="stat-label">' + label + '</div>' +
+    '<div class="stat-value">' + value + '</div>' +
+    (sub ? '<div class="stat-sub">' + sub + '</div>' : '') + '</div>';
+}
+
+function showErr(e) {
+  var el = document.getElementById('globalError');
+  el.textContent = 'Error loading data: ' + e.message;
+  el.style.display = 'block';
+  setTimeout(function(){ el.style.display='none'; }, 6000);
+}
+</script>
+</body>
+</html>
