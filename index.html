@@ -286,6 +286,12 @@ footer a:hover,footer a:focus-visible{color:#fff0b8 !important;border-bottom-col
 .rea-next-avail-time{font-family:'EB Garamond',serif;font-size:15px;color:#88ffcc;margin-bottom:12px}
 .rea-next-avail-btn{display:inline-block;background:#1a4a28;border:2px solid #33ee88;color:#aaffd0;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.22em;padding:9px 22px;border-radius:6px;cursor:pointer;transition:all .2s;text-transform:uppercase}
 .rea-next-avail-btn:hover{background:#22cc66;color:#fff;box-shadow:0 0 14px #22cc6688}
+/* onboarding package flow */
+.ob-method-card{display:flex;align-items:flex-start;gap:14px;padding:14px 16px;border:1px solid #e8b84b33;background:#0e0c20;border-radius:8px;cursor:pointer;transition:all .2s;font-family:'EB Garamond',serif}
+.ob-method-card:hover{border-color:#e8b84b88;background:#14102e}
+.ob-method-card.ob-selected{border-color:#e8b84b;background:#1a1408;box-shadow:0 0 12px #e8b84b22}
+.ob-method-title{font-family:'Cinzel',serif;font-size:14px;color:#f0ecff;margin-bottom:4px}
+.ob-method-desc{font-size:14px;color:#a8a0c0;line-height:1.5}
 /* legend */
 .rea-cal-legend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px;font-family:'EB Garamond',serif;font-size:14px;align-items:center}
 .rea-legend-dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:middle}
@@ -3164,8 +3170,93 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&modal.clas
           <option>Spiritual Coaching — $50</option>
           <option>Youth Sessions (Ages 9–14) — $20–$30</option>
           <option>Not sure — need assessment first</option>
+          <option value="onboarding">✦ Initial Client Onboarding Package (New Clients)</option>
         </select>
       </div>
+
+      <!-- ── ONBOARDING PACKAGE FLOW (shown when service = onboarding) ── -->
+      <div id="onboardingFlow" style="display:none;border:1px solid #e8b84b44;background:linear-gradient(135deg,#080518,#0a0820);border-radius:12px;padding:24px;margin-bottom:20px">
+        <div style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#e8b84b;text-transform:uppercase;margin-bottom:4px">New Client Package</div>
+        <h3 style="font-family:'Cinzel',serif;font-size:18px;color:#f0ecff;margin:0 0 8px">Initial Client Onboarding</h3>
+        <p style="font-family:'EB Garamond',serif;font-size:15px;color:#c8c4e0;margin:0 0 20px;line-height:1.6">Every new client begins with an intake so Daron can understand your situation and direct energy appropriately. Choose how you'd like to complete your intake.</p>
+
+        <!-- Step 1 — Method -->
+        <div class="ob-step" id="obStep1">
+          <div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.28em;color:#e8b84b88;text-transform:uppercase;margin-bottom:12px">Step 1 — Intake Method</div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <label class="ob-method-card" id="obMethodWritten" onclick="selectObMethod('written')">
+              <input type="radio" name="ob-method" value="written" style="accent-color:#e8b84b"/>
+              <div class="ob-method-body">
+                <div class="ob-method-title">Written Questionnaire</div>
+                <div class="ob-method-desc">Fill out a short intake form now. Daron reviews your responses before your session.</div>
+              </div>
+            </label>
+            <label class="ob-method-card" id="obMethodAI" onclick="selectObMethod('ai_call')">
+              <input type="radio" name="ob-method" value="ai_call" style="accent-color:#e8b84b"/>
+              <div class="ob-method-body">
+                <div class="ob-method-title">AI Intake Call <span style="font-size:11px;color:#b08ae0;border:1px solid #b08ae055;padding:1px 6px;border-radius:4px;margin-left:6px">Coming Soon</span></div>
+                <div class="ob-method-desc">Speak with an AI intake representative who will guide you through the questions by phone.</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Step 2a — Written Questionnaire -->
+        <div class="ob-step" id="obStep2Written" style="display:none;margin-top:20px">
+          <div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.28em;color:#e8b84b88;text-transform:uppercase;margin-bottom:14px">Step 2 — Intake Questionnaire</div>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div class="contact-field">
+              <label for="ob-q1">What is bringing you to seek energy healing?</label>
+              <textarea id="ob-q1" name="ob-presenting-concerns" placeholder="Describe the situation, symptoms, or circumstances..." style="min-height:80px"></textarea>
+            </div>
+            <div class="contact-field">
+              <label for="ob-q2">What are your main goals for this session?</label>
+              <textarea id="ob-q2" name="ob-goals" placeholder="What would you like to achieve or experience?" style="min-height:70px"></textarea>
+            </div>
+            <div class="contact-field">
+              <label for="ob-q3">What major stressors or challenges are present in your life right now?</label>
+              <textarea id="ob-q3" name="ob-stressors" placeholder="Work, relationships, health, finances, etc." style="min-height:70px"></textarea>
+            </div>
+            <div class="contact-field">
+              <label for="ob-q4">Are there any spiritual concerns — presences, attachments, or experiences you can't explain?</label>
+              <textarea id="ob-q4" name="ob-spiritual" placeholder="Share openly — there is no wrong answer." style="min-height:70px"></textarea>
+            </div>
+            <div class="contact-field">
+              <label for="ob-q5">Have you worked with an energy healer or spiritual practitioner before?</label>
+              <textarea id="ob-q5" name="ob-prior-experience" placeholder="If yes, describe the experience and what helped or didn't..." style="min-height:60px"></textarea>
+            </div>
+            <div class="contact-field">
+              <label for="ob-q6">Is there a specific area you'd like Daron to focus on? (optional)</label>
+              <textarea id="ob-q6" name="ob-focus" placeholder="Physical area, relationship, emotion, situation..." style="min-height:60px"></textarea>
+            </div>
+            <div class="contact-field">
+              <label for="ob-q7">Anything else you'd like Daron to know before your session? (optional)</label>
+              <textarea id="ob-q7" name="ob-notes" placeholder="Context, background, or anything on your heart..." style="min-height:60px"></textarea>
+            </div>
+          </div>
+          <button type="button" onclick="obToStep3()" style="margin-top:18px;background:linear-gradient(135deg,#1a3320,#0f2818);border:1px solid #22ee7755;color:#44ffaa;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;padding:12px 28px;border-radius:6px;cursor:pointer;text-transform:uppercase">Continue to Session Booking →</button>
+        </div>
+
+        <!-- Step 2b — AI Call placeholder -->
+        <div class="ob-step" id="obStep2AI" style="display:none;margin-top:20px">
+          <div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.28em;color:#e8b84b88;text-transform:uppercase;margin-bottom:14px">Step 2 — AI Intake Call</div>
+          <div style="border:1px solid #b08ae044;background:#b08ae008;border-radius:8px;padding:18px 20px">
+            <p style="font-family:'EB Garamond',serif;font-size:16px;color:#d0c8f0;margin:0 0 10px">The AI intake call feature is coming soon. In the meantime, please select <strong>Written Questionnaire</strong> to complete your intake now, or <a href="#contact" style="color:#e8b84b;text-decoration:underline" onclick="selectObMethod('written');return false">switch to written</a>.</p>
+          </div>
+        </div>
+
+        <!-- Step 3 — Session Timing -->
+        <div class="ob-step" id="obStep3" style="display:none;margin-top:20px">
+          <div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.28em;color:#e8b84b88;text-transform:uppercase;margin-bottom:14px">Step 3 — Select Your Session Time</div>
+          <p style="font-family:'EB Garamond',serif;font-size:15px;color:#c8c4e0;margin:0 0 14px;line-height:1.5">Your session will be scheduled at least 48 hours after your intake so Daron has time to review. Select your preferred time below.</p>
+          <div style="font-family:'EB Garamond',serif;font-size:14px;color:#8884a0;margin-bottom:8px">Use the calendar below to select your preferred time. You may also pick a backup slot.</div>
+          <!-- calendar renders inside existing #slotsSection further down the form -->
+          <div style="background:#e8b84b0a;border:1px solid #e8b84b33;border-radius:8px;padding:14px;font-family:'EB Garamond',serif;font-size:15px;color:#c8c4e0">
+            ↓ Continue scrolling to the calendar below to select your session time.
+          </div>
+        </div>
+      </div>
+
       <div class="contact-field"><label for="cf-message">What Are You Experiencing?</label><textarea id="cf-message" name="message" placeholder="Share as much or as little as you want. There is no wrong answer."></textarea></div>
       <!-- APPOINTMENT SLOTS — Calendar Picker -->
       <div id="slotsSection">
@@ -3877,6 +3968,62 @@ function markSlotsBooked(label1, label2){
     })
     .catch(function(){});
 }
+/* ── ONBOARDING PACKAGE FLOW ───────────────────────────────── */
+var _obMethod=null;
+(function initOnboardingToggle(){
+  var svc=document.getElementById('cf-service');
+  var flow=document.getElementById('onboardingFlow');
+  var msgField=document.getElementById('cf-message');
+  var msgWrap=msgField&&msgField.closest('.contact-field');
+  if(!svc||!flow)return;
+  function toggle(){
+    var isOb=(svc.value==='onboarding');
+    flow.style.display=isOb?'block':'none';
+    if(msgWrap)msgWrap.style.display=isOb?'none':'block';
+  }
+  svc.addEventListener('change',toggle);
+  toggle();
+})();
+
+function selectObMethod(method){
+  _obMethod=method;
+  var w=document.getElementById('obMethodWritten');
+  var a=document.getElementById('obMethodAI');
+  var step2w=document.getElementById('obStep2Written');
+  var step2a=document.getElementById('obStep2AI');
+  if(w)w.classList.toggle('ob-selected',method==='written');
+  if(a)a.classList.toggle('ob-selected',method==='ai_call');
+  if(step2w)step2w.style.display=method==='written'?'block':'none';
+  if(step2a)step2a.style.display=method==='ai_call'?'block':'none';
+  // set radio
+  var radios=document.querySelectorAll('input[name="ob-method"]');
+  radios.forEach(function(r){r.checked=(r.value===method);});
+}
+
+function obToStep3(){
+  // Validate at least the first two questions are filled
+  var q1=(document.getElementById('ob-q1')||{}).value||'';
+  var q2=(document.getElementById('ob-q2')||{}).value||'';
+  if(!q1.trim()||!q2.trim()){
+    alert('Please answer at least the first two questions before continuing.');
+    return;
+  }
+  var step3=document.getElementById('obStep3');
+  if(step3){step3.style.display='block';step3.scrollIntoView({behavior:'smooth',block:'start'});}
+}
+
+function gatherObResponses(){
+  return {
+    presenting_concerns:      (document.getElementById('ob-q1')||{}).value||'',
+    goals:                    (document.getElementById('ob-q2')||{}).value||'',
+    stressors:                (document.getElementById('ob-q3')||{}).value||'',
+    spiritual_concerns:       (document.getElementById('ob-q4')||{}).value||'',
+    prior_healing_experience: (document.getElementById('ob-q5')||{}).value||'',
+    focus_areas:              (document.getElementById('ob-q6')||{}).value||'',
+    additional_notes:         (document.getElementById('ob-q7')||{}).value||'',
+  };
+}
+
 function handleBookingSubmit(e){
   e.preventDefault();
   var cb=document.getElementById('policy-agree');
@@ -3906,6 +4053,45 @@ function handleBookingSubmit(e){
   // disable button immediately
   var btn=document.getElementById('book-submit-btn');
   if(btn){btn.textContent='Sending...';btn.disabled=true;}
+
+  // ── ONBOARDING PACKAGE ROUTE ───────────────────────────────────────────
+  if(service==='onboarding'||service==='✦ Initial Client Onboarding Package (New Clients)'){
+    if(!_obMethod){
+      alert('Please select an intake method (Written Questionnaire or AI Call).');
+      if(btn){btn.textContent='Book & Pay →';btn.disabled=false;}
+      return false;
+    }
+    var obPayload={
+      client_name:     (fname+' '+lname).trim(),
+      client_email:    email,
+      client_phone:    phone,
+      method:          _obMethod,
+      service:         'Initial Energy Session',
+      responses:       _obMethod==='written'?gatherObResponses():{},
+      session_window_1:window1||'',
+      session_window_2:window2||'',
+      buffer_hours:    48,
+      bot_field:       '',
+    };
+    fetch('/.netlify/functions/onboarding',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(obPayload)
+    }).then(function(r){return r.json();}).then(function(data){
+      if(data.error){
+        if(btn){btn.textContent='Book & Pay →';btn.disabled=false;}
+        alert('There was a problem submitting your intake: '+data.error);
+      } else {
+        markSlotsBooked(window1,window2);
+        showOnboardingConfirmation(_obMethod);
+      }
+    }).catch(function(){
+      // Still show confirmation on network error
+      markSlotsBooked(window1,window2);
+      showOnboardingConfirmation(_obMethod);
+    });
+    return false;
+  }
 
   // ── Submit to Netlify Forms (reaches Daron's email & Netlify dashboard)
   var formData=new URLSearchParams({
@@ -3962,6 +4148,24 @@ function showBookingConfirmation(method,sent){
     '<div style="font-size:20px;margin-bottom:8px;font-family:Cinzel,serif;font-size:14px;letter-spacing:.2em">BOOKING REQUEST RECEIVED</div>'+
     '<p style="color:#d0cce8;font-size:16px;margin:8px 0">'+( msgs[method]||'Daron will be in touch shortly.')+'</p>'+
     '<p style="color:#aaa8cc;font-size:14px;margin-top:6px">Check your email or phone for your appointment confirmation and session details.</p>';
+  form.parentNode.insertBefore(conf,form.nextSibling);
+  form.style.display='none';
+}
+
+function showOnboardingConfirmation(method){
+  var btn=document.getElementById('book-submit-btn');
+  if(btn){btn.textContent='Submitted!';btn.disabled=true;btn.style.opacity='0.7';}
+  var form=document.getElementById('bookingForm');
+  if(!form)return;
+  var msg=method==='written'
+    ? 'Your intake questionnaire has been received. Daron will review your responses and reach out within 24 hours to confirm your session time.'
+    : 'Your onboarding request has been received. Daron will contact you to schedule your AI intake call and confirm your session time.';
+  var conf=document.createElement('div');
+  conf.style.cssText='text-align:center;padding:28px 20px;font-family:EB Garamond,serif;font-size:17px;color:#66cc88;margin-top:16px;border:1px solid #66cc8833;border-radius:8px;background:#0d1a12';
+  conf.innerHTML='<div style="font-size:26px;margin-bottom:10px">✦</div>'+
+    '<div style="font-family:Cinzel,serif;font-size:13px;letter-spacing:.25em;color:#e8b84b;margin-bottom:10px">ONBOARDING REQUEST RECEIVED</div>'+
+    '<p style="color:#d0cce8;font-size:16px;margin:8px 0">'+msg+'</p>'+
+    '<p style="color:#aaa8cc;font-size:14px;margin-top:6px">You will receive a follow-up by email or phone with next steps.</p>';
   form.parentNode.insertBefore(conf,form.nextSibling);
   form.style.display='none';
 }

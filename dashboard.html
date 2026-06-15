@@ -2702,6 +2702,9 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
 
       <div class="ck-nav-divider"></div>
       <div class="ck-nav-section">Practice</div>
+      <button class="tab ck-nav-item" onclick="showTab('onboarding')">
+        <span class="nav-icon">✦</span><span class="nav-text">Onboarding Queue</span>
+      </button>
       <button class="tab ck-nav-item" onclick="showTab('booking')">
         <span class="nav-icon">▦</span><span class="nav-text">Booking</span>
       </button>
@@ -3133,6 +3136,71 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
   <!-- LEAD PIPELINE TAB -->
   <div class="tab-content" id="tab-lp"></div>
 
+
+  <!-- ONBOARDING QUEUE TAB -->
+  <div class="tab-content" id="tab-onboarding">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">
+      <div>
+        <div class="section-title" style="margin-bottom:4px">Onboarding Queue</div>
+        <div style="font-family:'EB Garamond',serif;font-size:15px;color:#9890c0">New client intakes awaiting review before their first session.</div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <select id="obFilterStatus" onchange="loadOnboardingQueue()" style="padding:8px 12px;background:#0e0c22;border:1px solid #e8b84b44;color:#e0ddf8;font-family:'EB Garamond',serif;font-size:14px;border-radius:6px">
+          <option value="">All Statuses</option>
+          <option value="scheduled">Scheduled</option>
+          <option value="completed">Completed</option>
+          <option value="summary_generated">Summary Ready</option>
+          <option value="reviewed">Reviewed</option>
+          <option value="ready_for_session">Ready for Session</option>
+          <option value="needs_followup">Needs Follow-Up</option>
+        </select>
+        <button class="ck-btn" onclick="loadOnboardingQueue()" style="padding:8px 18px">↻ Refresh</button>
+      </div>
+    </div>
+
+    <!-- Queue Table -->
+    <div id="obQueueWrap" style="overflow-x:auto;margin-bottom:28px">
+      <table style="width:100%;border-collapse:collapse;font-family:'EB Garamond',serif;font-size:15px">
+        <thead>
+          <tr style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.25em;color:#e8b84b88;text-transform:uppercase;border-bottom:1px solid #e8b84b33">
+            <th style="padding:10px 12px;text-align:left;font-weight:400">Client</th>
+            <th style="padding:10px 12px;text-align:left;font-weight:400">Method</th>
+            <th style="padding:10px 12px;text-align:left;font-weight:400">Submitted</th>
+            <th style="padding:10px 12px;text-align:left;font-weight:400">Status</th>
+            <th style="padding:10px 12px;text-align:left;font-weight:400">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="obQueueBody">
+          <tr><td colspan="5" style="padding:20px;color:#6860a0;text-align:center">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Intake Review Panel -->
+    <div id="obReviewPanel" style="display:none;border:1px solid #e8b84b44;border-radius:12px;padding:24px;background:#08061a">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+        <div>
+          <div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:#e8b84b;text-transform:uppercase;margin-bottom:4px">Intake Review</div>
+          <div class="section-title" id="obReviewName" style="font-size:20px!important;margin:0"></div>
+        </div>
+        <button onclick="closeObReview()" style="background:transparent;border:1px solid #5550a0;color:#a0a0d0;padding:6px 14px;border-radius:6px;cursor:pointer;font-family:'EB Garamond',serif;font-size:14px">✕ Close</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px" id="obReviewMeta"></div>
+      <div id="obReviewResponses" style="margin-bottom:20px"></div>
+      <div id="obReviewSummary" style="display:none;border:1px solid #22ee7744;background:#06180e;border-radius:8px;padding:16px 20px;margin-bottom:18px">
+        <div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.28em;color:#44ffaa;text-transform:uppercase;margin-bottom:8px">Auto-Generated Summary</div>
+        <pre id="obReviewSummaryText" style="font-family:'EB Garamond',serif;font-size:15px;color:#c0e8d0;white-space:pre-wrap;margin:0;line-height:1.6"></pre>
+      </div>
+      <div style="margin-bottom:14px">
+        <label style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.28em;color:#e8b84b88;text-transform:uppercase;display:block;margin-bottom:8px">Daron's Review Notes</label>
+        <textarea id="obReviewNotes" style="width:100%;min-height:90px;background:#0e0c22;border:1px solid #5550a0;color:#e0ddf8;font-family:'EB Garamond',serif;font-size:15px;padding:12px 14px;border-radius:6px;box-sizing:border-box" placeholder="Add notes about this client's situation, energy, or session plan…"></textarea>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button onclick="markObReviewed()" style="background:linear-gradient(135deg,#1a3320,#0f2818);border:1px solid #22ee7755;color:#44ffaa;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;padding:11px 24px;border-radius:6px;cursor:pointer;text-transform:uppercase">✓ Mark Reviewed</button>
+        <button onclick="markObReadyForSession()" style="background:linear-gradient(135deg,#1a1a38,#0f0f28);border:1px solid #8888ff55;color:#aaaaff;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;padding:11px 24px;border-radius:6px;cursor:pointer;text-transform:uppercase">→ Ready for Session</button>
+      </div>
+    </div>
+  </div>
 
   <!-- BOOKING TAB -->
   <div class="tab-content" id="tab-booking">
@@ -3782,6 +3850,7 @@ function showTab(name) {
   // Tab-specific renders
   if (name === 'home')        { try { renderHomeDashboard(); } catch(e){ console.error('renderHomeDashboard', e); } }
   if (name === 'environment') { try { renderTodayEnvCard(); } catch(e){} try { renderEnvLog(); } catch(e){} try { renderPatterns(); } catch(e){} }
+  if (name === 'onboarding')  { try { loadOnboardingQueue(); } catch(e){ console.error('loadOnboardingQueue', e); } }
   if (name === 'booking')     { try { renderCal(); renderUpcoming(); renderWaitlist(); updateCapacityStats(); renderCancellationLog(); renderBooking(); renderSyncLastRun(); loadCancelRequests(); } catch(e){ console.error('booking tab',e); } }
   if (name === 'operations')  { try { renderOperationsCenter(); } catch(e){ console.error('renderOperationsCenter', e); } }
   if (name === 'followups')   { try { loadFollowUps(); } catch(e){ console.error('loadFollowUps', e); } }
@@ -3792,6 +3861,159 @@ function showTab(name) {
   if (name === 'lp')             { try { lpInit(); } catch(e){ console.error('lpInit', e); } }
   if (name === 'financial')      { try { fcInit(); } catch(e){ console.error('fcInit', e); } }
   if (name === 'communications') { try { cmInit(); } catch(e){ console.error('cmInit', e); } }
+}
+
+/* ── ONBOARDING QUEUE ─────────────────────────────────────────────────── */
+var _obCurrentIntake = null;
+
+async function loadOnboardingQueue() {
+  var body = document.getElementById('obQueueBody');
+  if (!body) return;
+  body.innerHTML = '<tr><td colspan="5" style="padding:20px;color:#6860a0;text-align:center">Loading…</td></tr>';
+
+  var status = (document.getElementById('obFilterStatus') || {}).value || '';
+  var url = '/.netlify/functions/onboarding' + (status ? '?status=' + encodeURIComponent(status) : '');
+
+  try {
+    var key = localStorage.getItem('rea_admin_key') || '';
+    var r = await fetch(url, { headers: { 'x-admin-key': key } });
+    var data = await r.json();
+    var intakes = data.intakes || [];
+    if (!intakes.length) {
+      body.innerHTML = '<tr><td colspan="5" style="padding:20px;color:#6860a0;text-align:center">No intake records found.</td></tr>';
+      return;
+    }
+    var STATUS_COLOR = {
+      scheduled:         '#e8b84b',
+      completed:         '#66cc88',
+      summary_generated: '#4488ff',
+      reviewed:          '#44ffaa',
+      ready_for_session: '#22ee77',
+      missed:            '#cc4444',
+      cancelled:         '#888',
+      needs_followup:    '#ff8844',
+    };
+    body.innerHTML = intakes.map(function(intake) {
+      var dt = intake.created_at ? new Date(intake.created_at).toLocaleDateString() : '—';
+      var sc = STATUS_COLOR[intake.intake_status] || '#888';
+      var responseCount = intake.responses ? Object.values(intake.responses).filter(Boolean).length : 0;
+      return '<tr style="border-bottom:1px solid #1a1836;transition:background .15s" onmouseover="this.style.background=\'#10082a\'" onmouseout="this.style.background=\'\'">' +
+        '<td style="padding:12px;color:#f0ecff">' + (intake.client_name || '—') +
+          (intake.client_email ? '<div style="font-size:12px;color:#6860a0;margin-top:2px">' + intake.client_email + '</div>' : '') + '</td>' +
+        '<td style="padding:12px;color:#c8c4e0">' + (intake.method === 'written' ? '📝 Written' : '📞 AI Call') + '</td>' +
+        '<td style="padding:12px;color:#9890c0">' + dt + '</td>' +
+        '<td style="padding:12px"><span style="background:' + sc + '22;color:' + sc + ';border:1px solid ' + sc + '55;border-radius:4px;padding:2px 8px;font-size:13px;font-family:Cinzel,serif;letter-spacing:.1em">' + intake.intake_status + '</span></td>' +
+        '<td style="padding:12px"><button onclick="openObReview(\'' + intake.id + '\')" style="background:#14103a;border:1px solid #5550a0;color:#c8c4e0;padding:6px 14px;border-radius:6px;cursor:pointer;font-family:\'EB Garamond\',serif;font-size:14px">' +
+          (responseCount > 0 ? '📋 Review (' + responseCount + ' answers)' : '👁 View') + '</button></td>' +
+        '</tr>';
+    }).join('');
+  } catch(err) {
+    body.innerHTML = '<tr><td colspan="5" style="padding:20px;color:#cc4444;text-align:center">Failed to load: ' + err.message + '</td></tr>';
+  }
+}
+
+async function openObReview(id) {
+  var panel = document.getElementById('obReviewPanel');
+  var nameEl = document.getElementById('obReviewName');
+  var metaEl = document.getElementById('obReviewMeta');
+  var respEl = document.getElementById('obReviewResponses');
+  var sumWrap = document.getElementById('obReviewSummary');
+  var sumText = document.getElementById('obReviewSummaryText');
+  if (!panel) return;
+
+  panel.style.display = 'block';
+  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (nameEl) nameEl.textContent = 'Loading…';
+
+  var key = localStorage.getItem('rea_admin_key') || '';
+  var data;
+  try {
+    var r = await fetch('/.netlify/functions/onboarding?id=' + id, { headers: { 'x-admin-key': key } });
+    data = await r.json();
+  } catch(e) { if (nameEl) nameEl.textContent = 'Error loading intake.'; return; }
+
+  var intake = data.intake || {};
+  _obCurrentIntake = intake;
+
+  if (nameEl) nameEl.textContent = intake.client_name || '—';
+
+  var metaItems = [
+    ['Method', intake.method === 'written' ? '📝 Written Questionnaire' : '📞 AI Call'],
+    ['Status', intake.intake_status || '—'],
+    ['Email', intake.client_email || '—'],
+    ['Phone', intake.client_phone || '—'],
+    ['Intake Date', intake.intake_date || 'Not scheduled'],
+    ['Submitted', intake.created_at ? new Date(intake.created_at).toLocaleString() : '—'],
+  ];
+  if (metaEl) metaEl.innerHTML = metaItems.map(function(m) {
+    return '<div style="background:#0e0c22;border:1px solid #2a2850;border-radius:8px;padding:12px 14px">' +
+      '<div style="font-family:Cinzel,serif;font-size:10px;letter-spacing:.2em;color:#e8b84b88;text-transform:uppercase;margin-bottom:4px">' + m[0] + '</div>' +
+      '<div style="font-family:\'EB Garamond\',serif;font-size:15px;color:#e0ddf8">' + m[1] + '</div>' +
+      '</div>';
+  }).join('');
+
+  var Q_LABELS = {
+    presenting_concerns:     'What is bringing you to seek energy healing?',
+    goals:                   'What are your main goals for this session?',
+    stressors:               'Current stressors or challenges',
+    spiritual_concerns:      'Spiritual concerns or unexplained experiences',
+    prior_healing_experience:'Prior experience with energy healing',
+    focus_areas:             'Requested focus area',
+    additional_notes:        'Additional notes',
+  };
+  var responses = intake.responses || {};
+  var respHtml = '';
+  Object.entries(Q_LABELS).forEach(function(entry) {
+    var val = responses[entry[0]];
+    if (!val) return;
+    respHtml += '<div style="margin-bottom:16px;border:1px solid #2a2850;border-radius:8px;padding:14px 16px;background:#0e0c20">' +
+      '<div style="font-family:Cinzel,serif;font-size:10px;letter-spacing:.2em;color:#e8b84b;text-transform:uppercase;margin-bottom:8px">' + entry[1] + '</div>' +
+      '<div style="font-family:\'EB Garamond\',serif;font-size:16px;color:#d8d4f0;line-height:1.6;white-space:pre-wrap">' + val + '</div>' +
+      '</div>';
+  });
+  if (respEl) respEl.innerHTML = respHtml || '<div style="color:#6860a0;font-family:\'EB Garamond\',serif;font-size:15px">No written responses on file.</div>';
+
+  if (intake.summary) {
+    if (sumWrap) sumWrap.style.display = 'block';
+    if (sumText) sumText.textContent = intake.summary;
+  } else {
+    if (sumWrap) sumWrap.style.display = 'none';
+  }
+
+  var notesEl = document.getElementById('obReviewNotes');
+  if (notesEl) notesEl.value = intake.review_notes || '';
+}
+
+function closeObReview() {
+  var panel = document.getElementById('obReviewPanel');
+  if (panel) panel.style.display = 'none';
+  _obCurrentIntake = null;
+}
+
+async function markObReviewed() {
+  if (!_obCurrentIntake) return;
+  var notes = (document.getElementById('obReviewNotes') || {}).value || '';
+  var key = localStorage.getItem('rea_admin_key') || '';
+  await fetch('/.netlify/functions/onboarding?id=' + _obCurrentIntake.id, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', 'x-admin-key': key },
+    body: JSON.stringify({ intake_status: 'reviewed', review_notes: notes }),
+  });
+  closeObReview();
+  loadOnboardingQueue();
+}
+
+async function markObReadyForSession() {
+  if (!_obCurrentIntake) return;
+  var notes = (document.getElementById('obReviewNotes') || {}).value || '';
+  var key = localStorage.getItem('rea_admin_key') || '';
+  await fetch('/.netlify/functions/onboarding?id=' + _obCurrentIntake.id, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', 'x-admin-key': key },
+    body: JSON.stringify({ intake_status: 'ready_for_session', review_notes: notes }),
+  });
+  closeObReview();
+  loadOnboardingQueue();
 }
 
 function approveReview(id) {
