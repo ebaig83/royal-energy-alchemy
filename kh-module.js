@@ -3,6 +3,7 @@
 
   const KB_API  = '/.netlify/functions/kb';
   const RN_API  = '/.netlify/functions/research';
+  const KE_API  = '/.netlify/functions/knowledge-engine';
 
   const KB_CATEGORIES = ['Protocol','FAQ','Training','Practitioner Guide','Procedure','Reference'];
   const KB_STATUSES   = ['draft','published','archived'];
@@ -17,6 +18,7 @@
 
   function kbFetch(path, opts)  { return apiFetch(KB_API,  path, opts); }
   function rnFetch(path, opts)  { return apiFetch(RN_API,  path, opts); }
+  function keFetch(path, opts)  { return apiFetch(KE_API,  path, opts); }
 
   function esc(s) {
     return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -52,11 +54,15 @@
     el.innerHTML = `
 <div class="kh-wrap">
   <div class="kh-subnav">
-    <button class="kh-snav${_section==='dashboard'   ?' active':''}" onclick="khSection('dashboard')">Dashboard</button>
-    <button class="kh-snav${_section==='kb'          ?' active':''}" onclick="khSection('kb')">Knowledge Base</button>
-    <button class="kh-snav${_section==='research'    ?' active':''}" onclick="khSection('research')">Research</button>
-    <button class="kh-snav${_section==='patterns'    ?' active':''}" onclick="khSection('patterns')">Pattern Library</button>
-    <button class="kh-snav${_section==='insights'    ?' active':''}" onclick="khSection('insights')">Insights Feed</button>
+    <button class="kh-snav${_section==='dashboard'        ?' active':''}" onclick="khSection('dashboard')">Dashboard</button>
+    <button class="kh-snav${_section==='kb'               ?' active':''}" onclick="khSection('kb')">Knowledge Base</button>
+    <button class="kh-snav${_section==='research'         ?' active':''}" onclick="khSection('research')">Research Notes</button>
+    <button class="kh-snav${_section==='patterns'         ?' active':''}" onclick="khSection('patterns')">Pattern Library</button>
+    <button class="kh-snav${_section==='insights'         ?' active':''}" onclick="khSection('insights')">Insights Feed</button>
+    <button class="kh-snav${_section==='ke_insights'      ?' active':''}" onclick="khSection('ke_insights')">Research Insights</button>
+    <button class="kh-snav${_section==='case_studies'     ?' active':''}" onclick="khSection('case_studies')">Case Studies</button>
+    <button class="kh-snav${_section==='rec_intelligence' ?' active':''}" onclick="khSection('rec_intelligence')">Rec Intelligence</button>
+    <button class="kh-snav${_section==='service_intel'    ?' active':''}" onclick="khSection('service_intel')">Service Intel</button>
   </div>
   <div id="kh-body"></div>
 </div>`;
@@ -68,7 +74,7 @@
     const el = document.getElementById('tab-kh');
     if (!el) return;
     el.querySelectorAll('.kh-snav').forEach(b => b.classList.remove('active'));
-    const names = ['dashboard','kb','research','patterns','insights'];
+    const names = ['dashboard','kb','research','patterns','insights','ke_insights','case_studies','rec_intelligence','service_intel'];
     const idx = names.indexOf(name);
     const navBtns = el.querySelectorAll('.kh-snav');
     if (navBtns[idx]) navBtns[idx].classList.add('active');
@@ -79,11 +85,15 @@
     const body = document.getElementById('kh-body');
     if (!body) return;
     body.innerHTML = '<div class="kh-loading">Loading…</div>';
-    if (_section === 'dashboard') loadDashboard(body);
-    else if (_section === 'kb')       loadKB(body);
-    else if (_section === 'research') loadResearch(body);
-    else if (_section === 'patterns') loadPatterns(body);
-    else if (_section === 'insights') loadInsights(body);
+    if (_section === 'dashboard')        loadDashboard(body);
+    else if (_section === 'kb')              loadKB(body);
+    else if (_section === 'research')        loadResearch(body);
+    else if (_section === 'patterns')        loadPatterns(body);
+    else if (_section === 'insights')        loadInsights(body);
+    else if (_section === 'ke_insights')     loadKeInsights(body);
+    else if (_section === 'case_studies')    loadCaseStudies(body);
+    else if (_section === 'rec_intelligence') loadRecIntelligence(body);
+    else if (_section === 'service_intel')   loadServiceIntelligence(body);
   }
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -91,39 +101,47 @@
   // ══════════════════════════════════════════════════════════════════════════
   async function loadDashboard(body) {
     try {
-      const [entriesRes, analyticsRes, patternsRes] = await Promise.all([
+      const [entriesRes, analyticsRes, patternsRes, keRes] = await Promise.all([
         kbFetch('?section=entries'),
         rnFetch('?section=analytics'),
         rnFetch('?section=pattern_library'),
+        keFetch('?section=dashboard'),
       ]);
       const entriesData   = await entriesRes.json();
       const analyticsData = await analyticsRes.json();
       const patternsData  = await patternsRes.json();
+      const keData        = keRes.ok ? await keRes.json() : {};
 
       const entries    = entriesData.entries    || [];
       const analytics  = analyticsData.analytics || {};
       const patterns   = patternsData.patterns   || [];
+      const km         = keData.metrics          || {};
 
       const publishedCount = entries.filter(e => e.status === 'published').length;
       const patternGroups  = patterns.length;
       const recent         = [...entries].sort((a,b) => new Date(b.created_at)-new Date(a.created_at)).slice(0,5);
-      const recentNotes    = (analyticsData.recent_notes || []).slice(0,5);
+
+      const CONF_COLOR = { strong:'#22c98a', moderate:'#e8b84b', emerging:'#9b7fe8', candidate:'#4488ff', confirmed:'#22c98a', dismissed:'#cc4455' };
 
       body.innerHTML = `
 <div class="kh-dashboard">
   <h2 class="kh-section-title">Knowledge Hub Dashboard</h2>
 
   <div class="kh-kpi-row">
-    <div class="kh-kpi"><span class="kh-kpi-num">${entries.length}</span><span class="kh-kpi-lbl">Total Articles</span></div>
+    <div class="kh-kpi"><span class="kh-kpi-num">${entries.length}</span><span class="kh-kpi-lbl">KB Articles</span></div>
     <div class="kh-kpi"><span class="kh-kpi-num">${publishedCount}</span><span class="kh-kpi-lbl">Published</span></div>
     <div class="kh-kpi"><span class="kh-kpi-num">${analytics.totalNotes || 0}</span><span class="kh-kpi-lbl">Research Notes</span></div>
-    <div class="kh-kpi"><span class="kh-kpi-num">${analytics.activeTags || 0}</span><span class="kh-kpi-lbl">Active Tags</span></div>
-    <div class="kh-kpi"><span class="kh-kpi-num">${patternGroups}</span><span class="kh-kpi-lbl">Pattern Groups</span></div>
+    <div class="kh-kpi"><span class="kh-kpi-num">${patternGroups}</span><span class="kh-kpi-lbl">Tag Patterns</span></div>
+    <div class="kh-kpi"><span class="kh-kpi-num">${km.pattern_candidates ?? '—'}</span><span class="kh-kpi-lbl">Pattern Candidates</span></div>
+    <div class="kh-kpi"><span class="kh-kpi-num">${km.published_insights ?? '—'}</span><span class="kh-kpi-lbl">Published Insights</span></div>
+    <div class="kh-kpi"><span class="kh-kpi-num">${km.case_studies ?? '—'}</span><span class="kh-kpi-lbl">Case Studies</span></div>
+    <div class="kh-kpi"><span class="kh-kpi-num">${km.research_flags ?? '—'}</span><span class="kh-kpi-lbl">Research Flags</span></div>
+    ${km.improvement_rate != null ? `<div class="kh-kpi"><span class="kh-kpi-num" style="color:#22c98a">${km.improvement_rate}%</span><span class="kh-kpi-lbl">Improvement Rate</span></div>` : ''}
   </div>
 
   <div class="kh-dash-grid">
     <div class="kh-dash-card">
-      <h3 class="kh-dash-card-title">Recent Articles</h3>
+      <h3 class="kh-dash-card-title">Recent KB Articles</h3>
       ${recent.length ? recent.map(e => `
         <div class="kh-recent-item">
           <span class="kh-recent-title">${esc(e.title)}</span>
@@ -135,9 +153,19 @@
       <div class="kh-quick-actions">
         <button class="kh-qa-btn" onclick="khSection('kb');setTimeout(()=>window.khKbNewForm&&window.khKbNewForm(),300)">+ New Article</button>
         <button class="kh-qa-btn" onclick="khSection('research');setTimeout(()=>window.khRnNewForm&&window.khRnNewForm(),300)">+ New Research Note</button>
-        <button class="kh-qa-btn" onclick="khSection('patterns')">Browse Patterns</button>
-        <button class="kh-qa-btn" onclick="khSection('insights')">View Insights</button>
+        <button class="kh-qa-btn" onclick="khSection('ke_insights');setTimeout(()=>window.khKeInsightNewForm&&window.khKeInsightNewForm(),300)">+ New Insight</button>
+        <button class="kh-qa-btn" onclick="khSection('case_studies')">Case Studies</button>
+        <button class="kh-qa-btn" onclick="khKeDetectPatterns()">⬡ Detect Patterns</button>
+        <button class="kh-qa-btn" onclick="khSection('rec_intelligence')">Rec Intelligence</button>
       </div>
+    </div>
+    <div class="kh-dash-card">
+      <h3 class="kh-dash-card-title">Pattern Pipeline</h3>
+      ${(keData.recentPatterns||[]).length ? keData.recentPatterns.map(p => `
+        <div class="kh-recent-item">
+          <span class="kh-recent-title" style="font-size:12px">${esc(p.title||p.id)}</span>
+          <span class="kh-status-badge" style="background:${CONF_COLOR[p.confidence_level]||'#aaa'}22;color:${CONF_COLOR[p.confidence_level]||'#aaa'}">${esc(p.confidence_level||'')}</span>
+        </div>`).join('') : '<div class="kh-empty-sm">No patterns yet — click Detect Patterns.</div>'}
     </div>
   </div>
 </div>`;
@@ -145,6 +173,21 @@
       body.innerHTML = `<div class="kh-error">Could not load dashboard: ${esc(e.message)}</div>`;
     }
   }
+
+  window.khKeDetectPatterns = async function () {
+    const body = document.getElementById('kh-body');
+    if (body) body.innerHTML = '<div class="kh-loading">Running pattern detection…</div>';
+    try {
+      const res  = await keFetch('?section=detect');
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Detection failed');
+      alert(`Pattern detection complete: ${data.detected} patterns found, ${data.saved} saved.`);
+      loadDashboard(document.getElementById('kh-body'));
+    } catch (e) {
+      alert('Pattern detection error: ' + e.message);
+      loadDashboard(document.getElementById('kh-body'));
+    }
+  };
 
   // ══════════════════════════════════════════════════════════════════════════
   // KNOWLEDGE BASE
@@ -625,6 +668,453 @@
     </div>
   </div>
 </div>`;
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // RESEARCH INSIGHTS (structured, from knowledge-engine)
+  // ══════════════════════════════════════════════════════════════════════════
+  const CONF_COLORS = { emerging:'#9b7fe8', moderate:'#e8b84b', strong:'#22c98a' };
+  const CONTENT_TAG_LABELS = { book_idea:'📖 Book Idea', training_material:'🎓 Training', youtube_content:'▶ YouTube', social_media:'◎ Social', research_publication:'◈ Research' };
+
+  async function loadKeInsights(body) {
+    try {
+      const res  = await keFetch('?section=insights');
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'API error');
+      const insights = data.insights || [];
+      body.innerHTML = `
+<div class="kh-ke-wrap">
+  <div class="kh-kb-header">
+    <div class="kh-kb-title-row">
+      <span class="kh-section-title">Research Insights</span>
+      <button class="kh-btn-primary" onclick="khKeInsightNewForm()">+ New Insight</button>
+    </div>
+    <div style="font-size:12px;color:#dddaee55;margin-top:4px">Structured insights derived from session outcomes and patterns. Tag for content use.</div>
+  </div>
+  <div id="khKeInsightFormWrap" style="display:none"></div>
+  <div id="khKeInsightList">
+    ${insights.length ? insights.map(ins => keInsightCardHTML(ins)).join('') : '<div class="kh-empty">No research insights yet. Create your first insight or run Pattern Detection to generate candidates.</div>'}
+  </div>
+</div>`;
+    } catch (e) {
+      body.innerHTML = `<div class="kh-error">Could not load Research Insights: ${esc(e.message)}</div>`;
+    }
+  }
+
+  function keInsightCardHTML(ins) {
+    const confColor  = CONF_COLORS[ins.confidence_level] || '#dddaee';
+    const ctags      = (ins.content_tags || []).map(t => `<span class="kh-tag" style="color:#9b7fe8;border-color:#9b7fe855">${CONTENT_TAG_LABELS[t]||esc(t)}</span>`).join('');
+    const statusColor = ins.status === 'published' ? '#22c98a' : ins.status === 'under_review' ? '#e8b84b' : '#dddaee44';
+    const date = ins.created_at ? new Date(ins.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
+    return `
+<div class="kh-ke-card" id="khKeInsight-${ins.id}">
+  <div class="kh-kb-card-header">
+    <span class="kh-kb-card-title">${esc(ins.title)}</span>
+    <div class="kh-kb-card-meta">
+      <span class="kh-cat-badge">${esc(ins.category)}</span>
+      <span class="kh-status-badge" style="color:${confColor};background:${confColor}22">${esc(ins.confidence_level)}</span>
+      <span class="kh-status-badge" style="color:${statusColor}">${esc(ins.status)}</span>
+      <span class="kh-card-date">${date}</span>
+    </div>
+  </div>
+  <div class="kh-kb-card-preview">${esc(ins.description)}</div>
+  ${ins.practitioner_notes ? `<div class="kh-rn-preview" style="color:#dddaee66;font-style:italic">${esc(ins.practitioner_notes)}</div>` : ''}
+  ${ctags ? `<div class="kh-kb-card-tags">${ctags}</div>` : ''}
+  <div class="kh-kb-card-actions">
+    <button class="kh-btn-edit"   onclick="khKeInsightEdit(${JSON.stringify(ins).replace(/"/g,'&quot;')})">Edit</button>
+    <button class="kh-btn-edit"   onclick="khKeInsightPublish('${ins.id}','${ins.status}')" style="color:#22c98a">${ins.status==='published'?'Unpublish':'Publish'}</button>
+  </div>
+</div>`;
+  }
+
+  window.khKeInsightNewForm = function () {
+    const wrap = document.getElementById('khKeInsightFormWrap');
+    if (!wrap) return;
+    wrap.innerHTML = keInsightFormHTML({});
+    wrap.style.display = 'block';
+    wrap.scrollIntoView({ behavior:'smooth', block:'start' });
+  };
+
+  window.khKeInsightEdit = function (ins) {
+    const wrap = document.getElementById('khKeInsightFormWrap');
+    if (!wrap) return;
+    wrap.innerHTML = keInsightFormHTML(ins);
+    wrap.style.display = 'block';
+    wrap.scrollIntoView({ behavior:'smooth', block:'start' });
+  };
+
+  window.khKeInsightPublish = async function (id, currentStatus) {
+    const newStatus = currentStatus === 'published' ? 'draft' : 'published';
+    try {
+      const res = await keFetch('?id='+id+'&type=insight', { method:'PATCH', body: JSON.stringify({ status: newStatus }) });
+      if (!res.ok) throw new Error((await res.json()).error || 'Update failed');
+      loadKeInsights(document.getElementById('kh-body'));
+    } catch (e) { alert('Error: ' + e.message); }
+  };
+
+  function keInsightFormHTML(ins) {
+    const CATEGORIES = ['outcome','recommendation','retention','service','client_pattern','intervention','other'];
+    const STATUSES   = ['draft','under_review','published','archived'];
+    const CTAG_OPTS  = Object.entries(CONTENT_TAG_LABELS);
+    const selCat  = ins.category || 'other';
+    const selSt   = ins.status   || 'draft';
+    const selConf = ins.confidence_level || 'emerging';
+    const editId  = ins.id || '';
+    const ctags   = ins.content_tags || [];
+    return `
+<form class="kh-form" onsubmit="khKeInsightSave(event,'${editId}')">
+  <div class="kh-form-row">
+    <label class="kh-label">Title <span class="kh-req">*</span></label>
+    <input class="kh-input" id="khKeInsTitle" type="text" value="${esc(ins.title||'')}" required placeholder="E.g. Grounding practices improve outcomes for energetically overwhelmed clients">
+  </div>
+  <div class="kh-form-row">
+    <label class="kh-label">Description <span class="kh-req">*</span></label>
+    <textarea class="kh-textarea" id="khKeInsDesc" rows="4" required placeholder="Full description of the insight…">${esc(ins.description||'')}</textarea>
+  </div>
+  <div class="kh-form-row kh-form-row--2col">
+    <div>
+      <label class="kh-label">Category</label>
+      <select class="kh-select" id="khKeInsCat">
+        ${CATEGORIES.map(c=>`<option value="${c}"${c===selCat?' selected':''}>${c}</option>`).join('')}
+      </select>
+    </div>
+    <div>
+      <label class="kh-label">Confidence</label>
+      <select class="kh-select" id="khKeInsConf">
+        <option value="emerging"${selConf==='emerging'?' selected':''}>Emerging (3+ sessions)</option>
+        <option value="moderate"${selConf==='moderate'?' selected':''}>Moderate (6+ sessions)</option>
+        <option value="strong"${selConf==='strong'?' selected':''}>Strong (10+ sessions)</option>
+      </select>
+    </div>
+  </div>
+  <div class="kh-form-row">
+    <label class="kh-label">Status</label>
+    <select class="kh-select" id="khKeInsSt">
+      ${STATUSES.map(s=>`<option value="${s}"${s===selSt?' selected':''}>${s}</option>`).join('')}
+    </select>
+  </div>
+  <div class="kh-form-row">
+    <label class="kh-label">Content Tags <span class="kh-hint">(what can this become?)</span></label>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px">
+      ${CTAG_OPTS.map(([val,lbl])=>`<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:#dddaee"><input type="checkbox" name="ke_ctag" value="${val}"${ctags.includes(val)?' checked':''}> ${lbl}</label>`).join('')}
+    </div>
+  </div>
+  <div class="kh-form-row">
+    <label class="kh-label">Practitioner Notes</label>
+    <textarea class="kh-textarea" id="khKeInsNotes" rows="2" placeholder="Optional notes for Daron…">${esc(ins.practitioner_notes||'')}</textarea>
+  </div>
+  <div class="kh-form-actions">
+    <button type="submit" class="kh-btn-primary">${editId?'Save Changes':'Create Insight'}</button>
+    <button type="button" class="kh-btn-cancel" onclick="document.getElementById('khKeInsightFormWrap').style.display='none'">Cancel</button>
+  </div>
+</form>`;
+  }
+
+  window.khKeInsightSave = async function (evt, editId) {
+    evt.preventDefault();
+    const title   = (document.getElementById('khKeInsTitle') ||{}).value || '';
+    const desc    = (document.getElementById('khKeInsDesc')  ||{}).value || '';
+    const cat     = (document.getElementById('khKeInsCat')   ||{}).value || 'other';
+    const conf    = (document.getElementById('khKeInsConf')  ||{}).value || 'emerging';
+    const st      = (document.getElementById('khKeInsSt')    ||{}).value || 'draft';
+    const notes   = (document.getElementById('khKeInsNotes') ||{}).value || '';
+    const ctags   = Array.from(document.querySelectorAll('input[name="ke_ctag"]:checked')).map(cb => cb.value);
+    if (!title.trim() || !desc.trim()) { alert('Title and description are required.'); return; }
+    const body = { type:'insight', title:title.trim(), description:desc.trim(), category:cat, confidence_level:conf, status:st, practitioner_notes:notes||null, content_tags:ctags.length?ctags:null };
+    try {
+      const res = editId
+        ? await keFetch('?id='+editId+'&type=insight', { method:'PATCH', body:JSON.stringify(body) })
+        : await keFetch('', { method:'POST', body:JSON.stringify(body) });
+      if (!res.ok) throw new Error((await res.json()).error || 'Save failed');
+      document.getElementById('khKeInsightFormWrap').style.display = 'none';
+      loadKeInsights(document.getElementById('kh-body'));
+    } catch (e) { alert('Error saving: ' + e.message); }
+  };
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // CASE STUDIES
+  // ══════════════════════════════════════════════════════════════════════════
+  async function loadCaseStudies(body) {
+    try {
+      const res  = await keFetch('?section=case_studies');
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'API error');
+      const studies = data.case_studies || [];
+      body.innerHTML = `
+<div class="kh-ke-wrap">
+  <div class="kh-kb-header">
+    <div class="kh-kb-title-row">
+      <span class="kh-section-title">Case Studies</span>
+      <button class="kh-btn-primary" onclick="khCsNewForm()">+ New Case Study</button>
+    </div>
+    <div style="font-size:12px;color:#dddaee55;margin-top:4px">Generated from session + outcome data. All anonymized by default. Export for training, content, or research.</div>
+  </div>
+  <div id="khCsFormWrap" style="display:none"></div>
+  <div id="khCsList">
+    ${studies.length ? studies.map(cs => keCsCardHTML(cs)).join('') : '<div class="kh-empty">No case studies yet. Generate one from a completed session outcome, or create manually.</div>'}
+  </div>
+</div>`;
+    } catch (e) {
+      body.innerHTML = `<div class="kh-error">Could not load Case Studies: ${esc(e.message)}</div>`;
+    }
+  }
+
+  function keCsCardHTML(cs) {
+    const statusColor = cs.status === 'published' ? '#22c98a' : cs.status === 'under_review' ? '#e8b84b' : '#dddaee44';
+    const catColor    = {improved:'#22c98a',no_change:'#e8b84b',worse:'#ff4455',mixed:'#9b7fe8'}[cs.outcome_category] || '#dddaee44';
+    const ctags       = (cs.content_tags||[]).map(t=>`<span class="kh-tag" style="color:#9b7fe8;border-color:#9b7fe855">${CONTENT_TAG_LABELS[t]||esc(t)}</span>`).join('');
+    const date        = cs.created_at ? new Date(cs.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
+    return `
+<div class="kh-ke-card" id="khCs-${cs.id}">
+  <div class="kh-kb-card-header">
+    <span class="kh-kb-card-title">${esc(cs.title || cs.client_alias || 'Untitled Case Study')}</span>
+    <div class="kh-kb-card-meta">
+      ${cs.service ? `<span class="kh-cat-badge">${esc(cs.service)}</span>` : ''}
+      ${cs.outcome_category ? `<span class="kh-status-badge" style="color:${catColor}">${esc(cs.outcome_category.replace('_',' '))}</span>` : ''}
+      ${cs.improvement_level ? `<span class="kh-status-badge" style="color:#4488ff">Level ${cs.improvement_level}/10</span>` : ''}
+      <span class="kh-status-badge" style="color:${statusColor}">${esc(cs.status)}</span>
+      <span class="kh-card-date">${date}</span>
+    </div>
+  </div>
+  ${cs.problem     ? `<div class="kh-cs-section"><span class="kh-cs-label">Problem:</span> ${esc(cs.problem.slice(0,180))}${cs.problem.length>180?'…':''}</div>` : ''}
+  ${cs.intervention? `<div class="kh-cs-section"><span class="kh-cs-label">Intervention:</span> ${esc(cs.intervention.slice(0,120))}${cs.intervention.length>120?'…':''}</div>` : ''}
+  ${cs.outcome     ? `<div class="kh-cs-section"><span class="kh-cs-label">Outcome:</span> ${esc(cs.outcome.slice(0,120))}${cs.outcome.length>120?'…':''}</div>` : ''}
+  ${ctags ? `<div class="kh-kb-card-tags">${ctags}</div>` : ''}
+  <div class="kh-kb-card-actions">
+    <button class="kh-btn-edit" onclick="khCsEdit(${JSON.stringify(cs).replace(/"/g,'&quot;')})">Edit</button>
+    <button class="kh-btn-edit" onclick="khCsPublish('${cs.id}','${cs.status}')" style="color:#22c98a">${cs.status==='published'?'Unpublish':'Publish'}</button>
+  </div>
+</div>`;
+  }
+
+  window.khCsNewForm = function () {
+    const wrap = document.getElementById('khCsFormWrap');
+    if (!wrap) return;
+    wrap.innerHTML = keCsFormHTML({});
+    wrap.style.display = 'block';
+    wrap.scrollIntoView({ behavior:'smooth', block:'start' });
+  };
+
+  window.khCsEdit = function (cs) {
+    const wrap = document.getElementById('khCsFormWrap');
+    if (!wrap) return;
+    wrap.innerHTML = keCsFormHTML(cs);
+    wrap.style.display = 'block';
+    wrap.scrollIntoView({ behavior:'smooth', block:'start' });
+  };
+
+  window.khCsPublish = async function (id, currentStatus) {
+    const newStatus = currentStatus === 'published' ? 'draft' : 'published';
+    try {
+      const res = await keFetch('?id='+id+'&type=case_study', { method:'PATCH', body:JSON.stringify({ status:newStatus }) });
+      if (!res.ok) throw new Error((await res.json()).error||'Update failed');
+      loadCaseStudies(document.getElementById('kh-body'));
+    } catch (e) { alert('Error: '+e.message); }
+  };
+
+  function keCsFormHTML(cs) {
+    const STATUSES = ['draft','under_review','published','archived'];
+    const CTAG_OPTS = Object.entries(CONTENT_TAG_LABELS);
+    const editId = cs.id || '';
+    const ctags  = cs.content_tags || [];
+    return `
+<form class="kh-form" onsubmit="khCsSave(event,'${editId}')">
+  <div class="kh-form-row kh-form-row--2col">
+    <div>
+      <label class="kh-label">Title</label>
+      <input class="kh-input" id="khCsTitle" type="text" value="${esc(cs.title||'')}" placeholder="Case study title">
+    </div>
+    <div>
+      <label class="kh-label">Client Alias</label>
+      <input class="kh-input" id="khCsAlias" type="text" value="${esc(cs.client_alias||'')}" placeholder="e.g. Client 247">
+    </div>
+  </div>
+  <div class="kh-form-row kh-form-row--2col">
+    <div>
+      <label class="kh-label">Service</label>
+      <input class="kh-input" id="khCsService" type="text" value="${esc(cs.service||'')}" placeholder="e.g. Distance Healing">
+    </div>
+    <div>
+      <label class="kh-label">Outcome Category</label>
+      <select class="kh-select" id="khCsOutcome">
+        <option value="">— Select —</option>
+        ${['improved','no_change','worse','mixed'].map(o=>`<option value="${o}"${cs.outcome_category===o?' selected':''}>${o}</option>`).join('')}
+      </select>
+    </div>
+  </div>
+  <div class="kh-form-row">
+    <label class="kh-label">Problem</label>
+    <textarea class="kh-textarea" id="khCsProblem" rows="3" placeholder="What was the client's presenting issue or energetic concern?">${esc(cs.problem||'')}</textarea>
+  </div>
+  <div class="kh-form-row">
+    <label class="kh-label">Intervention</label>
+    <textarea class="kh-textarea" id="khCsIntervention" rows="3" placeholder="What service, protocol, or approach was used?">${esc(cs.intervention||'')}</textarea>
+  </div>
+  <div class="kh-form-row">
+    <label class="kh-label">Outcome</label>
+    <textarea class="kh-textarea" id="khCsOutcomeText" rows="3" placeholder="What results were observed or reported?">${esc(cs.outcome||'')}</textarea>
+  </div>
+  <div class="kh-form-row">
+    <label class="kh-label">Lessons Learned</label>
+    <textarea class="kh-textarea" id="khCsLessons" rows="2" placeholder="What would you do differently or recommend to other practitioners?">${esc(cs.lessons_learned||'')}</textarea>
+  </div>
+  <div class="kh-form-row kh-form-row--2col">
+    <div>
+      <label class="kh-label">Status</label>
+      <select class="kh-select" id="khCsStatus">
+        ${STATUSES.map(s=>`<option value="${s}"${s===(cs.status||'draft')?' selected':''}>${s}</option>`).join('')}
+      </select>
+    </div>
+    <div>
+      <label class="kh-label">Improvement Level (1–10)</label>
+      <input class="kh-input" id="khCsLevel" type="number" min="1" max="10" value="${cs.improvement_level||''}" placeholder="1–10">
+    </div>
+  </div>
+  <div class="kh-form-row">
+    <label class="kh-label">Content Tags</label>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px">
+      ${CTAG_OPTS.map(([val,lbl])=>`<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:#dddaee"><input type="checkbox" name="cs_ctag" value="${val}"${ctags.includes(val)?' checked':''}> ${lbl}</label>`).join('')}
+    </div>
+  </div>
+  <div class="kh-form-actions">
+    <button type="submit" class="kh-btn-primary">${editId?'Save Changes':'Create Case Study'}</button>
+    <button type="button" class="kh-btn-cancel" onclick="document.getElementById('khCsFormWrap').style.display='none'">Cancel</button>
+  </div>
+</form>`;
+  }
+
+  window.khCsSave = async function (evt, editId) {
+    evt.preventDefault();
+    const ctags = Array.from(document.querySelectorAll('input[name="cs_ctag"]:checked')).map(cb=>cb.value);
+    const level = parseInt(document.getElementById('khCsLevel')?.value||'');
+    const body = {
+      type:             'case_study',
+      title:            document.getElementById('khCsTitle')?.value.trim()       || null,
+      client_alias:     document.getElementById('khCsAlias')?.value.trim()       || null,
+      service:          document.getElementById('khCsService')?.value.trim()     || null,
+      problem:          document.getElementById('khCsProblem')?.value.trim()     || null,
+      intervention:     document.getElementById('khCsIntervention')?.value.trim()|| null,
+      outcome:          document.getElementById('khCsOutcomeText')?.value.trim() || null,
+      lessons_learned:  document.getElementById('khCsLessons')?.value.trim()     || null,
+      outcome_category: document.getElementById('khCsOutcome')?.value            || null,
+      status:           document.getElementById('khCsStatus')?.value             || 'draft',
+      improvement_level: isNaN(level) ? null : level,
+      content_tags:     ctags.length ? ctags : null,
+    };
+    try {
+      const res = editId
+        ? await keFetch('?id='+editId+'&type=case_study', { method:'PATCH', body:JSON.stringify(body) })
+        : await keFetch('', { method:'POST', body:JSON.stringify(body) });
+      if (!res.ok) throw new Error((await res.json()).error||'Save failed');
+      document.getElementById('khCsFormWrap').style.display = 'none';
+      loadCaseStudies(document.getElementById('kh-body'));
+    } catch (e) { alert('Error: '+e.message); }
+  };
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // RECOMMENDATION INTELLIGENCE
+  // ══════════════════════════════════════════════════════════════════════════
+  async function loadRecIntelligence(body) {
+    try {
+      const res  = await keFetch('?section=rec_intelligence');
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error||'API error');
+      const top  = data.topRecommendations || [];
+      const cats = data.byCategory || [];
+      const s    = data.summary    || {};
+
+      function bar(pct, color) {
+        return `<div style="flex:1;height:5px;background:#e8b84b0f;border-radius:1px"><div style="height:5px;width:${Math.max(pct,2)}%;background:${color};border-radius:1px"></div></div>`;
+      }
+
+      body.innerHTML = `
+<div class="kh-ke-wrap">
+  <h2 class="kh-section-title">Recommendation Intelligence</h2>
+  <div style="font-size:13px;color:#dddaee55;margin-bottom:16px">Which recommendations are clients actually adopting and finding helpful? Track every product recommendation to completion.</div>
+
+  <div class="kh-kpi-row" style="margin-bottom:24px">
+    <div class="kh-kpi"><span class="kh-kpi-num">${s.total || 0}</span><span class="kh-kpi-lbl">Total Recs</span></div>
+    <div class="kh-kpi"><span class="kh-kpi-num" style="color:#e8b84b">${esc(s.topProduct||'—')}</span><span class="kh-kpi-lbl">Top Product</span></div>
+    <div class="kh-kpi"><span class="kh-kpi-num" style="color:#9b7fe8">${esc(s.topCategory||'—')}</span><span class="kh-kpi-lbl">Top Category</span></div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;margin-bottom:28px">
+    <div class="kh-dash-card" style="padding:0;overflow:hidden">
+      <div style="padding:14px 16px;font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b88;text-transform:uppercase;border-bottom:1px solid #e8b84b08">Top Recommendations by Helpfulness</div>
+      ${top.slice(0,12).map(r => `
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid #e8b84b08">
+          <div style="flex:1">
+            <div style="font-family:'Cinzel',serif;font-size:12px;color:#f0ecff">${esc(r.name)}</div>
+            <div style="font-size:11px;color:#dddaee55">${esc(r.category||'—')} · ${r.total} recs</div>
+          </div>
+          ${bar(r.helpfulRate,'#22c98a')}
+          <span style="font-family:'Cinzel',serif;font-size:13px;color:#22c98a;width:36px;text-align:right">${r.helpfulRate}%</span>
+        </div>`).join('')}
+    </div>
+    <div class="kh-dash-card" style="padding:0;overflow:hidden">
+      <div style="padding:14px 16px;font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b88;text-transform:uppercase;border-bottom:1px solid #e8b84b08">By Category</div>
+      ${cats.map(c => `
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid #e8b84b08">
+          <div style="flex:1;font-family:'Cinzel',serif;font-size:12px;color:#dddaee">${esc(c.category)}</div>
+          ${bar(c.helpfulRate,'#9b7fe8')}
+          <span style="font-family:'Cinzel',serif;font-size:13px;color:#9b7fe8;width:36px;text-align:right">${c.helpfulRate}%</span>
+        </div>`).join('')}
+    </div>
+  </div>
+</div>`;
+    } catch (e) {
+      body.innerHTML = `<div class="kh-error">Could not load Recommendation Intelligence: ${esc(e.message)}</div>`;
+    }
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // SERVICE INTELLIGENCE
+  // ══════════════════════════════════════════════════════════════════════════
+  async function loadServiceIntelligence(body) {
+    try {
+      const res  = await keFetch('?section=service_intelligence');
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error||'API error');
+      const services = data.services || [];
+      const s        = data.summary  || {};
+
+      const maxSessions = Math.max(1, ...services.map(sv=>sv.totalSessions));
+
+      body.innerHTML = `
+<div class="kh-ke-wrap">
+  <h2 class="kh-section-title">Service Intelligence</h2>
+  <div style="font-size:13px;color:#dddaee55;margin-bottom:16px">How does each service type perform on outcomes, retention, and follow-ups?</div>
+
+  <div class="kh-kpi-row" style="margin-bottom:24px">
+    <div class="kh-kpi"><span class="kh-kpi-num">${s.totalServices || 0}</span><span class="kh-kpi-lbl">Services</span></div>
+    <div class="kh-kpi"><span class="kh-kpi-num" style="color:#22c98a">${esc(s.topByImprovement||'—')}</span><span class="kh-kpi-lbl">Best Outcomes</span></div>
+    <div class="kh-kpi"><span class="kh-kpi-num" style="color:#9b7fe8">${esc(s.topByRetention||'—')}</span><span class="kh-kpi-lbl">Highest Retention</span></div>
+    <div class="kh-kpi"><span class="kh-kpi-num" style="color:#4488ff">${esc(s.topByFollowUp||'—')}</span><span class="kh-kpi-lbl">Most Follow-Ups</span></div>
+  </div>
+
+  <div class="kh-dash-card" style="padding:0;overflow:hidden">
+    <div style="padding:12px 16px;display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 1fr;gap:8px;font-family:'Cinzel',serif;font-size:9px;letter-spacing:.2em;color:#e8b84b88;text-transform:uppercase;border-bottom:1px solid #e8b84b22">
+      <span>Service</span><span style="text-align:center">Sessions</span><span style="text-align:center">Improvement</span><span style="text-align:center">Repeat Rate</span><span style="text-align:center">State Delta</span><span style="text-align:center">Follow-Up</span>
+    </div>
+    ${services.map(sv => {
+      const impColor  = (sv.improvementRate||0) >= 70 ? '#22c98a' : (sv.improvementRate||0) >= 40 ? '#e8b84b' : '#dddaee55';
+      const retColor  = (sv.repeatRate||0)      >= 40 ? '#9b7fe8' : '#dddaee55';
+      const deltaColor = (sv.avgStateDelta||0)  >  0  ? '#22c98a' : (sv.avgStateDelta||0) < 0 ? '#ff4455' : '#dddaee44';
+      return `<div style="padding:12px 16px;display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 1fr;gap:8px;align-items:center;border-bottom:1px solid #e8b84b08">
+        <span style="font-family:'Cinzel',serif;font-size:12px;color:#f0ecff">${esc(sv.service)}</span>
+        <span style="text-align:center;font-family:'Cinzel',serif;font-size:13px;color:#dddaee">${sv.totalSessions}</span>
+        <span style="text-align:center;font-family:'Cinzel',serif;font-size:13px;color:${impColor}">${sv.improvementRate != null ? sv.improvementRate+'%' : '—'}</span>
+        <span style="text-align:center;font-family:'Cinzel',serif;font-size:13px;color:${retColor}">${sv.repeatRate}%</span>
+        <span style="text-align:center;font-family:'Cinzel',serif;font-size:13px;color:${deltaColor}">${sv.avgStateDelta != null ? (sv.avgStateDelta>0?'+':'')+sv.avgStateDelta : '—'}</span>
+        <span style="text-align:center;font-family:'Cinzel',serif;font-size:13px;color:#4488ff">${sv.followUpRate != null ? sv.followUpRate+'%' : '—'}</span>
+      </div>`;
+    }).join('')}
+    ${!services.length ? '<div style="padding:24px;text-align:center;color:#dddaee44;font-style:italic">No session data yet.</div>' : ''}
+  </div>
+</div>`;
+    } catch (e) {
+      body.innerHTML = `<div class="kh-error">Could not load Service Intelligence: ${esc(e.message)}</div>`;
+    }
   }
 
 })();
