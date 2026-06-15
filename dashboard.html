@@ -3875,8 +3875,8 @@ async function loadOnboardingQueue() {
   var url = '/.netlify/functions/onboarding' + (status ? '?status=' + encodeURIComponent(status) : '');
 
   try {
-    var key = localStorage.getItem('rea_admin_key') || '';
-    var r = await fetch(url, { headers: { 'x-admin-key': key } });
+    var key = sessionStorage.getItem('rea_api_token') || '';
+    var r = await fetch(url, { headers: { 'X-Dashboard-Token': key } });
     var data = await r.json();
     var intakes = data.intakes || [];
     if (!intakes.length) {
@@ -3925,10 +3925,10 @@ async function openObReview(id) {
   panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
   if (nameEl) nameEl.textContent = 'Loading…';
 
-  var key = localStorage.getItem('rea_admin_key') || '';
+  var key = sessionStorage.getItem('rea_api_token') || '';
   var data;
   try {
-    var r = await fetch('/.netlify/functions/onboarding?id=' + id, { headers: { 'x-admin-key': key } });
+    var r = await fetch('/.netlify/functions/onboarding?id=' + id, { headers: { 'X-Dashboard-Token': key } });
     data = await r.json();
   } catch(e) { if (nameEl) nameEl.textContent = 'Error loading intake.'; return; }
 
@@ -3992,11 +3992,17 @@ function closeObReview() {
 
 async function markObReviewed() {
   if (!_obCurrentIntake) return;
+  var hasContent = _obCurrentIntake.summary ||
+    (_obCurrentIntake.responses && Object.values(_obCurrentIntake.responses).some(Boolean));
+  if (!hasContent) {
+    alert('This intake has no questionnaire responses or summary yet. It cannot be marked reviewed until content exists to review.');
+    return;
+  }
   var notes = (document.getElementById('obReviewNotes') || {}).value || '';
-  var key = localStorage.getItem('rea_admin_key') || '';
+  var key = sessionStorage.getItem('rea_api_token') || '';
   await fetch('/.netlify/functions/onboarding?id=' + _obCurrentIntake.id, {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json', 'x-admin-key': key },
+    headers: { 'Content-Type': 'application/json', 'X-Dashboard-Token': key },
     body: JSON.stringify({ intake_status: 'reviewed', review_notes: notes }),
   });
   closeObReview();
@@ -4006,10 +4012,10 @@ async function markObReviewed() {
 async function markObReadyForSession() {
   if (!_obCurrentIntake) return;
   var notes = (document.getElementById('obReviewNotes') || {}).value || '';
-  var key = localStorage.getItem('rea_admin_key') || '';
+  var key = sessionStorage.getItem('rea_api_token') || '';
   await fetch('/.netlify/functions/onboarding?id=' + _obCurrentIntake.id, {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json', 'x-admin-key': key },
+    headers: { 'Content-Type': 'application/json', 'X-Dashboard-Token': key },
     body: JSON.stringify({ intake_status: 'ready_for_session', review_notes: notes }),
   });
   closeObReview();

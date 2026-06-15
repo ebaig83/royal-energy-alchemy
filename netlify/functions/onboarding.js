@@ -14,9 +14,7 @@ const RESPONSE_KEYS = [
   'stressors',
   'spiritual_concerns',
   'prior_healing_experience',
-  'expectations',
   'focus_areas',
-  'life_circumstances',
   'additional_notes',
 ];
 

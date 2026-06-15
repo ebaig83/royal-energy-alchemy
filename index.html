@@ -4061,6 +4061,11 @@ function handleBookingSubmit(e){
       if(btn){btn.textContent='Book & Pay →';btn.disabled=false;}
       return false;
     }
+    if(_obMethod==='ai_call'){
+      alert('The AI Intake Call feature is coming soon. Please select "Written Questionnaire" to complete your intake now.');
+      if(btn){btn.textContent='Book & Pay →';btn.disabled=false;}
+      return false;
+    }
     var obPayload={
       client_name:     (fname+' '+lname).trim(),
       client_email:    email,
@@ -4086,9 +4091,8 @@ function handleBookingSubmit(e){
         showOnboardingConfirmation(_obMethod);
       }
     }).catch(function(){
-      // Still show confirmation on network error
-      markSlotsBooked(window1,window2);
-      showOnboardingConfirmation(_obMethod);
+      if(btn){btn.textContent='Book & Pay →';btn.disabled=false;}
+      alert('There was a problem submitting your request. Please check your connection and try again.');
     });
     return false;
   }
@@ -4165,6 +4169,10 @@ function showOnboardingConfirmation(method){
   conf.innerHTML='<div style="font-size:26px;margin-bottom:10px">✦</div>'+
     '<div style="font-family:Cinzel,serif;font-size:13px;letter-spacing:.25em;color:#e8b84b;margin-bottom:10px">ONBOARDING REQUEST RECEIVED</div>'+
     '<p style="color:#d0cce8;font-size:16px;margin:8px 0">'+msg+'</p>'+
+    '<div style="margin:14px auto;max-width:460px;padding:14px 18px;border:1px solid #e8b84b44;background:#e8b84b08;border-radius:8px;text-align:left">'+
+      '<div style="font-family:Cinzel,serif;font-size:10px;letter-spacing:.25em;color:#e8b84b;margin-bottom:6px">PAYMENT</div>'+
+      '<p style="font-family:\'EB Garamond\',serif;font-size:15px;color:#d0cce8;margin:0;line-height:1.5">Payment is due before your session. Daron will send payment details when confirming your appointment. You can also pay early via Cash App, PayPal, Venmo, or Zelle.</p>'+
+    '</div>'+
     '<p style="color:#aaa8cc;font-size:14px;margin-top:6px">You will receive a follow-up by email or phone with next steps.</p>';
   form.parentNode.insertBefore(conf,form.nextSibling);
   form.style.display='none';
