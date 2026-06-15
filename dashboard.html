@@ -1342,6 +1342,160 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
   padding: 18px 14px;
   text-align: center;
 }
+
+/* ── SPRINT 12B: READABILITY FIXES ──────────────────────────── */
+.ck-panel-title {
+  font-size: 13px !important;
+  letter-spacing: .3em !important;
+}
+.aq-panel-title { font-size: 14px !important; letter-spacing: .28em !important; }
+.aq-label       { font-size: 12px !important; color: #dddaeeaa !important; }
+.aq-desc        { font-size: 14px !important; color: #dddaee88 !important; line-height: 1.5 !important; }
+.aq-count       { font-size: 44px !important; }
+.biz-lbl        { font-size: 13px !important; }
+.biz-val        { font-size: 36px !important; }
+.briefing-lbl   { font-size: 13px !important; letter-spacing: .22em !important; color: #e8b84bcc !important; }
+.briefing-val   { font-size: 17px !important; }
+.flag-name      { font-size: 16px !important; }
+.flag-reason    { font-size: 15px !important; color: #b0a8d8 !important; line-height: 1.5 !important; }
+.flag-icon      { font-size: 16px !important; }
+.home-panel-title { font-size: 14px !important; letter-spacing: .3em !important; }
+.sched-client   { font-size: 18px !important; }
+.sched-time     { font-size: 14px !important; }
+.sched-type     { font-size: 12px !important; }
+.activity-tbl td { font-size: 16px !important; padding: 12px 14px 12px 0 !important; }
+.activity-tbl th { font-size: 12px !important; }
+
+/* ── SPRINT 12B: EXECUTIVE ZONE HEADERS ─────────────────────── */
+.exec-zone {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 28px 0 16px;
+}
+.exec-zone:first-child { margin-top: 0; }
+.exec-zone-label {
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  letter-spacing: .55em;
+  text-transform: uppercase;
+  font-weight: 700;
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border-radius: 2px;
+}
+.exec-zone-line {
+  flex: 1;
+  height: 1px;
+}
+.exec-zone--today  .exec-zone-label { color: #22c98a; background: rgba(34,201,138,.08); border: 1px solid rgba(34,201,138,.25); }
+.exec-zone--today  .exec-zone-line  { background: rgba(34,201,138,.15); }
+.exec-zone--actions .exec-zone-label { color: #e8b84b; background: rgba(232,184,75,.08); border: 1px solid rgba(232,184,75,.25); }
+.exec-zone--actions .exec-zone-line  { background: rgba(232,184,75,.12); }
+.exec-zone--insights .exec-zone-label { color: #b09ef8; background: rgba(176,158,248,.08); border: 1px solid rgba(176,158,248,.22); }
+.exec-zone--insights .exec-zone-line  { background: rgba(176,158,248,.1); }
+
+/* ── SPRINT 12B: VISUAL PRIORITY SYSTEM ────────────────────── */
+.pri-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.pri-dot--critical  { background: #ee4444; box-shadow: 0 0 6px #ee444488; }
+.pri-dot--warn      { background: #ee9944; box-shadow: 0 0 5px #ee994466; }
+.pri-dot--watch     { background: #e8c84b; box-shadow: 0 0 4px #e8c84b44; }
+.pri-dot--healthy   { background: #22c98a; box-shadow: 0 0 4px #22c98a44; }
+.pri-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 2px;
+}
+.pri-badge--critical { color: #ee7070; background: rgba(238,68,68,.12); border: 1px solid rgba(238,68,68,.3); }
+.pri-badge--warn     { color: #ee9944; background: rgba(238,153,68,.1); border: 1px solid rgba(238,153,68,.28); }
+.pri-badge--watch    { color: #e8c84b; background: rgba(232,200,75,.08); border: 1px solid rgba(232,200,75,.22); }
+.pri-badge--healthy  { color: #22c98a; background: rgba(34,201,138,.1); border: 1px solid rgba(34,201,138,.28); }
+.flag-item { gap: 12px !important; padding: 13px 0 !important; }
+.flag-item .pri-badge { margin-top: 5px; }
+
+/* ── SPRINT 12B: RESEARCH SUMMARY CARDS ────────────────────── */
+.rsumm-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 32px;
+}
+.rsumm-card {
+  background: #08041a;
+  border: 1px solid rgba(232,184,75,.14);
+  border-radius: 3px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.rsumm-label {
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  letter-spacing: .38em;
+  text-transform: uppercase;
+  color: rgba(232,184,75,.55);
+}
+.rsumm-value {
+  font-family: 'Cinzel', serif;
+  font-size: 17px;
+  color: #f0ecff;
+  line-height: 1.35;
+}
+.rsumm-sub {
+  font-size: 12px;
+  color: rgba(221,218,238,.5);
+  font-style: italic;
+  line-height: 1.4;
+}
+.rsumm-card.rsumm--risk   { border-color: rgba(238,68,68,.22); background: rgba(238,68,68,.04); }
+.rsumm-card.rsumm--oppty  { border-color: rgba(34,201,138,.2); background: rgba(34,201,138,.04); }
+.rsumm-card.rsumm--top    { border-color: rgba(176,158,248,.2); background: rgba(176,158,248,.04); }
+.rsumm-card.rsumm--service { border-color: rgba(232,184,75,.25); }
+
+/* ── SPRINT 12B: TODAY ZONE LAYOUT ──────────────────────────── */
+.today-zone-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 8px;
+}
+.insights-zone-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 8px;
+}
+.insights-zone-full {
+  margin-bottom: 14px;
+}
+
+/* ── SPRINT 12B: MOBILE ─────────────────────────────────────── */
+@media (max-width: 760px) {
+  .today-zone-grid,
+  .insights-zone-grid { grid-template-columns: 1fr; }
+  .ck-action-queue { grid-template-columns: 1fr 1fr !important; }
+  .tab-bar { overflow-x: auto; flex-wrap: nowrap !important; -webkit-overflow-scrolling: touch; }
+  .tab { font-size: 13px !important; padding: 14px 18px !important; white-space: nowrap; }
+  .stats { grid-template-columns: repeat(2, 1fr) !important; }
+  .rsumm-grid { grid-template-columns: 1fr 1fr; }
+  .wrap { padding: 24px 16px; }
+}
+@media (max-width: 480px) {
+  .ck-action-queue { grid-template-columns: 1fr !important; }
+  .rsumm-grid { grid-template-columns: 1fr; }
+  .header { flex-direction: column; align-items: flex-start; gap: 14px; }
+  .nav-links { flex-wrap: wrap; }
+  .stat-val { font-size: 36px !important; }
+  .biz-val  { font-size: 28px !important; }
+  .aq-count { font-size: 36px !important; }
+}
 </style>
 
 <!-- ── FINANCIAL CENTER STYLES ─────────────────────────────── -->
@@ -2896,9 +3050,20 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
       <button class="tab ck-nav-item" onclick="showTab('operations')">
         <span class="nav-icon">⚙</span><span class="nav-text">Operations</span>
       </button>
+
+      <div class="ck-nav-divider"></div>
+      <div class="ck-nav-section">Documentation</div>
+      <button class="tab ck-nav-item" onclick="showTab('docs')">
+        <span class="nav-icon">📘</span><span class="nav-text">Handoff Center</span>
+      </button>
     </nav>
 
     <div class="ck-sidebar-footer">
+      <div style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.4em;color:#6660a055;text-transform:uppercase;padding:4px 10px 6px;margin-bottom:2px">Other Centers</div>
+      <a class="ck-sidebar-link" href="/research.html" target="_blank">↗ Research Center</a>
+      <a class="ck-sidebar-link" href="/knowledge.html" target="_blank">↗ Knowledge Center</a>
+      <a class="ck-sidebar-link" href="/reports.html" target="_blank">↗ Reports Center</a>
+      <div style="height:1px;background:#e8b84b12;margin:6px 10px 6px"></div>
       <a class="ck-sidebar-link" href="/session-log">↗ Log Session</a>
       <a class="ck-sidebar-link" href="/waiver-esign">↗ Waiver</a>
       <a class="ck-sidebar-link" href="/">↗ Live Site</a>
@@ -2975,67 +3140,71 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
   <!-- HOME TAB -->
   <div class="tab-content active" id="tab-home" style="display:block">
 
-    <!-- Command Center: Action Queue -->
-    <div style="margin-bottom:0">
-      <div class="aq-panel-title">⚡ Action Queue</div>
-      <div class="ck-action-queue" id="homeActionQueue">
-        <div class="aq-card aq-warning">
-          <div class="aq-label">Payments</div>
-          <div class="aq-count" id="aqPayments">—</div>
-          <div class="aq-desc">Awaiting payment confirmation</div>
-          <button class="aq-btn" onclick="showTab('booking');setTimeout(function(){setIntakeFilter('awaiting_payment',null)},200)">Resolve →</button>
-        </div>
-        <div class="aq-card aq-warning">
-          <div class="aq-label">Intake Queue</div>
-          <div class="aq-count" id="aqIntake">—</div>
-          <div class="aq-desc">Forms pending review</div>
-          <button class="aq-btn" onclick="showTab('booking');setTimeout(function(){setIntakeFilter('intake_pending',null)},200)">Review →</button>
-        </div>
-        <div class="aq-card aq-info">
-          <div class="aq-label">Pending Review</div>
-          <div class="aq-count" id="aqReview">—</div>
-          <div class="aq-desc">Intakes awaiting practitioner review</div>
-          <button class="aq-btn" onclick="showTab('booking');setTimeout(function(){setIntakeFilter('review_pending',null)},200)">Review →</button>
-        </div>
-        <div class="aq-card aq-ready">
-          <div class="aq-label">Ready to Schedule</div>
-          <div class="aq-count" id="aqReady">—</div>
-          <div class="aq-desc">Cleared — awaiting appointment</div>
-          <button class="aq-btn" onclick="showTab('booking');setTimeout(function(){setIntakeFilter('ready',null)},200)">Schedule →</button>
-        </div>
-        <div class="aq-card aq-urgent">
-          <div class="aq-label">Overdue Clients</div>
-          <div class="aq-count" id="aqOverdue">—</div>
-          <div class="aq-desc">60+ days since last session</div>
-          <button class="aq-btn" onclick="showTab('followups')">Follow Up →</button>
-        </div>
-      </div>
+    <!-- ══ ZONE: TODAY ═══════════════════════════════════════════ -->
+    <div class="exec-zone exec-zone--today">
+      <span class="exec-zone-label">Today</span>
+      <div class="exec-zone-line"></div>
     </div>
-
-    <!-- Cockpit grid: Schedule | Briefing | Urgent (right col spans 2 rows) -->
-    <div class="ck-home-grid">
-
-      <div class="ck-panel ck-panel--schedule">
+    <div class="today-zone-grid">
+      <div class="ck-panel">
         <div class="ck-panel-title">📅 Today's Schedule</div>
         <div id="homeSched"><div class="hshimmer"></div><div class="hshimmer"></div></div>
       </div>
-
-      <div class="ck-panel ck-panel--briefing">
-        <div class="ck-panel-title">✦ AI Daily Briefing</div>
-        <div id="homeBriefing"><div class="hshimmer"></div><div class="hshimmer"></div><div class="hshimmer"></div></div>
-      </div>
-
-      <div class="ck-panel ck-panel--urgent">
+      <div class="ck-panel">
         <div class="ck-panel-title">⚠ Urgent Attention</div>
         <div id="homeFlags"><div class="hshimmer"></div><div class="hshimmer"></div></div>
       </div>
+    </div>
 
-      <div class="ck-panel ck-panel--activity">
-        <div class="ck-panel-title">◎ Recent Activity</div>
-        <div id="homeActivity"><div class="hshimmer"></div><div class="hshimmer"></div><div class="hshimmer"></div></div>
+    <!-- ══ ZONE: ACTIONS ═════════════════════════════════════════ -->
+    <div class="exec-zone exec-zone--actions">
+      <span class="exec-zone-label">Actions</span>
+      <div class="exec-zone-line"></div>
+    </div>
+    <div class="ck-action-queue" id="homeActionQueue">
+      <div class="aq-card aq-warning">
+        <div class="aq-label">💳 Payments</div>
+        <div class="aq-count" id="aqPayments">—</div>
+        <div class="aq-desc">Awaiting payment confirmation</div>
+        <button class="aq-btn" onclick="showTab('booking');setTimeout(function(){setIntakeFilter('awaiting_payment',null)},200)">Resolve →</button>
       </div>
+      <div class="aq-card aq-warning">
+        <div class="aq-label">📋 Intake Queue</div>
+        <div class="aq-count" id="aqIntake">—</div>
+        <div class="aq-desc">Forms pending review</div>
+        <button class="aq-btn" onclick="showTab('booking');setTimeout(function(){setIntakeFilter('intake_pending',null)},200)">Review →</button>
+      </div>
+      <div class="aq-card aq-info">
+        <div class="aq-label">🔍 Pending Review</div>
+        <div class="aq-count" id="aqReview">—</div>
+        <div class="aq-desc">Intakes awaiting practitioner review</div>
+        <button class="aq-btn" onclick="showTab('booking');setTimeout(function(){setIntakeFilter('review_pending',null)},200)">Review →</button>
+      </div>
+      <div class="aq-card aq-ready">
+        <div class="aq-label">✅ Ready to Schedule</div>
+        <div class="aq-count" id="aqReady">—</div>
+        <div class="aq-desc">Cleared — awaiting appointment</div>
+        <button class="aq-btn" onclick="showTab('booking');setTimeout(function(){setIntakeFilter('ready',null)},200)">Schedule →</button>
+      </div>
+      <div class="aq-card aq-urgent">
+        <div class="aq-label">🔴 Overdue Clients</div>
+        <div class="aq-count" id="aqOverdue">—</div>
+        <div class="aq-desc">60+ days since last session</div>
+        <button class="aq-btn" onclick="showTab('followups')">Follow Up →</button>
+      </div>
+    </div>
 
-      <div class="ck-panel ck-panel--metrics">
+    <!-- ══ ZONE: INSIGHTS ════════════════════════════════════════ -->
+    <div class="exec-zone exec-zone--insights">
+      <span class="exec-zone-label">Insights</span>
+      <div class="exec-zone-line"></div>
+    </div>
+    <div class="insights-zone-grid">
+      <div class="ck-panel">
+        <div class="ck-panel-title">✦ AI Daily Briefing</div>
+        <div id="homeBriefing"><div class="hshimmer"></div><div class="hshimmer"></div><div class="hshimmer"></div></div>
+      </div>
+      <div class="ck-panel">
         <div class="ck-panel-title">⬡ Business Metrics</div>
         <div class="biz-grid">
           <div class="biz-metric"><span class="biz-val" id="statRevenue">$0</span><span class="biz-lbl">Total Revenue</span></div>
@@ -3050,8 +3219,13 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
           <div class="biz-metric"><span class="biz-val" id="statCheckins">0</span><span class="biz-lbl">Check-Ins</span></div>
         </div>
       </div>
-
-    </div><!-- /ck-home-grid -->
+    </div>
+    <div class="insights-zone-full">
+      <div class="ck-panel">
+        <div class="ck-panel-title">◎ Recent Client Activity</div>
+        <div id="homeActivity"><div class="hshimmer"></div><div class="hshimmer"></div><div class="hshimmer"></div></div>
+      </div>
+    </div>
 
   </div>
 
@@ -3916,6 +4090,13 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
 
   </div><!-- /tab-operations -->
 
+  <!-- DOCUMENTATION / HANDOFF CENTER TAB -->
+  <div class="tab-content" id="tab-docs">
+    <div id="docs-wrap" style="padding:32px 28px 48px;max-width:1200px;margin:0 auto">
+      <div style="padding:36px;text-align:center;font-family:'Cinzel',serif;font-size:12px;letter-spacing:.3em;color:#e8b84b44">LOADING…</div>
+    </div>
+  </div>
+
     </div><!-- /ck-content -->
 
     <!-- ── Quick Actions bar ─────────────────────────────── -->
@@ -4088,6 +4269,7 @@ function showTab(name) {
   if (name === 'lp')             { try { lpInit(); } catch(e){ console.error('lpInit', e); } }
   if (name === 'financial')      { try { fcInit(); } catch(e){ console.error('fcInit', e); } }
   if (name === 'communications') { try { cmInit(); } catch(e){ console.error('cmInit', e); } }
+  if (name === 'docs')          { try { docsInit(); } catch(e){ console.error('docsInit', e); } }
 }
 
 /* ── ONBOARDING QUEUE ─────────────────────────────────────────────────── */
@@ -4714,7 +4896,71 @@ function renderAnalytics() {
       <div style="font-family:'Cinzel',serif;font-size:26px;color:${f.color};line-height:1">${f.val}</div>
     </div>`).join('');
 
+  // ── BUILD RESEARCH SUMMARY CARDS ────────────────────────────
+  const topTheme = themeCounts[0]?.label || '—';
+  const secondTheme = themeCounts[1]?.label || '—';
+  const thirdTheme = themeCounts[2]?.label || '—';
+  const cancelRateNum = c.sessCount ? Math.round((s.filter(x=>x.status==='cancelled'||x.status==='no_show').length/c.sessCount)*100) : 0;
+  const biggestRisk = cancelRateNum > 20 ? `${cancelRateNum}% cancellation/no-show rate` :
+                      repeatRate < 40 ? `Low repeat rate (${repeatRate}%)` :
+                      followDue > 3 ? `${followDue} clients need follow-up` :
+                      'No critical risk detected';
+  const biggestOppty = repeatRate > 60 ? 'Strong retention — expand package offerings' :
+                       themeCounts.length > 0 ? `High demand for ${topTheme} — consider group sessions` :
+                       'Add session notes to unlock trend intelligence';
+  const topService = (() => {
+    const svcMap = {};
+    s.forEach(x => { const sv = x.service||x.service_type||'General'; svcMap[sv]=(svcMap[sv]||0)+1; });
+    const top = Object.entries(svcMap).sort((a,b)=>b[1]-a[1])[0];
+    return top ? `${top[0]} (${top[1]})` : '—';
+  })();
+  const topRec = (() => {
+    const recMap = {};
+    s.forEach(x => (x.recommendations||[]).forEach(r => { const n=r.product_name||r.name||''; if(n) recMap[n]=(recMap[n]||0)+1; }));
+    const top = Object.entries(recMap).sort((a,b)=>b[1]-a[1])[0];
+    return top ? top[0] : '—';
+  })();
+
+  const riskClass    = biggestRisk.includes('No critical') ? 'rsumm--oppty' : 'rsumm--risk';
+  const riskPri      = biggestRisk.includes('No critical') ? '🟢' : '🔴';
+
   el.innerHTML = `
+    <!-- ── EXECUTIVE SUMMARY ─────────────────────── -->
+    <div class="section-title" style="margin-bottom:10px">Intelligence Summary</div>
+    <div style="font-size:13px;color:#dddaee55;font-style:italic;margin-bottom:18px">Five-second overview — what matters right now.</div>
+    <div class="rsumm-grid" style="margin-bottom:36px">
+      <div class="rsumm-card rsumm--top">
+        <div class="rsumm-label">Top Finding #1</div>
+        <div class="rsumm-value">${topTheme}</div>
+        <div class="rsumm-sub">Most common session theme${themeCounts[0] ? ' · ' + themeCounts[0].cnt + ' sessions' : ''}</div>
+      </div>
+      <div class="rsumm-card rsumm--top">
+        <div class="rsumm-label">Top Finding #2 &amp; #3</div>
+        <div class="rsumm-value">${secondTheme}</div>
+        <div class="rsumm-sub">${thirdTheme !== '—' ? 'Also trending: ' + thirdTheme : 'Add session notes to surface more trends'}</div>
+      </div>
+      <div class="rsumm-card rsumm--service">
+        <div class="rsumm-label">Top Service</div>
+        <div class="rsumm-value">${topService}</div>
+        <div class="rsumm-sub">Most booked service type</div>
+      </div>
+      <div class="rsumm-card rsumm--service">
+        <div class="rsumm-label">Top Recommendation</div>
+        <div class="rsumm-value">${topRec}</div>
+        <div class="rsumm-sub">Most frequently suggested to clients</div>
+      </div>
+      <div class="rsumm-card ${riskClass}">
+        <div class="rsumm-label">${riskPri} Biggest Risk</div>
+        <div class="rsumm-value" style="${riskClass==='rsumm--risk'?'color:#ee8888':'color:#22c98a'}">${biggestRisk}</div>
+        <div class="rsumm-sub">Requires monitoring or action</div>
+      </div>
+      <div class="rsumm-card rsumm--oppty">
+        <div class="rsumm-label">🟢 Biggest Opportunity</div>
+        <div class="rsumm-value" style="color:#22c98a">${biggestOppty}</div>
+        <div class="rsumm-sub">Based on current session patterns</div>
+      </div>
+    </div>
+
     <!-- ── PRACTITIONER INTELLIGENCE ─────────────── -->
     <div class="section-title">Practitioner Intelligence</div>
     <div style="font-size:13px;color:#dddaee55;font-style:italic;margin-bottom:12px">Server-side metrics computed from your live database. Updates each time you open this tab.</div>
@@ -4885,15 +5131,27 @@ async function loadAnalyticsIntelligence() {
     const tok = sessionStorage.getItem('rea_api_token') || '';
     const headers = { 'X-Dashboard-Token': tok };
 
-    const [retRes, recRes, outRes] = await Promise.all([
-      fetch('/.netlify/functions/analytics?section=retention',       { headers }),
-      fetch('/.netlify/functions/analytics?section=recommendations', { headers }),
-      fetch('/.netlify/functions/analytics?section=outcomes',        { headers }),
-    ]);
+    // ── Serve from cache first (5-min TTL), refresh in background ──
+    const INTEL_CACHE_KEY = 'rea_analytics_intel_cache';
+    const INTEL_TTL = 5 * 60 * 1000;
+    let cachedIntel = null;
+    try { cachedIntel = JSON.parse(localStorage.getItem(INTEL_CACHE_KEY) || 'null'); } catch(e) {}
+    const useCache = cachedIntel && cachedIntel.ts && (Date.now() - cachedIntel.ts) < INTEL_TTL;
 
-    const ret = retRes.ok  ? await retRes.json()  : null;
-    const rec = recRes.ok  ? await recRes.json()  : null;
-    const out = outRes.ok  ? await outRes.json()  : null;
+    let ret, rec, out;
+    if (useCache) {
+      ret = cachedIntel.ret; rec = cachedIntel.rec; out = cachedIntel.out;
+    } else {
+      const [retRes, recRes, outRes] = await Promise.all([
+        fetch('/.netlify/functions/analytics?section=retention',       { headers }),
+        fetch('/.netlify/functions/analytics?section=recommendations', { headers }),
+        fetch('/.netlify/functions/analytics?section=outcomes',        { headers }),
+      ]);
+      ret = retRes.ok ? await retRes.json() : null;
+      rec = recRes.ok ? await recRes.json() : null;
+      out = outRes.ok ? await outRes.json() : null;
+      try { localStorage.setItem(INTEL_CACHE_KEY, JSON.stringify({ ts: Date.now(), ret, rec, out })); } catch(e) {}
+    }
 
     function isInsufficient(data) { return data && data.status === 'insufficient_data'; }
     function insufficientSub(data, noun) {
@@ -8871,18 +9129,26 @@ function renderHomeDashboard() {
       if (aqOvEl) aqOvEl.textContent = stale.length;
 
       if (!stale.length) {
-        flagsEl.innerHTML = '<p class="home-ok">✓ No overdue clients detected.</p>';
+        flagsEl.innerHTML = '<p class="home-ok"><span class="pri-badge pri-badge--healthy">🟢 All Clear</span> No overdue clients detected.</p>';
       } else {
         flagsEl.innerHTML = stale.map(function(c) {
           var days = c.last
             ? Math.floor((Date.now() - new Date(c.last).getTime()) / 86400000)
             : null;
-          var icon   = !days || days > 90 ? '🔴' : '🟡';
+          var badgeClass, badgeText;
+          if (!days || days > 120) {
+            badgeClass = 'pri-badge--critical'; badgeText = '🔴 Critical';
+          } else if (days > 90) {
+            badgeClass = 'pri-badge--warn'; badgeText = '🟠 Needs Attention';
+          } else {
+            badgeClass = 'pri-badge--watch'; badgeText = '🟡 Monitor';
+          }
           var reason = days ? days + ' days since last session' : 'No session on record';
           return '<div class="flag-item">' +
-            '<span class="flag-icon">' + icon + '</span>' +
-            '<div><div class="flag-name">' + c.name + '</div>' +
-            '<div class="flag-reason">' + reason + '</div></div></div>';
+            '<div style="flex:1"><div class="flag-name">' + c.name + '</div>' +
+            '<div class="flag-reason">' + reason + '</div>' +
+            '<span class="pri-badge ' + badgeClass + '" style="margin-top:5px;display:inline-flex">' + badgeText + '</span>' +
+            '</div></div>';
         }).join('');
       }
     } catch(e) {
@@ -8916,11 +9182,42 @@ function _fetchHomeBriefing() {
     if (briefEl) briefEl.innerHTML = '<p class="home-empty">Unlock dashboard to load briefing.</p>';
     return;
   }
+
+  // ── Cache: serve stale briefing instantly, refresh in background ──
+  var CACHE_KEY = 'rea_briefing_cache';
+  var CACHE_TTL = 15 * 60 * 1000; // 15 minutes
+  try {
+    var cached = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
+    if (cached && cached.ts && (Date.now() - cached.ts) < CACHE_TTL && cached.data) {
+      _applyBriefingData(cached.data, briefEl);
+      // Still refresh in background but don't show shimmer
+      fetch('/.netlify/functions/daily-briefing', { headers: { 'X-Dashboard-Token': token } })
+        .then(function(r) { return r.ok ? r.json() : null; })
+        .then(function(data) {
+          if (!data) return;
+          localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data: data }));
+          _applyBriefingData(data, document.getElementById('homeBriefing'));
+        }).catch(function(){});
+      return;
+    }
+  } catch(e) {}
+
   fetch('/.netlify/functions/daily-briefing', {
     headers: { 'X-Dashboard-Token': token }
   })
   .then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
   .then(function(data) {
+    try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data: data })); } catch(e) {}
+    _applyBriefingData(data, briefEl);
+  })
+  .catch(function(e) {
+    if (briefEl) briefEl.innerHTML = '<p class="home-empty">Briefing unavailable.</p>';
+  });
+}
+
+function _applyBriefingData(data, briefEl) {
+  if (!data) return;
+  {
     var b = data.briefing || {};
     if (!briefEl) return;
 
@@ -8993,7 +9290,7 @@ function _fetchHomeBriefing() {
     if (unpaidCount > 0)    rows.push({ lbl: 'Unpaid Sessions',       val: unpaidCount });
 
     if (!rows.length) {
-      briefEl.innerHTML = '<p class="home-ok">✓ All clear — no urgent items for today.</p>';
+      briefEl.innerHTML = '<p class="home-ok"><span class="pri-badge pri-badge--healthy">🟢 All Clear</span> No urgent items for today.</p>';
     } else {
       briefEl.innerHTML = rows.map(function(r) {
         return '<div class="briefing-row">' +
@@ -9002,30 +9299,30 @@ function _fetchHomeBriefing() {
         '</div>';
       }).join('');
     }
-  })
-  .catch(function() {
-    // Briefing unavailable — show computed summary from REA_DATA
-    if (!briefEl) return;
-    try {
-      var lines = [];
-      if (typeof REA_DATA !== 'undefined' && REA_DATA.computed) {
-        var c = REA_DATA.computed;
-        lines.push({ lbl: 'Total Revenue',    val: '$' + (c.revenue || 0).toLocaleString() });
-        lines.push({ lbl: 'Active Clients',   val: c.totalClients || '—' });
-        lines.push({ lbl: 'Total Sessions',   val: c.sessCount || '—' });
-        lines.push({ lbl: 'Repeat Rate',      val: (c.repeatRate || '—') + '%' });
-      }
-      briefEl.innerHTML = lines.length
-        ? '<p class="briefing-lbl" style="margin-bottom:14px">Live briefing unavailable · local data shown</p>' +
-          lines.map(function(r) {
-            return '<div class="briefing-row"><div class="briefing-lbl">' + r.lbl + '</div>' +
-                   '<div class="briefing-val">' + r.val + '</div></div>';
-          }).join('')
-        : '<p class="home-empty">Briefing unavailable — check API configuration.</p>';
-    } catch(e) {
-      briefEl.innerHTML = '<p class="home-empty">Briefing unavailable.</p>';
+  } // end _applyBriefingData scope
+}
+
+function _briefingFallback(briefEl) {
+  if (!briefEl) return;
+  try {
+    var lines = [];
+    if (typeof REA_DATA !== 'undefined' && REA_DATA.computed) {
+      var c = REA_DATA.computed;
+      lines.push({ lbl: 'Total Revenue',    val: '$' + (c.revenue || 0).toLocaleString() });
+      lines.push({ lbl: 'Active Clients',   val: c.totalClients || '—' });
+      lines.push({ lbl: 'Total Sessions',   val: c.sessCount || '—' });
+      lines.push({ lbl: 'Repeat Rate',      val: (c.repeatRate || '—') + '%' });
     }
-  });
+    briefEl.innerHTML = lines.length
+      ? '<p class="briefing-lbl" style="margin-bottom:14px">Live briefing unavailable · local data shown</p>' +
+        lines.map(function(r) {
+          return '<div class="briefing-row"><div class="briefing-lbl">' + r.lbl + '</div>' +
+                 '<div class="briefing-val">' + r.val + '</div></div>';
+        }).join('')
+      : '<p class="home-empty">Briefing unavailable — check API configuration.</p>';
+  } catch(e) {
+    briefEl.innerHTML = '<p class="home-empty">Briefing unavailable.</p>';
+  }
 }
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -12500,6 +12797,7 @@ purgeTestEntries();
 <script src="pn-module.js"></script>
 <script src="lp-module.js"></script>
 <script src="communications-module.js"></script>
+<script src="docs-module.js"></script>
 <script src="pin-lock.js"></script>
 <!-- ====== OUTCOME RECORDING MODAL ====== -->
 <div id="outcomeModal" style="display:none;position:fixed;inset:0;background:#00000099;z-index:9500;align-items:center;justify-content:center">

@@ -173,7 +173,7 @@ async function getStats(sb) {
   if (!comms.length) {
     return {
       total: 0, sent: 0, delivered: 0, failed: 0, bounced: 0,
-      byType: {}, recentActivity: [], _migration_needed: true,
+      byType: {}, recentActivity: [], timeline: [], _empty: true,
     };
   }
 

@@ -166,6 +166,7 @@ body{background:var(--bg);color:var(--text);font-family:'EB Garamond',serif;min-
       <a href="/dashboard.html">← Practitioner OS</a>
       <a href="/research.html">↗ Research Center</a>
       <a href="/knowledge.html">↗ Knowledge Center</a>
+      <a href="/dashboard.html#docs">↗ Documentation</a>
     </div>
   </aside>
 
@@ -182,7 +183,7 @@ body{background:var(--bg);color:var(--text);font-family:'EB Garamond',serif;min-
           <option value="2025">2025</option>
           <option value="2024">2024</option>
         </select>
-        <button class="export-btn" onclick="logExport()">↓ Export CSV</button>
+        <button class="export-btn" onclick="exportCSV()">↓ Export CSV</button>
       </div>
     </div>
 
@@ -618,15 +619,80 @@ async function loadContent() {
 
 // ── Export ────────────────────────────────────────────────────────────────────
 
-async function logExport() {
+async function exportCSV() {
+  var secKey    = _curSec.replace(/-/g,'_');
+  var sectionEl = document.getElementById('sec-' + _curSec);
+  var rows      = [];
+  var filename  = 'rea-' + _curSec + '-' + _year + '.csv';
+
+  // Collect table rows from the visible section
+  if (sectionEl) {
+    var tables = sectionEl.querySelectorAll('table');
+    tables.forEach(function(tbl) {
+      var headers = [];
+      tbl.querySelectorAll('thead th').forEach(function(th) { headers.push(th.textContent.trim()); });
+      if (headers.length) rows.push(headers);
+      tbl.querySelectorAll('tbody tr').forEach(function(tr) {
+        var cells = [];
+        tr.querySelectorAll('td').forEach(function(td) { cells.push(td.textContent.trim()); });
+        if (cells.some(function(c){ return c; })) rows.push(cells);
+      });
+    });
+
+    // If no table, collect stat cards
+    if (!rows.length) {
+      rows.push(['Metric', 'Value']);
+      sectionEl.querySelectorAll('.stat-card').forEach(function(card) {
+        var label = card.querySelector('.stat-label');
+        var val   = card.querySelector('.stat-value');
+        if (label && val) rows.push([label.textContent.trim(), val.textContent.trim()]);
+      });
+    }
+  }
+
+  if (!rows.length) {
+    // Fallback: fetch fresh data and build CSV
+    try {
+      var data = await api('/.netlify/functions/reporting?section=' + secKey + '&year=' + _year);
+      rows.push(['Report', _curSec, 'Year', String(_year)]);
+      rows.push(['Generated', new Date().toLocaleString()]);
+      rows.push([]);
+      // Flatten top-level numbers
+      Object.keys(data).forEach(function(k) {
+        if (typeof data[k] === 'number' || typeof data[k] === 'string') {
+          rows.push([k, String(data[k])]);
+        }
+      });
+    } catch(e) { alert('Export failed: ' + e.message); return; }
+  }
+
+  // Build CSV string
+  var csv = rows.map(function(row) {
+    return row.map(function(cell) {
+      var s = String(cell || '').replace(/"/g, '""');
+      return s.includes(',') || s.includes('"') || s.includes('\n') ? '"' + s + '"' : s;
+    }).join(',');
+  }).join('\r\n');
+
+  // Download
+  var blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+  var url  = URL.createObjectURL(blob);
+  var a    = document.createElement('a');
+  a.href   = url;
+  a.download = filename;
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function() { URL.revokeObjectURL(url); a.remove(); }, 1000);
+
+  // Log the export
   try {
     await fetch('/.netlify/functions/reporting?action=log_export', {
       method: 'POST',
       headers: { 'Content-Type':'application/json', 'X-Dashboard-Token':_tok },
-      body: JSON.stringify({ report_type: _curSec.replace('-','_'), report_period: String(_year) }),
+      body: JSON.stringify({ report_type: secKey, report_period: String(_year), row_count: rows.length }),
     });
-    alert('Export logged for ' + _curSec + ' / ' + _year + '. Implement CSV download as needed.');
-  } catch(e) {}
+  } catch(e) { /* non-fatal */ }
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

@@ -129,11 +129,12 @@
     try {
       var data = await api('/communications?section=stats');
 
-      if (data._migration_needed) {
+      if (data._empty) {
         el.innerHTML =
-          '<div style="border:1px solid #e8b84b33;background:#e8b84b0a;padding:28px 32px;margin-bottom:24px">' +
-            '<div style="font-family:\'Cinzel\',serif;font-size:14px;letter-spacing:.3em;color:#e8b84b;text-transform:uppercase;margin-bottom:12px">Migration Required</div>' +
-            '<div style="font-size:17px;color:#dddaeecc;line-height:1.7">Run <code style="color:#e8b84b;background:#e8b84b0f;padding:2px 6px">migrations/2026-06-13-communications.sql</code> in Supabase to enable the communications log. The email sending function is ready to use.</div>' +
+          '<div style="margin-bottom:28px"><div class="cm-section-title">Overview</div></div>' +
+          '<div style="border:1px solid #22c98a22;background:#22c98a08;padding:28px 32px;margin-bottom:24px">' +
+            '<div style="font-family:\'Cinzel\',serif;font-size:12px;letter-spacing:.3em;color:#22c98a;text-transform:uppercase;margin-bottom:12px">Communications Ready</div>' +
+            '<div style="font-size:17px;color:#dddaeecc;line-height:1.7">The communications system is active. No emails have been sent yet. Use the <strong style="color:#e8b84b">Compose</strong> tab to send your first message.</div>' +
           '</div>';
         return;
       }
@@ -220,10 +221,10 @@
     try {
       var data = await api('/communications?section=log&limit=100');
 
-      if (data._migration_needed || !data.communications.length) {
+      if (!data.communications.length) {
         el.innerHTML =
           '<div style="text-align:center;padding:48px;font-style:italic;color:#dddaee66;font-size:17px">' +
-          (data._migration_needed ? 'Run the SQL migration to enable the communication log.' : 'No communications logged yet. Send your first email above.') +
+          'No communications logged yet. Use the Compose tab to send your first email.' +
           '</div>';
         return;
       }
@@ -271,7 +272,7 @@
       if (!data.templates || !data.templates.length) {
         el.innerHTML =
           '<div style="text-align:center;padding:48px;font-style:italic;color:#dddaee66;font-size:17px">' +
-          'Run the SQL migration to load default templates. Templates are stored in <code style="color:#e8b84b;font-style:normal">email_templates</code>.' +
+          'No email templates found. Run the Sprint 13A migration to seed the default branded templates.' +
           '</div>';
         return;
       }
