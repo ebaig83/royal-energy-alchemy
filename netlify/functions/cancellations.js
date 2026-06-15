@@ -199,11 +199,11 @@ exports.handler = async function(event) {
       }
     }
 
-    // Mark the availability slot as available again if session cancelled
+    // Release the availability slot back to available when cancellation approved
     if (body.status === 'approved' && old.appointment_date && old.appointment_time) {
       const timeNorm = old.appointment_time.slice(0,8);
       await sb.from('availability_slots')
-        .update({ status: 'cancelled' })
+        .update({ status: 'available', session_id: null })
         .eq('slot_date', old.appointment_date)
         .eq('slot_time', timeNorm);
     }

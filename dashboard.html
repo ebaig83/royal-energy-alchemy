@@ -3367,9 +3367,12 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
           </select>
         </div>
       </div>
+      <!-- Slot Utilization Metrics -->
+      <div id="slotMetricsBar" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px;margin-bottom:16px"></div>
+
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
-        <p style="font-family:'EB Garamond',serif;font-size:14px;color:#aaa8cc;margin:0">Click any date to add time slots. Green = open, gold = booked, grey = past.</p>
-        <button onclick="syncSlotsFromAPI()" style="background:#0e0c22;border:1px solid #44cc8855;color:#44cc88;font-family:'Cinzel',serif;font-size:10px;letter-spacing:.15em;padding:7px 14px;border-radius:4px;cursor:pointer">&#8635; SYNC FROM SUPABASE</button>
+        <p style="font-family:'EB Garamond',serif;font-size:14px;color:#aaa8cc;margin:0">Click any date to add or edit time slots. Auto-syncs every 90 seconds.</p>
+        <button onclick="syncSlotsFromAPI();renderSlotMetrics();" style="background:#0e0c22;border:1px solid #44cc8855;color:#44cc88;font-family:'Cinzel',serif;font-size:10px;letter-spacing:.15em;padding:7px 14px;border-radius:4px;cursor:pointer">&#8635; SYNC NOW</button>
       </div>
 
       <!-- SLOT CALENDAR -->
@@ -10532,7 +10535,6 @@ function syncSlotsFromAPI(){
     .then(function(r){return r.json();})
     .then(function(resp){
       var arr=resp.slots||[];
-      // Map API shape to dashboard shape
       var mapped=arr.map(function(s){
         return {
           id:          s.id,
@@ -10545,10 +10547,40 @@ function syncSlotsFromAPI(){
         };
       });
       _setSlots(mapped);
-      renderSlotCal();renderSlots();
-      showToast('Slots synced from Supabase ✓','#44cc88');
+      renderSlotCal();renderSlots();renderSlotMetrics();
+      showToast('Slots synced ✓','#44cc88');
     })
     .catch(function(e){showToast('Could not sync slots: '+e.message,'#cc4455');});
+}
+
+function renderSlotMetrics(){
+  var el=document.getElementById('slotMetricsBar');if(!el)return;
+  var slots=getSlots();
+  var today=new Date().toISOString().slice(0,10);
+  var futureSlots=slots.filter(function(s){return s.date>=today;});
+  var available=futureSlots.filter(function(s){return s.status==='available'}).length;
+  var booked=futureSlots.filter(function(s){return s.status==='booked'}).length;
+  var held=futureSlots.filter(function(s){return s.status==='held'}).length;
+  var total=available+booked+held;
+  var utilPct=total>0?Math.round((booked/total)*100):0;
+  // Days until next available slot
+  var nextDate=null;
+  for(var i=0;i<futureSlots.length;i++){if(futureSlots[i].status==='available'){nextDate=futureSlots[i].date;break;}}
+  var daysUntil='-';
+  if(nextDate){var ms=new Date(nextDate)-new Date(today);daysUntil=Math.max(0,Math.round(ms/86400000));}
+  var tiles=[
+    {label:'Available',value:available,color:'#44cc88'},
+    {label:'Booked',value:booked,color:'#e8b84b'},
+    {label:'Held',value:held,color:'#b08ae0'},
+    {label:'Utilization',value:utilPct+'%',color:'#4488cc'},
+    {label:'Next Opening',value:daysUntil===0?'Today':daysUntil+' days',color:'#66ddaa'},
+  ];
+  el.innerHTML=tiles.map(function(t){
+    return '<div style="background:#0d0b1e;border:1px solid '+t.color+'33;border-radius:8px;padding:10px 14px;text-align:center;min-width:90px">'+
+      '<div style="font-family:Cinzel,serif;font-size:20px;color:'+t.color+';font-weight:bold">'+t.value+'</div>'+
+      '<div style="font-family:EB Garamond,serif;font-size:11px;color:#6662aa;margin-top:2px">'+t.label+'</div>'+
+    '</div>';
+  }).join('');
 }
 
 function _buildLabel(dateStr,timeLabel){
@@ -10789,6 +10821,7 @@ function toggleSlotForm(){openSlotPicker(new Date().toISOString().slice(0,10));}
 // Initial render from localStorage cache, then refresh from API
 renderSlotCal();
 syncSlotsFromAPI();
+renderSlotMetrics();
 
 
 /* ====== PAYMENT LINKS ====== */
@@ -11125,11 +11158,107 @@ function advanceReview(id,action){
   saveLC(id,lc);renderIntake();
 }
 function advanceSession(id,action){
+  if(action==='schedule'){openSchedModal(id);return;}
   var lc=getLC(id);
-  if(action==='schedule'){lc.session_status='scheduled';}
-  else if(action==='complete'){lc.session_status='completed';lc.stage='session_completed';}
+  if(action==='complete'){lc.session_status='completed';lc.stage='session_completed';}
   else if(action==='aftercare'){lc.stage='aftercare_sent';}
   saveLC(id,lc);renderIntake();
+}
+
+/* ====== SCHEDULING MODAL ====== */
+var _schedBookingId=null;var _schedSlotId=null;
+
+function openSchedModal(bookingId){
+  _schedBookingId=bookingId;_schedSlotId=null;
+  var pending=[];try{pending=JSON.parse(localStorage.getItem('rea_pending_bookings')||'[]');}catch(e){}
+  var waitlist=[];try{waitlist=JSON.parse(localStorage.getItem('rea_waitlist')||'[]');}catch(e){}
+  var r=pending.concat(waitlist).filter(function(b){return b.ts==bookingId;})[0]||{};
+  document.getElementById('schedClientName').textContent=r.name||'Client';
+  document.getElementById('schedPrefWindow').textContent=r.window1?'Client requested: '+r.window1:'No preference on file';
+  document.getElementById('schedService').value=r.service||'';
+  document.getElementById('schedDate').value='';
+  document.getElementById('schedTime').value='';
+  document.getElementById('schedSlots').innerHTML=schedSlotsPlaceholder();
+  document.getElementById('schedError').style.display='none';
+  document.getElementById('schedModal').style.display='flex';
+}
+function schedSlotsPlaceholder(){return '<p style="font-family:EB Garamond,serif;font-size:13px;color:#6662aa;font-style:italic">Pick a date above to see available slots.</p>';}
+function closeSchedModal(){document.getElementById('schedModal').style.display='none';_schedBookingId=null;_schedSlotId=null;}
+
+function schedLoadSlots(){
+  var date=document.getElementById('schedDate').value;if(!date)return;
+  _schedSlotId=null;document.getElementById('schedTime').value='';
+  var el=document.getElementById('schedSlots');
+  el.innerHTML='<p style="font-family:EB Garamond,serif;font-size:13px;color:#6662aa">Loading slots...</p>';
+  fetch('/.netlify/functions/availability?date='+date+'&_='+Date.now())
+    .then(function(r){return r.json();})
+    .then(function(resp){
+      var available=(resp.slots||[]).filter(function(s){return s.status==='available';});
+      if(!available.length){
+        el.innerHTML='<p style="font-family:EB Garamond,serif;font-size:13px;color:#e8b84b;font-style:italic">No open slots on this date — enter a time manually below, or choose another date.</p>';
+        return;
+      }
+      el.innerHTML=available.map(function(s){
+        return '<button onclick="schedPickSlot(\''+s.id+'\',\''+s.time+'\',this)" data-slot="'+s.id+'" style="display:block;width:100%;text-align:left;padding:10px 14px;margin-bottom:6px;background:#0a0818;border:1px solid #4a458077;color:#c0bde0;border-radius:6px;cursor:pointer;font-family:EB Garamond,serif;font-size:14px">'+s.displayTime+' <span style="color:#44cc88;font-size:12px;margin-left:6px">Available</span></button>';
+      }).join('');
+    })
+    .catch(function(){el.innerHTML='<p style="font-family:EB Garamond,serif;font-size:13px;color:#cc4455">Could not load slots — enter time manually.</p>';});
+}
+
+function schedPickSlot(slotId,slotTime,btn){
+  _schedSlotId=slotId;
+  document.getElementById('schedTime').value=slotTime;
+  document.querySelectorAll('[data-slot]').forEach(function(b){b.style.borderColor='#4a458077';b.style.background='#0a0818';b.style.color='#c0bde0';});
+  btn.style.borderColor='#00ffaa';btn.style.background='#00ffaa12';btn.style.color='#00ffaa';
+}
+
+function confirmScheduleSession(){
+  var date=document.getElementById('schedDate').value;
+  var time=document.getElementById('schedTime').value;
+  var service=document.getElementById('schedService').value||'Energy Session';
+  var errEl=document.getElementById('schedError');
+  if(!date||!time){errEl.textContent='Please select a date and time.';errEl.style.display='block';return;}
+  errEl.style.display='none';
+  var pending=[];try{pending=JSON.parse(localStorage.getItem('rea_pending_bookings')||'[]');}catch(e){}
+  var waitlist=[];try{waitlist=JSON.parse(localStorage.getItem('rea_waitlist')||'[]');}catch(e){}
+  var r=pending.concat(waitlist).filter(function(b){return b.ts==_schedBookingId;})[0]||{};
+  var token=sessionStorage.getItem('rea_api_token');
+  var confirmBtn=document.querySelector('#schedModal button[onclick="confirmScheduleSession()"]');
+  if(confirmBtn){confirmBtn.textContent='Creating...';confirmBtn.disabled=true;}
+  fetch('/.netlify/functions/sessions',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','X-Dashboard-Token':token},
+    body:JSON.stringify({
+      client_name:r.name||'Unknown',
+      service:service,
+      session_date:date,
+      session_time:time,
+      status:'confirmed',
+      payment_status:'paid',
+      source:'booking_workflow',
+      seller_notes:'Booked via Workflow Queue. Client window: '+(r.window1||'n/a'),
+    }),
+  })
+  .then(function(res){return res.json();})
+  .then(function(resp){
+    var sessionId=resp.session&&resp.session.id;
+    var reserveSlot=(_schedSlotId&&sessionId)
+      ?fetch('/.netlify/functions/availability?id='+_schedSlotId,{method:'PATCH',headers:{'Content-Type':'application/json','X-Dashboard-Token':token},body:JSON.stringify({status:'booked',session_id:sessionId})})
+      :Promise.resolve();
+    return reserveSlot.then(function(){
+      var lc=getLC(_schedBookingId);
+      lc.session_status='scheduled';lc.supabase_session_id=sessionId||null;
+      lc.scheduled_date=date;lc.scheduled_time=time;
+      saveLC(_schedBookingId,lc);
+      closeSchedModal();renderIntake();
+      syncSlotsFromAPI();
+      showToast('Session scheduled for '+(r.name||'client')+' on '+date,'#00ffaa');
+    });
+  })
+  .catch(function(e){
+    errEl.textContent='Error: '+e.message;errEl.style.display='block';
+    if(confirmBtn){confirmBtn.textContent='CONFIRM SCHEDULE';confirmBtn.disabled=false;}
+  });
 }
 function cancelBookingLC(id){
   if(!confirm('Mark this booking as cancelled?'))return;
@@ -11307,6 +11436,8 @@ function checkReminders(){
 if(Notification&&Notification.permission==='default'){Notification.requestPermission();}
 setInterval(checkReminders,60000);
 checkReminders();
+// Auto-refresh slot calendar every 90s so dashboard stays in sync
+setInterval(function(){syncSlotsFromAPI();renderSlotMetrics();},90000);
 
 
 /* ====== NETLIFY FORMS PULL ====== */
@@ -11612,6 +11743,41 @@ purgeTestEntries();
 <script src="lp-module.js"></script>
 <script src="communications-module.js"></script>
 <script src="pin-lock.js"></script>
+<!-- ====== SCHEDULING MODAL ====== -->
+<div id="schedModal" style="display:none;position:fixed;inset:0;background:#00000099;z-index:9500;align-items:center;justify-content:center">
+  <div style="background:#0d0b1e;border:1px solid #00ffaa55;border-radius:14px;padding:30px 32px;width:92%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 0 60px #00ffaa14">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px">
+      <div>
+        <div style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#00ffaa;margin-bottom:6px">SCHEDULE SESSION</div>
+        <div id="schedClientName" style="font-family:'Cinzel',serif;font-size:20px;color:#e0ddf8"></div>
+        <div id="schedPrefWindow" style="font-family:'EB Garamond',serif;font-size:13px;color:#6662aa;margin-top:4px"></div>
+      </div>
+      <button onclick="closeSchedModal()" style="background:transparent;border:1px solid #3a3860;color:#6662aa;border-radius:6px;padding:6px 10px;cursor:pointer;font-size:16px">&#x2715;</button>
+    </div>
+
+    <label style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.18em;color:#66ddaa;display:block;margin-bottom:6px">SESSION DATE</label>
+    <input type="date" id="schedDate" onchange="schedLoadSlots()" style="width:100%;box-sizing:border-box;background:#0a0818;border:1px solid #4a4580;color:#e0ddf8;padding:11px 14px;border-radius:6px;font-family:'EB Garamond',serif;font-size:15px;margin-bottom:16px">
+
+    <label style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.18em;color:#66ddaa;display:block;margin-bottom:8px">OPEN SLOTS ON THIS DATE</label>
+    <div id="schedSlots" style="margin-bottom:16px"><p style="font-family:'EB Garamond',serif;font-size:13px;color:#6662aa;font-style:italic">Pick a date above to see available slots.</p></div>
+
+    <label style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.18em;color:#66ddaa;display:block;margin-bottom:6px">TIME (24h or from slot above)</label>
+    <input type="time" id="schedTime" style="width:100%;box-sizing:border-box;background:#0a0818;border:1px solid #4a4580;color:#e0ddf8;padding:11px 14px;border-radius:6px;font-family:'EB Garamond',serif;font-size:15px;margin-bottom:16px">
+
+    <label style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.18em;color:#66ddaa;display:block;margin-bottom:6px">SERVICE</label>
+    <input type="text" id="schedService" placeholder="Energy Session" style="width:100%;box-sizing:border-box;background:#0a0818;border:1px solid #4a4580;color:#e0ddf8;padding:11px 14px;border-radius:6px;font-family:'EB Garamond',serif;font-size:15px;margin-bottom:20px">
+
+    <div id="schedError" style="display:none;font-family:'EB Garamond',serif;font-size:13px;color:#cc4455;margin-bottom:14px;padding:10px;background:#cc445514;border-radius:6px;border:1px solid #cc445544"></div>
+
+    <div style="display:flex;gap:10px">
+      <button onclick="confirmScheduleSession()" style="flex:1;padding:13px;background:#00ffaa18;border:1px solid #00ffaa88;color:#00ffaa;font-family:'Cinzel',serif;font-size:10px;letter-spacing:.18em;border-radius:6px;cursor:pointer">✦ CONFIRM &amp; SCHEDULE</button>
+      <button onclick="closeSchedModal()" style="padding:13px 18px;background:transparent;border:1px solid #3a3860;color:#6662aa;font-family:'Cinzel',serif;font-size:10px;border-radius:6px;cursor:pointer">Cancel</button>
+    </div>
+
+    <p style="font-family:'EB Garamond',serif;font-size:12px;color:#3a3860;margin-top:16px;margin-bottom:0;text-align:center">This creates a Supabase session record and reserves the slot automatically.</p>
+  </div>
+</div>
+
 </body>
 </html>
             
