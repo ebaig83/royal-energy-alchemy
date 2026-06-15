@@ -22,14 +22,12 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
 .header h1{font-family:'Cinzel',serif;font-size:clamp(22px,3vw,32px);font-weight:700;color:#fff;letter-spacing:.06em;margin-bottom:12px}
 .header p{font-size:17px;font-style:italic;color:#d8d4f099;line-height:1.8}
 
-/* Loading / Error states */
 .state-card{border:1px solid rgba(232,184,75,.2);background:rgba(8,6,22,.88);padding:28px;text-align:center;margin-bottom:24px}
 .state-card .label{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.4em;color:#e8b84b88;text-transform:uppercase;margin-bottom:10px}
 .state-card p{color:#c8c4e0;font-size:16px}
 .spinner{display:inline-block;width:28px;height:28px;border:2px solid rgba(232,184,75,.15);border-top-color:#e8b84b;border-radius:50%;animation:spin .8s linear infinite;margin-bottom:12px}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* Appointment summary card */
 .appt-card{border:1px solid rgba(232,184,75,.28);background:rgba(13,10,26,.95);margin-bottom:28px;overflow:hidden}
 .appt-card-head{background:linear-gradient(90deg,rgba(42,31,16,.96),rgba(18,13,28,.96));padding:14px 22px;border-bottom:1px solid rgba(232,184,75,.2);display:flex;align-items:center;gap:10px}
 .appt-card-head .label{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.4em;color:#e8b84b;text-transform:uppercase}
@@ -37,12 +35,11 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
 .appt-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .appt-field .field-label{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.35em;color:#9990c088;text-transform:uppercase;margin-bottom:4px}
 .appt-field .field-val{font-size:17px;color:#f0ecff;font-weight:500}
-.status-badge{display:inline-block;font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;text-transform:uppercase;padding:4px 12px;border-radius:0}
+.status-badge{display:inline-block;font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;text-transform:uppercase;padding:4px 12px}
 .status-badge.confirmed{background:rgba(34,201,138,.12);border:1px solid rgba(34,201,138,.3);color:#22c98a}
 .status-badge.pending{background:rgba(232,184,75,.1);border:1px solid rgba(232,184,75,.3);color:#e8b84b}
 .status-badge.cancelled{background:rgba(238,68,68,.1);border:1px solid rgba(238,68,68,.3);color:#ee4444}
 
-/* Action selector */
 .action-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:28px}
 @media(max-width:600px){.action-grid{grid-template-columns:1fr}}
 .action-opt{cursor:pointer;border:1px solid rgba(232,184,75,.22);background:rgba(8,6,22,.8);padding:22px 16px;text-align:center;transition:all .22s}
@@ -54,20 +51,18 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
 .action-title{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.12em;color:#f0ecff;margin-bottom:6px}
 .action-desc{font-size:14px;color:#9990c0;line-height:1.5}
 
-/* Section panels */
 .sec{margin-bottom:24px;border:1px solid rgba(232,184,75,.28);background:rgba(8,6,22,.88)}
 .sec.teal{border-color:rgba(34,201,138,.28)}
 .sec.red{border-color:rgba(238,68,68,.28)}
 .sec-head{padding:13px 22px;border-bottom:1px solid rgba(232,184,75,.2);background:linear-gradient(90deg,rgba(42,31,16,.96),rgba(18,13,28,.96));display:flex;align-items:center;gap:10px}
 .sec.teal .sec-head{border-bottom-color:rgba(34,201,138,.2);background:linear-gradient(90deg,rgba(8,22,14,.96),rgba(8,14,28,.96))}
-.sec.red .sec-head{border-bottom-color:rgba(238,68,68,.2);background:linear-gradient(90deg,rgba(22,8,8,.96),rgba(18,13,28,.96))}
+.sec.red  .sec-head{border-bottom-color:rgba(238,68,68,.2);background:linear-gradient(90deg,rgba(22,8,8,.96),rgba(18,13,28,.96))}
 .sec-head .sec-label{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.4em;text-transform:uppercase}
-.sec.gold .sec-head .sec-label,.sec-head .sec-label{color:#e8b84b}
+.sec-head .sec-label{color:#e8b84b}
 .sec.teal .sec-head .sec-label{color:#22c98a}
-.sec.red .sec-head .sec-label{color:#ee7070}
+.sec.red  .sec-head .sec-label{color:#ee7070}
 .sec-body{padding:22px}
 
-/* Form elements */
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px}
 .form-row.single{grid-template-columns:1fr}
 .fg{display:flex;flex-direction:column;gap:6px}
@@ -77,25 +72,33 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
 .fg input:focus,.fg select:focus,.fg textarea:focus{border-color:#ffd977;box-shadow:0 0 0 2px rgba(232,184,75,.1)}
 .fg textarea{min-height:90px;resize:vertical}
 .fg select option{background:#08051c;color:#fff}
-.fg input[type="date"]{color-scheme:dark}
 
-/* Notice boxes */
 .notice{padding:16px 18px;margin-bottom:18px;border-left:3px solid}
 .notice.gold{background:rgba(232,184,75,.06);border-color:#e8b84b;color:#c8b080}
 .notice.teal{background:rgba(34,201,138,.06);border-color:#22c98a;color:#88ccaa}
 .notice.red{background:rgba(238,68,68,.06);border-color:#ee4444;color:#cc8888}
 .notice p{font-size:15px;line-height:1.7}
 
-/* Slot picker */
-.slots-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-top:12px}
-.slot-opt{border:1px solid rgba(232,184,75,.25);background:rgba(14,10,36,.7);padding:12px 10px;text-align:center;cursor:pointer;transition:all .2s}
-.slot-opt:hover{border-color:rgba(232,184,75,.6);background:rgba(28,20,48,.9)}
-.slot-opt.selected{border-color:#22c98a;background:rgba(34,201,138,.1)}
-.slot-opt input{display:none}
-.slot-day{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.25em;color:#9990c0;text-transform:uppercase;margin-bottom:4px}
-.slot-time{font-size:16px;color:#f0ecff}
+/* ── Slot picker ─────────────────────────────────────────────────────────── */
+.slot-section-label{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.4em;color:#9990c0;text-transform:uppercase;margin-bottom:10px}
 
-/* Refund calculator */
+.date-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.date-chip{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.25em;text-transform:uppercase;padding:9px 16px;border:1px solid rgba(232,184,75,.28);background:rgba(14,10,36,.7);color:#c8c4e0;cursor:pointer;transition:all .18s}
+.date-chip:hover{border-color:rgba(232,184,75,.6);background:rgba(28,20,48,.9)}
+.date-chip.selected{border-color:#22c98a;background:rgba(34,201,138,.1);color:#22c98a}
+
+.time-slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:20px}
+.time-slot{border:1px solid rgba(232,184,75,.22);background:rgba(14,10,36,.7);padding:14px 10px;text-align:center;cursor:pointer;transition:all .18s}
+.time-slot:hover{border-color:rgba(232,184,75,.55);background:rgba(28,20,48,.9)}
+.time-slot.selected{border-color:#22c98a;background:rgba(34,201,138,.1)}
+.time-slot .ts-time{font-family:'Cinzel',serif;font-size:14px;letter-spacing:.08em;color:#f0ecff}
+.time-slot .ts-avail{font-size:12px;color:#9990c0;margin-top:4px}
+
+.slot-selected-summary{border:1px solid rgba(34,201,138,.35);background:rgba(34,201,138,.06);padding:14px 18px;margin-bottom:18px;display:none}
+.slot-selected-summary .sts-label{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.4em;color:#22c98a;text-transform:uppercase;margin-bottom:4px}
+.slot-selected-summary .sts-val{font-size:17px;color:#f0ecff}
+
+/* ── Refund calculator ──────────────────────────────────────────────────── */
 .refund-box{border:1px solid rgba(34,201,138,.25);background:rgba(8,22,14,.85);margin-top:4px}
 .refund-head{background:linear-gradient(90deg,rgba(10,34,22,.95),rgba(8,14,28,.95));padding:12px 20px;border-bottom:1px solid rgba(34,201,138,.18)}
 .refund-head span{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;color:#22c98a;text-transform:uppercase}
@@ -105,26 +108,23 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
 .refund-estimate.ineligible{color:#ee7070}
 .refund-sub{font-size:15px;color:#d8d4f088;line-height:1.7}
 
-/* Submit buttons */
+/* ── Buttons ────────────────────────────────────────────────────────────── */
 .submit-btn{display:block;width:100%;padding:18px 24px;font-family:'Cinzel',serif;font-size:12px;letter-spacing:.45em;text-transform:uppercase;color:#000;background:linear-gradient(135deg,#f5d98a,#e8b84b);border:none;cursor:pointer;transition:opacity .25s;margin-top:8px}
 .submit-btn:hover{opacity:.88}
 .submit-btn:disabled{opacity:.4;cursor:not-allowed}
 .submit-btn.teal{background:linear-gradient(135deg,#34e89e,#22c98a);color:#000}
 .submit-btn.danger{background:linear-gradient(135deg,#f55,#c03);color:#fff}
 
-/* Success / error messages */
 .form-msg{padding:14px 18px;margin-top:16px;font-family:'Cinzel',serif;font-size:12px;letter-spacing:.2em;text-transform:uppercase;display:none}
 .form-msg.success{background:rgba(34,201,138,.1);border:1px solid rgba(34,201,138,.3);color:#22c98a}
 .form-msg.error{background:rgba(238,68,68,.1);border:1px solid rgba(238,68,68,.3);color:#ee7070}
 
-/* Done screen */
 .done-screen{text-align:center;padding:40px 24px;display:none}
 .done-screen h2{font-family:'Cinzel',serif;font-size:26px;color:#f8e090;margin-bottom:16px}
 .done-screen p{font-size:17px;color:#c8c4e0;line-height:1.8;margin-bottom:8px}
 .done-btn{display:inline-block;margin-top:28px;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.4em;color:#e8b84b;text-transform:uppercase;text-decoration:none;border:1px solid rgba(232,184,75,.4);padding:14px 28px;transition:all .25s}
 .done-btn:hover{background:rgba(232,184,75,.08)}
 
-/* Hidden utility */
 .hidden{display:none!important}
 </style>
 </head>
@@ -211,72 +211,59 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
       </div>
     </div>
 
-    <!-- ── RESCHEDULE PANEL ────────────────────────────────────── -->
+    <!-- ── RESCHEDULE PANEL ──────────────────────────────────────────────── -->
     <div class="sec teal hidden" id="reschedulePanel">
       <div class="sec-head"><span class="sec-label">Reschedule Appointment</span></div>
       <div class="sec-body">
         <div class="notice gold">
-          <p>Rescheduling requests are subject to availability and are confirmed by Daron within 24 hours. You will receive an updated confirmation email once confirmed.</p>
+          <p>Select an available date and time below. Your appointment will be updated immediately upon confirmation.</p>
         </div>
 
-        <form id="rescheduleForm">
-          <div class="form-row">
-            <div class="fg">
-              <label for="r-preferred-date">Preferred New Date</label>
-              <input type="date" id="r-preferred-date" required>
-            </div>
-            <div class="fg">
-              <label for="r-preferred-time">Preferred Time</label>
-              <select id="r-preferred-time">
-                <option value="">Select a time...</option>
-                <option value="9:00 AM">9:00 AM</option>
-                <option value="10:00 AM">10:00 AM</option>
-                <option value="11:00 AM">11:00 AM</option>
-                <option value="12:00 PM">12:00 PM</option>
-                <option value="1:00 PM">1:00 PM</option>
-                <option value="2:00 PM">2:00 PM</option>
-                <option value="3:00 PM">3:00 PM</option>
-                <option value="4:00 PM">4:00 PM</option>
-                <option value="5:00 PM">5:00 PM</option>
-                <option value="6:00 PM">6:00 PM</option>
-              </select>
-            </div>
+        <!-- Slot loading state -->
+        <div id="slotsLoading" style="text-align:center;padding:24px 0">
+          <div class="spinner" style="margin:0 auto 12px"></div>
+          <p style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#e8b84b55;text-transform:uppercase">Loading available times...</p>
+        </div>
+
+        <!-- No slots fallback -->
+        <div id="slotsEmpty" class="hidden">
+          <div class="notice gold" style="margin-bottom:0">
+            <p>No available slots found in the next 60 days. Please contact Daron directly to arrange a new time.</p>
+            <p style="margin-top:8px;color:#e8b84b">royalenergyalchemy@gmail.com &nbsp;|&nbsp; 814-392-2095</p>
           </div>
-          <div class="form-row">
-            <div class="fg">
-              <label for="r-alt-date">Alternative Date (optional)</label>
-              <input type="date" id="r-alt-date">
-            </div>
-            <div class="fg">
-              <label for="r-alt-time">Alternative Time (optional)</label>
-              <select id="r-alt-time">
-                <option value="">Select a time...</option>
-                <option value="9:00 AM">9:00 AM</option>
-                <option value="10:00 AM">10:00 AM</option>
-                <option value="11:00 AM">11:00 AM</option>
-                <option value="12:00 PM">12:00 PM</option>
-                <option value="1:00 PM">1:00 PM</option>
-                <option value="2:00 PM">2:00 PM</option>
-                <option value="3:00 PM">3:00 PM</option>
-                <option value="4:00 PM">4:00 PM</option>
-                <option value="5:00 PM">5:00 PM</option>
-                <option value="6:00 PM">6:00 PM</option>
-              </select>
-            </div>
+        </div>
+
+        <!-- Slot picker UI -->
+        <div id="slotPicker" class="hidden">
+          <div class="slot-section-label">Select a Date</div>
+          <div class="date-chips" id="dateChips"></div>
+
+          <div id="timeSlotsWrap" class="hidden">
+            <div class="slot-section-label" id="timeSlotsLabel">Available Times</div>
+            <div class="time-slots" id="timeSlots"></div>
           </div>
-          <div class="form-row single">
-            <div class="fg">
-              <label for="r-reason">Reason for Rescheduling</label>
-              <textarea id="r-reason" placeholder="Brief reason (e.g. scheduling conflict, travel, family obligation)..."></textarea>
-            </div>
+
+          <div class="slot-selected-summary" id="slotSelectedSummary">
+            <div class="sts-label">Selected Appointment</div>
+            <div class="sts-val" id="slotSelectedText">—</div>
           </div>
-          <button type="submit" class="submit-btn teal" id="rescheduleSubmitBtn">Submit Reschedule Request →</button>
-          <div class="form-msg" id="rescheduleMsg"></div>
-        </form>
+
+          <form id="rescheduleForm">
+            <div class="form-row single">
+              <div class="fg">
+                <label for="r-reason">Reason for Rescheduling <span style="color:#e8b84b44;font-size:14px">(optional)</span></label>
+                <textarea id="r-reason" placeholder="Brief reason (e.g. scheduling conflict, travel, family obligation)..."></textarea>
+              </div>
+            </div>
+            <button type="submit" class="submit-btn teal" id="rescheduleSubmitBtn" disabled>Select a Time Above to Continue</button>
+            <div class="form-msg" id="rescheduleMsg"></div>
+          </form>
+        </div>
+
       </div>
     </div>
 
-    <!-- ── CONTACT PANEL ──────────────────────────────────────── -->
+    <!-- ── CONTACT PANEL ─────────────────────────────────────────────────── -->
     <div class="sec hidden" id="contactPanel">
       <div class="sec-head"><span class="sec-label">Send a Message</span></div>
       <div class="sec-body">
@@ -319,7 +306,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
       </div>
     </div>
 
-    <!-- ── CANCEL PANEL ───────────────────────────────────────── -->
+    <!-- ── CANCEL PANEL ──────────────────────────────────────────────────── -->
     <div class="sec red hidden" id="cancelPanel">
       <div class="sec-head"><span class="sec-label">Cancel Appointment</span></div>
       <div class="sec-body">
@@ -354,7 +341,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
             </div>
           </div>
           <div class="notice red" style="margin-bottom:18px">
-            <p>Cancellation is permanent. If you may need to reschedule instead, please use the Reschedule option above.</p>
+            <p>Cancellation is immediate and permanent. If you may need to reschedule instead, please use the Reschedule option above.</p>
           </div>
           <button type="submit" class="submit-btn danger" id="cancelSubmitBtn">Confirm Cancellation</button>
           <div class="form-msg" id="cancelMsg"></div>
@@ -377,11 +364,17 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
 <script>
 'use strict';
 
-var _sessionId   = null;
-var _sessionData = null;
-var _action      = null;
+var _sessionId       = null;
+var _sessionData     = null;
+var _action          = null;
+var _allSlots        = [];           // [{id, date, time, displayTime, label}]
+var _slotsByDate     = {};           // { 'YYYY-MM-DD': [slot, ...] }
+var _selectedDate    = null;
+var _selectedSlotId  = null;
+var _selectedSlotDate = null;
+var _selectedSlotTime = null;
 
-// ── Init ────────────────────────────────────────────────────────────────────
+// ── Init ──────────────────────────────────────────────────────────────────
 
 (function init() {
   var params  = new URLSearchParams(window.location.search);
@@ -400,11 +393,11 @@ var _action      = null;
   });
 })();
 
-// ── Load appointment ─────────────────────────────────────────────────────────
+// ── Load appointment ──────────────────────────────────────────────────────
 
 async function loadAppointment(sessionId) {
   try {
-    var res = await fetch('/.netlify/functions/sessions?id=' + encodeURIComponent(sessionId));
+    var res  = await fetch('/.netlify/functions/manage-appointment?session_id=' + encodeURIComponent(sessionId));
     var json = await res.json();
 
     if (!res.ok || !json.session) {
@@ -416,14 +409,8 @@ async function loadAppointment(sessionId) {
     renderAppointment(_sessionData);
     document.getElementById('loadingState').classList.add('hidden');
     document.getElementById('mainContent').classList.remove('hidden');
-
-    var name = _sessionData.client_name || 'your session';
-    document.getElementById('headerSub').textContent = 'Viewing appointment for ' + name;
-
-    // Compute refund eligibility immediately
+    document.getElementById('headerSub').textContent = 'Viewing appointment for ' + (_sessionData.client_name || 'your session');
     computeRefund(_sessionData);
-
-    // Log a view action
     logAudit('view');
 
   } catch (err) {
@@ -438,12 +425,11 @@ function renderAppointment(s) {
   document.getElementById('apptDuration').textContent = s.duration_minutes ? s.duration_minutes + ' min' : '—';
   document.getElementById('apptPayment').textContent  = s.payment_status || '—';
 
-  var badge   = document.getElementById('apptStatus');
-  var status  = (s.status || 'scheduled').toLowerCase();
+  var badge  = document.getElementById('apptStatus');
+  var status = (s.status || 'scheduled').toLowerCase();
   badge.textContent = s.status || 'Scheduled';
   badge.className   = 'status-badge ' + (status === 'completed' ? 'confirmed' : status === 'cancelled' ? 'cancelled' : 'pending');
 
-  // Disable management options if already cancelled or completed
   if (status === 'cancelled' || status === 'completed') {
     document.getElementById('actReschedule').style.opacity = '.35';
     document.getElementById('actReschedule').style.pointerEvents = 'none';
@@ -452,7 +438,7 @@ function renderAppointment(s) {
   }
 }
 
-// ── Refund Calculator ────────────────────────────────────────────────────────
+// ── Refund Calculator ──────────────────────────────────────────────────────
 
 function computeRefund(s) {
   var el   = document.getElementById('refundEstimate');
@@ -467,7 +453,7 @@ function computeRefund(s) {
 
   var now      = new Date();
   var apptDate = new Date(s.session_date + 'T12:00:00');
-  var hoursOut = (apptDate - now) / 3_600_000;
+  var hoursOut = (apptDate - now) / 3600000;
   var amount   = parseFloat(s.amount_due) || 0;
 
   if (s.payment_status !== 'paid') {
@@ -493,18 +479,105 @@ function computeRefund(s) {
   }
 }
 
-// ── Action selection ─────────────────────────────────────────────────────────
+// ── Slot Loader ───────────────────────────────────────────────────────────
+
+async function loadSlots() {
+  try {
+    var res  = await fetch('/.netlify/functions/availability');
+    var json = await res.json();
+    var slots = (json.slots || []).filter(function(s) { return s.status === 'available'; });
+
+    document.getElementById('slotsLoading').classList.add('hidden');
+
+    if (!slots.length) {
+      document.getElementById('slotsEmpty').classList.remove('hidden');
+      return;
+    }
+
+    // Group by date
+    _allSlots    = slots;
+    _slotsByDate = {};
+    slots.forEach(function(s) {
+      if (!_slotsByDate[s.date]) _slotsByDate[s.date] = [];
+      _slotsByDate[s.date].push(s);
+    });
+
+    renderDateChips(Object.keys(_slotsByDate).sort());
+    document.getElementById('slotPicker').classList.remove('hidden');
+
+  } catch (err) {
+    document.getElementById('slotsLoading').classList.add('hidden');
+    document.getElementById('slotsEmpty').classList.remove('hidden');
+  }
+}
+
+function renderDateChips(dates) {
+  var container = document.getElementById('dateChips');
+  container.innerHTML = dates.map(function(d) {
+    var label = new Date(d + 'T12:00:00').toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+    return '<div class="date-chip" data-date="' + d + '" onclick="selectDate(\'' + d + '\')">' + label + '</div>';
+  }).join('');
+}
+
+function selectDate(date) {
+  _selectedDate    = date;
+  _selectedSlotId  = null;
+  _selectedSlotDate = null;
+  _selectedSlotTime = null;
+
+  // Update chip styling
+  document.querySelectorAll('.date-chip').forEach(function(c) {
+    c.classList.toggle('selected', c.dataset.date === date);
+  });
+
+  // Render time slots for this date
+  var slots     = _slotsByDate[date] || [];
+  var container = document.getElementById('timeSlots');
+  var label     = new Date(date + 'T12:00:00').toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+
+  document.getElementById('timeSlotsLabel').textContent = 'Available Times — ' + label;
+  container.innerHTML = slots.map(function(s) {
+    return '<div class="time-slot" data-slot-id="' + s.id + '" data-date="' + s.date + '" data-time="' + s.time + '" onclick="selectSlot(\'' + s.id + '\',\'' + s.date + '\',\'' + s.time + '\',\'' + (s.displayTime || s.time) + '\')">' +
+      '<div class="ts-time">' + (s.displayTime || s.time) + '</div>' +
+      '<div class="ts-avail">Available</div>' +
+    '</div>';
+  }).join('');
+
+  document.getElementById('timeSlotsWrap').classList.remove('hidden');
+  document.getElementById('slotSelectedSummary').style.display = 'none';
+
+  var btn = document.getElementById('rescheduleSubmitBtn');
+  btn.disabled   = true;
+  btn.textContent = 'Select a Time Above to Continue';
+}
+
+function selectSlot(slotId, date, time, displayTime) {
+  _selectedSlotId   = slotId;
+  _selectedSlotDate = date;
+  _selectedSlotTime = time;
+
+  document.querySelectorAll('.time-slot').forEach(function(el) {
+    el.classList.toggle('selected', el.dataset.slotId === slotId);
+  });
+
+  var label = new Date(date + 'T12:00:00').toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+  document.getElementById('slotSelectedText').textContent = label + ' at ' + displayTime + ' ET';
+  document.getElementById('slotSelectedSummary').style.display = 'block';
+
+  var btn = document.getElementById('rescheduleSubmitBtn');
+  btn.disabled    = false;
+  btn.textContent = 'Confirm Reschedule →';
+}
+
+// ── Action selection ──────────────────────────────────────────────────────
 
 function selectAction(action) {
   _action = action;
 
-  // Reset all tiles
   ['actReschedule','actContact','actCancel'].forEach(function(id) {
     var el = document.getElementById(id);
-    el.className = 'action-opt';
+    if (el) el.className = 'action-opt';
   });
-
-  // Hide all panels
   ['reschedulePanel','contactPanel','cancelPanel'].forEach(function(id) {
     document.getElementById(id).classList.add('hidden');
   });
@@ -513,11 +586,12 @@ function selectAction(action) {
     document.getElementById('actReschedule').classList.add('active-teal');
     document.getElementById('reschedulePanel').classList.remove('hidden');
     document.getElementById('reschedulePanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Load slots lazily on first open
+    if (!_allSlots.length) loadSlots();
   } else if (action === 'contact') {
     document.getElementById('actContact').classList.add('active');
     document.getElementById('contactPanel').classList.remove('hidden');
     document.getElementById('contactPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    // Pre-fill name/email if we have them
     if (_sessionData) {
       var nameEl = document.getElementById('c-name');
       if (!nameEl.value) nameEl.value = _sessionData.client_name || '';
@@ -529,51 +603,63 @@ function selectAction(action) {
   }
 }
 
-// ── Form submissions ─────────────────────────────────────────────────────────
+// ── Form submissions ──────────────────────────────────────────────────────
 
 document.getElementById('rescheduleForm').addEventListener('submit', async function(ev) {
   ev.preventDefault();
   var btn = document.getElementById('rescheduleSubmitBtn');
   var msg = document.getElementById('rescheduleMsg');
-  var prefDate = document.getElementById('r-preferred-date').value;
-  var prefTime = document.getElementById('r-preferred-time').value;
 
-  if (!prefDate || !prefTime) {
-    showMsg(msg, 'error', 'Please select a preferred date and time.');
+  if (!_selectedSlotId) {
+    showMsg(msg, 'error', 'Please select an available date and time above.');
     return;
   }
 
-  btn.disabled = true;
-  btn.textContent = 'Submitting...';
+  btn.disabled    = true;
+  btn.textContent = 'Confirming...';
 
   try {
-    await logAudit('reschedule_request', {
-      old_date:  _sessionData?.session_date,
-      old_time:  _sessionData?.session_time,
-      new_date:  prefDate,
-      new_time:  prefTime,
-      alt_date:  document.getElementById('r-alt-date').value || null,
-      alt_time:  document.getElementById('r-alt-time').value || null,
-      reason:    document.getElementById('r-reason').value.trim() || null,
+    var res  = await fetch('/.netlify/functions/manage-appointment', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({
+        session_id:   _sessionId,
+        action:       'reschedule_confirmed',
+        slot_id:      _selectedSlotId,
+        new_date:     _selectedSlotDate,
+        new_time:     _selectedSlotTime,
+        reason:       document.getElementById('r-reason').value.trim() || null,
+        client_name:  _sessionData ? _sessionData.client_name : null,
+        old_date:     _sessionData ? _sessionData.session_date : null,
+        old_time:     _sessionData ? _sessionData.session_time : null,
+      }),
     });
+    var json = await res.json();
+
+    if (!res.ok) {
+      btn.disabled    = false;
+      btn.textContent = 'Confirm Reschedule →';
+      showMsg(msg, 'error', json.error || 'Unable to reschedule. Please try another time or contact us.');
+      return;
+    }
 
     showDone(
-      '✦ Reschedule Request Received',
-      'Your request to reschedule to ' + formatDate(prefDate) + ' at ' + prefTime + ' has been sent. Daron will confirm availability and send an updated confirmation email within 24 hours.'
+      '✦ Appointment Rescheduled',
+      'Your appointment has been moved to ' + document.getElementById('slotSelectedText').textContent + '. You will receive an updated confirmation email shortly.'
     );
   } catch (err) {
-    btn.disabled = false;
-    btn.textContent = 'Submit Reschedule Request →';
-    showMsg(msg, 'error', 'Unable to submit. Please email royalenergyalchemy@gmail.com or call 814-392-2095.');
+    btn.disabled    = false;
+    btn.textContent = 'Confirm Reschedule →';
+    showMsg(msg, 'error', 'Unable to connect. Please email royalenergyalchemy@gmail.com or call 814-392-2095.');
   }
 });
 
 document.getElementById('contactForm').addEventListener('submit', async function(ev) {
   ev.preventDefault();
-  var btn  = document.getElementById('contactSubmitBtn');
-  var msg  = document.getElementById('contactMsg');
-  var name = document.getElementById('c-name').value.trim();
-  var email = document.getElementById('c-email').value.trim();
+  var btn     = document.getElementById('contactSubmitBtn');
+  var msg     = document.getElementById('contactMsg');
+  var name    = document.getElementById('c-name').value.trim();
+  var email   = document.getElementById('c-email').value.trim();
   var message = document.getElementById('c-message').value.trim();
 
   if (!name || !email || !message) {
@@ -581,7 +667,7 @@ document.getElementById('contactForm').addEventListener('submit', async function
     return;
   }
 
-  btn.disabled = true;
+  btn.disabled    = true;
   btn.textContent = 'Sending...';
 
   try {
@@ -597,7 +683,7 @@ document.getElementById('contactForm').addEventListener('submit', async function
       'Your message has been sent to Daron. Expect a reply within 24 hours. For urgent matters, call 814-392-2095.'
     );
   } catch (err) {
-    btn.disabled = false;
+    btn.disabled    = false;
     btn.textContent = 'Send Message →';
     showMsg(msg, 'error', 'Unable to send. Please email royalenergyalchemy@gmail.com directly.');
   }
@@ -614,38 +700,53 @@ document.getElementById('cancelForm').addEventListener('submit', async function(
     return;
   }
 
-  if (!confirm('Are you sure you want to cancel your appointment? This cannot be undone.')) return;
+  if (!confirm('Are you sure you want to cancel your appointment? This is immediate and cannot be undone.')) return;
 
-  btn.disabled = true;
+  btn.disabled    = true;
   btn.textContent = 'Cancelling...';
 
   try {
-    await logAudit('cancel_request', {
-      old_date:   _sessionData?.session_date,
-      old_time:   _sessionData?.session_time,
-      reason,
-      detail:     document.getElementById('cancel-detail').value.trim() || null,
+    var res  = await fetch('/.netlify/functions/manage-appointment', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({
+        session_id:  _sessionId,
+        action:      'cancel_confirmed',
+        reason,
+        detail:      document.getElementById('cancel-detail').value.trim() || null,
+        client_name: _sessionData ? _sessionData.client_name : null,
+        old_date:    _sessionData ? _sessionData.session_date : null,
+        old_time:    _sessionData ? _sessionData.session_time : null,
+      }),
     });
+    var json = await res.json();
+
+    if (!res.ok) {
+      btn.disabled    = false;
+      btn.textContent = 'Confirm Cancellation';
+      showMsg(msg, 'error', json.error || 'Unable to cancel. Please contact us directly.');
+      return;
+    }
 
     showDone(
-      '✦ Cancellation Confirmed',
+      '✦ Appointment Cancelled',
       'Your appointment has been cancelled. If a refund is due, Daron will process it within 5–7 business days. You will receive a confirmation email shortly.'
     );
   } catch (err) {
-    btn.disabled = false;
+    btn.disabled    = false;
     btn.textContent = 'Confirm Cancellation';
     showMsg(msg, 'error', 'Unable to process. Please email royalenergyalchemy@gmail.com or call 814-392-2095.');
   }
 });
 
-// ── Audit log ────────────────────────────────────────────────────────────────
+// ── Audit log (non-critical) ──────────────────────────────────────────────
 
 async function logAudit(action, extra) {
   extra = extra || {};
   var body = Object.assign({
     session_id:  _sessionId,
     action,
-    client_name: _sessionData?.client_name || null,
+    client_name: _sessionData ? _sessionData.client_name : null,
   }, extra);
 
   try {
@@ -655,12 +756,11 @@ async function logAudit(action, extra) {
       body:    JSON.stringify(body),
     });
   } catch (e) {
-    // Non-fatal: audit log failure should not block the UX
     console.warn('[manage-appointment] audit log failed:', e.message);
   }
 }
 
-// ── Utilities ────────────────────────────────────────────────────────────────
+// ── Utilities ─────────────────────────────────────────────────────────────
 
 function showError(text) {
   document.getElementById('loadingState').classList.add('hidden');
@@ -669,8 +769,8 @@ function showError(text) {
 }
 
 function showMsg(el, type, text) {
-  el.className  = 'form-msg ' + type;
-  el.textContent = text;
+  el.className     = 'form-msg ' + type;
+  el.textContent   = text;
   el.style.display = 'block';
   el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
@@ -693,9 +793,10 @@ function formatDate(d) {
 function formatTime(t) {
   if (!t) return '';
   try {
-    var [h, m] = t.split(':').map(Number);
-    var ampm = h >= 12 ? 'PM' : 'AM';
-    var h12  = h % 12 || 12;
+    var parts = t.split(':').map(Number);
+    var h     = parts[0], m = parts[1] || 0;
+    var ampm  = h >= 12 ? 'PM' : 'AM';
+    var h12   = h % 12 || 12;
     return h12 + ':' + String(m).padStart(2,'0') + ' ' + ampm + ' ET';
   } catch { return t; }
 }

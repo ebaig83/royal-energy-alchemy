@@ -215,7 +215,7 @@ async function getClientHistory(sb, params) {
       .limit(50)
   );
 
-  return { communications: comms, _migration_needed: comms.length === 0 };
+  return { communications: comms };
 }
 
 // ════════════════════════════════════════════════════════════════════════════

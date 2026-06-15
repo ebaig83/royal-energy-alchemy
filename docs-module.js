@@ -1,420 +1,501 @@
 // docs-module.js
-// Documentation & Handoff Center — Phase 1, Sprint 13B
-// Renders markdown docs, tracks review status, stores state in localStorage.
+// Documentation & Handoff Center
+// Protected dashboard module — readable from dashboard.html only.
+// Fetches markdown from /docs/, renders it with full styling, tracks per-doc
+// review/completion status in localStorage (rea_doc_review_status).
 
 (function () {
   'use strict';
 
-  // ── Document registry ─────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────
+  // Document Registry — 4 operational handoff documents
+  // ─────────────────────────────────────────────────────────────────────────
   var DOCS = [
     {
-      key:   'executive-overview',
-      file:  '/docs/executive-system-overview.md',
+      key:  'executive-overview',
+      file: '/docs/executive-system-overview.md',
       title: 'Executive System Overview',
-      desc:  'Business-level overview of the entire platform — what it does, what it tracks, and what you own.',
-      icon:  '◇',
+      badge: 'For Daron',
+      badgeColor: '#e8b84b',
+      desc: 'High-level explanation of what this platform is, what every system does, and what has been built. Start here.',
+      icon: '◇',
     },
     {
-      key:   'practitioner-guide',
-      file:  '/docs/practitioner-user-guide.md',
+      key:  'practitioner-guide',
+      file: '/docs/practitioner-user-guide.md',
       title: 'Practitioner User Guide',
-      desc:  'Daily workflow guide — before, during, and after sessions. Tips and troubleshooting.',
-      icon:  '✦',
+      badge: 'Daily Operations',
+      badgeColor: '#22c98a',
+      desc: 'Step-by-step daily workflow — booking, payment, intake review, session completion, outcome tracking, aftercare, and follow-up.',
+      icon: '✦',
     },
     {
-      key:   'admin-guide',
-      file:  '/docs/administrator-technical-guide.md',
+      key:  'admin-guide',
+      file: '/docs/administrator-technical-guide.md',
       title: 'Administrator Technical Guide',
-      desc:  'Full technical reference: stack, database schema, environment variables, migrations, QA.',
-      icon:  '⚙',
+      badge: 'Technical Reference',
+      badgeColor: '#b09ef8',
+      desc: 'How to maintain the platform: Netlify, Supabase, migrations, environment variables, deployment, and troubleshooting.',
+      icon: '⚙',
     },
     {
-      key:   'ai-architecture',
-      file:  '/docs/ai-architecture-blueprint.md',
+      key:  'ai-architecture',
+      file: '/docs/ai-architecture-blueprint.md',
       title: 'AI Architecture Blueprint',
-      desc:  'How the AI pattern engine works today and the roadmap for multi-practitioner expansion.',
-      icon:  '◉',
-    },
-    {
-      key:   'platform-architecture',
-      file:  '/docs/PLATFORM_ARCHITECTURE.md',
-      title: 'Platform Architecture',
-      desc:  'Full platform architecture including deployment, functions, and data flow.',
-      icon:  '◈',
+      badge: 'AI & Automation',
+      badgeColor: '#22c98a',
+      desc: 'How the AI pattern engine works today, the agent roadmap, orchestrator model, and future automation layers.',
+      icon: '◉',
     },
   ];
 
   var STATUSES = ['Not Started', 'In Review', 'Reviewed', 'Complete', 'Needs Update'];
-
-  var STATUS_COLORS = {
-    'Not Started':  '#6660a0',
-    'In Review':    '#e8b84b',
-    'Reviewed':     '#22c98a',
-    'Complete':     '#22c98a',
-    'Needs Update': '#ee7070',
+  var STATUS_STYLE = {
+    'Not Started':  { color: '#6660a0', bg: '#6660a010', border: '#6660a030' },
+    'In Review':    { color: '#e8b84b', bg: '#e8b84b10', border: '#e8b84b40' },
+    'Reviewed':     { color: '#22c98a', bg: '#22c98a10', border: '#22c98a40' },
+    'Complete':     { color: '#22c98a', bg: '#22c98a18', border: '#22c98a55' },
+    'Needs Update': { color: '#ee7070', bg: '#ee707010', border: '#ee707040' },
   };
 
-  // ── LocalStorage helpers ──────────────────────────────────────────────────
+  var LS_KEY = 'rea_doc_review_status';
 
-  function storeKey(key) { return 'rea_doc_' + key; }
+  // ─────────────────────────────────────────────────────────────────────────
+  // Persistence helpers
+  // ─────────────────────────────────────────────────────────────────────────
 
-  function getDocState(key) {
+  function loadAllStates() {
     try {
-      var raw = localStorage.getItem(storeKey(key));
-      return raw ? JSON.parse(raw) : { status: 'Not Started', notes: '', reviewedAt: null };
-    } catch(e) { return { status: 'Not Started', notes: '', reviewedAt: null }; }
+      return JSON.parse(localStorage.getItem(LS_KEY) || '{}');
+    } catch (_) { return {}; }
   }
 
-  function saveDocState(key, state) {
-    try { localStorage.setItem(storeKey(key), JSON.stringify(state)); } catch(e) {}
+  function getState(key) {
+    var all = loadAllStates();
+    return all[key] || { status: 'Not Started', notes: '', reviewed_at: null, completed_at: null };
   }
 
-  // ── Markdown renderer ─────────────────────────────────────────────────────
+  function saveState(key, patch) {
+    var all = loadAllStates();
+    all[key] = Object.assign(getState(key), patch);
+    try { localStorage.setItem(LS_KEY, JSON.stringify(all)); } catch (_) {}
+  }
 
-  function renderMarkdown(md) {
-    // Escape HTML in code blocks first, then process
-    var lines    = md.split('\n');
-    var html     = [];
-    var inCode   = false;
-    var codeLang = '';
-    var codeLines = [];
-    var inTable  = false;
-    var tableLines = [];
-    var inList   = false;
-    var listType = '';
-    var listItems = [];
+  // ─────────────────────────────────────────────────────────────────────────
+  // Markdown renderer
+  // ─────────────────────────────────────────────────────────────────────────
 
-    function flushList() {
-      if (!listItems.length) return;
-      var tag = listType === 'ol' ? 'ol' : 'ul';
-      html.push('<' + tag + ' class="doc-list">' + listItems.map(function(l){ return '<li>' + l + '</li>'; }).join('') + '</' + tag + '>');
-      listItems = [];
-      inList    = false;
+  function escHtml(s) {
+    return String(s || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function inlineRender(s) {
+    return escHtml(s)
+      // Bold
+      .replace(/\*\*([^*]+?)\*\*/g, '<strong>$1</strong>')
+      // Italic
+      .replace(/\*([^*]+?)\*/g, '<em>$1</em>')
+      // Inline code
+      .replace(/`([^`]+?)`/g, '<code class="rmd-code">$1</code>')
+      // Links
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" class="rmd-link">$1</a>')
+      // Strikethrough
+      .replace(/~~([^~]+?)~~/g, '<del>$1</del>');
+  }
+
+  function renderMarkdown(raw) {
+    var lines  = (raw || '').split('\n');
+    var out    = [];
+    var i      = 0;
+
+    function peek(n) { return lines[i + (n || 0)] || ''; }
+    function consume() { return lines[i++]; }
+
+    function flushBuffer(buf, tag) {
+      if (!buf.length) return;
+      out.push('<' + tag + ' class="rmd-' + tag + '">' + buf.map(inlineRender).join('<br>') + '</' + tag + '>');
     }
 
-    function flushTable() {
-      if (!tableLines.length) return;
-      var rows = tableLines.filter(function(l){ return !/^[\s\|\-:]+$/.test(l); });
-      if (!rows.length) { tableLines = []; inTable = false; return; }
-      var header = rows[0].split('|').map(function(c){ return c.trim(); }).filter(Boolean);
-      var body   = rows.slice(1);
-      var tableHtml = '<div class="doc-table-wrap"><table class="doc-table"><thead><tr>' +
-        header.map(function(h){ return '<th>' + inlineRender(h) + '</th>'; }).join('') +
-        '</tr></thead><tbody>' +
-        body.map(function(row){
-          var cells = row.split('|').map(function(c){ return c.trim(); }).filter(Boolean);
-          return '<tr>' + cells.map(function(c){ return '<td>' + inlineRender(c) + '</td>'; }).join('') + '</tr>';
-        }).join('') +
-        '</tbody></table></div>';
-      html.push(tableHtml);
-      tableLines = [];
-      inTable    = false;
-    }
+    while (i < lines.length) {
+      var line = consume();
 
-    function inlineRender(s) {
-      return s
-        .replace(/`([^`]+)`/g, '<code class="doc-inline-code">$1</code>')
-        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*([^*]+)\*/g, '<em>$1</em>')
-        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" class="doc-link">$1</a>')
-        .replace(/~~([^~]+)~~/g, '<del>$1</del>');
-    }
-
-    for (var i = 0; i < lines.length; i++) {
-      var line = lines[i];
-
-      // Code block fence
-      if (line.match(/^```/)) {
-        if (!inCode) {
-          flushList();
-          flushTable();
-          inCode   = true;
-          codeLang = line.slice(3).trim();
-          codeLines = [];
-        } else {
-          var esc = codeLines.join('\n').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-          html.push('<pre class="doc-pre"><code class="doc-code">' + esc + '</code></pre>');
-          inCode = false;
-          codeLines = [];
+      // Fenced code block
+      var fenceMatch = line.match(/^```(\w*)/);
+      if (fenceMatch) {
+        var lang  = fenceMatch[1] || '';
+        var codeLines = [];
+        while (i < lines.length && !lines[i].match(/^```/)) {
+          codeLines.push(consume());
         }
+        if (i < lines.length) consume(); // consume closing ```
+        out.push(
+          '<pre class="rmd-pre"><code class="rmd-codeblock"' + (lang ? ' data-lang="' + escHtml(lang) + '"' : '') + '>' +
+          escHtml(codeLines.join('\n')) +
+          '</code></pre>'
+        );
         continue;
       }
 
-      if (inCode) { codeLines.push(line); continue; }
-
-      // Table detection
-      if (line.includes('|')) {
-        flushList();
-        inTable = true;
-        tableLines.push(line);
+      // Horizontal rule
+      if (line.match(/^(---+|===+|\*\*\*+)$/)) {
+        out.push('<hr class="rmd-hr">');
         continue;
       }
-      if (inTable && !line.includes('|')) { flushTable(); }
-
-      // HR
-      if (line.match(/^---+$/)) { flushList(); html.push('<hr class="doc-hr">'); continue; }
 
       // Headings
       var hMatch = line.match(/^(#{1,4})\s+(.+)/);
       if (hMatch) {
-        flushList();
         var level = hMatch[1].length;
-        html.push('<h' + level + ' class="doc-h' + level + '">' + inlineRender(hMatch[2]) + '</h' + level + '>');
-        continue;
-      }
-
-      // Unordered list
-      var ulMatch = line.match(/^[\s]*[-*+]\s+(.+)/);
-      if (ulMatch) {
-        if (inList && listType !== 'ul') flushList();
-        inList   = true;
-        listType = 'ul';
-        listItems.push(inlineRender(ulMatch[1]));
-        continue;
-      }
-
-      // Ordered list
-      var olMatch = line.match(/^[\s]*\d+\.\s+(.+)/);
-      if (olMatch) {
-        if (inList && listType !== 'ol') flushList();
-        inList   = true;
-        listType = 'ol';
-        listItems.push(inlineRender(olMatch[1]));
-        continue;
-      }
-
-      // Blank line — flush lists
-      if (!line.trim()) {
-        flushList();
-        flushTable();
-        html.push('<div class="doc-spacer"></div>');
+        var cls   = 'rmd-h' + level;
+        out.push('<h' + level + ' class="' + cls + '">' + inlineRender(hMatch[2]) + '</h' + level + '>');
         continue;
       }
 
       // Blockquote
-      var bqMatch = line.match(/^>\s*(.+)/);
-      if (bqMatch) { flushList(); html.push('<blockquote class="doc-bq">' + inlineRender(bqMatch[1]) + '</blockquote>'); continue; }
+      if (line.match(/^>\s/)) {
+        var bqLines = [line.replace(/^>\s?/, '')];
+        while (i < lines.length && lines[i].match(/^>\s/)) {
+          bqLines.push(consume().replace(/^>\s?/, ''));
+        }
+        out.push('<blockquote class="rmd-blockquote">' + bqLines.map(inlineRender).join('<br>') + '</blockquote>');
+        continue;
+      }
+
+      // Table (header row must have pipes and next non-empty line must be separator)
+      if (line.includes('|') && line.trim().startsWith('|')) {
+        var tableLines = [line];
+        while (i < lines.length && lines[i].includes('|')) {
+          tableLines.push(consume());
+        }
+        if (tableLines.length >= 2) {
+          var sep = tableLines[1];
+          if (sep.match(/^[\s|:\-]+$/)) {
+            var headerCells = tableLines[0].split('|').map(function(c){ return c.trim(); }).filter(Boolean);
+            var bodyRows    = tableLines.slice(2).map(function(row) {
+              return row.split('|').map(function(c){ return c.trim(); }).filter(Boolean);
+            });
+            var tHtml = '<div class="rmd-table-wrap"><table class="rmd-table"><thead><tr>' +
+              headerCells.map(function(h){ return '<th>' + inlineRender(h) + '</th>'; }).join('') +
+              '</tr></thead><tbody>' +
+              bodyRows.map(function(cells){
+                return '<tr>' + cells.map(function(c){ return '<td>' + inlineRender(c) + '</td>'; }).join('') + '</tr>';
+              }).join('') +
+              '</tbody></table></div>';
+            out.push(tHtml);
+            continue;
+          }
+        }
+        // Not a table — fall through with first line
+        line = tableLines[0];
+      }
+
+      // Unordered list
+      if (line.match(/^(\s*[-*+])\s+/)) {
+        var ulItems = [line.replace(/^\s*[-*+]\s+/, '')];
+        while (i < lines.length && lines[i].match(/^\s*[-*+]\s+/)) {
+          ulItems.push(consume().replace(/^\s*[-*+]\s+/, ''));
+        }
+        out.push('<ul class="rmd-ul">' + ulItems.map(function(item){
+          return '<li>' + inlineRender(item) + '</li>';
+        }).join('') + '</ul>');
+        continue;
+      }
+
+      // Ordered list
+      if (line.match(/^\d+\.\s+/)) {
+        var olItems = [line.replace(/^\d+\.\s+/, '')];
+        while (i < lines.length && lines[i].match(/^\d+\.\s+/)) {
+          olItems.push(consume().replace(/^\d+\.\s+/, ''));
+        }
+        out.push('<ol class="rmd-ol">' + olItems.map(function(item){
+          return '<li>' + inlineRender(item) + '</li>';
+        }).join('') + '</ol>');
+        continue;
+      }
+
+      // Blank line
+      if (!line.trim()) {
+        out.push('<div class="rmd-spacer"></div>');
+        continue;
+      }
 
       // Paragraph
-      flushList();
-      html.push('<p class="doc-p">' + inlineRender(line) + '</p>');
+      out.push('<p class="rmd-p">' + inlineRender(line) + '</p>');
     }
 
-    flushList();
-    flushTable();
-    return html.join('\n');
+    return out.join('\n');
   }
 
-  // ── Render functions ──────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────
+  // Styles — injected once into <head>
+  // ─────────────────────────────────────────────────────────────────────────
+
+  (function injectStyles() {
+    if (document.getElementById('rmd-styles')) return;
+    var el = document.createElement('style');
+    el.id  = 'rmd-styles';
+    el.textContent = [
+      /* Viewer prose */
+      '.rmd-h1{font-family:Cinzel,serif;font-size:28px;letter-spacing:.03em;color:#f8e090;margin:0 0 18px;padding-bottom:12px;border-bottom:1px solid rgba(232,184,75,.2);line-height:1.3}',
+      '.rmd-h2{font-family:Cinzel,serif;font-size:20px;letter-spacing:.03em;color:#e8b84b;margin:28px 0 12px;line-height:1.3}',
+      '.rmd-h3{font-family:Cinzel,serif;font-size:15px;letter-spacing:.08em;color:#c8c4e0;text-transform:uppercase;margin:22px 0 10px}',
+      '.rmd-h4{font-family:Cinzel,serif;font-size:12px;letter-spacing:.12em;color:#9990c0;text-transform:uppercase;margin:18px 0 8px}',
+      '.rmd-p{font-size:18px;line-height:1.85;color:#dddaee;margin:0 0 14px}',
+      '.rmd-ul,.rmd-ol{font-size:18px;line-height:1.85;color:#dddaee;margin:0 0 16px;padding-left:26px}',
+      '.rmd-ul li,.rmd-ol li{margin-bottom:8px}',
+      '.rmd-pre{background:#020010;border:1px solid rgba(232,184,75,.15);padding:20px 22px;overflow-x:auto;margin:16px 0}',
+      '.rmd-codeblock{font-family:\'Courier New\',monospace;font-size:13.5px;color:#e8b84b;white-space:pre;display:block}',
+      '.rmd-code{font-family:\'Courier New\',monospace;font-size:14px;color:#e8b84b;background:rgba(232,184,75,.07);padding:1px 6px;border:1px solid rgba(232,184,75,.2)}',
+      '.rmd-link{color:#22c98a;text-decoration:underline;transition:color .2s}.rmd-link:hover{color:#34e89e}',
+      '.rmd-hr{border:none;border-top:1px solid rgba(232,184,75,.15);margin:28px 0}',
+      '.rmd-blockquote{border-left:3px solid rgba(232,184,75,.4);padding:10px 20px;margin:14px 0;color:#9990c0;font-style:italic;font-size:17px;background:rgba(232,184,75,.03)}',
+      '.rmd-table-wrap{overflow-x:auto;margin:16px 0}',
+      '.rmd-table{width:100%;border-collapse:collapse}',
+      '.rmd-table th{font-family:Cinzel,serif;font-size:11px;letter-spacing:.25em;color:#e8b84b;text-transform:uppercase;padding:12px 16px;text-align:left;border-bottom:1px solid rgba(232,184,75,.2);background:rgba(10,6,24,.7);white-space:nowrap}',
+      '.rmd-table td{padding:12px 16px;font-size:16px;color:#dddaee;border-bottom:1px solid rgba(232,184,75,.07);vertical-align:top}',
+      '.rmd-table tr:hover td{background:rgba(232,184,75,.03)}',
+      '.rmd-spacer{height:6px}',
+      /* Card grid */
+      '.doc-card{background:#09050f;border:1px solid;padding:26px 24px;cursor:pointer;transition:all .22s;position:relative;display:flex;flex-direction:column;gap:12px}',
+      '.doc-card:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,.4)}',
+      '.doc-badge{font-family:Cinzel,serif;font-size:9px;letter-spacing:.35em;text-transform:uppercase;padding:3px 10px;display:inline-block}',
+      '.doc-status-chip{font-family:Cinzel,serif;font-size:9px;letter-spacing:.25em;text-transform:uppercase;padding:3px 10px;border:1px solid}',
+      /* Summary bar */
+      '.doc-summary{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:28px}',
+      '.doc-kpi{background:#09050f;border:1px solid rgba(232,184,75,.12);padding:16px 18px}',
+      '.doc-kpi-label{font-family:Cinzel,serif;font-size:9px;letter-spacing:.35em;color:#6660a0;text-transform:uppercase;margin-bottom:6px}',
+      '.doc-kpi-value{font-family:Cinzel,serif;font-size:28px;color:#f0ecff}',
+      /* Controls */
+      '.doc-ctrl-btn{font-family:Cinzel,serif;font-size:10px;letter-spacing:.25em;text-transform:uppercase;padding:9px 18px;border:1px solid;cursor:pointer;transition:all .2s;background:transparent}',
+      '.doc-ctrl-btn:hover{opacity:.8}',
+      '.doc-select{background:#0a0618;border:1px solid rgba(232,184,75,.3);color:#f0ecff;padding:9px 12px;font-family:Cinzel,serif;font-size:11px;letter-spacing:.1em}',
+      '.doc-notes-input{background:#0a0618;border:1px solid rgba(232,184,75,.25);color:#f0ecff;padding:9px 12px;font-family:"EB Garamond",serif;font-size:16px;width:100%}',
+      '.doc-notes-input::placeholder{color:rgba(246,241,255,.35)}',
+      '.doc-notes-input:focus{outline:none;border-color:rgba(232,184,75,.6)}',
+      /* Viewer */
+      '.doc-viewer{background:#06030e;border:1px solid rgba(232,184,75,.12);padding:44px 48px;max-width:860px}',
+      '@media(max-width:700px){.doc-viewer{padding:24px 20px}}',
+      /* Nav back */
+      '.doc-back-btn{font-family:Cinzel,serif;font-size:10px;letter-spacing:.3em;text-transform:uppercase;background:transparent;border:1px solid rgba(232,184,75,.3);color:#e8b84b;padding:7px 16px;cursor:pointer;transition:all .2s}',
+      '.doc-back-btn:hover{background:rgba(232,184,75,.06)}',
+      /* Toast */
+      '.doc-toast{position:fixed;bottom:28px;right:28px;z-index:9999;font-family:Cinzel,serif;font-size:11px;letter-spacing:.3em;text-transform:uppercase;padding:12px 22px;transition:opacity .4s}',
+    ].join('');
+    document.head.appendChild(el);
+  })();
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Helpers
+  // ─────────────────────────────────────────────────────────────────────────
 
   function esc(s) {
     return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
-  function statusBadge(status) {
-    var col = STATUS_COLORS[status] || '#6660a0';
-    return '<span style="font-family:\'Cinzel\',serif;font-size:10px;letter-spacing:.2em;text-transform:uppercase;' +
-      'color:' + col + ';background:' + col + '15;border:1px solid ' + col + '44;padding:3px 10px">' +
-      esc(status) + '</span>';
+  function fmtDate(iso) {
+    if (!iso) return '';
+    try {
+      return new Date(iso).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+    } catch(_){ return iso; }
   }
 
-  function renderCards(wrap) {
-    var grid = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin-bottom:32px">';
-    DOCS.forEach(function(doc) {
-      var state = getDocState(doc.key);
-      var col   = STATUS_COLORS[state.status] || '#6660a0';
-      grid +=
-        '<div style="background:#09050f;border:1px solid ' + col + '33;padding:24px;cursor:pointer;' +
-          'transition:all .2s;border-left:3px solid ' + col + '" ' +
-          'onclick="window.docsOpenViewer(\'' + doc.key + '\')" ' +
-          'onmouseover="this.style.background=\'#e8b84b05\'" onmouseout="this.style.background=\'#09050f\'">' +
-          '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:14px">' +
-            '<div style="font-size:22px;color:' + col + ';line-height:1">' + doc.icon + '</div>' +
-            statusBadge(state.status) +
-          '</div>' +
-          '<div style="font-family:\'Cinzel\',serif;font-size:14px;letter-spacing:.05em;color:#f0ecff;margin-bottom:8px">' + esc(doc.title) + '</div>' +
-          '<div style="font-family:\'EB Garamond\',serif;font-size:15px;color:#9b9ac0;line-height:1.6;margin-bottom:12px">' + esc(doc.desc) + '</div>' +
-          (state.reviewedAt ? '<div style="font-family:\'Cinzel\',serif;font-size:10px;letter-spacing:.15em;color:#6660a0;text-transform:uppercase">Last reviewed: ' + esc(state.reviewedAt) + '</div>' : '') +
-        '</div>';
-    });
-    grid += '</div>';
+  function statusChip(status) {
+    var s = STATUS_STYLE[status] || STATUS_STYLE['Not Started'];
+    return '<span class="doc-status-chip" style="color:' + s.color + ';background:' + s.bg + ';border-color:' + s.border + '">' + esc(status) + '</span>';
+  }
 
-    // Completion bar
-    var counts = { 'Not Started':0, 'In Review':0, 'Reviewed':0, 'Complete':0, 'Needs Update':0 };
-    var complete = 0;
-    DOCS.forEach(function(doc) {
-      var s = getDocState(doc.key).status;
-      counts[s] = (counts[s] || 0) + 1;
-      if (s === 'Reviewed' || s === 'Complete') complete++;
-    });
-    var pct = Math.round(complete / DOCS.length * 100);
+  function toast(msg, color) {
+    var t = document.createElement('div');
+    t.className   = 'doc-toast';
+    t.textContent = msg;
+    t.style.background  = color || '#22c98a';
+    t.style.color       = '#000';
+    t.style.boxShadow   = '0 4px 20px rgba(0,0,0,.5)';
+    document.body.appendChild(t);
+    setTimeout(function(){ t.style.opacity='0'; setTimeout(function(){ t.remove(); }, 450); }, 2500);
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Card grid view
+  // ─────────────────────────────────────────────────────────────────────────
+
+  function renderGrid(wrap) {
+    var all      = loadAllStates();
+    var reviewed = DOCS.filter(function(d){ var s = (all[d.key]||{}).status; return s==='Reviewed'||s==='Complete'; }).length;
+    var complete = DOCS.filter(function(d){ return (all[d.key]||{}).status==='Complete'; }).length;
+    var needsUpd = DOCS.filter(function(d){ return (all[d.key]||{}).status==='Needs Update'; }).length;
+    var inReview = DOCS.filter(function(d){ return (all[d.key]||{}).status==='In Review'; }).length;
 
     var summary =
-      '<div style="background:#09050f;border:1px solid #e8b84b22;padding:20px 24px;margin-bottom:28px">' +
-        '<div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:14px;flex-wrap:wrap">' +
-          '<div style="font-family:\'Cinzel\',serif;font-size:12px;letter-spacing:.35em;color:#e8b84b;text-transform:uppercase">Documentation Progress</div>' +
-          '<div style="font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:.2em;color:#f0ecff">' + complete + ' / ' + DOCS.length + ' reviewed</div>' +
-        '</div>' +
-        '<div style="height:6px;background:#e8b84b12;border-radius:0;overflow:hidden">' +
-          '<div style="height:100%;width:' + pct + '%;background:linear-gradient(90deg,#22c98a,#22c98a);transition:width .4s"></div>' +
-        '</div>' +
-        '<div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:12px">' +
-          Object.entries(counts).filter(function(e){ return e[1] > 0; }).map(function(e){
-            return '<span style="font-size:13px;color:' + (STATUS_COLORS[e[0]]||'#6660a0') + '">' + e[0] + ': <strong>' + e[1] + '</strong></span>';
-          }).join('') +
-        '</div>' +
+      '<div class="doc-summary">' +
+        kpi('Total Documents', DOCS.length, '#f0ecff') +
+        kpi('Reviewed',        reviewed,    '#22c98a') +
+        kpi('Complete',        complete,    '#22c98a') +
+        kpi('In Review',       inReview,    '#e8b84b') +
+        (needsUpd ? kpi('Needs Update', needsUpd, '#ee7070') : '') +
       '</div>';
 
-    wrap.innerHTML =
-      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px">' +
-        '<div>' +
-          '<div style="font-family:\'Cinzel\',serif;font-size:16px;letter-spacing:.08em;color:#e8b84b">Documentation Center</div>' +
-          '<div style="font-family:\'EB Garamond\',serif;font-size:15px;color:#9b9ac0;margin-top:4px">Review, track, and complete all system documentation without accessing code or GitHub.</div>' +
-        '</div>' +
-      '</div>' +
-      summary + grid;
+    var cards =
+      '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px">' +
+      DOCS.map(function(doc) {
+        var state = getState(doc.key);
+        var bdr   = STATUS_STYLE[state.status] || STATUS_STYLE['Not Started'];
+        return [
+          '<div class="doc-card" style="border-color:' + bdr.border + ';border-left-width:3px;border-left-color:' + (STATUS_STYLE[state.status]||{}).color + '" onclick="window.docsOpen(\'' + doc.key + '\')">',
+            '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">',
+              '<span style="font-size:20px;color:' + doc.badgeColor + ';line-height:1">' + doc.icon + '</span>',
+              statusChip(state.status),
+            '</div>',
+            '<div>',
+              '<div style="font-family:Cinzel,serif;font-size:15px;letter-spacing:.05em;color:#f0ecff;margin-bottom:6px">' + esc(doc.title) + '</div>',
+              '<span class="doc-badge" style="color:' + doc.badgeColor + ';background:' + doc.badgeColor + '15;margin-bottom:8px">' + esc(doc.badge) + '</span>',
+              '<div style="font-family:\'EB Garamond\',serif;font-size:16px;color:#9990c0;line-height:1.6;margin-top:6px">' + esc(doc.desc) + '</div>',
+            '</div>',
+            '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:4px">',
+              '<div style="font-family:Cinzel,serif;font-size:10px;letter-spacing:.15em;color:#6660a0;text-transform:uppercase">' +
+                (state.reviewed_at ? 'Reviewed ' + fmtDate(state.reviewed_at) : state.notes ? 'Note: ' + esc(state.notes.slice(0,40)) : 'Not yet reviewed') +
+              '</div>',
+              '<div style="font-family:Cinzel,serif;font-size:10px;letter-spacing:.25em;color:#e8b84b;text-transform:uppercase">Open →</div>',
+            '</div>',
+          '</div>',
+        ].join('');
+      }).join('') +
+      '</div>';
+
+    var header =
+      '<div style="margin-bottom:24px">' +
+        '<div style="font-family:Cinzel,serif;font-size:18px;letter-spacing:.06em;color:#e8b84b;margin-bottom:6px">📘 Handoff Center</div>' +
+        '<div style="font-family:\'EB Garamond\',serif;font-size:16px;color:#9990c0">Review, track, and mark complete the platform documentation. No code access needed.</div>' +
+      '</div>';
+
+    wrap.innerHTML = header + summary + cards;
   }
 
-  // ── Viewer ────────────────────────────────────────────────────────────────
+  function kpi(label, value, color) {
+    return '<div class="doc-kpi"><div class="doc-kpi-label">' + esc(label) + '</div><div class="doc-kpi-value" style="color:' + color + '">' + value + '</div></div>';
+  }
 
-  window.docsOpenViewer = async function(docKey) {
-    var doc   = DOCS.find(function(d){ return d.key === docKey; });
-    var wrap  = document.getElementById('docs-wrap');
+  // ─────────────────────────────────────────────────────────────────────────
+  // Document viewer
+  // ─────────────────────────────────────────────────────────────────────────
+
+  window.docsOpen = async function(docKey) {
+    var doc  = DOCS.find(function(d){ return d.key === docKey; });
+    var wrap = document.getElementById('docs-wrap');
     if (!doc || !wrap) return;
 
-    var state = getDocState(docKey);
+    var state = getState(docKey);
 
-    // Show loading panel
+    // Show skeleton immediately
     wrap.innerHTML =
-      '<div style="margin-bottom:20px;display:flex;align-items:center;gap:12px">' +
-        '<button onclick="window.docsShowCards()" style="font-family:\'Cinzel\',serif;font-size:10px;letter-spacing:.3em;' +
-          'text-transform:uppercase;background:transparent;border:1px solid #e8b84b44;color:#e8b84b;' +
-          'padding:7px 14px;cursor:pointer">← All Docs</button>' +
-        '<div style="font-family:\'Cinzel\',serif;font-size:13px;color:#9b9ac0;letter-spacing:.05em">' + esc(doc.title) + '</div>' +
-      '</div>' +
-      '<div id="docs-viewer-controls" style="background:#09050f;border:1px solid #e8b84b22;padding:18px 22px;margin-bottom:20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">' +
-        '<div style="flex:1;min-width:200px">' +
-          '<label style="font-family:\'Cinzel\',serif;font-size:10px;letter-spacing:.3em;color:#e8b84b;text-transform:uppercase;display:block;margin-bottom:6px">Status</label>' +
-          '<select id="docs-status-sel" onchange="window.docsUpdateStatus(\'' + docKey + '\')" ' +
-            'style="background:#0a0618;border:1px solid #e8b84b33;color:#f0ecff;padding:8px 12px;font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:.15em;width:100%">' +
-            STATUSES.map(function(s){ return '<option value="' + s + '"' + (s===state.status?' selected':'') + '>' + s + '</option>'; }).join('') +
-          '</select>' +
-        '</div>' +
-        '<div style="flex:2;min-width:240px">' +
-          '<label style="font-family:\'Cinzel\',serif;font-size:10px;letter-spacing:.3em;color:#e8b84b;text-transform:uppercase;display:block;margin-bottom:6px">Notes</label>' +
-          '<input id="docs-notes-input" type="text" value="' + esc(state.notes) + '" ' +
-            'placeholder="Add notes about this document..." ' +
-            'oninput="window.docsUpdateNotes(\'' + docKey + '\')" ' +
-            'style="background:#0a0618;border:1px solid #e8b84b33;color:#f0ecff;padding:8px 12px;font-family:\'EB Garamond\',serif;font-size:15px;width:100%">' +
-        '</div>' +
-        '<div style="display:flex;gap:8px;flex-shrink:0">' +
-          '<button onclick="window.docsMarkReviewed(\'' + docKey + '\')" ' +
-            'style="font-family:\'Cinzel\',serif;font-size:10px;letter-spacing:.25em;text-transform:uppercase;' +
-              'padding:8px 16px;background:#22c98a14;border:1px solid #22c98a44;color:#22c98a;cursor:pointer">Mark Reviewed</button>' +
-          '<button onclick="window.docsMarkComplete(\'' + docKey + '\')" ' +
-            'style="font-family:\'Cinzel\',serif;font-size:10px;letter-spacing:.25em;text-transform:uppercase;' +
-              'padding:8px 16px;background:#e8b84b14;border:1px solid #e8b84b44;color:#e8b84b;cursor:pointer">Mark Complete</button>' +
-        '</div>' +
-      '</div>' +
-      '<div id="docs-viewer-content" style="font-family:\'EB Garamond\',serif;font-size:17px;line-height:1.8;color:#dddaee;background:#09050f;border:1px solid #e8b84b15;padding:36px 40px;max-width:900px">' +
-        '<div style="font-family:\'Cinzel\',serif;font-size:12px;letter-spacing:.3em;color:#e8b84b44;text-transform:uppercase">Loading document…</div>' +
+      _viewerShell(doc, state) +
+      '<div class="doc-viewer" id="doc-viewer-body">' +
+        '<div style="font-family:Cinzel,serif;font-size:12px;letter-spacing:.3em;color:#e8b84b44;text-transform:uppercase;text-align:center;padding:48px 0">Loading document…</div>' +
       '</div>';
 
-    // Fetch and render markdown
+    // Fetch markdown
     try {
-      var res  = await fetch(doc.file + '?_=' + Date.now());
-      if (!res.ok) throw new Error('HTTP ' + res.status);
+      var res  = await fetch(doc.file + '?v=' + Date.now(), { headers: { Accept: 'text/plain,text/markdown,*/*' } });
+      if (!res.ok) throw new Error('HTTP ' + res.status + ' — document not accessible');
       var text = await res.text();
-      document.getElementById('docs-viewer-content').innerHTML = renderMarkdown(text);
+      // Guard: if we got HTML instead of markdown (e.g. SPA redirect)
+      if (text.trim().toLowerCase().startsWith('<!doctype') || text.trim().startsWith('<html')) {
+        throw new Error('Received HTML instead of Markdown — check /docs/ path');
+      }
+      document.getElementById('doc-viewer-body').innerHTML = renderMarkdown(text);
     } catch(e) {
-      document.getElementById('docs-viewer-content').innerHTML =
-        '<div style="color:#ee7070;padding:24px">Could not load document: ' + esc(e.message) + '</div>';
+      document.getElementById('doc-viewer-body').innerHTML =
+        '<div style="border:1px solid rgba(238,68,68,.3);background:rgba(238,68,68,.06);padding:24px 28px;color:#ee7070">' +
+          '<div style="font-family:Cinzel,serif;font-size:12px;letter-spacing:.3em;text-transform:uppercase;margin-bottom:10px">Document Load Error</div>' +
+          '<div style="font-size:17px;line-height:1.7">' + esc(e.message) + '</div>' +
+          '<div style="font-size:15px;color:#9990c0;margin-top:12px">Expected path: <code style="color:#e8b84b">' + esc(doc.file) + '</code></div>' +
+        '</div>';
     }
   };
 
-  window.docsShowCards = function() {
-    var wrap = document.getElementById('docs-wrap');
-    if (wrap) renderCards(wrap);
-  };
+  function _viewerShell(doc, state) {
+    return [
+      '<div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap">',
+        '<button class="doc-back-btn" onclick="window.docsShowGrid()">← All Documents</button>',
+        '<div style="font-family:Cinzel,serif;font-size:11px;letter-spacing:.2em;color:#9990c0;text-transform:uppercase">' + esc(doc.title) + '</div>',
+      '</div>',
 
-  window.docsUpdateStatus = function(docKey) {
-    var sel = document.getElementById('docs-status-sel');
-    if (!sel) return;
-    var state = getDocState(docKey);
-    state.status = sel.value;
-    saveDocState(docKey, state);
-  };
+      // Controls bar
+      '<div style="background:#09050f;border:1px solid rgba(232,184,75,.18);padding:20px 22px;margin-bottom:20px;display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end">',
 
-  window.docsUpdateNotes = function(docKey) {
-    var inp = document.getElementById('docs-notes-input');
-    if (!inp) return;
-    var state = getDocState(docKey);
-    state.notes = inp.value;
-    saveDocState(docKey, state);
-  };
+        // Status
+        '<div style="flex:0 0 auto">',
+          '<div style="font-family:Cinzel,serif;font-size:9px;letter-spacing:.35em;color:#e8b84b;text-transform:uppercase;margin-bottom:7px">Status</div>',
+          '<select id="doc-status-sel" class="doc-select" onchange="window.docsSetStatus(\'' + doc.key + '\')" style="min-width:160px">',
+            STATUSES.map(function(s){ return '<option value="' + s + '"' + (s===state.status?' selected':'') + '>' + s + '</option>'; }).join(''),
+          '</select>',
+        '</div>',
 
-  window.docsMarkReviewed = function(docKey) {
-    var state = getDocState(docKey);
-    state.status     = 'Reviewed';
-    state.reviewedAt = new Date().toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
-    saveDocState(docKey, state);
-    var sel = document.getElementById('docs-status-sel');
-    if (sel) sel.value = 'Reviewed';
-    _showDocToast('Marked as Reviewed ✓');
-  };
+        // Notes
+        '<div style="flex:1;min-width:220px">',
+          '<div style="font-family:Cinzel,serif;font-size:9px;letter-spacing:.35em;color:#e8b84b;text-transform:uppercase;margin-bottom:7px">Notes</div>',
+          '<input class="doc-notes-input" id="doc-notes-inp" type="text" value="' + esc(state.notes) + '" placeholder="Add a note about this document…" oninput="window.docsSetNotes(\'' + doc.key + '\')">',
+        '</div>',
 
-  window.docsMarkComplete = function(docKey) {
-    var state = getDocState(docKey);
-    state.status     = 'Complete';
-    state.reviewedAt = state.reviewedAt || new Date().toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
-    saveDocState(docKey, state);
-    var sel = document.getElementById('docs-status-sel');
-    if (sel) sel.value = 'Complete';
-    _showDocToast('Marked as Complete ✓');
-  };
+        // Action buttons
+        '<div style="display:flex;gap:8px;flex-shrink:0;align-self:flex-end">',
+          '<button class="doc-ctrl-btn" style="color:#22c98a;border-color:rgba(34,201,138,.4)" onclick="window.docsMarkReviewed(\'' + doc.key + '\')">✓ Reviewed</button>',
+          '<button class="doc-ctrl-btn" style="color:#e8b84b;border-color:rgba(232,184,75,.4)" onclick="window.docsMarkComplete(\'' + doc.key + '\')">✦ Complete</button>',
+        '</div>',
 
-  function _showDocToast(msg) {
-    var t = document.createElement('div');
-    t.textContent = msg;
-    t.style.cssText = 'position:fixed;bottom:28px;right:28px;z-index:9999;background:#22c98a;color:#000;' +
-      'font-family:Cinzel,serif;font-size:11px;letter-spacing:.3em;text-transform:uppercase;' +
-      'padding:12px 22px;box-shadow:0 4px 20px rgba(34,201,138,.3);transition:opacity .4s';
-    document.body.appendChild(t);
-    setTimeout(function(){ t.style.opacity='0'; setTimeout(function(){ t.remove(); }, 500); }, 2500);
+      '</div>',
+    ].join('');
   }
 
-  // ── Entry point ───────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────
+  // Status actions
+  // ─────────────────────────────────────────────────────────────────────────
+
+  window.docsShowGrid = function() {
+    var wrap = document.getElementById('docs-wrap');
+    if (wrap) renderGrid(wrap);
+  };
+
+  window.docsSetStatus = function(key) {
+    var sel = document.getElementById('doc-status-sel');
+    if (sel) saveState(key, { status: sel.value });
+  };
+
+  window.docsSetNotes = function(key) {
+    var inp = document.getElementById('doc-notes-inp');
+    if (inp) saveState(key, { notes: inp.value });
+  };
+
+  window.docsMarkReviewed = function(key) {
+    var now = new Date().toISOString();
+    saveState(key, { status: 'Reviewed', reviewed_at: now });
+    var sel = document.getElementById('doc-status-sel');
+    if (sel) sel.value = 'Reviewed';
+    toast('Marked as Reviewed ✓', '#22c98a');
+  };
+
+  window.docsMarkComplete = function(key) {
+    var now = new Date().toISOString();
+    var cur = getState(key);
+    saveState(key, { status: 'Complete', completed_at: now, reviewed_at: cur.reviewed_at || now });
+    var sel = document.getElementById('doc-status-sel');
+    if (sel) sel.value = 'Complete';
+    toast('Marked as Complete ✦', '#e8b84b');
+  };
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Entry point — called by showTab('docs') in dashboard.html
+  // ─────────────────────────────────────────────────────────────────────────
 
   window.docsInit = function() {
     var wrap = document.getElementById('docs-wrap');
     if (!wrap) return;
-    renderCards(wrap);
+    // Only render grid if not already showing a doc viewer (allow back-button nav)
+    if (!document.getElementById('doc-viewer-body')) renderGrid(wrap);
   };
-
-  // ── Styles injected once ──────────────────────────────────────────────────
-
-  var styles = document.createElement('style');
-  styles.textContent = [
-    '.doc-h1{font-family:Cinzel,serif;font-size:24px;letter-spacing:.04em;color:#f8e090;margin:28px 0 14px;border-bottom:1px solid rgba(232,184,75,.2);padding-bottom:10px}',
-    '.doc-h2{font-family:Cinzel,serif;font-size:18px;letter-spacing:.04em;color:#e8b84b;margin:24px 0 12px}',
-    '.doc-h3{font-family:Cinzel,serif;font-size:14px;letter-spacing:.08em;color:#ddd8f0;margin:18px 0 8px;text-transform:uppercase}',
-    '.doc-h4{font-family:Cinzel,serif;font-size:12px;letter-spacing:.1em;color:#9990c0;margin:14px 0 6px;text-transform:uppercase}',
-    '.doc-p{margin:0 0 12px;line-height:1.8;color:#dddaee}',
-    '.doc-list{margin:0 0 14px 22px;color:#dddaee}',
-    '.doc-list li{margin-bottom:6px;line-height:1.7}',
-    '.doc-pre{background:#0a0312;border:1px solid rgba(232,184,75,.15);padding:18px 20px;overflow-x:auto;margin:16px 0;border-radius:0}',
-    '.doc-code{font-family:monospace;font-size:13px;color:#e8b84b;white-space:pre}',
-    '.doc-inline-code{font-family:monospace;font-size:13px;color:#e8b84b;background:#e8b84b0a;padding:1px 6px;border:1px solid #e8b84b22}',
-    '.doc-link{color:#22c98a;text-decoration:underline}',
-    '.doc-hr{border:none;border-top:1px solid rgba(232,184,75,.15);margin:24px 0}',
-    '.doc-bq{border-left:3px solid #e8b84b44;padding:8px 18px;margin:12px 0;color:#9990c0;font-style:italic}',
-    '.doc-spacer{height:4px}',
-    '.doc-table-wrap{overflow-x:auto;margin:16px 0}',
-    '.doc-table{width:100%;border-collapse:collapse}',
-    '.doc-table th{font-family:Cinzel,serif;font-size:10px;letter-spacing:.25em;color:#e8b84b;text-transform:uppercase;padding:10px 14px;text-align:left;border-bottom:1px solid rgba(232,184,75,.2);background:#0a0618}',
-    '.doc-table td{padding:10px 14px;font-size:15px;color:#dddaee;border-bottom:1px solid rgba(232,184,75,.07)}',
-    '.doc-table tr:hover td{background:#e8b84b04}',
-  ].join('');
-  document.head.appendChild(styles);
 
 })();
