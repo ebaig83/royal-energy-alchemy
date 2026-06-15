@@ -36,7 +36,7 @@ VALUES
   ('11111111-0023-0000-0000-000000000023','Orion Watts','orion.watts@example.com','814-555-0123','active',ARRAY['chronic_pain','grounding'],'2026-01-15'),
   ('11111111-0024-0000-0000-000000000024','Tamsin Blake','tamsin.blake@example.com','814-555-0124','active',ARRAY['clarity','focus'],'2026-02-01'),
   ('11111111-0025-0000-0000-000000000025','Renata Silva','renata.silva@example.com','814-555-0125','active',ARRAY['energy','healing'],'2026-02-10')
-ON CONFLICT (email) DO NOTHING;
+ON CONFLICT (id) DO NOTHING;
 
 -- ── 2. SESSIONS (62) ─────────────────────────────────────────
 -- Covers all 4 services; repeat clients for retention patterns
