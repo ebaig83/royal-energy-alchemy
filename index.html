@@ -3237,11 +3237,58 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&modal.clas
           <button type="button" onclick="obToStep3()" style="margin-top:18px;background:linear-gradient(135deg,#1a3320,#0f2818);border:1px solid #22ee7755;color:#44ffaa;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;padding:12px 28px;border-radius:6px;cursor:pointer;text-transform:uppercase">Continue to Session Booking →</button>
         </div>
 
-        <!-- Step 2b — AI Call placeholder -->
+        <!-- Step 2b — AI Call (scaffolded for future activation) -->
         <div class="ob-step" id="obStep2AI" style="display:none;margin-top:20px">
           <div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.28em;color:#e8b84b88;text-transform:uppercase;margin-bottom:14px">Step 2 — AI Intake Call</div>
-          <div style="border:1px solid #b08ae044;background:#b08ae008;border-radius:8px;padding:18px 20px">
-            <p style="font-family:'EB Garamond',serif;font-size:16px;color:#d0c8f0;margin:0 0 10px">The AI intake call feature is coming soon. In the meantime, please select <strong>Written Questionnaire</strong> to complete your intake now, or <a href="#contact" style="color:#e8b84b;text-decoration:underline" onclick="selectObMethod('written');return false">switch to written</a>.</p>
+
+          <!-- Coming-soon notice — remove this block when feature activates -->
+          <div id="obAIComingSoon" style="border:1px solid #b08ae044;background:#b08ae008;border-radius:8px;padding:18px 20px;margin-bottom:16px">
+            <p style="font-family:'EB Garamond',serif;font-size:16px;color:#d0c8f0;margin:0 0 10px">The AI Intake Call feature is coming soon. In the meantime, please select <strong>Written Questionnaire</strong> to complete your intake now.</p>
+            <button type="button" onclick="selectObMethod('written')" style="background:linear-gradient(135deg,#1a1408,#100c04);border:1px solid #e8b84b66;color:#e8b84b;font-family:'Cinzel',serif;font-size:10px;letter-spacing:.22em;padding:10px 22px;border-radius:6px;cursor:pointer;text-transform:uppercase">Switch to Written Questionnaire →</button>
+          </div>
+
+          <!-- Future AI intake scheduling fields (hidden until feature launches) -->
+          <div id="obAIFields" style="display:none;flex-direction:column;gap:14px">
+            <div class="contact-grid-2">
+              <div class="contact-field">
+                <label for="ob-intake-date">Preferred Intake Call Date</label>
+                <input type="date" id="ob-intake-date" name="ob-intake-date" style="background:#0e0c22;border:1px solid #4a4580;color:#e0ddf8;padding:12px 14px;border-radius:4px;font-family:'EB Garamond',serif;font-size:15px;width:100%;box-sizing:border-box"/>
+              </div>
+              <div class="contact-field">
+                <label for="ob-intake-time">Preferred Time</label>
+                <input type="time" id="ob-intake-time" name="ob-intake-time" style="background:#0e0c22;border:1px solid #4a4580;color:#e0ddf8;padding:12px 14px;border-radius:4px;font-family:'EB Garamond',serif;font-size:15px;width:100%;box-sizing:border-box"/>
+              </div>
+            </div>
+            <div class="contact-field">
+              <label for="ob-timezone">Your Time Zone</label>
+              <select id="ob-timezone" name="ob-timezone" style="background:#0e0c22;border:1px solid #4a4580;color:#e0ddf8;padding:12px 14px;border-radius:4px;font-family:'EB Garamond',serif;font-size:15px;width:100%">
+                <option value="">Select your time zone</option>
+                <option value="America/New_York">Eastern (ET)</option>
+                <option value="America/Chicago">Central (CT)</option>
+                <option value="America/Denver">Mountain (MT)</option>
+                <option value="America/Los_Angeles">Pacific (PT)</option>
+                <option value="America/Anchorage">Alaska (AKT)</option>
+                <option value="Pacific/Honolulu">Hawaii (HT)</option>
+                <option value="Europe/London">London (GMT/BST)</option>
+                <option value="Europe/Paris">Central Europe (CET)</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:10px;padding:14px 16px;border:1px solid #4a4580;border-radius:8px;background:#0a0820">
+              <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;font-family:'EB Garamond',serif;font-size:15px;color:#d0cce8">
+                <input type="checkbox" id="ob-call-consent" style="accent-color:#e8b84b;width:16px;height:16px;flex-shrink:0;margin-top:2px"/>
+                I consent to receiving a phone call from Daron's AI intake representative.
+              </label>
+              <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;font-family:'EB Garamond',serif;font-size:15px;color:#d0cce8">
+                <input type="checkbox" id="ob-ai-consent" style="accent-color:#e8b84b;width:16px;height:16px;flex-shrink:0;margin-top:2px"/>
+                I understand that the intake call will be conducted by an AI representative and my responses will be shared with Daron.
+              </label>
+              <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;font-family:'EB Garamond',serif;font-size:15px;color:#d0cce8">
+                <input type="checkbox" id="ob-recording-consent" style="accent-color:#e8b84b;width:16px;height:16px;flex-shrink:0;margin-top:2px"/>
+                I consent to the call being recorded for Daron's review.
+              </label>
+            </div>
+            <button type="button" onclick="obToStep3()" style="margin-top:4px;background:linear-gradient(135deg,#1a3320,#0f2818);border:1px solid #22ee7755;color:#44ffaa;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;padding:12px 28px;border-radius:6px;cursor:pointer;text-transform:uppercase">Continue to Session Booking →</button>
           </div>
         </div>
 
@@ -4067,16 +4114,23 @@ function handleBookingSubmit(e){
       return false;
     }
     var obPayload={
-      client_name:     (fname+' '+lname).trim(),
-      client_email:    email,
-      client_phone:    phone,
-      method:          _obMethod,
-      service:         'Initial Energy Session',
-      responses:       _obMethod==='written'?gatherObResponses():{},
-      session_window_1:window1||'',
-      session_window_2:window2||'',
-      buffer_hours:    48,
-      bot_field:       '',
+      client_name:       (fname+' '+lname).trim(),
+      client_email:      email,
+      client_phone:      phone,
+      method:            _obMethod,
+      service:           'Initial Energy Session',
+      responses:         _obMethod==='written'?gatherObResponses():{},
+      session_window_1:  window1||'',
+      session_window_2:  window2||'',
+      buffer_hours:      48,
+      // AI intake scheduling fields (populated when AI Call activates)
+      intake_date:       (document.getElementById('ob-intake-date')||{}).value||null,
+      intake_time:       (document.getElementById('ob-intake-time')||{}).value||null,
+      time_zone:         (document.getElementById('ob-timezone')||{}).value||null,
+      call_consent:      !!(document.getElementById('ob-call-consent')||{}).checked,
+      ai_consent:        !!(document.getElementById('ob-ai-consent')||{}).checked,
+      recording_consent: !!(document.getElementById('ob-recording-consent')||{}).checked,
+      bot_field:         '',
     };
     fetch('/.netlify/functions/onboarding',{
       method:'POST',

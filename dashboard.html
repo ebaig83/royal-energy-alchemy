@@ -3139,7 +3139,12 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
 
   <!-- ONBOARDING QUEUE TAB -->
   <div class="tab-content" id="tab-onboarding">
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">
+
+    <!-- Analytics funnel -->
+    <div id="obAnalyticsBar" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:22px"></div>
+
+    <!-- Header + filters -->
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px">
       <div>
         <div class="section-title" style="margin-bottom:4px">Onboarding Queue</div>
         <div style="font-family:'EB Garamond',serif;font-size:15px;color:#9890c0">New client intakes awaiting review before their first session.</div>
@@ -3148,11 +3153,11 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
         <select id="obFilterStatus" onchange="loadOnboardingQueue()" style="padding:8px 12px;background:#0e0c22;border:1px solid #e8b84b44;color:#e0ddf8;font-family:'EB Garamond',serif;font-size:14px;border-radius:6px">
           <option value="">All Statuses</option>
           <option value="scheduled">Scheduled</option>
-          <option value="completed">Completed</option>
           <option value="summary_generated">Summary Ready</option>
           <option value="reviewed">Reviewed</option>
           <option value="ready_for_session">Ready for Session</option>
           <option value="needs_followup">Needs Follow-Up</option>
+          <option value="cancelled">Cancelled</option>
         </select>
         <button class="ck-btn" onclick="loadOnboardingQueue()" style="padding:8px 18px">↻ Refresh</button>
       </div>
@@ -3166,12 +3171,13 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
             <th style="padding:10px 12px;text-align:left;font-weight:400">Client</th>
             <th style="padding:10px 12px;text-align:left;font-weight:400">Method</th>
             <th style="padding:10px 12px;text-align:left;font-weight:400">Submitted</th>
-            <th style="padding:10px 12px;text-align:left;font-weight:400">Status</th>
+            <th style="padding:10px 12px;text-align:left;font-weight:400">Intake Status</th>
+            <th style="padding:10px 12px;text-align:left;font-weight:400">Payment</th>
             <th style="padding:10px 12px;text-align:left;font-weight:400">Actions</th>
           </tr>
         </thead>
         <tbody id="obQueueBody">
-          <tr><td colspan="5" style="padding:20px;color:#6860a0;text-align:center">Loading…</td></tr>
+          <tr><td colspan="6" style="padding:20px;color:#6860a0;text-align:center">Loading…</td></tr>
         </tbody>
       </table>
     </div>
@@ -3185,6 +3191,16 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
         </div>
         <button onclick="closeObReview()" style="background:transparent;border:1px solid #5550a0;color:#a0a0d0;padding:6px 14px;border-radius:6px;cursor:pointer;font-family:'EB Garamond',serif;font-size:14px">✕ Close</button>
       </div>
+
+      <!-- Payment status banner -->
+      <div id="obPaymentBanner" style="display:none;border-radius:8px;padding:14px 18px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <div>
+          <div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.25em;text-transform:uppercase;margin-bottom:4px" id="obPaymentLabel"></div>
+          <div style="font-family:'EB Garamond',serif;font-size:15px" id="obPaymentDetail"></div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap" id="obPaymentActions"></div>
+      </div>
+
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px" id="obReviewMeta"></div>
       <div id="obReviewResponses" style="margin-bottom:20px"></div>
       <div id="obReviewSummary" style="display:none;border:1px solid #22ee7744;background:#06180e;border-radius:8px;padding:16px 20px;margin-bottom:18px">
@@ -3198,6 +3214,7 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
       <div style="display:flex;gap:10px;flex-wrap:wrap">
         <button onclick="markObReviewed()" style="background:linear-gradient(135deg,#1a3320,#0f2818);border:1px solid #22ee7755;color:#44ffaa;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;padding:11px 24px;border-radius:6px;cursor:pointer;text-transform:uppercase">✓ Mark Reviewed</button>
         <button onclick="markObReadyForSession()" style="background:linear-gradient(135deg,#1a1a38,#0f0f28);border:1px solid #8888ff55;color:#aaaaff;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;padding:11px 24px;border-radius:6px;cursor:pointer;text-transform:uppercase">→ Ready for Session</button>
+        <button onclick="markObNeedsFollowup()" style="background:linear-gradient(135deg,#2a1408,#1a0c04);border:1px solid #ff884455;color:#ff8844;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;padding:11px 24px;border-radius:6px;cursor:pointer;text-transform:uppercase">⚑ Needs Follow-Up</button>
       </div>
     </div>
   </div>
@@ -3865,58 +3882,97 @@ function showTab(name) {
 
 /* ── ONBOARDING QUEUE ─────────────────────────────────────────────────── */
 var _obCurrentIntake = null;
+var _obCurrentPackage = null;
+
+var OB_STATUS_COLOR = {
+  scheduled:         '#e8b84b',
+  completed:         '#66cc88',
+  summary_generated: '#4488ff',
+  reviewed:          '#44ffaa',
+  ready_for_session: '#22ee77',
+  missed:            '#cc4444',
+  cancelled:         '#666',
+  needs_followup:    '#ff8844',
+};
+var OB_PAY_COLOR = {
+  unpaid:   '#cc4444',
+  pending:  '#e8b84b',
+  paid:     '#22ee77',
+  refunded: '#8888cc',
+  waived:   '#666',
+};
 
 async function loadOnboardingQueue() {
-  var body = document.getElementById('obQueueBody');
-  if (!body) return;
-  body.innerHTML = '<tr><td colspan="5" style="padding:20px;color:#6860a0;text-align:center">Loading…</td></tr>';
+  var tbody = document.getElementById('obQueueBody');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="6" style="padding:20px;color:#6860a0;text-align:center">Loading…</td></tr>';
 
+  var key    = sessionStorage.getItem('rea_api_token') || '';
   var status = (document.getElementById('obFilterStatus') || {}).value || '';
-  var url = '/.netlify/functions/onboarding' + (status ? '?status=' + encodeURIComponent(status) : '');
+  var url    = '/.netlify/functions/onboarding' + (status ? '?status=' + encodeURIComponent(status) : '');
+
+  // Load analytics in parallel
+  obLoadAnalytics(key);
 
   try {
-    var key = sessionStorage.getItem('rea_api_token') || '';
-    var r = await fetch(url, { headers: { 'X-Dashboard-Token': key } });
+    var r    = await fetch(url, { headers: { 'X-Dashboard-Token': key } });
     var data = await r.json();
     var intakes = data.intakes || [];
     if (!intakes.length) {
-      body.innerHTML = '<tr><td colspan="5" style="padding:20px;color:#6860a0;text-align:center">No intake records found.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6" style="padding:20px;color:#6860a0;text-align:center">No intake records found.</td></tr>';
       return;
     }
-    var STATUS_COLOR = {
-      scheduled:         '#e8b84b',
-      completed:         '#66cc88',
-      summary_generated: '#4488ff',
-      reviewed:          '#44ffaa',
-      ready_for_session: '#22ee77',
-      missed:            '#cc4444',
-      cancelled:         '#888',
-      needs_followup:    '#ff8844',
-    };
-    body.innerHTML = intakes.map(function(intake) {
-      var dt = intake.created_at ? new Date(intake.created_at).toLocaleDateString() : '—';
-      var sc = STATUS_COLOR[intake.intake_status] || '#888';
-      var responseCount = intake.responses ? Object.values(intake.responses).filter(Boolean).length : 0;
+    tbody.innerHTML = intakes.map(function(intake) {
+      var dt  = intake.created_at ? new Date(intake.created_at).toLocaleDateString() : '—';
+      var sc  = OB_STATUS_COLOR[intake.intake_status] || '#888';
+      var cnt = intake.responses ? Object.values(intake.responses).filter(Boolean).length : 0;
+      var payBadge = ''; // packages loaded separately; show placeholder
       return '<tr style="border-bottom:1px solid #1a1836;transition:background .15s" onmouseover="this.style.background=\'#10082a\'" onmouseout="this.style.background=\'\'">' +
-        '<td style="padding:12px;color:#f0ecff">' + (intake.client_name || '—') +
-          (intake.client_email ? '<div style="font-size:12px;color:#6860a0;margin-top:2px">' + intake.client_email + '</div>' : '') + '</td>' +
+        '<td style="padding:12px;color:#f0ecff">' + obEsc(intake.client_name || '—') +
+          (intake.client_email ? '<div style="font-size:12px;color:#6860a0;margin-top:2px">' + obEsc(intake.client_email) + '</div>' : '') + '</td>' +
         '<td style="padding:12px;color:#c8c4e0">' + (intake.method === 'written' ? '📝 Written' : '📞 AI Call') + '</td>' +
         '<td style="padding:12px;color:#9890c0">' + dt + '</td>' +
-        '<td style="padding:12px"><span style="background:' + sc + '22;color:' + sc + ';border:1px solid ' + sc + '55;border-radius:4px;padding:2px 8px;font-size:13px;font-family:Cinzel,serif;letter-spacing:.1em">' + intake.intake_status + '</span></td>' +
+        '<td style="padding:12px"><span style="background:' + sc + '22;color:' + sc + ';border:1px solid ' + sc + '55;border-radius:4px;padding:2px 8px;font-size:12px;font-family:Cinzel,serif;letter-spacing:.08em">' + (intake.intake_status || '—') + '</span></td>' +
+        '<td style="padding:12px" id="ob-pay-' + intake.id + '"><span style="color:#6860a0;font-size:13px">—</span></td>' +
         '<td style="padding:12px"><button onclick="openObReview(\'' + intake.id + '\')" style="background:#14103a;border:1px solid #5550a0;color:#c8c4e0;padding:6px 14px;border-radius:6px;cursor:pointer;font-family:\'EB Garamond\',serif;font-size:14px">' +
-          (responseCount > 0 ? '📋 Review (' + responseCount + ' answers)' : '👁 View') + '</button></td>' +
+          (cnt > 0 ? '📋 Review (' + cnt + ')' : '👁 View') + '</button></td>' +
         '</tr>';
     }).join('');
   } catch(err) {
-    body.innerHTML = '<tr><td colspan="5" style="padding:20px;color:#cc4444;text-align:center">Failed to load: ' + err.message + '</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" style="padding:20px;color:#cc4444;text-align:center">Failed to load: ' + obEsc(err.message) + '</td></tr>';
   }
 }
 
+async function obLoadAnalytics(key) {
+  var bar = document.getElementById('obAnalyticsBar');
+  if (!bar) return;
+  try {
+    var r    = await fetch('/.netlify/functions/onboarding?analytics=true', { headers: { 'X-Dashboard-Token': key || (sessionStorage.getItem('rea_api_token') || '') } });
+    var data = await r.json();
+    var funnel = [
+      { label: 'Total',           val: data.total || 0,                               color: '#e8b84b' },
+      { label: 'Pending Review',  val: (data.by_status || {}).summary_generated || 0, color: '#4488ff' },
+      { label: 'Reviewed',        val: (data.by_status || {}).reviewed || 0,          color: '#44ffaa' },
+      { label: 'Ready',           val: (data.by_status || {}).ready_for_session || 0, color: '#22ee77' },
+      { label: 'Needs Follow-Up', val: (data.by_status || {}).needs_followup || 0,    color: '#ff8844' },
+      { label: 'Unpaid',          val: (data.by_payment || {}).unpaid || 0,           color: '#cc4444' },
+      { label: 'Paid',            val: (data.by_payment || {}).paid || 0,             color: '#22cc66' },
+      { label: 'Written',         val: (data.by_method  || {}).written || 0,          color: '#9988ff' },
+    ];
+    bar.innerHTML = funnel.map(function(f) {
+      return '<div style="background:#0e0c22;border:1px solid ' + f.color + '33;border-radius:10px;padding:14px 12px;text-align:center">' +
+        '<div style="font-size:26px;font-family:Cinzel,serif;color:' + f.color + ';font-weight:700;line-height:1">' + f.val + '</div>' +
+        '<div style="font-family:Cinzel,serif;font-size:9px;letter-spacing:.2em;color:' + f.color + '99;text-transform:uppercase;margin-top:6px">' + f.label + '</div>' +
+        '</div>';
+    }).join('');
+  } catch(e) { if (bar) bar.innerHTML = ''; }
+}
+
 async function openObReview(id) {
-  var panel = document.getElementById('obReviewPanel');
-  var nameEl = document.getElementById('obReviewName');
-  var metaEl = document.getElementById('obReviewMeta');
-  var respEl = document.getElementById('obReviewResponses');
+  var panel   = document.getElementById('obReviewPanel');
+  var nameEl  = document.getElementById('obReviewName');
+  var metaEl  = document.getElementById('obReviewMeta');
+  var respEl  = document.getElementById('obReviewResponses');
   var sumWrap = document.getElementById('obReviewSummary');
   var sumText = document.getElementById('obReviewSummaryText');
   if (!panel) return;
@@ -3928,30 +3984,39 @@ async function openObReview(id) {
   var key = sessionStorage.getItem('rea_api_token') || '';
   var data;
   try {
-    var r = await fetch('/.netlify/functions/onboarding?id=' + id, { headers: { 'X-Dashboard-Token': key } });
+    var r = await fetch('/.netlify/functions/onboarding?id=' + encodeURIComponent(id), { headers: { 'X-Dashboard-Token': key } });
     data = await r.json();
   } catch(e) { if (nameEl) nameEl.textContent = 'Error loading intake.'; return; }
 
   var intake = data.intake || {};
-  _obCurrentIntake = intake;
+  var pkg    = data.package || {};
+  _obCurrentIntake  = intake;
+  _obCurrentPackage = pkg;
 
-  if (nameEl) nameEl.textContent = intake.client_name || '—';
+  if (nameEl) nameEl.textContent = obEsc(intake.client_name || '—');
 
+  // Payment banner
+  obRenderPaymentBanner(pkg, intake.id);
+
+  // Meta grid
   var metaItems = [
-    ['Method', intake.method === 'written' ? '📝 Written Questionnaire' : '📞 AI Call'],
-    ['Status', intake.intake_status || '—'],
-    ['Email', intake.client_email || '—'],
-    ['Phone', intake.client_phone || '—'],
-    ['Intake Date', intake.intake_date || 'Not scheduled'],
-    ['Submitted', intake.created_at ? new Date(intake.created_at).toLocaleString() : '—'],
+    ['Method',       intake.method === 'written' ? '📝 Written Questionnaire' : '📞 AI Call'],
+    ['Intake Status',intake.intake_status || '—'],
+    ['Email',        intake.client_email  || '—'],
+    ['Phone',        intake.client_phone  || '—'],
+    ['Intake Date',  intake.intake_date   || 'Not scheduled'],
+    ['Submitted',    intake.created_at ? new Date(intake.created_at).toLocaleString() : '—'],
+    ['Reviewed By',  intake.reviewed_by   || '—'],
+    ['Reviewed At',  intake.reviewed_at ? new Date(intake.reviewed_at).toLocaleString() : '—'],
   ];
   if (metaEl) metaEl.innerHTML = metaItems.map(function(m) {
     return '<div style="background:#0e0c22;border:1px solid #2a2850;border-radius:8px;padding:12px 14px">' +
       '<div style="font-family:Cinzel,serif;font-size:10px;letter-spacing:.2em;color:#e8b84b88;text-transform:uppercase;margin-bottom:4px">' + m[0] + '</div>' +
-      '<div style="font-family:\'EB Garamond\',serif;font-size:15px;color:#e0ddf8">' + m[1] + '</div>' +
+      '<div style="font-family:\'EB Garamond\',serif;font-size:15px;color:#e0ddf8">' + obEsc(String(m[1])) + '</div>' +
       '</div>';
   }).join('');
 
+  // Questionnaire responses
   var Q_LABELS = {
     presenting_concerns:     'What is bringing you to seek energy healing?',
     goals:                   'What are your main goals for this session?',
@@ -3962,17 +4027,19 @@ async function openObReview(id) {
     additional_notes:        'Additional notes',
   };
   var responses = intake.responses || {};
-  var respHtml = '';
+  var respHtml  = '';
   Object.entries(Q_LABELS).forEach(function(entry) {
     var val = responses[entry[0]];
     if (!val) return;
     respHtml += '<div style="margin-bottom:16px;border:1px solid #2a2850;border-radius:8px;padding:14px 16px;background:#0e0c20">' +
       '<div style="font-family:Cinzel,serif;font-size:10px;letter-spacing:.2em;color:#e8b84b;text-transform:uppercase;margin-bottom:8px">' + entry[1] + '</div>' +
-      '<div style="font-family:\'EB Garamond\',serif;font-size:16px;color:#d8d4f0;line-height:1.6;white-space:pre-wrap">' + val + '</div>' +
+      '<div style="font-family:\'EB Garamond\',serif;font-size:16px;color:#d8d4f0;line-height:1.6;white-space:pre-wrap">' + obEsc(val) + '</div>' +
       '</div>';
   });
-  if (respEl) respEl.innerHTML = respHtml || '<div style="color:#6860a0;font-family:\'EB Garamond\',serif;font-size:15px">No written responses on file.</div>';
+  if (respEl) respEl.innerHTML = respHtml ||
+    '<div style="color:#6860a0;font-family:\'EB Garamond\',serif;font-size:15px;padding:14px 0">No written responses on file.</div>';
 
+  // Summary
   if (intake.summary) {
     if (sumWrap) sumWrap.style.display = 'block';
     if (sumText) sumText.textContent = intake.summary;
@@ -3984,10 +4051,66 @@ async function openObReview(id) {
   if (notesEl) notesEl.value = intake.review_notes || '';
 }
 
+function obRenderPaymentBanner(pkg, intakeId) {
+  var banner  = document.getElementById('obPaymentBanner');
+  var labelEl = document.getElementById('obPaymentLabel');
+  var detailEl= document.getElementById('obPaymentDetail');
+  var actEl   = document.getElementById('obPaymentActions');
+  if (!banner) return;
+
+  var ps     = pkg.payment_status || 'unpaid';
+  var color  = OB_PAY_COLOR[ps] || '#888';
+  var bg     = color + '18';
+  var border = color + '55';
+
+  banner.style.cssText = 'display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;border-radius:8px;padding:14px 18px;margin-bottom:18px;border:1px solid ' + border + ';background:' + bg;
+  if (labelEl) { labelEl.style.color = color; labelEl.textContent = 'Payment — ' + ps.toUpperCase(); }
+
+  var detail = '';
+  if (ps === 'unpaid')  detail = 'Payment has not yet been received. Confirm booking only after payment.';
+  if (ps === 'pending') detail = 'Payment is pending verification.';
+  if (ps === 'paid')    detail = 'Payment received' + (pkg.paid_at ? ' on ' + new Date(pkg.paid_at).toLocaleDateString() : '') + (pkg.payment_method ? ' via ' + pkg.payment_method : '') + '.';
+  if (ps === 'refunded')detail = 'Payment was refunded.';
+  if (ps === 'waived')  detail = 'Payment waived for this client.';
+  if (detailEl) { detailEl.style.color = '#c8c4e0'; detailEl.textContent = detail; }
+
+  // Action buttons
+  var btns = [];
+  if (ps === 'unpaid' || ps === 'pending') {
+    btns.push('<button onclick="obMarkPayment(\'' + intakeId + '\',\'paid\')" style="background:#06180e;border:1px solid #22ee7755;color:#44ffaa;font-family:Cinzel,serif;font-size:10px;letter-spacing:.2em;padding:8px 16px;border-radius:6px;cursor:pointer;text-transform:uppercase">✓ Mark Paid</button>');
+    btns.push('<button onclick="obMarkPayment(\'' + intakeId + '\',\'pending\')" style="background:#1a1408;border:1px solid #e8b84b55;color:#e8b84b;font-family:Cinzel,serif;font-size:10px;letter-spacing:.2em;padding:8px 16px;border-radius:6px;cursor:pointer;text-transform:uppercase">⏳ Pending</button>');
+  }
+  if (ps === 'paid') {
+    btns.push('<button onclick="obMarkPayment(\'' + intakeId + '\',\'refunded\')" style="background:#0a0a1a;border:1px solid #8888cc55;color:#8888cc;font-family:Cinzel,serif;font-size:10px;letter-spacing:.2em;padding:8px 16px;border-radius:6px;cursor:pointer;text-transform:uppercase">↩ Refund</button>');
+  }
+  if (actEl) actEl.innerHTML = btns.join('');
+}
+
+async function obMarkPayment(intakeId, paymentStatus) {
+  var key = sessionStorage.getItem('rea_api_token') || '';
+  var r   = await fetch('/.netlify/functions/onboarding?id=' + intakeId + '&target=package', {
+    method:  'PATCH',
+    headers: { 'Content-Type': 'application/json', 'X-Dashboard-Token': key },
+    body:    JSON.stringify({ payment_status: paymentStatus }),
+  });
+  var data = await r.json();
+  if (data.package) {
+    _obCurrentPackage = data.package;
+    obRenderPaymentBanner(data.package, intakeId);
+    // Update inline cell in table
+    var cell = document.getElementById('ob-pay-' + intakeId);
+    if (cell) {
+      var c = OB_PAY_COLOR[paymentStatus] || '#888';
+      cell.innerHTML = '<span style="background:' + c + '22;color:' + c + ';border:1px solid ' + c + '55;border-radius:4px;padding:2px 8px;font-size:12px;font-family:Cinzel,serif">' + paymentStatus + '</span>';
+    }
+  }
+}
+
 function closeObReview() {
   var panel = document.getElementById('obReviewPanel');
   if (panel) panel.style.display = 'none';
-  _obCurrentIntake = null;
+  _obCurrentIntake  = null;
+  _obCurrentPackage = null;
 }
 
 async function markObReviewed() {
@@ -3995,31 +4118,59 @@ async function markObReviewed() {
   var hasContent = _obCurrentIntake.summary ||
     (_obCurrentIntake.responses && Object.values(_obCurrentIntake.responses).some(Boolean));
   if (!hasContent) {
-    alert('This intake has no questionnaire responses or summary yet. It cannot be marked reviewed until content exists to review.');
+    alert('This intake has no questionnaire responses or summary yet — nothing to review. The client must submit their intake first.');
     return;
   }
   var notes = (document.getElementById('obReviewNotes') || {}).value || '';
-  var key = sessionStorage.getItem('rea_api_token') || '';
-  await fetch('/.netlify/functions/onboarding?id=' + _obCurrentIntake.id, {
-    method: 'PATCH',
+  var key   = sessionStorage.getItem('rea_api_token') || '';
+  var r     = await fetch('/.netlify/functions/onboarding?id=' + _obCurrentIntake.id, {
+    method:  'PATCH',
     headers: { 'Content-Type': 'application/json', 'X-Dashboard-Token': key },
-    body: JSON.stringify({ intake_status: 'reviewed', review_notes: notes }),
+    body:    JSON.stringify({ intake_status: 'reviewed', review_notes: notes }),
   });
+  var data = await r.json();
+  if (data.error) { alert('Could not mark reviewed: ' + data.error + (data.detail ? '\n\n' + data.detail : '')); return; }
   closeObReview();
   loadOnboardingQueue();
 }
 
 async function markObReadyForSession() {
   if (!_obCurrentIntake) return;
+  // Client-side pre-check: must be in reviewed status
+  if (_obCurrentIntake.intake_status !== 'reviewed') {
+    alert('Intake must be completed and reviewed before advancing to Ready for Session.\n\nCurrent status: ' + (_obCurrentIntake.intake_status || 'unknown') + '\n\nPlease click "Mark Reviewed" first.');
+    return;
+  }
   var notes = (document.getElementById('obReviewNotes') || {}).value || '';
-  var key = sessionStorage.getItem('rea_api_token') || '';
-  await fetch('/.netlify/functions/onboarding?id=' + _obCurrentIntake.id, {
-    method: 'PATCH',
+  var key   = sessionStorage.getItem('rea_api_token') || '';
+  var r     = await fetch('/.netlify/functions/onboarding?id=' + _obCurrentIntake.id, {
+    method:  'PATCH',
     headers: { 'Content-Type': 'application/json', 'X-Dashboard-Token': key },
-    body: JSON.stringify({ intake_status: 'ready_for_session', review_notes: notes }),
+    body:    JSON.stringify({ intake_status: 'ready_for_session', review_notes: notes }),
   });
+  var data = await r.json();
+  if (data.error) { alert('Could not advance status: ' + data.error + (data.detail ? '\n\n' + data.detail : '')); return; }
   closeObReview();
   loadOnboardingQueue();
+}
+
+async function markObNeedsFollowup() {
+  if (!_obCurrentIntake) return;
+  var notes = (document.getElementById('obReviewNotes') || {}).value || '';
+  var key   = sessionStorage.getItem('rea_api_token') || '';
+  var r     = await fetch('/.netlify/functions/onboarding?id=' + _obCurrentIntake.id, {
+    method:  'PATCH',
+    headers: { 'Content-Type': 'application/json', 'X-Dashboard-Token': key },
+    body:    JSON.stringify({ intake_status: 'needs_followup', review_notes: notes }),
+  });
+  var data = await r.json();
+  if (data.error) { alert('Error: ' + data.error); return; }
+  closeObReview();
+  loadOnboardingQueue();
+}
+
+function obEsc(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 function approveReview(id) {
