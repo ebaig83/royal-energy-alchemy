@@ -1140,6 +1140,147 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
 }
 .ck-notif-badge.visible { display: flex; }
 
+/* ── Notification dropdown panel ────────────────────────────── */
+.ck-notif-panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 340px;
+  background: #0d0b1e;
+  border: 1px solid #e8b84b33;
+  border-radius: 10px;
+  box-shadow: 0 12px 40px #000000cc;
+  z-index: 9900;
+  overflow: hidden;
+}
+.notif-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e8b84b22;
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  letter-spacing: .3em;
+  color: #e8b84b;
+  text-transform: uppercase;
+}
+.notif-panel-header button {
+  background: none;
+  border: none;
+  color: #dddaee55;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0;
+  line-height: 1;
+}
+.notif-panel-header button:hover { color: #dddaee; }
+#notifList { max-height: 380px; overflow-y: auto; padding: 6px 0; }
+.notif-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid #ffffff08;
+  cursor: pointer;
+  transition: background .15s;
+}
+.notif-item:hover { background: #ffffff0a; }
+.notif-item:last-child { border-bottom: none; }
+.notif-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+.notif-dot.critical { background: #ee5555; }
+.notif-dot.urgent   { background: #ee9944; }
+.notif-dot.warning  { background: #e8b84b; }
+.notif-dot.info     { background: #4488cc; }
+.notif-dot.ok       { background: #22c98a; }
+.notif-text { flex: 1; }
+.notif-title { font-size: 13px; color: #dddaee; line-height: 1.3; }
+.notif-sub   { font-size: 11px; color: #dddaee55; margin-top: 2px; }
+.notif-action-btn {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid #e8b84b55;
+  background: none;
+  color: #e8b84b;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  align-self: center;
+  transition: background .15s;
+}
+.notif-action-btn:hover { background: #e8b84b22; }
+.notif-empty { font-size: 13px; color: #dddaee33; text-align: center; padding: 20px; }
+
+/* ── Action Queue (Command Center) ──────────────────────────── */
+.ck-action-queue {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.aq-card {
+  background: #0e0820;
+  border: 1px solid #e8b84b22;
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.aq-card.aq-urgent  { border-color: #ee555533; background: #1a0808; }
+.aq-card.aq-warning { border-color: #ee994433; background: #1a100a; }
+.aq-card.aq-ready   { border-color: #22c98a33; background: #081a0e; }
+.aq-card.aq-info    { border-color: #4488cc33; background: #080d1a; }
+.aq-label {
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  color: #dddaee55;
+}
+.aq-count {
+  font-family: 'Cinzel', serif;
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1;
+}
+.aq-card.aq-urgent  .aq-count { color: #ee7070; }
+.aq-card.aq-warning .aq-count { color: #ee9944; }
+.aq-card.aq-ready   .aq-count { color: #22c98a; }
+.aq-card.aq-info    .aq-count { color: #4488cc; }
+.aq-desc { font-size: 12px; color: #dddaee66; line-height: 1.4; }
+.aq-btn {
+  margin-top: 4px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  font-size: 11px;
+  font-family: 'Cinzel', serif;
+  letter-spacing: .05em;
+  cursor: pointer;
+  transition: opacity .15s;
+}
+.aq-btn:hover { opacity: .85; }
+.aq-card.aq-urgent  .aq-btn { background: #ee555533; color: #ee9090; border: 1px solid #ee555555; }
+.aq-card.aq-warning .aq-btn { background: #ee994433; color: #eebb77; border: 1px solid #ee994455; }
+.aq-card.aq-ready   .aq-btn { background: #22c98a33; color: #55ddaa; border: 1px solid #22c98a55; }
+.aq-card.aq-info    .aq-btn { background: #4488cc33; color: #88aaee; border: 1px solid #4488cc55; }
+.aq-panel-title {
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  letter-spacing: .35em;
+  color: #e8b84baa;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
 /* ── Global search dropdown ─────────────────────────────────── */
 .ck-search-wrap { position: relative; flex-shrink: 0; }
 .ck-search-results {
@@ -2785,6 +2926,13 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
         <div class="ck-notif-wrap">
           <button class="ck-notif-btn" id="ckNotifBtn" title="Notifications">🔔</button>
           <span class="ck-notif-badge" id="ckNotifBadge"></span>
+          <div class="ck-notif-panel" id="notifPanel" style="display:none">
+            <div class="notif-panel-header">
+              <span>Notifications</span>
+              <button id="notifCloseBtn">✕</button>
+            </div>
+            <div id="notifList"><p class="notif-empty">Loading…</p></div>
+          </div>
         </div>
         <div class="ck-profile-chip">DR</div>
       </div>
@@ -2802,7 +2950,7 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
       <div class="action-stat">
         <span class="ck-kpi-icon">📥</span>
         <span class="action-stat-val" id="homeStatIntakes">—</span>
-        <span class="action-stat-label">New Intakes</span>
+        <span class="action-stat-label">Intake Queue</span>
       </div>
       <div class="action-stat">
         <span class="ck-kpi-icon">◎</span>
@@ -2810,9 +2958,9 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
         <span class="action-stat-label">Follow-Ups Due</span>
       </div>
       <div class="action-stat">
-        <span class="ck-kpi-icon">📄</span>
+        <span class="ck-kpi-icon">💳</span>
         <span class="action-stat-val" id="homeStatDocs">—</span>
-        <span class="action-stat-label">Documents</span>
+        <span class="action-stat-label">Pending Payments</span>
       </div>
       <div class="action-stat">
         <span class="ck-kpi-icon">⚡</span>
@@ -2826,6 +2974,43 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
 
   <!-- HOME TAB -->
   <div class="tab-content active" id="tab-home" style="display:block">
+
+    <!-- Command Center: Action Queue -->
+    <div style="margin-bottom:0">
+      <div class="aq-panel-title">⚡ Action Queue</div>
+      <div class="ck-action-queue" id="homeActionQueue">
+        <div class="aq-card aq-warning">
+          <div class="aq-label">Payments</div>
+          <div class="aq-count" id="aqPayments">—</div>
+          <div class="aq-desc">Awaiting payment confirmation</div>
+          <button class="aq-btn" onclick="showTab('booking');setTimeout(function(){setIntakeFilter('awaiting_payment',null)},200)">Resolve →</button>
+        </div>
+        <div class="aq-card aq-warning">
+          <div class="aq-label">Intake Queue</div>
+          <div class="aq-count" id="aqIntake">—</div>
+          <div class="aq-desc">Forms pending review</div>
+          <button class="aq-btn" onclick="showTab('booking');setTimeout(function(){setIntakeFilter('intake_pending',null)},200)">Review →</button>
+        </div>
+        <div class="aq-card aq-info">
+          <div class="aq-label">Pending Review</div>
+          <div class="aq-count" id="aqReview">—</div>
+          <div class="aq-desc">Intakes awaiting practitioner review</div>
+          <button class="aq-btn" onclick="showTab('booking');setTimeout(function(){setIntakeFilter('review_pending',null)},200)">Review →</button>
+        </div>
+        <div class="aq-card aq-ready">
+          <div class="aq-label">Ready to Schedule</div>
+          <div class="aq-count" id="aqReady">—</div>
+          <div class="aq-desc">Cleared — awaiting appointment</div>
+          <button class="aq-btn" onclick="showTab('booking');setTimeout(function(){setIntakeFilter('ready',null)},200)">Schedule →</button>
+        </div>
+        <div class="aq-card aq-urgent">
+          <div class="aq-label">Overdue Clients</div>
+          <div class="aq-count" id="aqOverdue">—</div>
+          <div class="aq-desc">60+ days since last session</div>
+          <button class="aq-btn" onclick="showTab('followups')">Follow Up →</button>
+        </div>
+      </div>
+    </div>
 
     <!-- Cockpit grid: Schedule | Briefing | Urgent (right col spans 2 rows) -->
     <div class="ck-home-grid">
@@ -8545,8 +8730,41 @@ function bookFromWaitlist(id) {
 }
 
 // ── HOME DASHBOARD ──────────────────────────────────────────
+function _lcStageCounts() {
+  var counts = { awaiting_payment:0, intake_pending:0, review_pending:0, ready:0, scheduled:0, completed:0, cancelled:0 };
+  try {
+    var raw = localStorage.getItem('rea_booking_lifecycle');
+    if (!raw) return counts;
+    var all = JSON.parse(raw);
+    Object.values(all).forEach(function(lc) {
+      var s = computeStage(lc);
+      var f = stageToFilter(s);
+      if (counts[f] !== undefined) counts[f]++;
+    });
+  } catch(e) {}
+  return counts;
+}
+
 function renderHomeDashboard() {
   var today = new Date().toISOString().slice(0, 10);
+
+  // ── ACTION QUEUE — lifecycle stage counts ──────────────────
+  try {
+    var lc = _lcStageCounts();
+    var setAq = function(id, val, fallbackId) {
+      var el = document.getElementById(id);
+      if (el) el.textContent = val;
+      if (fallbackId) {
+        var kpi = document.getElementById(fallbackId);
+        if (kpi) { kpi.textContent = val; kpi.className = 'action-stat-val ' + (val > 0 ? 'amber' : 'green'); }
+      }
+    };
+    setAq('aqPayments', lc.awaiting_payment, 'homeStatDocs');
+    setAq('aqIntake',   lc.intake_pending,   'homeStatIntakes');
+    setAq('aqReview',   lc.review_pending,   null);
+    setAq('aqReady',    lc.ready,            null);
+    // aqOverdue is set below after the overdue scan
+  } catch(e) {}
 
   // ── TODAY'S SESSIONS count + schedule ──────────────────────
   var todaySess = [];
@@ -8649,6 +8867,8 @@ function renderHomeDashboard() {
         alertEl.textContent = stale.length;
         alertEl.className = 'action-stat-val ' + (stale.length > 0 ? 'amber' : 'green');
       }
+      var aqOvEl = document.getElementById('aqOverdue');
+      if (aqOvEl) aqOvEl.textContent = stale.length;
 
       if (!stale.length) {
         flagsEl.innerHTML = '<p class="home-ok">✓ No overdue clients detected.</p>';
@@ -12153,16 +12373,120 @@ purgeTestEntries();
     setTimeout(updateNotifBadge, 1500);
   }
 
+  var notifPanel = document.getElementById('notifPanel');
+  var notifClose = document.getElementById('notifCloseBtn');
+
+  function _buildNotifItems() {
+    var items = [];
+
+    // Lifecycle-based counts
+    try {
+      var lc = _lcStageCounts();
+      if (lc.awaiting_payment > 0)
+        items.push({ sev:'urgent', title: lc.awaiting_payment + ' payment' + (lc.awaiting_payment > 1 ? 's' : '') + ' awaiting confirmation', sub:'Booking queue → Awaiting Payment', tab:'booking', filter:'awaiting_payment' });
+      if (lc.intake_pending > 0)
+        items.push({ sev:'warning', title: lc.intake_pending + ' intake form' + (lc.intake_pending > 1 ? 's' : '') + ' to review', sub:'Booking queue → Intake Pending', tab:'booking', filter:'intake_pending' });
+      if (lc.review_pending > 0)
+        items.push({ sev:'info', title: lc.review_pending + ' intake' + (lc.review_pending > 1 ? 's' : '') + ' need practitioner review', sub:'Booking queue → Review Pending', tab:'booking', filter:'review_pending' });
+      if (lc.ready > 0)
+        items.push({ sev:'ok', title: lc.ready + ' client' + (lc.ready > 1 ? 's' : '') + ' cleared — ready to schedule', sub:'Booking queue → Ready', tab:'booking', filter:'ready' });
+    } catch(e) {}
+
+    // Overdue clients from localStorage scan
+    try {
+      var lastSeen = {};
+      var allS = typeof REA_DATA !== 'undefined' ? REA_DATA.sessions : [];
+      allS.forEach(function(s) {
+        var n = s.client || s.client_name; if (!n) return;
+        var d = s.session_date || s.date || '';
+        if (!lastSeen[n] || d > lastSeen[n]) lastSeen[n] = d;
+      });
+      var overdueCount = Object.values(lastSeen).filter(function(d) {
+        return !d || (Date.now() - new Date(d).getTime()) > 60 * 86400000;
+      }).length;
+      if (overdueCount > 0)
+        items.push({ sev:'urgent', title: overdueCount + ' client' + (overdueCount > 1 ? 's' : '') + ' overdue (60+ days)', sub:'Go to Follow-Ups', tab:'followups', filter:null });
+    } catch(e) {}
+
+    return items;
+  }
+
+  function _renderNotifPanel() {
+    if (!notifPanel) return;
+    var items = _buildNotifItems();
+    var listEl = document.getElementById('notifList');
+    if (!listEl) return;
+    if (!items.length) {
+      listEl.innerHTML = '<p class="notif-empty">All clear — no pending actions.</p>';
+      return;
+    }
+    listEl.innerHTML = items.map(function(item) {
+      var filterAttr = item.filter ? ' data-filter="' + item.filter + '"' : '';
+      return '<div class="notif-item" onclick="_notifGo(\'' + item.tab + '\',' + (item.filter ? '\'' + item.filter + '\'' : 'null') + ')">' +
+        '<div class="notif-dot ' + item.sev + '"></div>' +
+        '<div class="notif-text">' +
+          '<div class="notif-title">' + item.title + '</div>' +
+          '<div class="notif-sub">' + item.sub + '</div>' +
+        '</div>' +
+        '<button class="notif-action-btn" onclick="event.stopPropagation();_notifGo(\'' + item.tab + '\',' + (item.filter ? '\'' + item.filter + '\'' : 'null') + ')">Go →</button>' +
+      '</div>';
+    }).join('');
+
+    // Update badge total
+    if (notifBadge) {
+      var total = items.length;
+      notifBadge.textContent = total > 99 ? '99+' : String(total);
+      notifBadge.classList.toggle('visible', total > 0);
+    }
+  }
+
+  window._notifGo = function(tab, filter) {
+    if (notifPanel) notifPanel.style.display = 'none';
+    if (typeof showTab === 'function') showTab(tab);
+    if (filter && typeof setIntakeFilter === 'function') {
+      setTimeout(function() { setIntakeFilter(filter, null); }, 200);
+    }
+  };
+
   if (notifBtn) {
-    notifBtn.addEventListener('click', function() {
-      // Navigate to Follow-Ups if there are alerts, otherwise Home
-      var alertEl = document.getElementById('homeStatAlerts');
-      var count   = alertEl ? parseInt(alertEl.textContent, 10) : 0;
-      if (typeof showTab === 'function') {
-        showTab(count > 0 ? 'followups' : 'home');
+    notifBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      if (!notifPanel) return;
+      var isOpen = notifPanel.style.display !== 'none';
+      if (isOpen) {
+        notifPanel.style.display = 'none';
+      } else {
+        _renderNotifPanel();
+        notifPanel.style.display = 'block';
       }
     });
   }
+
+  if (notifClose) {
+    notifClose.addEventListener('click', function() {
+      if (notifPanel) notifPanel.style.display = 'none';
+    });
+  }
+
+  document.addEventListener('click', function(e) {
+    if (notifPanel && notifPanel.style.display !== 'none') {
+      if (!notifPanel.contains(e.target) && e.target !== notifBtn) {
+        notifPanel.style.display = 'none';
+      }
+    }
+  });
+
+  // Refresh notification badge after home renders
+  setTimeout(function() {
+    if (typeof _lcStageCounts === 'function') {
+      var items = _buildNotifItems();
+      if (notifBadge) {
+        var total = items.length;
+        notifBadge.textContent = total > 99 ? '99+' : String(total);
+        notifBadge.classList.toggle('visible', total > 0);
+      }
+    }
+  }, 2000);
 
 })();
 
