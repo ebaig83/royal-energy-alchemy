@@ -105,10 +105,48 @@ CREATE INDEX IF NOT EXISTS idx_report_exports_type    ON report_exports (report_
 CREATE INDEX IF NOT EXISTS idx_report_exports_created ON report_exports (generated_at DESC);
 
 -- ─────────────────────────────────────────────────────────────
--- PHASE 3 — BRANDED APPOINTMENT CONFIRMATION EMAIL TEMPLATE
--- Seeded into email_templates for use by send-email.js
+-- PHASE 3 — EMAIL TEMPLATES TABLE + BRANDED SEED DATA
+-- Creates email_templates if it doesn't exist yet
+-- (2026-06-13-communications.sql may not have been run)
 -- Safe to re-run — uses INSERT ... ON CONFLICT DO NOTHING
 -- ─────────────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS email_templates (
+  id          uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+  name        text        NOT NULL UNIQUE,
+  type        text        NOT NULL,
+  subject     text        NOT NULL,
+  html_body   text        NOT NULL,
+  text_body   text,
+  variables   text[]      DEFAULT '{}',
+  is_active   boolean     NOT NULL DEFAULT true,
+  created_by  text        NOT NULL DEFAULT 'daron',
+  created_at  timestamptz NOT NULL DEFAULT now(),
+  updated_at  timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS communications (
+  id                  uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+  client_id           uuid        REFERENCES clients(id) ON DELETE SET NULL,
+  channel             text        NOT NULL DEFAULT 'email'
+    CHECK (channel IN ('email','sms','phone','in_person')),
+  message_type        text        NOT NULL,
+  recipient           text        NOT NULL,
+  subject             text,
+  body                text,
+  status              text        NOT NULL DEFAULT 'sent'
+    CHECK (status IN ('pending','sent','delivered','failed','bounced')),
+  provider            text,
+  provider_message_id text,
+  template_id         uuid        REFERENCES email_templates(id) ON DELETE SET NULL,
+  metadata            jsonb,
+  sent_at             timestamptz DEFAULT now(),
+  created_at          timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_comm_client  ON communications (client_id);
+CREATE INDEX IF NOT EXISTS idx_comm_status  ON communications (status);
+CREATE INDEX IF NOT EXISTS idx_comm_created ON communications (created_at DESC);
 
 INSERT INTO email_templates (
   name, type, subject, html_body, text_body, variables, is_active, created_by
