@@ -4638,10 +4638,50 @@ function renderAnalytics() {
       </div>
       <div id="practitionerOutcomesTable" style="margin-bottom:48px"></div>
     </div>
+
+    <!-- ── CROSS-CLIENT INTELLIGENCE ─────────────── -->
+    <div class="section-title" style="margin-top:8px">Cross-Client Intelligence</div>
+    <div style="font-size:13px;color:#dddaee55;font-style:italic;margin-bottom:12px">Aggregate patterns across all clients — no personal identifiers. Reveals what concerns, services, and recommendations appear most frequently.</div>
+    <div id="crossClientSection">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:16px" id="crossClientCards">
+        ${['Top Concern','Top Service','Top Recommendation','Most Effective Service'].map(l =>
+          `<div class="card" style="padding:20px 18px;min-height:88px;display:flex;flex-direction:column;justify-content:space-between">
+            <div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b88;text-transform:uppercase;margin-bottom:10px">${l}</div>
+            <div style="font-family:'Cinzel',serif;font-size:22px;color:#dddaee44;font-style:italic">…</div>
+          </div>`
+        ).join('')}
+      </div>
+      <div id="crossClientLists" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px"></div>
+    </div>
+
+    <!-- ── DATA QUALITY AUDIT ─────────────────────── -->
+    <div class="section-title" style="margin-top:8px">Data Quality Audit</div>
+    <div style="font-size:13px;color:#dddaee55;font-style:italic;margin-bottom:12px">Scans all records for issues that degrade analytics accuracy. Run this periodically to maintain clean data.</div>
+    <div id="dataQualitySection">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px" id="dataQualityCards">
+        ${['Status','Critical','High','Medium'].map(l =>
+          `<div class="card" style="padding:20px 18px;min-height:88px;display:flex;flex-direction:column;justify-content:space-between">
+            <div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b88;text-transform:uppercase;margin-bottom:10px">${l}</div>
+            <div style="font-family:'Cinzel',serif;font-size:22px;color:#dddaee44;font-style:italic">…</div>
+          </div>`
+        ).join('')}
+      </div>
+      <div id="dataQualityIssues" style="margin-bottom:28px"></div>
+    </div>
+
+    <!-- ── RESEARCH FLAGS ─────────────────────────── -->
+    <div class="section-title" style="margin-top:8px">Research Flags</div>
+    <div style="font-size:13px;color:#dddaee55;font-style:italic;margin-bottom:12px">Sessions flagged for notable findings or research interest. Set the Research Flag when recording a session outcome.</div>
+    <div id="researchFlagsSection" style="margin-bottom:48px">
+      <div style="font-size:13px;color:#dddaee44;font-style:italic;padding:8px 0">Loading…</div>
+    </div>
   `;
   // Load live intelligence cards asynchronously after render
   loadAnalyticsIntelligence();
   loadOutcomeIntelligence();
+  loadCrossClientIntelligence();
+  loadDataQualityAudit();
+  loadResearchFlags();
 }
 
 async function loadAnalyticsIntelligence() {
@@ -4840,6 +4880,150 @@ async function loadOutcomeIntelligence() {
   } catch (e) {
     const el = document.getElementById('practitionerOutcomesCards');
     if (el) el.innerHTML = `<div style="font-size:13px;color:#dddaee44;font-style:italic">Practitioner outcomes unavailable.</div>`;
+  }
+}
+
+async function loadCrossClientIntelligence() {
+  const tok     = sessionStorage.getItem('rea_api_token') || '';
+  const headers = { 'X-Dashboard-Token': tok };
+  const cardEl  = document.getElementById('crossClientCards');
+  const listEl  = document.getElementById('crossClientLists');
+  try {
+    const res  = await fetch('/.netlify/functions/analytics?section=cross-client', { headers });
+    const data = res.ok ? await res.json() : null;
+    if (!data || data.status === 'insufficient_data') {
+      const note = data ? `Need ${data.minimumRequired} sessions (have ${data.currentCount})` : 'Data unavailable';
+      if (cardEl) cardEl.innerHTML = `<div style="font-size:13px;color:#dddaee44;font-style:italic;padding:4px 0">${note}</div>`;
+      if (listEl) listEl.innerHTML = '';
+      return;
+    }
+    function statCard(label, value, sub, color) {
+      return `<div class="card" style="padding:20px 18px;min-height:88px;display:flex;flex-direction:column;justify-content:space-between">
+        <div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b88;text-transform:uppercase;margin-bottom:10px">${label}</div>
+        <div style="font-family:'Cinzel',serif;font-size:${value && value.length > 14 ? '14px':'22px'};color:${color||'#f0ecff'};line-height:1.2">${value || '—'}</div>
+        ${sub ? `<div style="font-size:11px;color:#dddaee44;margin-top:6px">${sub}</div>` : ''}
+      </div>`;
+    }
+    const topConcern = data.topConcerns?.[0];
+    const topService = data.topServices?.[0];
+    const topRec     = data.topRecommendations?.[0];
+    const topEff     = data.effectivenessMetrics?.[0];
+    if (cardEl) cardEl.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px">
+      ${statCard('Top Concern',    topConcern?.concern, topConcern ? `${topConcern.count}× sessions` : null, '#e8b84b')}
+      ${statCard('Top Service',    topService?.service, topService ? `${topService.count}× sessions` : null, '#9b7fe8')}
+      ${statCard('Top Recommendation', topRec?.name,   topRec     ? `${topRec.count}× recommended` : null, '#22c98a')}
+      ${statCard('Most Effective Service', topEff?.service, topEff ? `avg +${topEff.avgImprovement} improvement` : null, '#4488ff')}
+    </div>`;
+    function listBlock(title, rows, color) {
+      if (!rows || !rows.length) return '';
+      const items = rows.slice(0, 8).map((r, i) => {
+        const max = rows[0].count || rows[0].measuredSessions || 1;
+        const val = r.count ?? r.measuredSessions ?? '';
+        const pct = val ? Math.round(val / max * 100) : 0;
+        const label = r.concern || r.service || r.name || r.category || '—';
+        const sub   = r.avgImprovement != null ? `avg +${r.avgImprovement}` : (val ? `${val}×` : '');
+        return `<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid #e8b84b08">
+          <div style="flex:1;font-family:'Cinzel',serif;font-size:12px;color:#dddaee">${label}</div>
+          <div style="width:80px;height:4px;background:#e8b84b0f;border-radius:1px">
+            <div style="height:4px;width:${Math.max(pct,3)}%;background:${color};border-radius:1px"></div>
+          </div>
+          <div style="font-family:'Cinzel',serif;font-size:12px;color:${color};width:36px;text-align:right">${sub}</div>
+        </div>`;
+      }).join('');
+      return `<div class="card" style="padding:0;overflow:hidden">
+        <div style="padding:12px 14px 8px;font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b88;text-transform:uppercase">${title}</div>
+        ${items}
+      </div>`;
+    }
+    if (listEl) listEl.innerHTML =
+      listBlock('Top Concerns', data.topConcerns, '#e8b84b') +
+      listBlock('Top Services', data.topServices, '#9b7fe8') +
+      listBlock('Top Recommendations', data.topRecommendations, '#22c98a') +
+      listBlock('Service Effectiveness', data.effectivenessMetrics, '#4488ff');
+  } catch(e) {
+    if (cardEl) cardEl.innerHTML = `<div style="font-size:13px;color:#dddaee44;font-style:italic">Cross-client intelligence unavailable.</div>`;
+  }
+}
+
+async function loadDataQualityAudit() {
+  const tok    = sessionStorage.getItem('rea_api_token') || '';
+  const headers = { 'X-Dashboard-Token': tok };
+  const cardEl  = document.getElementById('dataQualityCards');
+  const issueEl = document.getElementById('dataQualityIssues');
+  const SEV_COLORS = { Critical:'#ff4455', High:'#f0a050', Medium:'#e8b84b', Low:'#4488ff' };
+  try {
+    const res  = await fetch('/.netlify/functions/analytics?section=data-quality', { headers });
+    const data = res.ok ? await res.json() : null;
+    if (!data) {
+      if (cardEl) cardEl.innerHTML = `<div style="font-size:13px;color:#dddaee44;font-style:italic">Audit unavailable.</div>`;
+      return;
+    }
+    const s = data.summary || {};
+    const statusColor = data.status === 'clean' ? '#22c98a' : data.status === 'critical' ? '#ff4455' : data.status === 'degraded' ? '#f0a050' : '#e8b84b';
+    function dqCard(label, value, color) {
+      return `<div class="card" style="padding:20px 18px;min-height:88px;display:flex;flex-direction:column;justify-content:space-between">
+        <div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b88;text-transform:uppercase;margin-bottom:10px">${label}</div>
+        <div style="font-family:'Cinzel',serif;font-size:22px;color:${color||'#f0ecff'};line-height:1.2">${value ?? '—'}</div>
+      </div>`;
+    }
+    if (cardEl) cardEl.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px">
+      ${dqCard('Status', (data.status || '—').toUpperCase(), statusColor)}
+      ${dqCard('Critical', s.Critical ?? 0, s.Critical > 0 ? '#ff4455' : '#22c98a')}
+      ${dqCard('High',     s.High     ?? 0, s.High     > 0 ? '#f0a050' : '#22c98a')}
+      ${dqCard('Medium',   s.Medium   ?? 0, s.Medium   > 0 ? '#e8b84b' : '#dddaee44')}
+    </div>`;
+    if (issueEl) {
+      if (!data.issues || !data.issues.length) {
+        issueEl.innerHTML = `<div style="font-size:13px;color:#22c98a;font-style:italic;padding:12px 0">✓ No data quality issues detected. All records are clean.</div>`;
+      } else {
+        issueEl.innerHTML = `<div class="card" style="padding:0;overflow:hidden">
+          ${data.issues.map(iss => `
+            <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid #e8b84b08">
+              <span style="font-family:'Cinzel',serif;font-size:10px;padding:3px 8px;border-radius:2px;background:${SEV_COLORS[iss.severity]||'#aaa'}22;color:${SEV_COLORS[iss.severity]||'#aaa'};white-space:nowrap;margin-top:2px">${iss.severity}</span>
+              <div style="flex:1">
+                <div style="font-family:'Cinzel',serif;font-size:12px;color:#f0ecff;margin-bottom:3px">${iss.issue} <span style="color:#dddaee55">(${iss.table})</span></div>
+                <div style="font-size:12px;color:#dddaee66">${iss.detail}</div>
+              </div>
+              <span style="font-family:'Cinzel',serif;font-size:20px;color:${SEV_COLORS[iss.severity]||'#aaa'}">${iss.count}</span>
+            </div>`).join('')}
+        </div>`;
+      }
+    }
+  } catch(e) {
+    if (cardEl) cardEl.innerHTML = `<div style="font-size:13px;color:#dddaee44;font-style:italic">Data quality audit unavailable.</div>`;
+  }
+}
+
+async function loadResearchFlags() {
+  const tok    = sessionStorage.getItem('rea_api_token') || '';
+  const headers = { 'X-Dashboard-Token': tok };
+  const el     = document.getElementById('researchFlagsSection');
+  if (!el) return;
+  try {
+    const res  = await fetch('/.netlify/functions/outcomes?research=1', { headers });
+    const data = res.ok ? await res.json() : null;
+    const flags = data?.research_flags || [];
+    if (!flags.length) {
+      el.innerHTML = `<div style="font-size:13px;color:#dddaee44;font-style:italic;padding:8px 0">No research flags recorded yet. When recording a session outcome, enable the Research Flag to mark it here.</div>`;
+      return;
+    }
+    el.innerHTML = `<div class="card" style="padding:0;overflow:hidden">
+      ${flags.map(f => {
+        const catColor = {improved:'#22c98a',no_change:'#e8b84b',worse:'#ff4455',mixed:'#9b7fe8'}[f.outcome_category] || '#dddaee';
+        return `<div style="padding:14px 18px;border-bottom:1px solid #e8b84b08">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+            <span style="font-family:'Cinzel',serif;font-size:11px;padding:2px 8px;border-radius:2px;background:${catColor}22;color:${catColor}">${(f.outcome_category||'').replace('_',' ')}</span>
+            ${f.improvement_level ? `<span style="font-size:11px;color:#e8b84b">Level ${f.improvement_level}/10</span>` : ''}
+            <span style="font-size:11px;color:#dddaee44;margin-left:auto">${f.session_date || f.created_at?.slice(0,10) || ''}</span>
+          </div>
+          ${f.client_name ? `<div style="font-family:'Cinzel',serif;font-size:13px;color:#f0ecff;margin-bottom:4px">${f.client_name}</div>` : ''}
+          ${f.research_notes ? `<div style="font-size:12px;color:#dddaee88;font-style:italic">${f.research_notes}</div>` : ''}
+          ${f.practitioner_notes ? `<div style="font-size:12px;color:#dddaee66;margin-top:4px">${f.practitioner_notes}</div>` : ''}
+        </div>`;
+      }).join('')}
+    </div>`;
+  } catch(e) {
+    el.innerHTML = `<div style="font-size:13px;color:#dddaee44;font-style:italic">Research flags unavailable.</div>`;
   }
 }
 
@@ -11166,10 +11350,131 @@ function advanceReview(id,action){
 }
 function advanceSession(id,action){
   if(action==='schedule'){openSchedModal(id);return;}
+  if(action==='complete'){openOutcomeModal(id);return;}
   var lc=getLC(id);
-  if(action==='complete'){lc.session_status='completed';lc.stage='session_completed';}
-  else if(action==='aftercare'){lc.stage='aftercare_sent';}
+  if(action==='aftercare'){lc.stage='aftercare_sent';}
   saveLC(id,lc);renderIntake();
+}
+
+function completeSessionWithOutcome(id){
+  var lc=getLC(id);
+  lc.session_status='completed';lc.stage='session_completed';
+  saveLC(id,lc);renderIntake();
+}
+
+// ── Outcome Recording Modal ───────────────────────────────────────
+var _outcomeModalId = null;
+var _outcomeCategory = null;
+
+function openOutcomeModal(id) {
+  _outcomeModalId  = id;
+  _outcomeCategory = null;
+  var lc = getLC(id);
+
+  // Subtitle
+  var sub = document.getElementById('outcomeModalSubtitle');
+  if (sub) sub.textContent = (lc.client_name || 'Unknown client') + (lc.window1 ? ' · ' + lc.window1 : '');
+
+  // Reset fields
+  ['outcomeStateBefore','outcomeStateAfter','outcomeImprovementLevel','outcomeEnergyShift','outcomePractitionerNotes','outcomeResearchNotes'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.value='';
+  });
+  var cb = document.getElementById('outcomeResearchFlag'); if(cb) cb.checked=false;
+  var rw = document.getElementById('outcomeResearchNotesWrap'); if(rw) rw.style.display='none';
+  var st = document.getElementById('outcomeModalStatus'); if(st) st.textContent='';
+
+  // Clear category selection
+  ['improved','no_change','worse','mixed'].forEach(function(cat){
+    var btn = document.getElementById('outcomeCat_'+cat);
+    if(btn) btn.style.opacity='1';
+  });
+
+  // Wire research flag checkbox
+  var rfCb = document.getElementById('outcomeResearchFlag');
+  if(rfCb) rfCb.onchange = function(){ var rw=document.getElementById('outcomeResearchNotesWrap'); if(rw) rw.style.display=this.checked?'block':'none'; };
+
+  var m = document.getElementById('outcomeModal');
+  if(m){ m.style.display='flex'; }
+}
+
+function closeOutcomeModal() {
+  var m = document.getElementById('outcomeModal');
+  if(m) m.style.display='none';
+  _outcomeModalId = null;
+  _outcomeCategory = null;
+}
+
+function selectOutcomeCategory(cat) {
+  _outcomeCategory = cat;
+  var catColors = {improved:'#22c98a',no_change:'#e8b84b',worse:'#ff4455',mixed:'#9b7fe8'};
+  ['improved','no_change','worse','mixed'].forEach(function(c){
+    var btn = document.getElementById('outcomeCat_'+c);
+    if(!btn) return;
+    btn.style.opacity = (c===cat) ? '1' : '0.35';
+    btn.style.borderColor = (c===cat) ? (catColors[c]+' ') : (catColors[c]+'55');
+    btn.style.background  = (c===cat) ? (catColors[c]+'22') : (catColors[c]+'0a');
+  });
+}
+
+async function confirmOutcomeAndComplete() {
+  if(!_outcomeModalId) return;
+  if(!_outcomeCategory) {
+    var st = document.getElementById('outcomeModalStatus');
+    if(st) st.textContent = 'Please select a session outcome category.';
+    return;
+  }
+  var tok = sessionStorage.getItem('rea_api_token') || '';
+  var lc  = getLC(_outcomeModalId);
+  var statusEl = document.getElementById('outcomeModalStatus');
+  var submitBtn = document.getElementById('outcomeSubmitBtn');
+  if(submitBtn) { submitBtn.disabled=true; submitBtn.textContent='Saving…'; }
+  if(statusEl) statusEl.textContent = '';
+
+  try {
+    var body = {
+      outcome_category:    _outcomeCategory,
+      client_name:         lc.client_name || null,
+      session_date:        lc.window1     || null,
+      research_flag:       document.getElementById('outcomeResearchFlag')?.checked || false,
+      research_notes:      document.getElementById('outcomeResearchNotes')?.value.trim() || null,
+      energy_shift:        document.getElementById('outcomeEnergyShift')?.value.trim() || null,
+      practitioner_notes:  document.getElementById('outcomePractitionerNotes')?.value.trim() || null,
+      mark_completed:      true,
+    };
+    var sb = parseInt(document.getElementById('outcomeStateBefore')?.value||'');
+    var sa = parseInt(document.getElementById('outcomeStateAfter')?.value||'');
+    var il = parseInt(document.getElementById('outcomeImprovementLevel')?.value||'');
+    if(sb>=1&&sb<=5)  body.state_before       = sb;
+    if(sa>=1&&sa<=5)  body.state_after        = sa;
+    if(il>=1&&il<=10) body.improvement_level  = il;
+    if(lc.supabase_session_id) {
+      body.session_id = lc.supabase_session_id;
+      // Also patch sessions.status=completed and state scores
+      await fetch('/.netlify/functions/sessions?id='+lc.supabase_session_id, {
+        method:'PATCH',
+        headers:{'Content-Type':'application/json','X-Dashboard-Token':tok},
+        body:JSON.stringify({ status:'completed', state_before: body.state_before||null, state_after: body.state_after||null, _context:'Marked complete via outcome modal' })
+      });
+    }
+    var res = await fetch('/.netlify/functions/outcomes', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-Dashboard-Token':tok},
+      body:JSON.stringify(body)
+    });
+    if(!res.ok) { var e=await res.json(); throw new Error(e.error||res.status); }
+    closeOutcomeModal();
+    completeSessionWithOutcome(_outcomeModalId);
+    showToast('Session marked complete. Outcome saved.','#4488cc');
+  } catch(e) {
+    if(statusEl) statusEl.textContent = 'Error: '+e.message;
+    if(submitBtn) { submitBtn.disabled=false; submitBtn.textContent='✦ Save Outcome & Complete Session'; }
+  }
+}
+
+function skipOutcomeAndComplete() {
+  if(!_outcomeModalId) return;
+  closeOutcomeModal();
+  completeSessionWithOutcome(_outcomeModalId);
 }
 
 /* ====== SCHEDULING MODAL ====== */
@@ -11872,6 +12177,70 @@ purgeTestEntries();
 <script src="lp-module.js"></script>
 <script src="communications-module.js"></script>
 <script src="pin-lock.js"></script>
+<!-- ====== OUTCOME RECORDING MODAL ====== -->
+<div id="outcomeModal" style="display:none;position:fixed;inset:0;background:#00000099;z-index:9500;align-items:center;justify-content:center">
+  <div style="background:#0d0b1e;border:1px solid #4488cc55;border-radius:14px;padding:30px 32px;width:92%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 0 60px #4488cc14">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px">
+      <div>
+        <div style="font-family:'Cinzel',serif;font-size:18px;color:#4488cc;letter-spacing:.05em">Record Session Outcome</div>
+        <div style="font-size:13px;color:#dddaee66;margin-top:4px" id="outcomeModalSubtitle"></div>
+      </div>
+      <button onclick="closeOutcomeModal()" style="background:none;border:none;color:#dddaee44;font-size:22px;cursor:pointer;padding:0;line-height:1">✕</button>
+    </div>
+
+    <div style="margin-bottom:16px">
+      <div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b88;text-transform:uppercase;margin-bottom:8px">Session Outcome *</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px" id="outcomeCategoryBtns">
+        <button onclick="selectOutcomeCategory('improved')"   id="outcomeCat_improved"   style="padding:10px 14px;border:1px solid #22c98a55;border-radius:6px;background:#22c98a0a;color:#22c98a;font-family:'Cinzel',serif;font-size:12px;cursor:pointer;letter-spacing:.1em">✦ Improved</button>
+        <button onclick="selectOutcomeCategory('no_change')"  id="outcomeCat_no_change"  style="padding:10px 14px;border:1px solid #e8b84b55;border-radius:6px;background:#e8b84b0a;color:#e8b84b;font-family:'Cinzel',serif;font-size:12px;cursor:pointer;letter-spacing:.1em">◎ No Change</button>
+        <button onclick="selectOutcomeCategory('worse')"      id="outcomeCat_worse"      style="padding:10px 14px;border:1px solid #ff445555;border-radius:6px;background:#ff44550a;color:#ff4455;font-family:'Cinzel',serif;font-size:12px;cursor:pointer;letter-spacing:.1em">▽ Worse</button>
+        <button onclick="selectOutcomeCategory('mixed')"      id="outcomeCat_mixed"      style="padding:10px 14px;border:1px solid #9b7fe855;border-radius:6px;background:#9b7fe80a;color:#9b7fe8;font-family:'Cinzel',serif;font-size:12px;cursor:pointer;letter-spacing:.1em">◈ Mixed</button>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+      <div>
+        <div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b88;text-transform:uppercase;margin-bottom:6px">State Before (1–5)</div>
+        <input id="outcomeStateBefore" type="number" min="1" max="5" step="1" placeholder="1–5" style="width:100%;padding:9px 12px;border:1px solid #4488cc44;border-radius:6px;background:#0a0618;color:#f0ecff;font-family:'Cinzel',serif;font-size:14px;box-sizing:border-box">
+      </div>
+      <div>
+        <div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b88;text-transform:uppercase;margin-bottom:6px">State After (1–5)</div>
+        <input id="outcomeStateAfter"  type="number" min="1" max="5" step="1" placeholder="1–5" style="width:100%;padding:9px 12px;border:1px solid #4488cc44;border-radius:6px;background:#0a0618;color:#f0ecff;font-family:'Cinzel',serif;font-size:14px;box-sizing:border-box">
+      </div>
+    </div>
+
+    <div style="margin-bottom:16px">
+      <div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b88;text-transform:uppercase;margin-bottom:6px">Improvement Level (1–10)</div>
+      <input id="outcomeImprovementLevel" type="number" min="1" max="10" step="1" placeholder="1 = slight, 10 = profound" style="width:100%;padding:9px 12px;border:1px solid #4488cc44;border-radius:6px;background:#0a0618;color:#f0ecff;font-family:'Cinzel',serif;font-size:14px;box-sizing:border-box">
+    </div>
+
+    <div style="margin-bottom:16px">
+      <div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b88;text-transform:uppercase;margin-bottom:6px">Energy Shift Observed</div>
+      <input id="outcomeEnergyShift" type="text" placeholder="e.g. Heavy grief lifted, brightness in field…" style="width:100%;padding:9px 12px;border:1px solid #4488cc44;border-radius:6px;background:#0a0618;color:#f0ecff;font-size:13px;box-sizing:border-box">
+    </div>
+
+    <div style="margin-bottom:16px">
+      <div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:#e8b84b88;text-transform:uppercase;margin-bottom:6px">Practitioner Notes</div>
+      <textarea id="outcomePractitionerNotes" rows="3" placeholder="What happened in this session? Key observations…" style="width:100%;padding:9px 12px;border:1px solid #4488cc44;border-radius:6px;background:#0a0618;color:#f0ecff;font-size:13px;resize:vertical;box-sizing:border-box"></textarea>
+    </div>
+
+    <div style="margin-bottom:22px">
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+        <input type="checkbox" id="outcomeResearchFlag" style="width:16px;height:16px;accent-color:#9b7fe8">
+        <span style="font-family:'Cinzel',serif;font-size:12px;color:#9b7fe8;letter-spacing:.1em">Flag for Research — notable or unusual findings</span>
+      </label>
+      <div id="outcomeResearchNotesWrap" style="margin-top:8px;display:none">
+        <input id="outcomeResearchNotes" type="text" placeholder="Brief note on what makes this case notable…" style="width:100%;padding:8px 12px;border:1px solid #9b7fe844;border-radius:6px;background:#0a0618;color:#f0ecff;font-size:12px;box-sizing:border-box">
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px">
+      <button onclick="confirmOutcomeAndComplete()" id="outcomeSubmitBtn" style="flex:1;padding:13px;background:#4488cc22;border:1px solid #4488cc;border-radius:8px;color:#4488cc;font-family:'Cinzel',serif;font-size:13px;letter-spacing:.15em;cursor:pointer">✦ Save Outcome &amp; Complete Session</button>
+      <button onclick="skipOutcomeAndComplete()" style="padding:13px 18px;background:none;border:1px solid #dddaee22;border-radius:8px;color:#dddaee44;font-family:'Cinzel',serif;font-size:12px;cursor:pointer">Skip</button>
+    </div>
+    <div id="outcomeModalStatus" style="margin-top:10px;font-size:12px;color:#dddaee66;text-align:center;min-height:18px"></div>
+  </div>
+</div>
 <!-- ====== RESCHEDULE MODAL ====== -->
 <div id="reschedModal" style="display:none;position:fixed;inset:0;background:#00000099;z-index:9500;align-items:center;justify-content:center">
   <div style="background:#0d0b1e;border:1px solid #f0a05055;border-radius:14px;padding:30px 32px;width:92%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 0 60px #f0a05014">
