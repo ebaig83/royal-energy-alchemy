@@ -446,6 +446,11 @@ input::placeholder,textarea::placeholder{color:#dddaee55}
 .booking-section{margin-bottom:40px}
 .booking-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px}
 .booking-section-header .section-title{margin:0}
+/* ── INTAKE LIFECYCLE FILTERS ── */
+.intake-filter-btn{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.14em;padding:5px 13px;border:1px solid #3a3860;background:transparent;color:#666090;border-radius:20px;cursor:pointer;transition:all .2s}
+.intake-filter-btn:hover{border-color:#66ddaa88;color:#66ddaa88}
+.intake-filter-btn.active{border-color:#66ddaa;color:#66ddaa;background:#66ddaa14}
+@keyframes rea-pulse{0%,100%{opacity:1}50%{opacity:.5}}
 /* capacity card */
 .capacity-card{background:#0a0612;border:1px solid #e8b84b2a;padding:20px 26px;margin-bottom:32px;display:flex;align-items:center;gap:22px;flex-wrap:wrap}
 .capacity-card .cap-label{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.32em;color:#e8b84b;text-transform:uppercase;white-space:nowrap}
@@ -3285,13 +3290,29 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
       <div id="settingsSummary"></div>
     </div>
 
-    <!-- INTAKE SUBMISSIONS -->
+    <!-- INTAKE SUBMISSIONS — BOOKING WORKFLOW ENGINE -->
     <div class="booking-section" style="border:1px solid #3a5a4455;margin-bottom:24px">
       <div class="booking-section-header">
-        <div class="section-title" style="color:#66ddaa">📥 All Intake Submissions</div>
+        <div class="section-title" style="color:#66ddaa">📥 Booking Workflow Queue</div>
         <button class="action-btn" onclick="clearIntake()" style="border-color:#cc445588;color:#cc4455">Clear All</button>
       </div>
-      <p style="font-family:'EB Garamond',serif;font-size:14px;color:#aaa8cc;padding:0 0 10px 0;margin:0">Every form submission from the website — pending bookings and waitlist entries — with full details.</p>
+      <p style="font-family:'EB Garamond',serif;font-size:14px;color:#aaa8cc;padding:0 0 14px 0;margin:0">Every booking request with full lifecycle tracking — payment, intake, review, and session readiness in one place.</p>
+
+      <!-- Metrics Bar -->
+      <div id="intakeMetrics" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:16px"></div>
+
+      <!-- Filter Bar -->
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px">
+        <button class="intake-filter-btn active" data-filter="all" onclick="setIntakeFilter('all',this)">All</button>
+        <button class="intake-filter-btn" data-filter="awaiting_payment" onclick="setIntakeFilter('awaiting_payment',this)">Awaiting Payment</button>
+        <button class="intake-filter-btn" data-filter="intake_pending" onclick="setIntakeFilter('intake_pending',this)">Intake Pending</button>
+        <button class="intake-filter-btn" data-filter="review_pending" onclick="setIntakeFilter('review_pending',this)">Review Pending</button>
+        <button class="intake-filter-btn" data-filter="ready" onclick="setIntakeFilter('ready',this)">✦ Ready to Schedule</button>
+        <button class="intake-filter-btn" data-filter="scheduled" onclick="setIntakeFilter('scheduled',this)">Scheduled</button>
+        <button class="intake-filter-btn" data-filter="completed" onclick="setIntakeFilter('completed',this)">Completed</button>
+        <button class="intake-filter-btn" data-filter="cancelled" onclick="setIntakeFilter('cancelled',this)">Cancelled</button>
+      </div>
+
       <div id="intakeList"></div>
     </div>
 
@@ -10987,7 +11008,134 @@ function renderSettingsSummary(){
 }
 renderSettingsSummary();
 
-/* ====== INTAKE SUBMISSIONS ====== */
+/* ====== BOOKING LIFECYCLE ENGINE ====== */
+
+var _intakeFilter='all';
+
+var LIFECYCLE_COLORS={
+  submitted:'#aaa8cc',payment_requested:'#e8b84b',payment_pending:'#f0a050',
+  payment_received:'#44cc88',intake_pending:'#e8b84b',intake_complete:'#66ddaa',
+  review_pending:'#b08ae0',review_complete:'#66ddaa',session_ready:'#00ffaa',
+  session_scheduled:'#44cc88',session_completed:'#4488cc',aftercare_sent:'#66aacc',
+  closed:'#4a4580',cancelled:'#cc4455'
+};
+var LIFECYCLE_LABELS={
+  submitted:'New Submission',payment_requested:'Payment Link Sent',payment_pending:'Payment Claimed',
+  payment_received:'Payment Confirmed',intake_pending:'Intake Pending',intake_complete:'Intake Complete',
+  review_pending:'Review Pending',review_complete:'Review Complete',session_ready:'READY TO SCHEDULE',
+  session_scheduled:'Session Scheduled',session_completed:'Session Complete',aftercare_sent:'Aftercare Sent',
+  closed:'Closed',cancelled:'Cancelled'
+};
+
+function getLCStore(){try{return JSON.parse(localStorage.getItem('rea_booking_lifecycle')||'{}')}catch(e){return {}}}
+function saveLCStore(s){localStorage.setItem('rea_booking_lifecycle',JSON.stringify(s))}
+function getLC(id){
+  var s=getLCStore();
+  return s[id]||{stage:'submitted',payment_status:'unpaid',payment_method:'',payment_ref:'',payment_at:null,intake_status:'not_started',review_status:'pending',session_status:'not_scheduled',notes:'',updated_at:null};
+}
+function saveLC(id,lc){var s=getLCStore();lc.updated_at=new Date().toISOString();s[id]=lc;saveLCStore(s);}
+
+function computeStage(lc){
+  if(lc.stage==='cancelled')return 'cancelled';
+  if(lc.session_status==='completed')return 'session_completed';
+  if(lc.session_status==='scheduled')return 'session_scheduled';
+  var payOk=lc.payment_status==='paid'||lc.payment_status==='waived';
+  var intakeOk=lc.intake_status==='complete'||lc.intake_status==='skipped';
+  var reviewOk=lc.review_status==='complete'||lc.review_status==='skipped';
+  if(payOk&&intakeOk&&reviewOk)return 'session_ready';
+  if(reviewOk&&intakeOk)return 'review_complete';
+  if(intakeOk)return 'review_pending';
+  if(payOk)return 'intake_pending';
+  if(lc.payment_status==='pending')return 'payment_pending';
+  if(lc.stage==='payment_requested')return 'payment_requested';
+  return 'submitted';
+}
+
+function stageToFilter(stage){
+  if(stage==='cancelled')return 'cancelled';
+  if(stage==='session_completed'||stage==='aftercare_sent'||stage==='closed')return 'completed';
+  if(stage==='session_scheduled')return 'scheduled';
+  if(stage==='session_ready')return 'ready';
+  if(stage==='review_pending'||stage==='review_complete')return 'review_pending';
+  if(stage==='intake_pending'||stage==='intake_complete')return 'intake_pending';
+  return 'awaiting_payment';
+}
+
+function setIntakeFilter(filter,btn){
+  _intakeFilter=filter;
+  document.querySelectorAll('.intake-filter-btn').forEach(function(b){b.classList.toggle('active',b.dataset.filter===filter);});
+  renderIntake();
+}
+
+function renderIntakeMetrics(all){
+  var el=document.getElementById('intakeMetrics');if(!el)return;
+  var counts={awaiting_payment:0,intake_pending:0,review_pending:0,ready:0,scheduled:0,completed:0,cancelled:0};
+  var now=Date.now();var weekMs=7*24*60*60*1000;var thisWeek=0;
+  all.forEach(function(r){
+    var lc=getLC(r.ts);var stage=computeStage(lc);var f=stageToFilter(stage);
+    if(counts[f]!==undefined)counts[f]++;
+    if(now-r.ts<weekMs)thisWeek++;
+  });
+  var total=all.length;
+  var conversion=total>0?Math.round((counts.completed/total)*100):0;
+  var tiles=[
+    {label:'Awaiting Payment',value:counts.awaiting_payment,color:'#cc4455'},
+    {label:'Intake Pending',value:counts.intake_pending,color:'#e8b84b'},
+    {label:'Review Pending',value:counts.review_pending,color:'#b08ae0'},
+    {label:'Ready to Schedule',value:counts.ready,color:'#00ffaa'},
+    {label:'This Week',value:thisWeek,color:'#66ddaa'},
+    {label:'Conversion',value:conversion+'%',color:'#4488cc'}
+  ];
+  el.innerHTML=tiles.map(function(t){
+    return '<div style="background:#0d0b1e;border:1px solid '+t.color+'33;border-radius:8px;padding:10px 14px;text-align:center">'+
+      '<div style="font-family:Cinzel,serif;font-size:20px;color:'+t.color+';font-weight:bold">'+t.value+'</div>'+
+      '<div style="font-family:EB Garamond,serif;font-size:11px;color:#6662aa;margin-top:2px">'+t.label+'</div>'+
+    '</div>';
+  }).join('');
+}
+
+function lcBtnStyle(c){return 'font-family:Cinzel,serif;font-size:9px;letter-spacing:.1em;padding:5px 12px;border:1px solid '+c+'88;background:'+c+'12;color:'+c+';border-radius:4px;cursor:pointer';}
+
+function lcBadge(label,color,icon){
+  return '<span style="font-family:Cinzel,serif;font-size:9px;letter-spacing:.08em;color:'+color+';background:'+color+'18;border:1px solid '+color+'55;border-radius:10px;padding:3px 9px">'+icon+' '+label+'</span>';
+}
+
+function advancePayment(id,action){
+  var lc=getLC(id);
+  if(action==='request'){lc.stage='payment_requested';}
+  else if(action==='pending'){lc.payment_status='pending';}
+  else if(action==='confirm'){
+    var m=prompt('Payment method? (Square / Cash App / Venmo / Zelle / PayPal / Cash)')||'Unknown';
+    var ref=prompt('Reference / confirmation # (optional):')||'';
+    lc.payment_status='paid';lc.payment_method=m;lc.payment_ref=ref;lc.payment_at=new Date().toISOString();
+  }else if(action==='waive'){
+    if(!confirm('Waive payment for this client?'))return;
+    lc.payment_status='waived';
+  }
+  saveLC(id,lc);renderIntake();
+}
+function advanceIntake(id,action){
+  var lc=getLC(id);
+  lc.intake_status=(action==='complete')?'complete':'skipped';
+  saveLC(id,lc);renderIntake();
+}
+function advanceReview(id,action){
+  var lc=getLC(id);
+  lc.review_status=(action==='complete')?'complete':'skipped';
+  saveLC(id,lc);renderIntake();
+}
+function advanceSession(id,action){
+  var lc=getLC(id);
+  if(action==='schedule'){lc.session_status='scheduled';}
+  else if(action==='complete'){lc.session_status='completed';lc.stage='session_completed';}
+  else if(action==='aftercare'){lc.stage='aftercare_sent';}
+  saveLC(id,lc);renderIntake();
+}
+function cancelBookingLC(id){
+  if(!confirm('Mark this booking as cancelled?'))return;
+  var lc=getLC(id);lc.stage='cancelled';saveLC(id,lc);renderIntake();
+}
+
 function renderIntake(){
   var pending=[];try{pending=JSON.parse(localStorage.getItem('rea_pending_bookings')||'[]');}catch(e){}
   var waitlist=[];try{waitlist=JSON.parse(localStorage.getItem('rea_waitlist')||'[]');}catch(e){}
@@ -10996,27 +11144,112 @@ function renderIntake(){
   pending.forEach(function(b){all.push(Object.assign({},b,{_type:'booking'}));});
   waitlist.forEach(function(w){all.push(Object.assign({},w,{_type:'waitlist'}));});
   all.sort(function(a,b){return b.ts-a.ts;});
+
+  renderIntakeMetrics(all);
+
+  var filtered=_intakeFilter==='all'?all:all.filter(function(r){
+    return stageToFilter(computeStage(getLC(r.ts)))===_intakeFilter;
+  });
+
   if(!all.length){el.innerHTML='<p style="font-family:EB Garamond,serif;color:#6662aa;font-style:italic;font-size:14px">No intake submissions yet.</p>';return;}
-  el.innerHTML=all.map(function(r){
+  if(!filtered.length){el.innerHTML='<p style="font-family:EB Garamond,serif;color:#6662aa;font-style:italic;font-size:14px">No bookings match this filter.</p>';return;}
+
+  el.innerHTML=filtered.map(function(r){
+    var lc=getLC(r.ts);
+    var stage=computeStage(lc);
+    var stageColor=LIFECYCLE_COLORS[stage]||'#aaa8cc';
+    var stageLabel=LIFECYCLE_LABELS[stage]||stage;
     var isWait=r._type==='waitlist';
-    var color=isWait?'#b08ae0':'#66cc88';var label=isWait?'WAITLIST':'BOOKING';var bg=isWait?'#16102a':'#0d1a12';var border=isWait?'#6644aa55':'#2a6a3a55';
-    var payLine=r.payMethod?('<div style="font-family:EB Garamond,serif;font-size:13px;color:#aaa8cc;margin-top:4px">Payment: '+r.payMethod+(r.payRef?' · Ref: '+r.payRef:'')+(r.paySent?' · <span style=\"color:#66cc88\">Sent ✓</span>':'')+'</div>'):'';
-    return '<div style="padding:14px 16px;margin-bottom:8px;background:'+bg+';border:1px solid '+border+';border-radius:8px">'+
-      '<div style="display:flex;justify-content:space-between;align-items:flex-start">'+
+    var typeColor=isWait?'#b08ae0':'#66cc88';
+    var typeLabel=isWait?'WAITLIST':'BOOKING';
+    var isReady=stage==='session_ready';
+
+    // Payment badge
+    var payOk=lc.payment_status==='paid'||lc.payment_status==='waived';
+    var payPend=lc.payment_status==='pending';
+    var payColor=payOk?'#44cc88':(payPend?'#e8b84b':'#cc4455');
+    var payLabel=payOk?(lc.payment_status==='waived'?'Waived':'Paid'):(payPend?'Pay Pending':'Unpaid');
+
+    // Intake badge
+    var intakeOk=lc.intake_status==='complete'||lc.intake_status==='skipped';
+    var intakeColor=intakeOk?'#44cc88':'#cc4455';
+    var intakeLabel=intakeOk?(lc.intake_status==='skipped'?'Intake Skipped':'Intake Done'):'Intake Needed';
+
+    // Review badge
+    var reviewOk=lc.review_status==='complete'||lc.review_status==='skipped';
+    var reviewColor=reviewOk?'#44cc88':(intakeOk?'#e8b84b':'#4a4580');
+    var reviewLabel=reviewOk?'Reviewed':(intakeOk?'Review Needed':'Awaiting Intake');
+
+    // Session badge
+    var sessColor=stage==='session_completed'?'#4488cc':(stage==='session_scheduled'?'#44cc88':(isReady?'#00ffaa':'#4a4580'));
+    var sessLabel=stage==='session_completed'?'Completed':(stage==='session_scheduled'?'Scheduled':(isReady?'Schedule Now!':'Not Scheduled'));
+
+    // Action buttons by stage
+    var actions='';
+    if(stage==='submitted'){
+      actions='<button onclick="advancePayment(\''+r.ts+'\',\'request\')" style="'+lcBtnStyle('#e8b84b')+'">Send Payment Link</button>';
+    }else if(stage==='payment_requested'){
+      actions='<button onclick="advancePayment(\''+r.ts+'\',\'confirm\')" style="'+lcBtnStyle('#44cc88')+'">Confirm Payment</button>'+
+              '<button onclick="advancePayment(\''+r.ts+'\',\'waive\')" style="'+lcBtnStyle('#aaa8cc')+'">Waive</button>';
+    }else if(stage==='payment_pending'){
+      actions='<button onclick="advancePayment(\''+r.ts+'\',\'confirm\')" style="'+lcBtnStyle('#44cc88')+'">Confirm Payment</button>';
+    }else if(stage==='intake_pending'){
+      actions='<button onclick="advanceIntake(\''+r.ts+'\',\'complete\')" style="'+lcBtnStyle('#e8b84b')+'">Mark Intake Complete</button>'+
+              '<button onclick="advanceIntake(\''+r.ts+'\',\'skip\')" style="'+lcBtnStyle('#6662aa')+'">Skip Intake</button>';
+    }else if(stage==='review_pending'){
+      actions='<button onclick="advanceReview(\''+r.ts+'\',\'complete\')" style="'+lcBtnStyle('#b08ae0')+'">Mark Reviewed</button>'+
+              '<button onclick="advanceReview(\''+r.ts+'\',\'skip\')" style="'+lcBtnStyle('#6662aa')+'">Skip Review</button>';
+    }else if(stage==='session_ready'){
+      actions='<button onclick="advanceSession(\''+r.ts+'\',\'schedule\')" style="'+lcBtnStyle('#00ffaa')+'">✦ Mark as Scheduled</button>';
+    }else if(stage==='session_scheduled'){
+      actions='<button onclick="advanceSession(\''+r.ts+'\',\'complete\')" style="'+lcBtnStyle('#4488cc')+'">Mark Session Complete</button>';
+    }else if(stage==='session_completed'){
+      actions='<button onclick="advanceSession(\''+r.ts+'\',\'aftercare\')" style="'+lcBtnStyle('#66aacc')+'">Mark Aftercare Sent</button>';
+    }
+    if(stage!=='cancelled'&&stage!=='session_completed'&&stage!=='aftercare_sent'&&stage!=='closed'){
+      actions+='<button onclick="cancelBookingLC(\''+r.ts+'\')" style="'+lcBtnStyle('#cc4455')+'">Cancel</button>';
+    }
+
+    var cardBorder=isReady?'#00ffaa66':'#2a2856';
+    var cardGlow=isReady?'box-shadow:0 0 18px #00ffaa18;':'';
+    var readyBadge=isReady?'<span style="font-family:Cinzel,serif;font-size:9px;color:#00ffaa;border:1px solid #00ffaa;border-radius:10px;padding:2px 10px;letter-spacing:.15em;animation:rea-pulse 2s infinite"> ✦ READY</span>':'';
+
+    var payDetail=(payOk&&lc.payment_method)?
+      '<div style="font-family:EB Garamond,serif;font-size:12px;color:#44cc8880;margin-bottom:10px">'+lc.payment_method+(lc.payment_ref?' · Ref: '+lc.payment_ref:'')+(lc.payment_at?' · '+new Date(lc.payment_at).toLocaleDateString('en-US',{month:'short',day:'numeric'}):'')+'</div>':'';
+
+    return '<div style="padding:16px 18px;margin-bottom:10px;background:#0d0b1e;border:1px solid '+cardBorder+';border-radius:10px;'+cardGlow+'">'+
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:10px">'+
         '<div>'+
-          '<span style="font-family:Cinzel,serif;font-size:10px;letter-spacing:.2em;color:'+color+';padding:2px 8px;border:1px solid '+color+'55;border-radius:10px">'+label+'</span>'+
-          '<span style="font-family:Cinzel,serif;font-size:14px;color:'+color+';margin-left:10px">'+r.name+'</span>'+
-          '<div style="font-family:EB Garamond,serif;font-size:13px;color:#aaa8cc;margin-top:4px">'+r.contact+'</div>'+
-          '<div style="font-family:EB Garamond,serif;font-size:14px;color:#e0ddf8;margin-top:4px">'+r.service+'</div>'+
-          (r.window1?'<div style="font-family:EB Garamond,serif;font-size:13px;color:#7aaa90;margin-top:3px">Window: '+r.window1+'</div>':'')+
-          payLine+
-          (r.message||r.note?'<div style="font-family:EB Garamond,serif;font-size:13px;color:#6682aa;margin-top:6px;font-style:italic;border-left:2px solid #4a4580;padding-left:8px">'+(r.message||r.note)+'</div>':'')+
-          '<div style="font-family:EB Garamond,serif;font-size:11px;color:#4a5048;margin-top:6px">'+new Date(r.ts).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})+'</div>'+
+          '<span style="font-family:Cinzel,serif;font-size:9px;letter-spacing:.2em;color:'+typeColor+';border:1px solid '+typeColor+'55;border-radius:10px;padding:2px 8px">'+typeLabel+'</span>'+
+          '<span style="font-family:Cinzel,serif;font-size:15px;color:#e0ddf8;margin-left:8px">'+r.name+'</span>'+
+          readyBadge+
         '</div>'+
-      '</div></div>';
+        '<span style="font-family:Cinzel,serif;font-size:9px;color:'+stageColor+';background:'+stageColor+'16;border:1px solid '+stageColor+'44;border-radius:10px;padding:3px 10px;white-space:nowrap">'+stageLabel+'</span>'+
+      '</div>'+
+      '<div style="font-family:EB Garamond,serif;font-size:13px;color:#7a78a8;margin-bottom:3px">'+r.contact+'</div>'+
+      '<div style="font-family:EB Garamond,serif;font-size:14px;color:#c0bde0;margin-bottom:10px">'+r.service+(r.window1?' <span style="color:#7aaa90">· '+r.window1+'</span>':'')+'</div>'+
+      '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">'+
+        lcBadge(payLabel,payColor,'💳')+
+        lcBadge(intakeLabel,intakeColor,'📋')+
+        lcBadge(reviewLabel,reviewColor,'🔍')+
+        lcBadge(sessLabel,sessColor,'✦')+
+      '</div>'+
+      payDetail+
+      (r.message||r.note?'<div style="font-family:EB Garamond,serif;font-size:13px;color:#6682aa;margin-bottom:10px;font-style:italic;border-left:2px solid #3a3860;padding-left:8px">'+(r.message||r.note)+'</div>':'')+
+      '<div style="display:flex;flex-wrap:wrap;gap:8px">'+actions+'</div>'+
+      '<div style="font-family:EB Garamond,serif;font-size:11px;color:#3a3858;margin-top:10px">Submitted '+new Date(r.ts).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})+'</div>'+
+    '</div>';
   }).join('');
 }
-function clearIntake(){if(confirm('This will clear both pending bookings and waitlist. Continue?')){localStorage.removeItem('rea_pending_bookings');localStorage.removeItem('rea_waitlist');renderIntake();renderPendingBookings();renderWaitlistQueue();}}
+
+function clearIntake(){
+  if(confirm('Clear all booking submissions and lifecycle data? This cannot be undone.')){
+    localStorage.removeItem('rea_pending_bookings');
+    localStorage.removeItem('rea_waitlist');
+    localStorage.removeItem('rea_booking_lifecycle');
+    renderIntake();renderPendingBookings();renderWaitlistQueue();
+  }
+}
 renderIntake();
 
 /* ====== APPOINTMENT REMINDERS ====== */
