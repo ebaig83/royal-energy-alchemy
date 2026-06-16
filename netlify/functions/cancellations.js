@@ -9,45 +9,7 @@
 const { requireAdmin, respond } = require('./lib/auth');
 const { getClient }             = require('./lib/supabase');
 const { log }                   = require('./lib/audit');
-
-// ── Refund policy ─────────────────────────────────────────────────────────────
-// 72+ hours before appointment: eligible for 50% refund or session credit
-// < 72 hours before appointment: non-refundable
-// No-show / no-call: non-refundable, must prepay to rebook
-
-function calcRefundEligibility(appointmentDate, appointmentTime) {
-  if (!appointmentDate) return { eligible: false, pct: 0, estimate: 'Non-refundable — appointment date not provided.', hours: null };
-
-  const timeStr  = appointmentTime ? appointmentTime.slice(0, 5) : '12:00';
-  const [h, m]   = timeStr.split(':').map(Number);
-  const [y, mo, d] = appointmentDate.split('-').map(Number);
-  const apptMs   = new Date(y, mo - 1, d, h, m).getTime();
-  const nowMs    = Date.now();
-  const hoursUntil = (apptMs - nowMs) / 3600000;
-
-  if (hoursUntil >= 72) {
-    return {
-      eligible: true,
-      pct:      50,
-      estimate: 'Eligible for 50% refund or session credit.',
-      hours:    Math.round(hoursUntil),
-    };
-  } else if (hoursUntil > 0) {
-    return {
-      eligible: false,
-      pct:      0,
-      estimate: `Non-refundable — appointment is within ${Math.round(hoursUntil)} hours (policy requires 72+ hours notice).`,
-      hours:    Math.round(hoursUntil),
-    };
-  } else {
-    return {
-      eligible: false,
-      pct:      0,
-      estimate: 'Non-refundable — appointment has already passed or no-show policy may apply.',
-      hours:    Math.round(hoursUntil),
-    };
-  }
-}
+const { calcRefund }            = require('./lib/policy');
 
 // ── handler ───────────────────────────────────────────────────────────────────
 
@@ -70,7 +32,7 @@ exports.handler = async function(event) {
     if (!reason)      return respond(400, { error: 'reason is required.' });
 
     // Calculate refund eligibility server-side
-    const refund = calcRefundEligibility(body.appointment_date, body.appointment_time);
+    const refund = calcRefund(body.appointment_date, body.appointment_time);
 
     // Try to find matching session by email + date
     let session_id = null;

@@ -11,6 +11,8 @@ const { requireAdmin, respond } = require('./lib/auth');
 const { getClient }             = require('./lib/supabase');
 const { log }                   = require('./lib/audit');
 const { scheduleAftercare }     = require('./agents/aftercare-agent');
+const { sendTransactional }     = require('./lib/mailer');
+const { emailFailure }          = require('./lib/ops-alert');
 
 exports.handler = async function(event) {
   if (event.httpMethod === 'OPTIONS') return respond(200, {});
@@ -91,6 +93,35 @@ exports.handler = async function(event) {
     // Auto-schedule aftercare when a completed session is created
     if (data.status === 'completed' && data.session_date) {
       await scheduleAftercare({ session: data, sb });
+    }
+
+    // Fire booking confirmation email (fire-and-forget)
+    const clientEmail = body.client_email || await (async () => {
+      if (!data.client_id) return null;
+      try {
+        const { data: c } = await sb.from('clients').select('email').eq('id', data.client_id).single();
+        return c?.email || null;
+      } catch { return null; }
+    })();
+    if (clientEmail) {
+      sendTransactional(sb, {
+        templateName:   'appointment_confirmation',
+        recipientEmail: clientEmail,
+        clientId:       data.client_id || null,
+        variables: {
+          client_name:  data.client_name || '',
+          service:      data.service     || '',
+          session_date: data.session_date || '',
+          session_time: data.session_time ? data.session_time.slice(0, 5) : '',
+          location_type: data.location_type || 'distance',
+          manage_url:   process.env.SITE_URL
+            ? `${process.env.SITE_URL}/manage-appointment.html?session_id=${data.id}`
+            : '',
+        },
+        metadata: { trigger: 'booking_created', session_id: data.id },
+      }).catch(async e => {
+      await emailFailure(sb, { templateName: 'appointment_confirmation', clientId: data.client_id, sessionId: data.id, error: e });
+    });
     }
 
     return respond(201, { session: data });

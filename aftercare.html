@@ -152,6 +152,9 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#c
     <!-- ADAPTIVE QUESTIONS — rendered by JS based on flags -->
     <div id="adaptiveQuestions"></div>
 
+    <!-- ROTATION TEMPLATE QUESTIONS — rendered by JS based on ?tmpl= param -->
+    <div id="templateSection"></div>
+
     <!-- STANDARD Q — Still active -->
     <div class="q-block">
       <div class="q-head"><span class="q-tag">Standard · All Clients</span></div>
@@ -348,6 +351,55 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#c
       </div>
     </div>
 
+    <!-- Q9: Recommendations not followed -->
+    <div class="q-block">
+      <div class="q-head"><span class="q-tag">Follow-Up Intelligence</span></div>
+      <div class="q-body">
+        <div class="q-text">Which recommendations from your session have you NOT been able to follow?</div>
+        <div class="fg">
+          <textarea name="recommendationsNotFollowed" placeholder="Be honest — it helps Daron understand what support you need. E.g. haven't been doing the protection work, skipped grounding practices..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q10: Protection frequency -->
+    <div class="q-block">
+      <div class="q-head"><span class="q-tag">Follow-Up Intelligence</span></div>
+      <div class="q-body">
+        <div class="q-text">How often are you using your protection practices?</div>
+        <div class="check-row" style="margin-bottom:14px">
+          <label class="check-chip"><input type="radio" name="protectionFrequency" value="Daily"> Daily</label>
+          <label class="check-chip"><input type="radio" name="protectionFrequency" value="Several times a week"> Several times a week</label>
+          <label class="check-chip"><input type="radio" name="protectionFrequency" value="Weekly"> Weekly</label>
+          <label class="check-chip"><input type="radio" name="protectionFrequency" value="Occasionally"> Occasionally</label>
+          <label class="check-chip"><input type="radio" name="protectionFrequency" value="Not yet started"> Not yet started</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q11: Breakthroughs -->
+    <div class="q-block">
+      <div class="q-head"><span class="q-tag">Follow-Up Intelligence</span></div>
+      <div class="q-body">
+        <div class="q-text">Describe any breakthroughs — sudden shifts, realizations, or moments of unexpected clarity or freedom since your session.</div>
+        <div class="fg">
+          <textarea name="breakthroughsExperienced" placeholder="E.g. a realization about a relationship, a feeling of sudden lightness, a moment where a long-held fear simply dissolved..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q12: Challenges remaining -->
+    <div class="q-block">
+      <div class="q-head"><span class="q-tag">Follow-Up Intelligence</span></div>
+      <div class="q-body">
+        <div class="q-text">What challenges remain? What feels stuck or unresolved despite the session work?</div>
+        <div class="fg">
+          <textarea name="challengesRemaining" placeholder="Be specific — this helps Daron plan the next session or adjust the approach. Nothing you share here is too small to mention."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <input type="text" name="bot_field" style="display:none" tabindex="-1" autocomplete="off">
     <button type="submit" class="submit-btn">Submit Check-In →</button>
   </form>
 
@@ -365,7 +417,8 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#c
 
 <script>
 const params = new URLSearchParams(window.location.search);
-const timepoint = params.get('t') || '24hr';
+const timepoint     = params.get('t')    || '24hr';
+const templateLetter = (params.get('tmpl') || '').toUpperCase();
 const flags = (params.get('f') || '').split(',').filter(Boolean);
 const clientName = params.get('name') || 'there';
 const clientCid = params.get('cid') || '';
@@ -489,6 +542,51 @@ flags.forEach(f => {
   });
 });
 
+// ── Template rotation questions ───────────────────────────────────────────────
+const FOLLOWUP_TEMPLATES = {
+  A: { label: 'Experience', questions: [
+    { key: 'feelingToday',  q: 'How are you feeling today — emotionally, physically, and energetically?',           ph: 'Describe your overall state right now...' },
+    { key: 'whatChanged',   q: 'What has changed since your session? Describe any shifts — big or small.',          ph: 'Even subtle changes count...' },
+    { key: 'whatStoodOut',  q: 'What stood out most during or after your session?',                                  ph: 'A feeling, a realization, a moment...' },
+  ]},
+  B: { label: 'Recommendations', questions: [
+    { key: 'recommendationsTried',       q: 'Which recommendations from your session did you try?',              ph: 'List the practices or suggestions you attempted...' },
+    { key: 'recommendationsMostHelpful', q: 'Which recommendations were most helpful to you?',                   ph: 'What made the biggest difference...' },
+    { key: 'recommendationsDifficult',   q: 'Which recommendations were difficult to follow — and why?',         ph: 'Be honest — this helps Daron adjust his approach...' },
+  ]},
+  C: { label: 'Outcomes', questions: [
+    { key: 'whatImproved',           q: 'What has improved since your session? Be as specific as possible.',  ph: 'Symptoms, feelings, relationships, situations...' },
+    { key: 'whatRemainsChallenging', q: 'What remains challenging or unresolved?',                             ph: 'What still needs attention...' },
+    { key: 'supportStillNeeded',     q: 'What kind of support do you still feel you need?',                    ph: 'Another session, specific guidance, energy work...' },
+  ]},
+  D: { label: 'Research', questions: [
+    { key: 'newSymptoms',           q: 'Have you noticed any new symptoms or physical sensations since your session?',                              ph: 'Physical, emotional, perceptual, energetic...' },
+    { key: 'newInsights',           q: 'What new insights or realizations have come to you since your session?',                                    ph: 'Sudden clarity, spiritual messages, new understanding...' },
+    { key: 'environmentalTriggers', q: 'Have you identified any environmental triggers — people, places, or situations that affect your energy?',   ph: 'Who or what makes things better or worse...' },
+    { key: 'unexpectedExperiences', q: 'Have you had any unexpected or unusual experiences since your session?',                                    ph: 'Dreams, coincidences, spiritual experiences, physical reactions...' },
+  ]},
+  E: { label: 'Long-Term Tracking', questions: [
+    { key: 'progressSinceLastFollowUp', q: 'Describe your overall progress since your last check-in.',              ph: 'How have things shifted over time...' },
+    { key: 'setbacksSinceLastFollowUp', q: 'Have you experienced any setbacks since your last check-in? Describe.', ph: 'Anything that felt like a step backward...' },
+    { key: 'newGoals',                  q: 'What new goals or intentions have emerged for you?',                     ph: 'What do you want to work toward in your next session...' },
+  ]},
+};
+
+const tSection = document.getElementById('templateSection');
+if (templateLetter && FOLLOWUP_TEMPLATES[templateLetter]) {
+  const tmpl = FOLLOWUP_TEMPLATES[templateLetter];
+  const divider = document.createElement('div');
+  divider.style.cssText = 'margin:32px 0 20px;border-top:1px solid #e8b84b22;padding-top:20px';
+  divider.innerHTML = `<div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.45em;color:#e8b84b55;text-transform:uppercase">${tmpl.label} Focus</div>`;
+  tSection.appendChild(divider);
+  tmpl.questions.forEach(q => {
+    const block = document.createElement('div');
+    block.className = 'q-block';
+    block.innerHTML = `<div class="q-head"><span class="q-tag">${tmpl.label} · Rotation</span></div><div class="q-body"><div class="q-text">${q.q}</div><div class="fg"><textarea name="${q.key}" placeholder="${q.ph}"></textarea></div></div>`;
+    tSection.appendChild(block);
+  });
+}
+
 if (qCount === 0) {
   const block = document.createElement('div');
   block.className = 'q-block';
@@ -524,12 +622,43 @@ function generateAIResponse(formData) {
 document.getElementById('aftercareForm').addEventListener('submit', function(e) {
   e.preventDefault();
   const formData = new FormData(this);
+
+  // Collect all form data into a structured object
+  const responseData = {};
+  formData.forEach((value, key) => {
+    if (responseData[key]) {
+      // Handle multiple values (checkboxes)
+      if (!Array.isArray(responseData[key])) responseData[key] = [responseData[key]];
+      responseData[key].push(value);
+    } else {
+      responseData[key] = value;
+    }
+  });
+
   document.getElementById('aiThinking').classList.add('show');
   setTimeout(() => {
     document.getElementById('aiThinking').classList.remove('show');
     const response = generateAIResponse(formData);
     document.getElementById('aiResponseText').textContent = response;
     document.getElementById('aiResponseBox').classList.add('show');
+
+    // POST to backend (fire-and-forget — doesn't block the success screen)
+    const aftercareId = new URLSearchParams(window.location.search).get('aid');
+    const sessionId   = new URLSearchParams(window.location.search).get('session_id') || new URLSearchParams(window.location.search).get('sid');
+    if (aftercareId) {
+      fetch('/.netlify/functions/aftercare?action=submit_response', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({
+          aftercare_id:  aftercareId,
+          session_id:    sessionId || null,
+          timepoint,
+          template:      templateLetter || null,
+          response_data: Object.assign(responseData, templateLetter ? { _template: templateLetter } : {}),
+        }),
+      }).catch(err => console.warn('[aftercare] submit error:', err.message));
+    }
+
     setTimeout(() => {
       document.getElementById('aftercareForm').style.display = 'none';
       document.getElementById('successMsg').style.display = 'block';

@@ -96,6 +96,16 @@
   .notes-area{border:1px solid rgba(201,168,76,.10);background:rgba(6,4,18,.5);padding:24px 28px;min-height:140px}
   .notes-area p{font-size:15px;color:#d8d4f04d;font-style:italic}
 
+  /* ── PRODUCT RECOMMENDATIONS ── */
+  .prod-cat-label{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.4em;color:#e8b84b77;text-transform:uppercase;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #e8b84b18}
+  .prod-item{display:flex;align-items:flex-start;gap:16px;padding:18px 22px;border:1px solid #e8b84b22;background:rgba(4,2,14,.7);margin-bottom:8px}
+  .prod-item-name{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.12em;color:#d8d4f0e6;margin-bottom:5px}
+  .prod-item-desc{font-size:15px;line-height:1.75;color:#d8d4f09e}
+  .prod-item-link{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:#e8b84b99;border:1px solid #e8b84b33;padding:5px 14px;text-decoration:none;white-space:nowrap;flex-shrink:0;transition:border-color .2s,color .2s;align-self:flex-start;margin-top:3px}
+  .prod-item-link:hover{border-color:#e8b84b;color:#e8b84b}
+  .prod-theme-tag{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;color:#e8b84b88;background:#e8b84b0a;border:1px solid #e8b84b1a;padding:2px 8px;display:inline-block;text-transform:uppercase;margin-right:4px;margin-bottom:4px}
+  .prod-empty{font-family:'EB Garamond',serif;font-size:15px;font-style:italic;color:#d8d4f040;padding:24px 0}
+
   /* ── PRINT BUTTON ── */
   .actions{display:flex;gap:16px;margin-top:48px;justify-content:center;flex-wrap:wrap}
   .btn-gold{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.35em;color:#000;text-transform:uppercase;text-decoration:none;background:linear-gradient(135deg,#f8e090,var(--gold));padding:14px 36px;border:none;cursor:pointer;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);display:inline-block;transition:filter .25s,transform .25s}
@@ -118,11 +128,12 @@
     body{background:#fff;color:#111}
     .plan-wrap{padding:20px}
     .page-hero{padding:30px 20px 20px;background:#fff}
-    h1,.sec-label,.plan-section-title,.tl-title,.hap-name,.hap-area,.rec-card-badge,.rec-card-name{color:#111}
-    .plan-body,.tl-body,.hap-body,.rec-card-desc,.plan-body,.aftercare-intro{color:#333}
-    .client-block,.rec-card,.hap-card,.notes-area,.referral-box{border-color:#ccc;background:#fafafa}
+    h1,.sec-label,.plan-section-title,.tl-title,.hap-name,.hap-area,.rec-card-badge,.rec-card-name,.prod-item-name,.prod-cat-label{color:#111}
+    .plan-body,.tl-body,.hap-body,.rec-card-desc,.plan-body,.aftercare-intro,.prod-item-desc{color:#333}
+    .client-block,.rec-card,.hap-card,.notes-area,.referral-box,.prod-item{border-color:#ccc;background:#fafafa}
     .hap-card::before{display:none}
     .affirmation-block{border-left-color:#bbb}
+    .prod-item-link{border-color:#999;color:#555}
     footer{display:none}
   }
 
@@ -382,8 +393,21 @@
       <span class="plan-section-title">Practitioner Notes</span>
       <div class="plan-section-line"></div>
     </div>
-    <div class="notes-area">
+    <div class="notes-area" id="practitionerNotesArea">
       <p>Session notes and observations from Daron — added after your session is complete.</p>
+    </div>
+  </div>
+
+  <!-- 8 · RECOMMENDED PRODUCTS -->
+  <div class="plan-section" id="productRecsSection">
+    <div class="plan-section-header">
+      <span class="plan-section-num">08</span>
+      <span class="plan-section-title">Recommended Products &amp; Tools</span>
+      <div class="plan-section-line"></div>
+    </div>
+    <p class="plan-body" id="productRecsIntro">Based on the themes addressed in your session, Daron recommends the following supportive tools to reinforce the energetic work at home. These are not required — they are options to support your integration.</p>
+    <div id="productRecsBody">
+      <p class="prod-empty">Products are generated from your session themes in the practitioner dashboard. If you are viewing a printed plan, Daron will have filled these in manually.</p>
     </div>
   </div>
 
@@ -410,5 +434,83 @@
   <p style="margin-top:6px"><a href="/" style="color:#e8b84b4d;text-decoration:none;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;">← Return to Site</a></p>
 </footer>
 
+<script>
+(function(){
+  // Read the active client + their product recommendations from localStorage
+  // (set by dashboard.html → openTreatmentPlanForClient)
+  try {
+    const clientName = localStorage.getItem('rea_tp_client') || '';
+    const allRecs    = JSON.parse(localStorage.getItem('rea_product_recs') || '{}');
+
+    // Try to match by normalized key
+    const key = clientName.toLowerCase().trim().replace(/\s+/g,'_');
+    const rec  = allRecs[key] || null;
+
+    // Populate client name in the plan header if present
+    if (clientName) {
+      const blanks = document.querySelectorAll('.client-field .blank');
+      if (blanks[0]) { blanks[0].textContent = clientName; blanks[0].classList.remove('blank'); }
+    }
+
+    // Populate product recommendations
+    const body = document.getElementById('productRecsBody');
+    if (!body) return;
+
+    if (!rec || !rec.products || !rec.products.length) {
+      body.innerHTML = '<p class="prod-empty">No product recommendations found for this client. Open the client card in the dashboard and click <strong>🛒 Products</strong> to generate personalized recommendations.</p>';
+      return;
+    }
+
+    // Show detected themes
+    const intro = document.getElementById('productRecsIntro');
+    if (intro && rec.themes && rec.themes.length) {
+      const tags = rec.themes.map(t =>
+        `<span class="prod-theme-tag">${t.replace(/_/g,' ')}</span>`
+      ).join('');
+      intro.innerHTML += `<br><br><strong style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#e8b84b88;text-transform:uppercase">Session Themes Detected:</strong><br><div style="margin-top:8px">${tags}</div>`;
+    }
+
+    // Group products by category
+    const byCat = {};
+    rec.products.forEach(p => {
+      if (!byCat[p.cat]) byCat[p.cat] = [];
+      byCat[p.cat].push(p);
+    });
+
+    const catColors = {
+      'Sleep':'#9b7fe8','Grounding':'#22c98a','Cord Cutting':'#e8b84b',
+      'House Clearing':'#4488ff','Protection':'#ee7070','Ancestral':'#c8a448',
+      'Healing':'#22c98a','Heart Healing':'#ee7070','Spiritual Practice':'#9b7fe8',
+      'Salt & Cleansing':'#888','Incense & Smoke':'#b8960a','Sound Healing':'#1a9966'
+    };
+
+    let html = `<p style="font-size:14px;color:#d8d4f055;font-style:italic;margin-bottom:20px">Generated ${rec.generatedAt} · ${rec.products.length} items across ${Object.keys(byCat).length} categories</p>`;
+
+    Object.entries(byCat).forEach(([cat, prods]) => {
+      const col = catColors[cat] || '#e8b84b';
+      html += `<div style="margin-bottom:28px">
+        <div class="prod-cat-label" style="color:${col};border-bottom-color:${col}22">${cat}</div>`;
+      prods.forEach(p => {
+        html += `<div class="prod-item">
+          <div style="flex:1">
+            <div class="prod-item-name">${p.name}</div>
+            <div class="prod-item-desc">${p.desc}</div>
+          </div>
+          ${p.url ? `<a href="${p.url}" target="_blank" rel="noopener" class="prod-item-link">Find It ↗</a>` : ''}
+        </div>`;
+      });
+      html += `</div>`;
+    });
+
+    html += `<div style="margin-top:10px;padding:16px 20px;border:1px solid #e8b84b18;background:#e8b84b06">
+      <p style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:#e8b84b77;text-transform:uppercase;margin-bottom:6px">A Note on Products</p>
+      <p style="font-size:14px;line-height:1.8;color:#d8d4f077">These are supportive tools — not requirements. The energetic work is complete. These products are offered to extend and reinforce what was cleared. Use what resonates and leave the rest.</p>
+    </div>`;
+
+    body.innerHTML = html;
+
+  } catch(e) { /* silent */ }
+})();
+</script>
 </body>
 </html>

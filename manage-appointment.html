@@ -40,7 +40,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
 .status-badge.pending{background:rgba(232,184,75,.1);border:1px solid rgba(232,184,75,.3);color:#e8b84b}
 .status-badge.cancelled{background:rgba(238,68,68,.1);border:1px solid rgba(238,68,68,.3);color:#ee4444}
 
-.action-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:28px}
+.action-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:28px}
 @media(max-width:600px){.action-grid{grid-template-columns:1fr}}
 .action-opt{cursor:pointer;border:1px solid rgba(232,184,75,.22);background:rgba(8,6,22,.8);padding:22px 16px;text-align:center;transition:all .22s}
 .action-opt:hover{border-color:rgba(232,184,75,.55);background:rgba(18,13,28,.9)}
@@ -209,6 +209,11 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
         <div class="action-title">Cancel</div>
         <div class="action-desc">Cancel your appointment and request a refund if eligible</div>
       </div>
+      <div class="action-opt" id="actRequestTime" onclick="selectAction('request_time')">
+        <div class="action-icon">⏰</div>
+        <div class="action-title">Request Different Time</div>
+        <div class="action-desc">No available slots work for you? Request alternate times directly from Daron</div>
+      </div>
     </div>
 
     <!-- ── RESCHEDULE PANEL ──────────────────────────────────────────────── -->
@@ -349,6 +354,38 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
       </div>
     </div>
 
+    <!-- ── REQUEST DIFFERENT TIME PANEL ────────────────────────────────────── -->
+    <div class="sec hidden" id="requestTimePanel">
+      <div class="sec-head"><span class="sec-label">Request Alternate Times</span></div>
+      <div class="sec-body">
+        <div class="notice gold">
+          <p>No need to cancel — just let Daron know what times work for you. He will reach out to confirm a new appointment that works for both of you.</p>
+        </div>
+        <form id="requestTimeForm">
+          <div class="form-row single">
+            <div class="fg">
+              <label for="rt-dates">Preferred Dates</label>
+              <textarea id="rt-dates" placeholder="e.g. Any Monday or Wednesday in July, or the week of Aug 12–16..." required></textarea>
+            </div>
+          </div>
+          <div class="form-row single">
+            <div class="fg">
+              <label for="rt-times">Preferred Times of Day</label>
+              <textarea id="rt-times" placeholder="e.g. Mornings before noon, or after 5 PM on weekdays..." required></textarea>
+            </div>
+          </div>
+          <div class="form-row single">
+            <div class="fg">
+              <label for="rt-reason">Reason <span style="color:#e8b84b44;font-size:14px">(optional)</span></label>
+              <textarea id="rt-reason" placeholder="Brief context about your scheduling needs..."></textarea>
+            </div>
+          </div>
+          <button type="submit" class="submit-btn" id="requestTimeSubmitBtn">Send Request →</button>
+          <div class="form-msg" id="requestTimeMsg"></div>
+        </form>
+      </div>
+    </div>
+
   </div><!-- /mainContent -->
 
   <!-- Done screen -->
@@ -463,15 +500,15 @@ function computeRefund(s) {
     return;
   }
 
-  if (hoursOut >= 48) {
+  if (hoursOut >= 72) {
     el.textContent  = 'Full refund eligible' + (amount ? ' — $' + amount.toFixed(2) : '');
     el.className    = 'refund-estimate eligible';
-    sub.textContent = 'Your appointment is more than 48 hours away. You are eligible for a full refund.';
+    sub.textContent = 'Your appointment is more than 72 hours away. You are eligible for a full refund or session credit.';
   } else if (hoursOut >= 24) {
     var refund = amount * 0.5;
     el.textContent  = '50% refund eligible' + (amount ? ' — $' + refund.toFixed(2) : '');
     el.className    = 'refund-estimate eligible';
-    sub.textContent = 'Your appointment is within 24–48 hours. You qualify for a 50% refund.';
+    sub.textContent = 'Your appointment is within 24–72 hours. You qualify for a 50% refund or session credit.';
   } else {
     el.textContent  = 'Refund not available';
     el.className    = 'refund-estimate ineligible';
@@ -574,11 +611,11 @@ function selectSlot(slotId, date, time, displayTime) {
 function selectAction(action) {
   _action = action;
 
-  ['actReschedule','actContact','actCancel'].forEach(function(id) {
+  ['actReschedule','actContact','actCancel','actRequestTime'].forEach(function(id) {
     var el = document.getElementById(id);
     if (el) el.className = 'action-opt';
   });
-  ['reschedulePanel','contactPanel','cancelPanel'].forEach(function(id) {
+  ['reschedulePanel','contactPanel','cancelPanel','requestTimePanel'].forEach(function(id) {
     document.getElementById(id).classList.add('hidden');
   });
 
@@ -586,7 +623,6 @@ function selectAction(action) {
     document.getElementById('actReschedule').classList.add('active-teal');
     document.getElementById('reschedulePanel').classList.remove('hidden');
     document.getElementById('reschedulePanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    // Load slots lazily on first open
     if (!_allSlots.length) loadSlots();
   } else if (action === 'contact') {
     document.getElementById('actContact').classList.add('active');
@@ -600,6 +636,10 @@ function selectAction(action) {
     document.getElementById('actCancel').classList.add('active-red');
     document.getElementById('cancelPanel').classList.remove('hidden');
     document.getElementById('cancelPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } else if (action === 'request_time') {
+    document.getElementById('actRequestTime').classList.add('active');
+    document.getElementById('requestTimePanel').classList.remove('hidden');
+    document.getElementById('requestTimePanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 }
 
@@ -736,6 +776,54 @@ document.getElementById('cancelForm').addEventListener('submit', async function(
     btn.disabled    = false;
     btn.textContent = 'Confirm Cancellation';
     showMsg(msg, 'error', 'Unable to process. Please email royalenergyalchemy@gmail.com or call 814-392-2095.');
+  }
+});
+
+document.getElementById('requestTimeForm').addEventListener('submit', async function(ev) {
+  ev.preventDefault();
+  var btn   = document.getElementById('requestTimeSubmitBtn');
+  var msg   = document.getElementById('requestTimeMsg');
+  var dates = document.getElementById('rt-dates').value.trim();
+  var times = document.getElementById('rt-times').value.trim();
+
+  if (!dates || !times) {
+    showMsg(msg, 'error', 'Please describe your preferred dates and times.');
+    return;
+  }
+
+  btn.disabled    = true;
+  btn.textContent = 'Sending...';
+
+  try {
+    var res  = await fetch('/.netlify/functions/manage-appointment', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({
+        session_id:      _sessionId,
+        action:          'request_time',
+        preferred_dates: dates,
+        preferred_times: times,
+        reason:          document.getElementById('rt-reason').value.trim() || null,
+        client_name:     _sessionData ? _sessionData.client_name : null,
+      }),
+    });
+    var json = await res.json();
+
+    if (!res.ok) {
+      btn.disabled    = false;
+      btn.textContent = 'Send Request →';
+      showMsg(msg, 'error', json.error || 'Unable to send. Please email royalenergyalchemy@gmail.com.');
+      return;
+    }
+
+    showDone(
+      '✦ Request Sent',
+      'Daron has received your preferred times and will contact you within 24 hours to confirm a new appointment.'
+    );
+  } catch (err) {
+    btn.disabled    = false;
+    btn.textContent = 'Send Request →';
+    showMsg(msg, 'error', 'Unable to connect. Please email royalenergyalchemy@gmail.com or call 814-392-2095.');
   }
 });
 

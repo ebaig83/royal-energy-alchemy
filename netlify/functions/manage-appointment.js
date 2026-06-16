@@ -16,16 +16,19 @@
 
 'use strict';
 
-const { respond }   = require('./lib/auth');
-const { getClient } = require('./lib/supabase');
+const { respond }            = require('./lib/auth');
+const { getClient }          = require('./lib/supabase');
+const { calcRefund, POLICY } = require('./lib/policy');
+const { sendTransactional }  = require('./lib/mailer');
 
 const VALID_ACTIONS = [
   'view',
   'reschedule_request',
-  'cancel_request',
-  'contact_request',
   'reschedule_confirmed',
+  'cancel_request',
   'cancel_confirmed',
+  'contact_request',
+  'request_time',
 ];
 
 function isMissingTableError(err) {
@@ -92,6 +95,11 @@ exports.handler = async (event) => {
       return await handleCancelConfirmed(sb, body, session_id, ip, ua);
     }
 
+    // ── request_time — client requests alternate time from practitioner ───
+    if (action === 'request_time') {
+      return await handleRequestTime(sb, body, session_id, ip, ua);
+    }
+
     // ── All other actions — just write audit record ───────────────────────
     const meta = {};
     if (body.subject || body.message) {
@@ -152,7 +160,7 @@ async function handleRescheduleConfirmed(sb, body, session_id, ip, ua) {
   // 1. Fetch current session (for old date/time and validation)
   const { data: session, error: sessErr } = await sb
     .from('sessions')
-    .select('id, session_date, session_time, status')
+    .select('id, session_date, session_time, status, service, client_id, client_name')
     .eq('id', session_id)
     .single();
 
@@ -208,6 +216,30 @@ async function handleRescheduleConfirmed(sb, body, session_id, ip, ua) {
     .select('id')
     .single();
 
+  // 6. Send automated reschedule confirmation (fire-and-forget)
+  const clientEmail = body.client_email || await lookupClientEmail(sb, session.client_id);
+  if (clientEmail) {
+    sendTransactional(sb, {
+      templateName:   'appointment_rescheduled',
+      recipientEmail: clientEmail,
+      clientId:       session.client_id || null,
+      variables: {
+        client_name: session.client_name || body.client_name || '',
+        service:     session.service     || '',
+        old_date:    session.session_date || '',
+        old_time:    formatDisplayTime(session.session_time) || '',
+        new_date,
+        new_time:    formatDisplayTime(timeNorm),
+        timezone:    'ET',
+        manage_url:  process.env.SITE_URL
+          ? `${process.env.SITE_URL}/manage-appointment.html?session_id=${session_id}`
+          : '',
+        contact_email: process.env.ADMIN_EMAIL || 'royalenergyalchemy@gmail.com',
+      },
+      metadata: { trigger: 'reschedule_confirmed', session_id },
+    }).catch(e => console.warn('[manage-appointment] reschedule email error:', e.message));
+  }
+
   return respond(200, {
     rescheduled: true,
     new_date,
@@ -228,7 +260,7 @@ async function handleCancelConfirmed(sb, body, session_id, ip, ua) {
   // 1. Fetch session
   const { data: session, error: sessErr } = await sb
     .from('sessions')
-    .select('id, session_date, session_time, status, amount_due, payment_status')
+    .select('id, session_date, session_time, status, amount_due, payment_status, service, client_id, client_name')
     .eq('id', session_id)
     .single();
 
@@ -240,19 +272,22 @@ async function handleCancelConfirmed(sb, body, session_id, ip, ua) {
     return respond(400, { error: 'Cannot cancel a completed session.' });
   }
 
-  // 2. Update session status
+  // 2. Compute refund eligibility before cancelling
+  const refund = calcRefund(session.session_date, session.session_time);
+
+  // 3. Update session status
   await sb
     .from('sessions')
     .update({ status: 'cancelled', updated_at: new Date().toISOString() })
     .eq('id', session_id);
 
-  // 3. Release linked slot
+  // 4. Release linked slot
   await sb
     .from('availability_slots')
     .update({ status: 'available', session_id: null })
     .eq('session_id', session_id);
 
-  // 4. Write audit record
+  // 5. Write audit record
   const { data: audit } = await sb
     .from('appointment_management_audit')
     .insert({
@@ -269,15 +304,121 @@ async function handleCancelConfirmed(sb, body, session_id, ip, ua) {
         detail:           body.detail           || null,
         payment_status:   session.payment_status,
         amount_due:       session.amount_due,
+        refund_pct:       refund.pct,
+        refund_eligible:  refund.eligible,
         cancelled_at:     new Date().toISOString(),
       },
     })
     .select('id')
     .single();
 
+  // 6. Send automated cancellation confirmation (fire-and-forget)
+  const clientEmail = body.client_email || await lookupClientEmail(sb, session.client_id);
+  if (clientEmail) {
+    sendTransactional(sb, {
+      templateName:   'appointment_cancelled',
+      recipientEmail: clientEmail,
+      clientId:       session.client_id || null,
+      variables: {
+        client_name:    session.client_name || body.client_name || '',
+        service:        session.service     || '',
+        session_date:   session.session_date || '',
+        session_time:   formatDisplayTime(session.session_time) || '',
+        timezone:       'ET',
+        refund_summary: refund.estimate,
+        policy_line_1:  POLICY.lines[0],
+        policy_line_2:  POLICY.lines[1],
+        policy_line_3:  POLICY.lines[2],
+        policy_line_4:  POLICY.lines[3],
+        contact_email:  process.env.ADMIN_EMAIL || 'royalenergyalchemy@gmail.com',
+      },
+      metadata: { trigger: 'cancel_confirmed', session_id, refund_pct: refund.pct },
+    }).catch(e => console.warn('[manage-appointment] cancel email error:', e.message));
+  }
+
   return respond(200, {
-    cancelled: true,
+    cancelled:       true,
     session_id,
-    audit_id:  audit?.id || null,
+    audit_id:        audit?.id || null,
+    refund_eligible: refund.eligible,
+    refund_estimate: refund.estimate,
+    refund_pct:      refund.pct,
   });
+}
+
+// ── request_time ────────────────────────────────────────────────────────────
+// Client requests alternate times directly from practitioner.
+// No slot booking — audit record only; practitioner responds manually.
+
+async function handleRequestTime(sb, body, session_id, ip, ua) {
+  if (!session_id)              return respond(400, { error: 'session_id is required.' });
+  if (!body.preferred_dates)    return respond(400, { error: 'preferred_dates is required.' });
+  if (!body.preferred_times)    return respond(400, { error: 'preferred_times is required.' });
+
+  // Confirm session exists and is not cancelled/completed
+  const { data: session, error: sessErr } = await sb
+    .from('sessions')
+    .select('id, status, client_name')
+    .eq('id', session_id)
+    .single();
+
+  if (sessErr || !session) return respond(404, { error: 'Session not found.' });
+  if (['cancelled', 'completed'].includes(session.status)) {
+    return respond(400, { error: 'Cannot request a time change for a cancelled or completed session.' });
+  }
+
+  const { data: audit, error: auditErr } = await sb
+    .from('appointment_management_audit')
+    .insert({
+      session_id,
+      action:       'request_time',
+      client_name:  body.client_name  || session.client_name || null,
+      client_email: body.client_email || null,
+      reason:       body.reason       || null,
+      ip_address:   ip,
+      user_agent:   ua.slice(0, 500),
+      metadata: {
+        preferred_dates: body.preferred_dates,
+        preferred_times: body.preferred_times,
+        reason:          body.reason || null,
+        requested_at:    new Date().toISOString(),
+      },
+    })
+    .select('id')
+    .single();
+
+  if (auditErr) {
+    if (isMissingTableError(auditErr)) {
+      console.warn('[manage-appointment] audit table missing — run 2026-06-20-sprint13a.sql');
+      return respond(201, { logged: false, migration_needed: true });
+    }
+    console.error('[manage-appointment] request_time audit error:', auditErr.message);
+    return respond(500, { error: auditErr.message });
+  }
+
+  return respond(201, { logged: true, id: audit?.id || null });
+}
+
+// ── helpers ──────────────────────────────────────────────────────────────────
+
+async function lookupClientEmail(sb, clientId) {
+  if (!sb || !clientId) return null;
+  try {
+    const { data } = await sb
+      .from('clients')
+      .select('email')
+      .eq('id', clientId)
+      .single();
+    return data?.email || null;
+  } catch { return null; }
+}
+
+function formatDisplayTime(timeStr) {
+  if (!timeStr) return '';
+  const [hStr, mStr] = String(timeStr).slice(0, 5).split(':');
+  const h = parseInt(hStr, 10);
+  const m = mStr || '00';
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const h12  = h === 0 ? 12 : h > 12 ? h - 12 : h;
+  return `${h12}:${m} ${ampm}`;
 }

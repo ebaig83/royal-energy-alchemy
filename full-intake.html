@@ -478,6 +478,7 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.22em;color:rg
               <label><input type="checkbox" name="i_methods_tried" value="Nature Exposure"> Nature Exposure</label>
               <label><input type="checkbox" name="i_methods_tried" value="Exercise"> Exercise</label>
               <label><input type="checkbox" name="i_methods_tried" value="Supplements"> Supplements</label>
+              <label><input type="checkbox" name="i_methods_tried" value="Medical Care"> Medical Care</label>
               <label><input type="checkbox" name="i_methods_tried" value="Other"> Other</label>
             </div>
           </div>
@@ -533,6 +534,38 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.22em;color:rg
           <div class="fg">
             <label for="i-patterns-noticed">Have you noticed any recurring patterns, triggers, or cycles related to your concern?</label>
             <textarea id="i-patterns-noticed" style="min-height:110px" placeholder="E.g. symptoms worse at certain times, after certain people, in certain places, around specific life events..."></textarea>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── Section 12 — Pattern Recognition & Timing ─────────────────────── -->
+    <div class="section">
+      <div class="section-head">
+        <span class="section-num">12</span>
+        <span class="section-title">Pattern Recognition & Timing</span>
+      </div>
+      <div class="section-body">
+
+        <div class="form-row single">
+          <div class="fg">
+            <label for="i-pattern-timing">When is your concern typically strongest? <span style="color:#e8b84b55;font-size:11px">(time of day, day of week, season, life circumstances)</span></label>
+            <textarea id="i-pattern-timing" placeholder="E.g. worst in the evenings, more intense during stressful periods at work, seasonal shifts in fall/winter..."></textarea>
+          </div>
+        </div>
+
+        <div class="form-row single">
+          <div class="fg">
+            <label for="i-pattern-triggers">What seems to trigger or worsen it?</label>
+            <textarea id="i-pattern-triggers" placeholder="E.g. specific people, environments, conversations, memories, foods, or situations that seem to activate or intensify the concern..."></textarea>
+          </div>
+        </div>
+
+        <div class="form-row single">
+          <div class="fg">
+            <label for="i-pattern-improves">What have you noticed improves or reduces it?</label>
+            <textarea id="i-pattern-improves" placeholder="E.g. activities, environments, practices, or conditions that bring relief or ease — even temporarily..."></textarea>
           </div>
         </div>
 
@@ -626,6 +659,9 @@ document.getElementById('intakeForm').addEventListener('submit', function(ev) {
     protectionPractices: getChecked('i_protection'),
     practiceConsistency: radioVal('i_consistency'),
     patternsNoticed:     val('i-patterns-noticed'),
+    patternTiming:       val('i-pattern-timing'),
+    patternTriggers:     val('i-pattern-triggers'),
+    patternImproves:     val('i-pattern-improves'),
     timestamp: new Date().toISOString(),
     type: 'full_intake'
   };

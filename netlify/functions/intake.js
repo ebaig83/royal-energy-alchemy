@@ -8,6 +8,7 @@ const { requireAdmin, respond } = require('./lib/auth');
 const { getClient }             = require('./lib/supabase');
 const { log }                   = require('./lib/audit');
 const { runIntakeAgent }        = require('./agents/intake-agent');
+const { sendTransactional }     = require('./lib/mailer');
 
 // Rate limits for public intake POST (per IP)
 const RATE_SHORT_MAX  = 5;    // 5 per 10 minutes
@@ -86,13 +87,30 @@ exports.handler = async function(event) {
     await log({ actor: 'public', action: 'intake_submission', tableName: 'intake_submissions', recordId: submission.id, ip });
 
     // 2. Run intake agent (find/create client, create session, generate summary)
+    let agentResult = null;
     try {
-      const result = await runIntakeAgent({ submission, sb, ip });
+      agentResult = await runIntakeAgent({ submission, sb, ip });
+
+      // 3. Send intake_received confirmation email (fire-and-forget)
+      if (email) {
+        sendTransactional(sb, {
+          templateName:   'intake_received',
+          recipientEmail: email,
+          clientId:       agentResult.clientId || null,
+          variables: {
+            client_name:   fullName,
+            service:       body.service || 'your session',
+            contact_email: process.env.ADMIN_EMAIL || 'royalenergyalchemy@gmail.com',
+          },
+          metadata: { trigger: 'intake_received', submission_id: submission.id },
+        }).catch(e => console.warn('[intake] intake_received email error:', e.message));
+      }
+
       return respond(201, {
-        success:   true,
+        success:      true,
         submissionId: submission.id,
-        clientId:  result.clientId,
-        sessionId: result.sessionId,
+        clientId:     agentResult.clientId,
+        sessionId:    agentResult.sessionId,
       });
     } catch (agentErr) {
       console.error('[intake] Agent error:', agentErr.message);

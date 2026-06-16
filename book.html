@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Book a Session — Royal Energy Alchemy</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--gold:#e8b84b;--gold-light:#f8e090;--teal:#22c98a;--deep:#04020e;--bg:#0a0612;--text:#f0ecff;--muted:#c8c4e066}
+body{background:var(--bg);color:var(--text);font-family:'EB Garamond',serif;min-height:100vh}
+.wrap{max-width:760px;margin:0 auto;padding:48px 24px}
+.header{text-align:center;margin-bottom:48px;padding-bottom:28px;border-bottom:1px solid #e8b84b22}
+.badge{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.5em;color:#e8b84b80;text-transform:uppercase;border:1px solid #e8b84b22;padding:5px 16px;display:inline-block;margin-bottom:16px}
+.header h1{font-family:'Cinzel',serif;font-size:clamp(22px,4vw,34px);color:#fff;margin-bottom:10px;letter-spacing:.06em}
+.header p{font-size:16px;font-style:italic;color:#d8d4f099}
+
+/* Steps */
+.steps{display:flex;gap:0;margin-bottom:40px;position:relative}
+.steps::before{content:'';position:absolute;top:16px;left:16px;right:16px;height:1px;background:#e8b84b14;z-index:0}
+.step{flex:1;text-align:center;position:relative;z-index:1}
+.step-dot{width:32px;height:32px;border-radius:50%;border:1px solid #e8b84b22;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;font-family:'Cinzel',serif;font-size:11px;color:#e8b84b44;background:var(--bg);transition:all .3s}
+.step-dot.active{border-color:var(--gold);color:var(--gold);background:#e8b84b14}
+.step-dot.done{border-color:var(--teal);color:var(--teal);background:#22c98a14}
+.step-label{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:#e8b84b33}
+.step-label.active{color:#e8b84b99}
+
+/* Panels */
+.panel{display:none}
+.panel.active{display:block}
+
+/* Service grid */
+.service-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:8px}
+.svc-card{border:1px solid #e8b84b1a;padding:18px 16px;cursor:pointer;transition:all .25s;background:rgba(8,6,22,0.6)}
+.svc-card:hover{border-color:#e8b84b44;background:#e8b84b08}
+.svc-card.selected{border-color:var(--gold);background:#e8b84b0f}
+.svc-card h3{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.1em;color:#fff;margin-bottom:6px}
+.svc-card p{font-size:14px;color:#c8c4e066;font-style:italic}
+
+/* Date/time */
+.date-input{background:rgba(0,4,8,0.8);border:1px solid #e8b84b26;padding:12px 16px;font-family:'EB Garamond',serif;font-size:17px;color:var(--text);width:100%;outline:none;margin-top:8px}
+.date-input:focus{border-color:#e8b84b66}
+.slot-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-top:20px}
+.slot-btn{border:1px solid #e8b84b1a;padding:10px 8px;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.2em;color:#e8b84b66;background:rgba(8,6,22,0.6);cursor:pointer;text-transform:uppercase;transition:all .2s}
+.slot-btn:hover{border-color:#e8b84b55;color:#e8b84bcc}
+.slot-btn.selected{border-color:var(--gold);color:var(--gold);background:#e8b84b10}
+.slot-btn:disabled{opacity:.3;cursor:not-allowed}
+.slots-loading{text-align:center;padding:24px;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#e8b84b44;text-transform:uppercase}
+.no-slots{text-align:center;padding:20px;font-size:15px;color:#c8c4e066;font-style:italic}
+
+/* Form fields */
+.fg{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+.fg label{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;color:#e8b84b66;text-transform:uppercase}
+.fg input,.fg select{background:rgba(0,4,8,0.8);border:1px solid #e8b84b26;padding:12px 16px;font-family:'EB Garamond',serif;font-size:17px;color:var(--text);outline:none;transition:border-color .3s}
+.fg input:focus,.fg select:focus{border-color:#e8b84b66}
+.fg select option{background:#060418}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:540px){.field-row{grid-template-columns:1fr}}
+
+/* Buttons */
+.btn-primary{width:100%;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.4em;color:#000;text-transform:uppercase;background:linear-gradient(135deg,var(--gold-light),var(--gold));padding:16px;cursor:pointer;border:none;transition:all .3s;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);margin-top:8px}
+.btn-primary:hover{filter:brightness(1.1)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-back{background:transparent;border:1px solid #e8b84b22;color:#e8b84b66;font-family:'Cinzel',serif;font-size:10px;letter-spacing:.35em;text-transform:uppercase;padding:10px 20px;cursor:pointer;margin-bottom:24px;transition:all .2s}
+.btn-back:hover{border-color:#e8b84b44;color:#e8b84bcc}
+
+/* Summary card */
+.summary-card{background:#e8b84b08;border:1px solid #e8b84b1a;padding:20px 24px;margin-bottom:28px}
+.summary-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #e8b84b0a;font-size:15px}
+.summary-row:last-child{border-bottom:none}
+.summary-label{color:#c8c4e066;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.2em;text-transform:uppercase;padding-top:2px}
+.summary-value{color:#f0ecff;text-align:right}
+
+/* Error / notice */
+.error-msg{background:#ee444414;border:1px solid #ee444433;color:#ee8888;padding:12px 16px;margin-bottom:20px;font-size:15px;display:none}
+.error-msg.show{display:block}
+
+/* Success */
+.success-screen{display:none;text-align:center;padding:48px 24px;border:1px solid #e8b84b26;background:rgba(8,6,22,0.8)}
+.success-screen.show{display:block}
+.success-screen h2{font-family:'Cinzel',serif;font-size:24px;color:var(--gold);margin-bottom:16px}
+.success-screen p{font-size:16px;color:#d8d4f0b3;line-height:1.9;margin-bottom:12px}
+.success-link{display:inline-block;margin-top:20px;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;text-transform:uppercase;color:var(--gold);text-decoration:none;border:1px solid #e8b84b33;padding:10px 24px}
+
+/* Section labels */
+.section-title{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.45em;text-transform:uppercase;color:#e8b84b55;margin-bottom:20px}
+</style>
+<link rel="stylesheet" href="/site-nav.css">
+<script defer src="/site-nav.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div class="badge">Book a Session</div>
+    <h1>Royal Energy Alchemy</h1>
+    <p>Distance energy work with Daron Royal · Erie, Pennsylvania</p>
+  </div>
+
+  <!-- Step indicators -->
+  <div class="steps">
+    <div class="step"><div class="step-dot active" id="sd1">1</div><div class="step-label active" id="sl1">Service</div></div>
+    <div class="step"><div class="step-dot" id="sd2">2</div><div class="step-label" id="sl2">Date & Time</div></div>
+    <div class="step"><div class="step-dot" id="sd3">3</div><div class="step-label" id="sl3">Your Info</div></div>
+    <div class="step"><div class="step-dot" id="sd4">4</div><div class="step-label" id="sl4">Confirm</div></div>
+  </div>
+
+  <div class="error-msg" id="errorMsg"></div>
+
+  <!-- Panel 1: Select Service -->
+  <div class="panel active" id="panel1">
+    <div class="section-title">Choose Your Service</div>
+    <div class="service-grid" id="serviceGrid"></div>
+    <button class="btn-primary" id="p1Next" style="margin-top:24px" disabled>Select a Service to Continue →</button>
+  </div>
+
+  <!-- Panel 2: Select Date & Time -->
+  <div class="panel" id="panel2">
+    <button class="btn-back" id="p2Back">← Back</button>
+    <div class="section-title">Choose Date & Time</div>
+    <div class="fg">
+      <label for="dateInput">Select Date</label>
+      <input type="date" id="dateInput" class="date-input">
+    </div>
+    <div id="slotContainer"></div>
+    <button class="btn-primary" id="p2Next" disabled style="margin-top:24px">Choose a Time to Continue →</button>
+  </div>
+
+  <!-- Panel 3: Contact Info -->
+  <div class="panel" id="panel3">
+    <button class="btn-back" id="p3Back">← Back</button>
+    <div class="section-title">Your Contact Information</div>
+    <div class="field-row">
+      <div class="fg"><label for="clientName">Full Name *</label><input type="text" id="clientName" placeholder="Your full name" autocomplete="name"></div>
+      <div class="fg"><label for="clientEmail">Email Address *</label><input type="email" id="clientEmail" placeholder="your@email.com" autocomplete="email"></div>
+    </div>
+    <div class="field-row">
+      <div class="fg"><label for="clientPhone">Phone Number</label><input type="tel" id="clientPhone" placeholder="Optional" autocomplete="tel"></div>
+      <div class="fg">
+        <label for="preferredContact">Preferred Contact</label>
+        <select id="preferredContact">
+          <option value="email">Email</option>
+          <option value="text">Text / SMS</option>
+          <option value="phone">Phone call</option>
+        </select>
+      </div>
+    </div>
+    <input type="text" id="botField" style="display:none" tabindex="-1" autocomplete="off">
+    <button class="btn-primary" id="p3Next">Review Booking →</button>
+  </div>
+
+  <!-- Panel 4: Confirm -->
+  <div class="panel" id="panel4">
+    <button class="btn-back" id="p4Back">← Back</button>
+    <div class="section-title">Confirm Your Booking</div>
+    <div class="summary-card" id="summaryCard"></div>
+    <p style="font-size:14px;color:#c8c4e055;font-style:italic;margin-bottom:20px;line-height:1.7">
+      By submitting, you agree that energy work is a complementary wellness offering and not a substitute for medical, legal, or psychological advice. You will receive an email with your intake form and session details.
+    </p>
+    <button class="btn-primary" id="submitBtn">Confirm & Book Session →</button>
+  </div>
+
+  <!-- Success -->
+  <div class="success-screen" id="successScreen">
+    <h2>✦ Session Booked</h2>
+    <p id="successMsg">Your session is confirmed. Daron will be in touch shortly.</p>
+    <p style="font-size:14px;color:#c8c4e055;margin-top:8px">Check your email for your intake form and session details.</p>
+    <a id="manageLink" href="#" class="success-link">Manage Your Appointment →</a>
+  </div>
+</div>
+
+<footer style="text-align:center;padding:32px 24px;border-top:1px solid #e8b84b0f;margin-top:48px">
+  <p style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.25em;color:#c8c4e022;text-transform:uppercase;line-height:2">
+    Royal Energy Alchemy LLC · Erie, Pennsylvania · royalenergyalchemy@gmail.com<br>
+    Spiritual and energetic services are complementary wellness offerings and are not medical, legal, psychological, or financial advice.
+  </p>
+</footer>
+
+<script>
+'use strict';
+
+// ── State ─────────────────────────────────────────────────────────────────────
+const state = { service: null, serviceLabel: '', slotId: null, slotDate: '', slotTime: '', slotLabel: '' };
+
+// ── Services (must match booking.js SERVICES array) ───────────────────────────
+const SERVICES = [
+  { id: 'energy-clearing',      label: 'Energy Clearing',            duration: 60,  desc: 'Clear stagnant or heavy energy from your field' },
+  { id: 'cord-cutting',         label: 'Cord Cutting',               duration: 60,  desc: 'Sever energetic ties to people, places, or patterns' },
+  { id: 'ancestral-healing',    label: 'Ancestral Healing',          duration: 90,  desc: 'Heal inherited wounds carried through your lineage' },
+  { id: 'parasite-removal',     label: 'Energetic Parasite Removal', duration: 90,  desc: 'Identify and remove entities or attachments' },
+  { id: 'spiritual-protection', label: 'Spiritual Protection',       duration: 60,  desc: 'Build and reinforce your energetic boundaries' },
+  { id: 'full-assessment',      label: 'Full Assessment',            duration: 120, desc: 'Comprehensive energetic diagnosis and treatment' },
+  { id: 'soul-retrieval',       label: 'Soul Retrieval',             duration: 90,  desc: 'Recover fragmented parts of yourself' },
+  { id: 'remote-session',       label: 'Remote Distance Session',    duration: 60,  desc: 'Distance energy work from anywhere in the world' },
+];
+
+// ── DOM helpers ───────────────────────────────────────────────────────────────
+function showPanel(n) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel' + n).classList.add('active');
+  // Update step indicators
+  [1,2,3,4].forEach(i => {
+    const dot = document.getElementById('sd' + i);
+    const lbl = document.getElementById('sl' + i);
+    dot.classList.remove('active','done');
+    lbl.classList.remove('active');
+    if (i < n)      { dot.classList.add('done'); dot.textContent = '✓'; }
+    else if (i===n) { dot.classList.add('active'); dot.textContent = i; lbl.classList.add('active'); }
+    else            { dot.textContent = i; }
+  });
+  window.scrollTo(0, 0);
+}
+
+function showError(msg) {
+  const el = document.getElementById('errorMsg');
+  el.textContent = msg;
+  el.classList.add('show');
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+function clearError() { document.getElementById('errorMsg').classList.remove('show'); }
+
+// ── Panel 1: Services ─────────────────────────────────────────────────────────
+const grid = document.getElementById('serviceGrid');
+SERVICES.forEach(svc => {
+  const card = document.createElement('div');
+  card.className = 'svc-card';
+  card.innerHTML = `<h3>${svc.label}</h3><p>${svc.desc} · ${svc.duration} min</p>`;
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.svc-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    state.service = svc.id;
+    state.serviceLabel = svc.label;
+    const btn = document.getElementById('p1Next');
+    btn.textContent = `Continue with ${svc.label} →`;
+    btn.disabled = false;
+  });
+  grid.appendChild(card);
+});
+document.getElementById('p1Next').addEventListener('click', () => {
+  if (!state.service) return;
+  clearError();
+  showPanel(2);
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('dateInput').min = today;
+  document.getElementById('dateInput').value = '';
+  document.getElementById('slotContainer').innerHTML = '';
+  document.getElementById('p2Next').disabled = true;
+});
+
+// ── Panel 2: Date & Time ─────────────────────────────────────────────────────
+document.getElementById('p2Back').addEventListener('click', () => showPanel(1));
+
+document.getElementById('dateInput').addEventListener('change', async function() {
+  const date = this.value;
+  if (!date) return;
+  const container = document.getElementById('slotContainer');
+  container.innerHTML = '<div class="slots-loading">Loading available times<span>...</span></div>';
+  document.getElementById('p2Next').disabled = true;
+  state.slotId = null;
+
+  try {
+    const r   = await fetch(`/.netlify/functions/availability?date=${date}`);
+    const res = await r.json();
+    const available = (res.slots || []).filter(s => s.status === 'available');
+
+    if (!available.length) {
+      container.innerHTML = '<div class="no-slots">No available times on this date. Please select another day.</div>';
+      return;
+    }
+
+    container.innerHTML = '<div class="slot-grid">' +
+      available.map(s => `<button class="slot-btn" data-id="${s.id}" data-date="${s.date}" data-time="${s.time}" data-label="${s.label || ''}">${s.displayTime || s.time}</button>`).join('') +
+      '</div>';
+
+    container.querySelectorAll('.slot-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        container.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        state.slotId    = btn.dataset.id;
+        state.slotDate  = btn.dataset.date;
+        state.slotTime  = btn.dataset.time;
+        state.slotLabel = btn.dataset.label || btn.textContent;
+        const next = document.getElementById('p2Next');
+        next.disabled = false;
+        next.textContent = `Continue with ${btn.textContent} →`;
+      });
+    });
+  } catch (e) {
+    container.innerHTML = '<div class="no-slots">Unable to load available times. Please refresh and try again.</div>';
+  }
+});
+
+document.getElementById('p2Next').addEventListener('click', () => {
+  if (!state.slotId) return;
+  clearError();
+  showPanel(3);
+});
+
+// ── Panel 3: Contact Info ─────────────────────────────────────────────────────
+document.getElementById('p3Back').addEventListener('click', () => showPanel(2));
+document.getElementById('p3Next').addEventListener('click', () => {
+  clearError();
+  const name  = document.getElementById('clientName').value.trim();
+  const email = document.getElementById('clientEmail').value.trim();
+  if (!name)  { showError('Please enter your full name.'); return; }
+  if (!email) { showError('Please enter your email address.'); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showError('Please enter a valid email address.'); return; }
+
+  // Build summary
+  const phone   = document.getElementById('clientPhone').value.trim();
+  const contact = document.getElementById('preferredContact').value;
+  const card    = document.getElementById('summaryCard');
+  card.innerHTML = [
+    ['Service',      state.serviceLabel],
+    ['Date',         new Date(state.slotDate + 'T12:00:00').toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' })],
+    ['Time',         state.slotTime + ' ET'],
+    ['Name',         name],
+    ['Email',        email],
+    ['Phone',        phone || '—'],
+    ['Contact Pref', contact.charAt(0).toUpperCase() + contact.slice(1)],
+  ].map(([l,v]) => `<div class="summary-row"><span class="summary-label">${l}</span><span class="summary-value">${v}</span></div>`).join('');
+
+  showPanel(4);
+});
+
+// ── Panel 4: Confirm & Submit ─────────────────────────────────────────────────
+document.getElementById('p4Back').addEventListener('click', () => showPanel(3));
+document.getElementById('submitBtn').addEventListener('click', async () => {
+  clearError();
+  const btn   = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Booking...';
+
+  const payload = {
+    slot_id:           state.slotId,
+    service:           state.service,
+    client_name:       document.getElementById('clientName').value.trim(),
+    client_email:      document.getElementById('clientEmail').value.trim(),
+    client_phone:      document.getElementById('clientPhone').value.trim() || null,
+    preferred_contact: document.getElementById('preferredContact').value,
+    bot_field:         document.getElementById('botField').value || null,
+    source:            'online',
+  };
+
+  try {
+    const r   = await fetch('/.netlify/functions/booking', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(payload),
+    });
+    const res = await r.json();
+
+    if (!r.ok || !res.booked) {
+      showError(res.error || 'Booking failed. Please try again or contact us directly.');
+      btn.disabled = false;
+      btn.textContent = 'Confirm & Book Session →';
+      return;
+    }
+
+    // Success
+    document.getElementById('successMsg').textContent =
+      `Your ${res.service} session is confirmed for ${new Date(state.slotDate + 'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})} at ${state.slotTime} ET. Check your email for your intake form and confirmation.`;
+    if (res.manage_url) document.getElementById('manageLink').href = res.manage_url;
+    document.getElementById('panel4').style.display = 'none';
+    document.getElementById('successScreen').classList.add('show');
+    document.querySelector('.steps').style.display = 'none';
+    window.scrollTo(0, 0);
+
+  } catch (e) {
+    showError('Connection error. Please check your internet and try again.');
+    btn.disabled = false;
+    btn.textContent = 'Confirm & Book Session →';
+  }
+});
+</script>
+</body>
+</html>
