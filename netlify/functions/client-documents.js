@@ -144,7 +144,7 @@ async function clientFromToken(sb, token) {
   if (t.length < 16) return null;
   const { data, error } = await sb
     .from('clients')
-    .select('id, full_name, name, email')
+    .select('id, full_name, email')
     .eq('portal_token', t)
     .single();
   if (error || !data) return null;

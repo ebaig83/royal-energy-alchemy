@@ -58,12 +58,12 @@ exports.handler = async (event) => {
   // ── Validate token → client ──────────────────────────────────────────────
   const { data: client, error: clientErr } = await sb
     .from('clients')
-    .select('id, full_name, name, email, tags, created_at')
+    .select('id, full_name, email, tags, created_at')
     .eq('portal_token', token)
     .single();
   if (clientErr || !client) return respond(404, { error: 'This access link is invalid or has expired.' });
 
-  const clientName = client.full_name || client.name || 'Client';
+  const clientName = client.full_name || 'Client';
   const tags       = (client.tags || []).map(t => String(t).toLowerCase());
 
   // ── Relevant session (next upcoming, else latest) ─────────────────────────
