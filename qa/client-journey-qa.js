@@ -872,6 +872,9 @@ async function run() {
   // =========================================================================
   console.log(c.dim('\n── Cleaning up test data ─────────────────────────────────\n'));
   try {
+    // Remove this run's aftercare_submission audit row so repeated QA runs don't
+    // trip the per-IP rate limiter (its record_id is the aftercare id).
+    if (aftercareId) { try { await sb.from('audit_logs').delete().eq('record_id', aftercareId).eq('action', 'aftercare_submission'); } catch (e) { /* non-fatal */ } }
     if (createdAuthUserId) { try { await sb.auth.admin.deleteUser(createdAuthUserId); } catch (e) { /* anon-created auth user */ } }
     if (clientId)    await sb.from('client_questions').delete().eq('client_id', clientId);
     if (clientId)    await sb.from('client_documents').delete().eq('client_id', clientId);
