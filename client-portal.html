@@ -130,6 +130,11 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.22em;color:rg
     if (status === 'not_started' && (type === 'treatment_plan' || type === 'followup')) {
       return { cls:'muted', text:'Not Available' };
     }
+    // Full Assessment uses Missing / In Progress / Submitted.
+    if (type === 'full_assessment') {
+      if (status === 'not_started') return { cls:'miss', text:'Missing' };
+      if (status === 'viewed' || status === 'in_progress') return { cls:'warn', text:'In Progress' };
+    }
     return STATUS_MAP[status] || { cls:'muted', text: esc(status || '—') };
   }
 
