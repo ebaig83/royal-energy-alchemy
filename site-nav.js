@@ -30,8 +30,10 @@
       '<li class="rea-nav-dropdown"><a href="/training.html">Training</a>' +
         '<ul class="rea-nav-menu" aria-label="Training">' +
           '<li><a href="/training.html#foundations">Level One - Foundations</a></li>' +
-          '<li><a href="/training.html#intermediate">Level Two - Intermediate</a></li>' +
-          '<li><a href="/training.html#advanced">Level Three - Advanced</a></li>' +
+          '<li><a href="/training.html#intermediate">Level Two - Practitioner Skills</a></li>' +
+          '<li><a href="/training.html#advanced">Level Three - Advanced Practice</a></li>' +
+          '<li><a href="/training.html#operations">Level Four - Running the Practice</a></li>' +
+          '<li><a href="/training.html#leadership">Level Five - Leadership &amp; Legacy</a></li>' +
         '</ul></li>' +
       '<li><a href="/client-portal.html">Client Portal</a></li>' +
       '<li class="rea-nav-dropdown"><a href="/#faq">More</a>' +

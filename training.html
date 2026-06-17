@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--gold:#e8b84b;--gold-light:#f5d98a;--teal:#22c98a;--purple:#9b7fe8;--bg:#04020e}
+:root{--gold:#e8b84b;--gold-light:#f5d98a;--teal:#22c98a;--purple:#9b7fe8;--copper:#e0915b;--skyblue:#5aa6e8;--bg:#04020e}
 body{background:var(--bg);color:#f0ecff;font-family:'EB Garamond',serif;min-height:100vh}
 
 /* ── NAV ── */
@@ -43,6 +43,9 @@ body{background:var(--bg);color:#f0ecff;font-family:'EB Garamond',serif;min-heig
 .tier-number.foundations{color:var(--teal)}
 .tier-number.intermediate{color:var(--gold)}
 .tier-number.advanced{color:var(--purple)}
+.tier-number.operations{color:var(--copper)}
+.tier-number.legacy{color:var(--skyblue)}
+.tier-number.capstone{color:var(--gold)}
 .tier-title{font-family:'Cinzel',serif;font-size:clamp(24px,3vw,34px);letter-spacing:.08em;color:#fff;margin-bottom:12px}
 .tier-desc{font-size:17px;color:rgba(240,236,255,0.85);font-style:italic;line-height:1.75;max-width:580px;margin:0 auto}
 
@@ -93,6 +96,15 @@ body{background:var(--bg);color:#f0ecff;font-family:'EB Garamond',serif;min-heig
 .foundations-card .card-level-badge{background:rgba(34,201,138,0.15);border:1px solid rgba(34,201,138,0.35);color:var(--teal)}
 .intermediate-card .card-level-badge{background:rgba(232,184,75,0.12);border:1px solid rgba(232,184,75,0.35);color:var(--gold)}
 .advanced-card .card-level-badge{background:rgba(155,127,232,0.15);border:1px solid rgba(155,127,232,0.35);color:var(--purple)}
+.operations-card .card-level-badge{background:rgba(224,145,91,0.15);border:1px solid rgba(224,145,91,0.35);color:var(--copper)}
+.legacy-card .card-level-badge{background:rgba(90,166,232,0.15);border:1px solid rgba(90,166,232,0.35);color:var(--skyblue)}
+.capstone-card .card-level-badge{background:rgba(232,184,75,0.14);border:1px solid rgba(232,184,75,0.4);color:var(--gold)}
+.course-card.operations-card:hover{border-color:rgba(224,145,91,0.5);box-shadow:0 12px 40px rgba(0,0,0,0.55),0 0 20px rgba(224,145,91,0.08)}
+.course-card.legacy-card:hover{border-color:rgba(90,166,232,0.5);box-shadow:0 12px 40px rgba(0,0,0,0.55),0 0 20px rgba(90,166,232,0.08)}
+.course-card.capstone-card:hover{border-color:rgba(232,184,75,0.55);box-shadow:0 12px 40px rgba(0,0,0,0.55),0 0 20px rgba(232,184,75,0.1)}
+.operations-card .card-visual{background:linear-gradient(135deg,rgba(224,145,91,0.18) 0%,rgba(4,2,14,0.7) 100%)}
+.legacy-card .card-visual{background:linear-gradient(135deg,rgba(90,166,232,0.18) 0%,rgba(4,2,14,0.7) 100%)}
+.capstone-card .card-visual{background:linear-gradient(135deg,rgba(232,184,75,0.2) 0%,rgba(4,2,14,0.7) 100%)}
 .course-coming{
   position:absolute;top:10px;right:10px;z-index:2;
   font-family:'Cinzel',serif;font-size:8px;letter-spacing:.3em;text-transform:uppercase;
@@ -513,8 +525,8 @@ footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;color:rgb
 <section class="tier" id="intermediate">
   <div class="tier-header">
     <span class="tier-number intermediate">Level Two</span>
-    <h2 class="tier-title">Intermediate</h2>
-    <p class="tier-desc">For those who have established their foundation and are ready to go deeper into the mechanics of energetic work and relationship dynamics.</p>
+    <h2 class="tier-title">Practitioner Skills</h2>
+    <p class="tier-desc">The practical skills used during client sessions — assessment, scanning, cord and attachment work, protection, session structure, and client communication.</p>
   </div>
   <div class="course-grid">
 
@@ -619,8 +631,8 @@ footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;color:rgb
 <section class="tier" id="advanced">
   <div class="tier-header">
     <span class="tier-number advanced">Level Three</span>
-    <h2 class="tier-title">Advanced</h2>
-    <p class="tier-desc">For serious students ready to develop as practitioners. This level covers the professional, ethical, and advanced technical dimensions of working with clients.</p>
+    <h2 class="tier-title">Advanced Practice</h2>
+    <p class="tier-desc">Mastery of complex cases and advanced practitioner decision-making — advanced scanning, transmutation, working with resistance, boundaries, and long-term client support.</p>
   </div>
   <div class="course-grid">
 
@@ -736,6 +748,242 @@ footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;color:rgb
           <button class="btn-details" onclick="event.stopPropagation();openCourse('transmutation')">View Details</button>
           <button class="btn-notify" id="notify-transmutation" onclick="event.stopPropagation();registerInterest(this,'Energy Transmutation')">Notify Me</button>
         </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<hr class="tier-line">
+
+<!-- ── LEVEL 4: RUNNING THE PRACTICE ── -->
+<section class="tier" id="operations">
+  <div class="tier-header">
+    <span class="tier-number operations">Level Four</span>
+    <h2 class="tier-title">Running the Practice</h2>
+    <p class="tier-desc">Many practitioners master the work but never learn to run a practice. This level builds the systems, structure, and professional operations that make a practice sustainable.</p>
+  </div>
+  <div class="course-grid">
+
+    <div class="course-card operations-card">
+      <div class="card-visual"><span class="card-emoji">🤝</span><span class="card-level-badge">Level Four</span><span class="course-coming">Coming Soon</span></div>
+      <div class="course-body">
+        <div class="course-title">Client Management</div>
+        <div class="course-hook">Onboard, communicate with, and retain clients with confidence.</div>
+        <ul class="course-topics">
+          <li>Client onboarding</li>
+          <li>Client communication</li>
+          <li>Client records</li>
+          <li>Setting expectations</li>
+          <li>Managing difficult situations</li>
+        </ul>
+        <div class="card-actions"><button class="btn-notify" onclick="registerInterest(this,'Client Management')">Notify Me</button></div>
+      </div>
+    </div>
+
+    <div class="course-card operations-card">
+      <div class="card-visual"><span class="card-emoji">📅</span><span class="card-level-badge">Level Four</span><span class="course-coming">Coming Soon</span></div>
+      <div class="course-body">
+        <div class="course-title">Practice Operations</div>
+        <div class="course-hook">Run scheduling, booking, and payments like a real business.</div>
+        <ul class="course-topics">
+          <li>Scheduling systems</li>
+          <li>Booking workflows</li>
+          <li>Cancellation policies</li>
+          <li>Rescheduling procedures</li>
+          <li>Payment collection</li>
+          <li>Package management</li>
+        </ul>
+        <div class="card-actions"><button class="btn-notify" onclick="registerInterest(this,'Practice Operations')">Notify Me</button></div>
+      </div>
+    </div>
+
+    <div class="course-card operations-card">
+      <div class="card-visual"><span class="card-emoji">📋</span><span class="card-level-badge">Level Four</span><span class="course-coming">Coming Soon</span></div>
+      <div class="course-body">
+        <div class="course-title">Documentation</div>
+        <div class="course-hook">Capture every session in clean, professional records.</div>
+        <ul class="course-topics">
+          <li>Intake forms</li>
+          <li>Assessments</li>
+          <li>Consent processes</li>
+          <li>Waivers</li>
+          <li>Treatment plans</li>
+          <li>Follow-up systems</li>
+          <li>Session documentation</li>
+        </ul>
+        <div class="card-actions"><button class="btn-notify" onclick="registerInterest(this,'Documentation')">Notify Me</button></div>
+      </div>
+    </div>
+
+    <div class="course-card operations-card">
+      <div class="card-visual"><span class="card-emoji">⚖️</span><span class="card-level-badge">Level Four</span><span class="course-coming">Coming Soon</span></div>
+      <div class="course-body">
+        <div class="course-title">Professional Standards</div>
+        <div class="course-hook">Hold ethical, confidential, well-bounded professional conduct.</div>
+        <ul class="course-topics">
+          <li>Ethics in practice</li>
+          <li>Boundaries</li>
+          <li>Confidentiality</li>
+          <li>Professional conduct</li>
+          <li>Scope of practice</li>
+          <li>Referral procedures</li>
+        </ul>
+        <div class="card-actions"><button class="btn-notify" onclick="registerInterest(this,'Professional Standards')">Notify Me</button></div>
+      </div>
+    </div>
+
+    <div class="course-card operations-card">
+      <div class="card-visual"><span class="card-emoji">🗂️</span><span class="card-level-badge">Level Four</span><span class="course-coming">Coming Soon</span></div>
+      <div class="course-body">
+        <div class="course-title">Practice Organization</div>
+        <div class="course-hook">Keep the whole practice organized and measurable.</div>
+        <ul class="course-topics">
+          <li>Record keeping</li>
+          <li>Workflow management</li>
+          <li>Outcome tracking</li>
+          <li>Quality assurance</li>
+          <li>Operational systems</li>
+        </ul>
+        <div class="card-actions"><button class="btn-notify" onclick="registerInterest(this,'Practice Organization')">Notify Me</button></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<hr class="tier-line">
+
+<!-- ── LEVEL 5: LEADERSHIP, GROWTH & LEGACY ── -->
+<section class="tier" id="leadership">
+  <div class="tier-header">
+    <span class="tier-number legacy">Level Five</span>
+    <h2 class="tier-title">Leadership, Growth &amp; Legacy</h2>
+    <p class="tier-desc">Beyond growth — sustainability, influence, service, and creating something that outlives the practitioner. Five pillars of long-term impact.</p>
+  </div>
+  <div class="course-grid">
+
+    <div class="course-card legacy-card">
+      <div class="card-visual"><span class="card-emoji">🧭</span><span class="card-level-badge">Pillar 1</span><span class="course-coming">Coming Soon</span></div>
+      <div class="course-body">
+        <div class="course-title">Leadership</div>
+        <div class="course-hook">Lead and support others within your field.</div>
+        <ul class="course-topics">
+          <li>Mentoring practitioners</li>
+          <li>Supporting students</li>
+          <li>Community leadership</li>
+          <li>Building trust</li>
+          <li>Facilitating groups</li>
+          <li>Professional influence</li>
+          <li>Conflict resolution</li>
+        </ul>
+        <div class="card-actions"><button class="btn-notify" onclick="registerInterest(this,'Leadership')">Notify Me</button></div>
+      </div>
+    </div>
+
+    <div class="course-card legacy-card">
+      <div class="card-visual"><span class="card-emoji">📣</span><span class="card-level-badge">Pillar 2</span><span class="course-coming">Coming Soon</span></div>
+      <div class="course-body">
+        <div class="course-title">Practice Growth</div>
+        <div class="course-hook">Ethically attract, educate, and serve a larger audience.</div>
+        <ul class="course-topics">
+          <li>Ethical marketing</li>
+          <li>Building visibility</li>
+          <li>Social media strategy</li>
+          <li>Facebook &amp; YouTube growth</li>
+          <li>Content creation &amp; public education</li>
+          <li>Networking &amp; referral development</li>
+          <li>Personal branding &amp; credibility</li>
+        </ul>
+        <div class="card-actions"><button class="btn-notify" onclick="registerInterest(this,'Practice Growth')">Notify Me</button></div>
+      </div>
+    </div>
+
+    <div class="course-card legacy-card">
+      <div class="card-visual"><span class="card-emoji">♾️</span><span class="card-level-badge">Pillar 3</span><span class="course-coming">Coming Soon</span></div>
+      <div class="course-body">
+        <div class="course-title">Practice Sustainability</div>
+        <div class="course-hook">Build multiple aligned revenue streams.</div>
+        <ul class="course-topics">
+          <li>Revenue diversification</li>
+          <li>Service packages &amp; memberships</li>
+          <li>Workshops &amp; group sessions</li>
+          <li>Digital products &amp; courses</li>
+          <li>Certification programs</li>
+          <li>Books &amp; speaking</li>
+          <li>Events &amp; practitioner collaborations</li>
+        </ul>
+        <div class="card-actions"><button class="btn-notify" onclick="registerInterest(this,'Practice Sustainability')">Notify Me</button></div>
+      </div>
+    </div>
+
+    <div class="course-card legacy-card">
+      <div class="card-visual"><span class="card-emoji">🔬</span><span class="card-level-badge">Pillar 4</span><span class="course-coming">Coming Soon</span></div>
+      <div class="course-body">
+        <div class="course-title">Research &amp; Knowledge</div>
+        <div class="course-hook">Contribute to the growth and understanding of the field.</div>
+        <ul class="course-topics">
+          <li>Case studies</li>
+          <li>Documentation standards</li>
+          <li>Pattern identification</li>
+          <li>Research methods &amp; data collection</li>
+          <li>Outcome tracking</li>
+          <li>Knowledge management</li>
+          <li>Reference libraries &amp; educational resources</li>
+        </ul>
+        <div class="card-actions"><button class="btn-notify" onclick="registerInterest(this,'Research and Knowledge')">Notify Me</button></div>
+      </div>
+    </div>
+
+    <div class="course-card legacy-card">
+      <div class="card-visual"><span class="card-emoji">🏛️</span><span class="card-level-badge">Pillar 5</span><span class="course-coming">Coming Soon</span></div>
+      <div class="course-body">
+        <div class="course-title">Legacy</div>
+        <div class="course-hook">Create lasting value beyond individual sessions.</div>
+        <ul class="course-topics">
+          <li>Creating a body of work</li>
+          <li>Publishing</li>
+          <li>Training future practitioners</li>
+          <li>Building practitioner networks</li>
+          <li>Building systems &amp; preserving knowledge</li>
+          <li>Long-term impact</li>
+          <li>Succession planning</li>
+        </ul>
+        <div class="card-actions"><button class="btn-notify" onclick="registerInterest(this,'Legacy')">Notify Me</button></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<hr class="tier-line">
+
+<!-- ── CAPSTONE ── -->
+<section class="tier" id="capstone">
+  <div class="tier-header">
+    <span class="tier-number capstone">Capstone</span>
+    <h2 class="tier-title">Building Your Practice Ecosystem</h2>
+    <p class="tier-desc">Bring everything together into one complete framework for developing, operating, growing, and sustaining a professional practice.</p>
+  </div>
+  <div class="course-grid">
+
+    <div class="course-card capstone-card">
+      <div class="card-visual"><span class="card-emoji">🌐</span><span class="card-level-badge">Capstone</span><span class="course-coming">Coming Soon</span></div>
+      <div class="course-body">
+        <div class="course-title">Your Practice Ecosystem</div>
+        <div class="course-hook">Everything from all five levels, integrated into one practice.</div>
+        <ul class="course-topics">
+          <li>Website presence</li>
+          <li>Client journey design</li>
+          <li>Booking systems</li>
+          <li>Policies &amp; documentation</li>
+          <li>Client communication</li>
+          <li>Treatment planning &amp; follow-up systems</li>
+          <li>Training programs &amp; research initiatives</li>
+          <li>Community development &amp; content strategy</li>
+          <li>Long-term growth planning</li>
+        </ul>
+        <div class="card-actions"><button class="btn-notify" onclick="registerInterest(this,'Practice Ecosystem Capstone')">Notify Me</button></div>
       </div>
     </div>
 
