@@ -162,6 +162,9 @@ body{background:var(--bg);color:#f0ecff;font-family:'EB Garamond',serif;min-heig
 .cm-level.foundations{color:var(--teal)}
 .cm-level.intermediate{color:var(--gold)}
 .cm-level.advanced{color:var(--purple)}
+.cm-level.operations{color:var(--copper)}
+.cm-level.legacy{color:var(--skyblue)}
+.cm-level.capstone{color:var(--gold)}
 .cm-title{font-family:'Cinzel',serif;font-size:clamp(18px,3vw,26px);color:#fff;letter-spacing:.06em;margin-bottom:10px;line-height:1.3}
 .cm-meta{display:flex;gap:16px;flex-wrap:wrap}
 .cm-meta-pill{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:rgba(240,236,255,0.45);padding:4px 10px;border:1px solid rgba(255,255,255,0.07)}
@@ -1344,6 +1347,111 @@ const COURSE_DATA = {
     transform: 'You will develop one of the most powerful and rare skills in energetic healing — the ability to not just remove or clear what you encounter, but to alchemically transform it into something that can no longer cause harm.',
     includes: ['Live Intensive Sessions', 'Transmutation Technique Library', 'Dense Frequency Safety Protocols', 'Recorded Replays', 'Direct Mentorship Access'],
     ctaLabel: 'Request Training Info', ctaType: 'request', notifyKey: 'Energy Transmutation', notifyId: 'notify-transmutation'
+  },
+
+  // ── LEVEL 4 — RUNNING THE PRACTICE ──
+  'client-management': {
+    title: 'Client Management', level: 'Running the Practice', levelClass: 'operations',
+    format: 'Live + Recorded', duration: '2 Weeks', coming: true,
+    forText: 'Practitioners ready to handle clients professionally — onboarding, communicating with, and retaining them with confidence.',
+    learn: ['Client onboarding','Client communication','Keeping client records','Setting and managing expectations','Handling difficult client situations'],
+    transform: 'You will onboard and manage clients like a professional — clear communication, organized records, and the confidence to handle hard moments.',
+    includes: ['Live Sessions with Daron','Onboarding Templates','Communication Scripts','Recorded Replays'],
+    ctaLabel: 'Notify Me When Available', ctaType: 'notify', notifyKey: 'Client Management', notifyId: 'notify-client-management'
+  },
+  'practice-operations': {
+    title: 'Practice Operations', level: 'Running the Practice', levelClass: 'operations',
+    format: 'Live + Recorded', duration: '2 Weeks', coming: true,
+    forText: 'Practitioners who can do the work but need to run scheduling, booking, and payments like a real business.',
+    learn: ['Scheduling systems','Booking workflows','Cancellation policies','Rescheduling procedures','Payment collection','Package management'],
+    transform: 'You will run a smooth operational practice — bookings, cancellations, payments, and packages handled by systems instead of guesswork.',
+    includes: ['Live Sessions with Daron','Booking Workflow Templates','Policy Templates','Recorded Replays'],
+    ctaLabel: 'Notify Me When Available', ctaType: 'notify', notifyKey: 'Practice Operations', notifyId: 'notify-practice-operations'
+  },
+  'documentation': {
+    title: 'Documentation', level: 'Running the Practice', levelClass: 'operations',
+    format: 'Live + Recorded', duration: '2 Weeks', coming: true,
+    forText: 'Practitioners who want clean, professional records for every client and session.',
+    learn: ['Intake forms','Assessments','Consent processes','Waivers','Treatment plans','Follow-up systems','Session documentation'],
+    transform: 'You will capture every session in clean, professional, legally-sound records that build a real client file over time.',
+    includes: ['Document Template Library','Consent & Waiver Templates','Treatment Plan Frameworks','Recorded Replays'],
+    ctaLabel: 'Notify Me When Available', ctaType: 'notify', notifyKey: 'Documentation', notifyId: 'notify-documentation'
+  },
+  'professional-standards': {
+    title: 'Professional Standards', level: 'Running the Practice', levelClass: 'operations',
+    format: 'Live + Recorded', duration: '2 Weeks', coming: true,
+    forText: 'Practitioners committed to ethical, confidential, well-bounded professional conduct.',
+    learn: ['Ethics in practice','Boundaries','Confidentiality','Professional conduct','Scope of practice','Referral procedures'],
+    transform: 'You will operate with the ethical clarity and professional boundaries that protect both your clients and your practice.',
+    includes: ['Ethics Framework Guide','Boundary & Scope Worksheets','Referral Templates','Recorded Replays'],
+    ctaLabel: 'Notify Me When Available', ctaType: 'notify', notifyKey: 'Professional Standards', notifyId: 'notify-professional-standards'
+  },
+  'practice-organization': {
+    title: 'Practice Organization', level: 'Running the Practice', levelClass: 'operations',
+    format: 'Live + Recorded', duration: '2 Weeks', coming: true,
+    forText: 'Practitioners ready to keep the whole practice organized, measurable, and sustainable.',
+    learn: ['Record keeping','Workflow management','Outcome tracking','Quality assurance','Operational systems'],
+    transform: 'You will run an organized, measurable practice where nothing falls through the cracks and quality is tracked over time.',
+    includes: ['Workflow System Templates','Outcome Tracking Sheets','QA Checklists','Recorded Replays'],
+    ctaLabel: 'Notify Me When Available', ctaType: 'notify', notifyKey: 'Practice Organization', notifyId: 'notify-practice-organization'
+  },
+
+  // ── LEVEL 5 — LEADERSHIP, GROWTH & LEGACY ──
+  'leadership-pillar': {
+    title: 'Leadership', level: 'Leadership, Growth & Legacy', levelClass: 'legacy',
+    format: 'Live + Recorded', duration: '3 Weeks', coming: true,
+    forText: 'Experienced practitioners ready to lead and support others within their field.',
+    learn: ['Mentoring practitioners','Supporting students','Community leadership','Building trust','Facilitating groups','Professional influence','Conflict resolution'],
+    transform: 'You will become capable of leading and supporting others — mentoring practitioners, facilitating groups, and building trusted community.',
+    includes: ['Live Leadership Sessions','Mentorship Frameworks','Group Facilitation Guide','Recorded Replays'],
+    ctaLabel: 'Notify Me When Available', ctaType: 'notify', notifyKey: 'Leadership', notifyId: 'notify-leadership-pillar'
+  },
+  'practice-growth': {
+    title: 'Practice Growth', level: 'Leadership, Growth & Legacy', levelClass: 'legacy',
+    format: 'Live + Recorded', duration: '4 Weeks', coming: true,
+    forText: 'Practitioners ready to ethically attract, educate, and serve a larger audience.',
+    learn: ['Ethical marketing','Building visibility','Social media strategy','Facebook & YouTube growth','Content creation & public education','Networking & referral development','Personal branding & credibility'],
+    transform: 'You will learn to ethically grow your visibility and audience — attracting and educating the people who need your work.',
+    includes: ['Live Strategy Sessions','Content Planning Templates','Social Media Playbook','Recorded Replays'],
+    ctaLabel: 'Notify Me When Available', ctaType: 'notify', notifyKey: 'Practice Growth', notifyId: 'notify-practice-growth'
+  },
+  'practice-sustainability': {
+    title: 'Practice Sustainability', level: 'Leadership, Growth & Legacy', levelClass: 'legacy',
+    format: 'Live + Recorded', duration: '4 Weeks', coming: true,
+    forText: 'Practitioners ready to build multiple aligned revenue streams for long-term sustainability.',
+    learn: ['Revenue diversification','Service packages & memberships','Workshops & group sessions','Digital products & courses','Certification programs','Books & speaking','Events & practitioner collaborations'],
+    transform: 'You will build multiple aligned revenue streams so your practice can sustain you for the long term.',
+    includes: ['Live Business Sessions','Offer & Pricing Templates','Revenue Model Worksheets','Recorded Replays'],
+    ctaLabel: 'Notify Me When Available', ctaType: 'notify', notifyKey: 'Practice Sustainability', notifyId: 'notify-practice-sustainability'
+  },
+  'research-knowledge': {
+    title: 'Research & Knowledge', level: 'Leadership, Growth & Legacy', levelClass: 'legacy',
+    format: 'Live + Recorded', duration: '3 Weeks', coming: true,
+    forText: 'Practitioners who want to contribute to the growth and understanding of the field.',
+    learn: ['Case studies','Documentation standards','Pattern identification','Research methods & data collection','Outcome tracking','Knowledge management','Reference libraries & educational resources'],
+    transform: 'You will learn to document, analyze, and share your work in ways that advance the whole field.',
+    includes: ['Research Method Guides','Case Study Templates','Data Collection Frameworks','Recorded Replays'],
+    ctaLabel: 'Notify Me When Available', ctaType: 'notify', notifyKey: 'Research and Knowledge', notifyId: 'notify-research-knowledge'
+  },
+  'legacy-pillar': {
+    title: 'Legacy', level: 'Leadership, Growth & Legacy', levelClass: 'legacy',
+    format: 'Live + Recorded', duration: '3 Weeks', coming: true,
+    forText: 'Practitioners ready to create lasting value beyond individual sessions.',
+    learn: ['Creating a body of work','Publishing','Training future practitioners','Building practitioner networks','Building systems & preserving knowledge','Long-term impact','Succession planning'],
+    transform: 'You will develop a vision for creating lasting value — a body of work and systems that outlive individual sessions.',
+    includes: ['Legacy Planning Frameworks','Publishing Roadmap','Succession Planning Guide','Recorded Replays'],
+    ctaLabel: 'Notify Me When Available', ctaType: 'notify', notifyKey: 'Legacy', notifyId: 'notify-legacy-pillar'
+  },
+
+  // ── CAPSTONE ──
+  'practice-ecosystem': {
+    title: 'Building Your Practice Ecosystem', level: 'Capstone', levelClass: 'capstone',
+    format: 'Capstone Intensive', duration: '6 Weeks', coming: true,
+    forText: 'Practitioners completing the program who are ready to integrate everything into one complete, operating practice.',
+    learn: ['Website presence','Client journey design','Booking systems','Policies & documentation','Client communication','Treatment planning & follow-up systems','Training programs & research initiatives','Community development & content strategy','Long-term growth planning'],
+    transform: 'You will leave with a complete framework for developing, operating, growing, and sustaining a professional practice — everything from all five levels, integrated.',
+    includes: ['Full Practice Blueprint','Capstone Mentorship','Ecosystem Build Checklist','Recorded Replays'],
+    ctaLabel: 'Notify Me When Available', ctaType: 'notify', notifyKey: 'Practice Ecosystem Capstone', notifyId: 'notify-practice-ecosystem'
   }
 };
 
@@ -1489,6 +1597,18 @@ document.getElementById('waitlistForm').addEventListener('submit', function(e) {
   updateCourseField();
   const form = e.target;
   const data = new FormData(form);
+  // Route the lead into the practitioner dashboard (Supabase) — best effort.
+  fetch('/.netlify/functions/training-interest', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      first_name: data.get('firstName'),
+      email: data.get('email'),
+      interested_courses: data.get('interested_courses'),
+      source: 'training_waitlist',
+      'bot-field': data.get('bot-field') || ''
+    })
+  }).catch(function() {});
+  // Keep the Netlify Forms capture as a backup channel.
   fetch('/', { method: 'POST', headers: {'Content-Type':'application/x-www-form-urlencoded'}, body: new URLSearchParams(data).toString() })
     .then(() => {
       form.style.display = 'none';
@@ -1500,6 +1620,39 @@ document.getElementById('waitlistForm').addEventListener('submit', function(e) {
       document.getElementById('waitlistSuccess').style.display = 'block';
     });
 });
+
+// ── Wire Level 4/5/Capstone cards to detail modals (same UX as other cards) ──
+(function() {
+  var MAP = {
+    'Client Management':'client-management','Practice Operations':'practice-operations',
+    'Documentation':'documentation','Professional Standards':'professional-standards',
+    'Practice Organization':'practice-organization','Leadership':'leadership-pillar',
+    'Practice Growth':'practice-growth','Practice Sustainability':'practice-sustainability',
+    'Research & Knowledge':'research-knowledge','Legacy':'legacy-pillar',
+    'Your Practice Ecosystem':'practice-ecosystem'
+  };
+  document.querySelectorAll('#operations .course-card, #leadership .course-card, #capstone .course-card').forEach(function(card) {
+    var titleEl = card.querySelector('.course-title');
+    if (!titleEl) return;
+    var id = MAP[titleEl.textContent.trim()];
+    if (!id) return;
+    var notify = card.querySelector('.btn-notify');
+    if (notify && !notify.id) notify.id = 'notify-' + id;
+    var actions = card.querySelector('.card-actions');
+    if (actions && !actions.querySelector('.btn-details')) {
+      var vd = document.createElement('button');
+      vd.className = 'btn-details';
+      vd.textContent = 'View Details';
+      vd.onclick = function(ev) { ev.stopPropagation(); openCourse(id); };
+      actions.insertBefore(vd, actions.firstChild);
+    }
+    card.style.cursor = 'pointer';
+    card.addEventListener('click', function(ev) {
+      if (ev.target.closest('button')) return;  // let the buttons handle their own clicks
+      openCourse(id);
+    });
+  });
+})();
 
 // ── FAQ ──────────────────────────────────────────────────────────────────────
 function toggleFaq(el) {
