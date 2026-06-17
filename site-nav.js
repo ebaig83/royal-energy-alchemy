@@ -27,23 +27,24 @@
           '<li><a href="/#plans">Research &amp; Outcomes</a></li>' +
         '</ul></li>' +
       '<li><a href="/#assess">Assess</a></li>' +
-      '<li><a href="/#contact">Contact</a></li>' +
       '<li class="rea-nav-dropdown"><a href="/training.html">Training</a>' +
         '<ul class="rea-nav-menu" aria-label="Training">' +
           '<li><a href="/training.html#foundations">Level One - Foundations</a></li>' +
           '<li><a href="/training.html#intermediate">Level Two - Intermediate</a></li>' +
           '<li><a href="/training.html#advanced">Level Three - Advanced</a></li>' +
         '</ul></li>' +
-      '<li><a href="/waiver-esign.html">Sign Waiver</a></li>' +
       '<li><a href="/client-portal.html">Client Portal</a></li>' +
       '<li class="rea-nav-dropdown"><a href="/#faq">More</a>' +
         '<ul class="rea-nav-menu" aria-label="More">' +
+          '<li><a href="/#faq">FAQ</a></li>' +
+          '<li><a href="/privacy-policy">Privacy Policy</a></li>' +
+          '<li><a href="/terms">Terms of Service</a></li>' +
+          '<li><a href="/data-retention">Data Retention</a></li>' +
           '<li><a href="/provider-apply" style="color:#22c98a">Provider Application</a></li>' +
           '<li><a href="/community">Join the Fight</a></li>' +
-          '<li><a href="/cancel-session" style="color:#ee7070">Need to Cancel?</a></li>' +
         '</ul></li>' +
     '</ul>' +
-    '<a href="/#contact" class="rea-nav-book">Book Session</a>';
+    '<a href="/book.html" class="rea-nav-book">Book Session</a>';
 
   if(existingNav){
     existingNav.replaceWith(nav);

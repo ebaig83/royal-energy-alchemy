@@ -204,6 +204,55 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.22em;color:rg
       </div>
     </div>
 
+    <!-- SECTION 4 — A little more context -->
+    <div class="sec">
+      <div class="sec-head"><span class="sec-num">Section 4</span><span class="sec-title">A Little More</span></div>
+      <div class="sec-body">
+        <div class="form-row single" style="margin-bottom:20px">
+          <div class="fg">
+            <label>Are you a first-time or returning client? <span class="req">*</span></label>
+            <div class="radio-list" id="a-status-radios" style="margin-top:4px">
+              <label><input type="radio" name="a_status" value="first_time"><span>First Time Client</span></label>
+              <label><input type="radio" name="a_status" value="returning"><span>Returning Client</span></label>
+            </div>
+          </div>
+        </div>
+        <div class="form-row single" style="margin-bottom:20px">
+          <div class="fg">
+            <label>What are you hoping to achieve? <span style="color:#9a96c0;font-style:italic;text-transform:none;letter-spacing:0">(select all that apply)</span></label>
+            <div class="radio-list" style="margin-top:4px">
+              <label><input type="checkbox" name="a_goal" value="relief"><span>Relief</span></label>
+              <label><input type="checkbox" name="a_goal" value="clarity"><span>Clarity</span></label>
+              <label><input type="checkbox" name="a_goal" value="protection"><span>Protection</span></label>
+              <label><input type="checkbox" name="a_goal" value="energy_clearing"><span>Energy Clearing</span></label>
+              <label><input type="checkbox" name="a_goal" value="spiritual_guidance"><span>Spiritual Guidance</span></label>
+              <label><input type="checkbox" name="a_goal" value="curiosity"><span>Curiosity / Exploration</span></label>
+              <label><input type="checkbox" name="a_goal" value="other"><span>Other</span></label>
+            </div>
+          </div>
+        </div>
+        <div class="form-row single" style="margin-bottom:20px">
+          <div class="fg">
+            <label>How did you hear about Daron?</label>
+            <select id="a-referral">
+              <option value="">Select…</option>
+              <option value="facebook">Facebook</option>
+              <option value="youtube">YouTube</option>
+              <option value="friend">Friend</option>
+              <option value="referral">Referral</option>
+              <option value="website">Website</option>
+              <option value="returning">Returning Client</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="fg"><label>State / Province</label><input type="text" id="a-state" placeholder="e.g. Pennsylvania"/></div>
+          <div class="fg"><label>Country</label><input type="text" id="a-country" placeholder="e.g. United States" value="United States"/></div>
+        </div>
+      </div>
+    </div>
+
     <button type="submit" class="submit-btn" id="assessSubmitBtn">Submit Assessment → Continue to Waiver</button>
     <p class="next-step-note">Next: Sign the Waiver &amp; Consent Agreement</p>
 
@@ -237,6 +286,11 @@ document.getElementById('assessForm').addEventListener('submit', function(e) {
   var forWho  = (document.querySelector('input[name="a_for"]:checked') || {}).value || '';
   var urgency = (document.querySelector('input[name="a_urgency"]:checked') || {}).value || '';
   var prior   = (document.querySelector('input[name="a_prior"]:checked') || {}).value || '';
+  var status  = (document.querySelector('input[name="a_status"]:checked') || {}).value || '';
+  var goals   = Array.prototype.map.call(document.querySelectorAll('input[name="a_goal"]:checked'), function(el){ return el.value; });
+  var referral = document.getElementById('a-referral').value;
+  var state    = document.getElementById('a-state').value.trim();
+  var country  = document.getElementById('a-country').value.trim();
 
   var valid = true;
 
@@ -267,6 +321,13 @@ document.getElementById('assessForm').addEventListener('submit', function(e) {
     document.getElementById('a-urgency-grid').style.outline = '';
   }
 
+  if (!status) {
+    document.getElementById('a-status-radios').style.outline = '1px solid rgba(255,80,80,.4)';
+    valid = false;
+  } else {
+    document.getElementById('a-status-radios').style.outline = '';
+  }
+
   if (!valid) {
     alert('Please complete all required fields marked with *');
     return;
@@ -281,6 +342,10 @@ document.getElementById('assessForm').addEventListener('submit', function(e) {
     primaryConcern: concern,
     urgency: urgency,
     priorExperience: prior,
+    clientStatus: status,
+    goals: goals,
+    referralSource: referral,
+    location: { state: state, country: country },
     timestamp: new Date().toISOString(),
     type: 'quick_assessment'
   };
