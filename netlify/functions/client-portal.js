@@ -142,7 +142,7 @@ async function buildPayload(sb, client, token) {
   try {
     const { data } = await sb
       .from('sessions')
-      .select('id, service, session_date, session_time, status, payment_status, intake_status, waiver_status, waiver_signed_at')
+      .select('id, service, session_date, session_time, status, payment_status, intake_status, waiver_status, waiver_signed_at, amount_due, amount_paid')
       .eq('client_id', client.id)
       .order('session_date', { ascending: true });
     sessions = data || [];
@@ -270,6 +270,42 @@ async function buildPayload(sb, client, token) {
     treatment_plan_status: treatmentDoc ? treatmentDoc.status : 'not_available',
   };
 
+  // ── Purchases (lightweight read-only mapping from sessions) ─────────────────
+  const PAY_STATUS = { paid: 'Paid', pending: 'Pending', unpaid: 'Unpaid', refunded: 'Refunded', partial: 'Partial', exchange: 'Package Credit', waived: 'Package Credit' };
+  let outstanding = 0, paidCount = 0, pendingCount = 0;
+  const purchases = sessions.map(s => {
+    const due  = Number(s.amount_due || 0);
+    const paid = Number(s.amount_paid || 0);
+    const bal  = Math.max(due - paid, 0);
+    const ps   = (s.payment_status || 'unpaid').toLowerCase();
+    if (ps === 'paid' || ps === 'exchange' || ps === 'waived') paidCount++;
+    else { pendingCount++; outstanding += bal; }
+    return {
+      service:        s.service,
+      date:           s.session_date,
+      amount_due:     due,
+      amount_paid:    paid,
+      balance:        bal,
+      status:         PAY_STATUS[ps] || (s.payment_status || 'Unpaid'),
+      reference:      s.id,
+    };
+  });
+  const purchases_summary = { paid: paidCount, pending: pendingCount, outstanding };
+
+  // ── Questions (own) ─────────────────────────────────────────────────────────
+  let questions = [];
+  try {
+    const { data, error } = await sb
+      .from('client_questions')
+      .select('id, question, category, priority, status, practitioner_response, preferred_contact_method, submitted_at, responded_at')
+      .eq('client_id', client.id)
+      .order('submitted_at', { ascending: false });
+    if (error && !isMissingTableError(error)) throw error;
+    questions = data || [];
+  } catch (e) { /* table may not exist yet */ }
+  const openQuestions = questions.filter(q => q.status === 'new' || q.status === 'in_review').length;
+  const questions_summary = { open: openQuestions, total: questions.length, latest_status: questions[0] ? questions[0].status : null };
+
   return {
     client: { name: clientName, email: client.email, since: client.created_at, has_account: !!client.auth_user_id },
     appointment,
@@ -277,6 +313,10 @@ async function buildPayload(sb, client, token) {
     documents,
     statuses,
     progress,
+    purchases,
+    purchases_summary,
+    questions,
+    questions_summary,
     required_complete: requiredComplete,
   };
 }

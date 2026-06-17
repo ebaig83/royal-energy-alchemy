@@ -1,7 +1,7 @@
 'use strict';
 
 // ── Sprint 15 — Full Client Journey QA ───────────────────────────────────────
-// 33 tests covering every step from public booking through cancellation,
+// 40 tests covering every step from public booking through cancellation,
 // including the separate policy/waiver/intake/public+full assessment documents,
 // the client portal, document writes (treatment plan / follow-up), the email
 // portal link, and Sprint 17 client portal accounts/auth (signup/login, RLS,
@@ -580,6 +580,108 @@ async function run() {
   }
 
   // =========================================================================
+  // PHASE 2b: Client Questions & Purchases (Sprint 17 Phase B)
+  // =========================================================================
+  console.log(c.cyan('\n── Phase 2b: Questions & Purchases ───────────────────────\n'));
+  let questionId = null;
+
+  // CJ-18a: client submits a question (portal-token path)
+  if (portalToken) {
+    try {
+      const { status, json } = await req(`${BASE_URL}/client-questions`, {
+        method: 'POST',
+        body: { token: portalToken, question: 'QA: when should I arrive?', category: 'Appointment', priority: 'high', preferred_contact_method: 'email' },
+      });
+      if (status === 200 && json && json.saved && json.question) {
+        questionId = json.question.id;
+        pass('CJ-18a', 'Client submits a question', `id=${questionId}`);
+      } else {
+        fail('CJ-18a', 'Submit question', `status=${status}, error=${json && json.error}`);
+      }
+    } catch (e) { fail('CJ-18a', 'Submit question', e.message); }
+  } else {
+    warn('CJ-18a', 'Submit question', 'Skipped — no portal_token');
+  }
+
+  // CJ-18b: unauthenticated submit is blocked
+  try {
+    const { status } = await req(`${BASE_URL}/client-questions`, { method: 'POST', body: { question: 'no auth' } });
+    (status === 401 || status === 404)
+      ? pass('CJ-18b', 'Unauthenticated question submit blocked', `status=${status}`)
+      : fail('CJ-18b', 'Unauth submit', `expected 401/404, got ${status}`);
+  } catch (e) { fail('CJ-18b', 'Unauth submit', e.message); }
+
+  // CJ-18c: client sees only their own questions
+  if (portalToken && questionId) {
+    try {
+      const { status, json } = await req(`${BASE_URL}/client-questions?token=${encodeURIComponent(portalToken)}`);
+      const list = (json && json.questions) || [];
+      const mine = list.find(q => q.id === questionId);
+      (status === 200 && mine && list.every(q => q.id))
+        ? pass('CJ-18c', 'Client lists own questions', `${list.length} question(s)`)
+        : fail('CJ-18c', 'Client own questions', `status=${status}, found=${!!mine}`);
+    } catch (e) { fail('CJ-18c', 'Client own questions', e.message); }
+  } else {
+    warn('CJ-18c', 'Client own questions', 'Skipped — no question');
+  }
+
+  // CJ-18d: dashboard queue shows the question
+  if (token && questionId) {
+    try {
+      const { status, json } = await req(`${BASE_URL}/client-questions`, { headers: { 'X-Dashboard-Token': token } });
+      const q = ((json && json.questions) || []).find(x => x.id === questionId);
+      (status === 200 && q && q.client_name)
+        ? pass('CJ-18d', 'Dashboard queue shows question', `client=${q.client_name}, status=${q.status}`)
+        : fail('CJ-18d', 'Dashboard queue', `status=${status}, found=${!!q}`);
+    } catch (e) { fail('CJ-18d', 'Dashboard queue', e.message); }
+  } else {
+    fail('CJ-18d', 'Dashboard queue', 'Skipped — no token/question');
+  }
+
+  // CJ-18e: practitioner response saves + status flips to responded
+  if (token && questionId) {
+    try {
+      const { status, json } = await req(`${BASE_URL}/client-questions?id=${questionId}`, {
+        method: 'PATCH',
+        headers: { 'X-Dashboard-Token': token },
+        body: { practitioner_response: 'Arrive 5 minutes early. — Daron' },
+      });
+      (status === 200 && json.question && json.question.status === 'responded' && json.question.responded_at)
+        ? pass('CJ-18e', 'Practitioner response saved (status responded)')
+        : fail('CJ-18e', 'Practitioner response', `status=${status}, qstatus=${json && json.question && json.question.status}`);
+    } catch (e) { fail('CJ-18e', 'Practitioner response', e.message); }
+  } else {
+    fail('CJ-18e', 'Practitioner response', 'Skipped — no token/question');
+  }
+
+  // CJ-18f: client portal now shows the response
+  if (portalToken && questionId) {
+    try {
+      const { json } = await req(`${BASE_URL}/client-portal?token=${encodeURIComponent(portalToken)}`);
+      const q = ((json && json.questions) || []).find(x => x.id === questionId);
+      (q && /arrive 5 minutes early/i.test(q.practitioner_response || ''))
+        ? pass('CJ-18f', 'Client portal displays practitioner response')
+        : fail('CJ-18f', 'Response visible to client', `response=${q && q.practitioner_response}`);
+    } catch (e) { fail('CJ-18f', 'Response visible to client', e.message); }
+  } else {
+    warn('CJ-18f', 'Response visible to client', 'Skipped — no question');
+  }
+
+  // CJ-18g: purchases section reflects the client's session(s)
+  if (portalToken) {
+    try {
+      const { json } = await req(`${BASE_URL}/client-portal?token=${encodeURIComponent(portalToken)}`);
+      const purchases = (json && json.purchases) || [];
+      const summary = json && json.purchases_summary;
+      (Array.isArray(purchases) && purchases.length >= 1 && summary && typeof summary.pending === 'number')
+        ? pass('CJ-18g', 'Purchases reflect client sessions', `${purchases.length} item(s), status=${purchases[0].status}`)
+        : fail('CJ-18g', 'Purchases mapping', `count=${purchases.length}`);
+    } catch (e) { fail('CJ-18g', 'Purchases mapping', e.message); }
+  } else {
+    warn('CJ-18g', 'Purchases mapping', 'Skipped — no portal_token');
+  }
+
+  // =========================================================================
   // PHASE 3: Reminder Trigger
   // =========================================================================
   console.log(c.cyan('\n── Phase 3: Reminder Trigger ─────────────────────────────\n'));
@@ -771,6 +873,7 @@ async function run() {
   console.log(c.dim('\n── Cleaning up test data ─────────────────────────────────\n'));
   try {
     if (createdAuthUserId) { try { await sb.auth.admin.deleteUser(createdAuthUserId); } catch (e) { /* anon-created auth user */ } }
+    if (clientId)    await sb.from('client_questions').delete().eq('client_id', clientId);
     if (clientId)    await sb.from('client_documents').delete().eq('client_id', clientId);
     if (aftercareId) await sb.from('aftercare').delete().eq('id', aftercareId);
     if (sessionId)   await sb.from('sessions').delete().eq('id', sessionId);

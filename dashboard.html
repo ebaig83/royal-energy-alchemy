@@ -2999,6 +2999,9 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
       <button class="tab ck-nav-item" onclick="showTab('followups')">
         <span class="nav-icon">◈</span><span class="nav-text">Follow-Ups</span>
       </button>
+      <button class="tab ck-nav-item" onclick="showTab('questions')">
+        <span class="nav-icon">?</span><span class="nav-text">Questions</span>
+      </button>
 
       <div class="ck-nav-divider"></div>
       <div class="ck-nav-section">Practice</div>
@@ -3486,6 +3489,8 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
   </div>
 
   <!-- KNOWLEDGE HUB TAB -->
+  <div class="tab-content" id="tab-questions"></div>
+
   <div class="tab-content" id="tab-kh"></div>
 
   <!-- CONTENT STUDIO TAB -->
@@ -4270,6 +4275,65 @@ function showTab(name) {
   if (name === 'financial')      { try { fcInit(); } catch(e){ console.error('fcInit', e); } }
   if (name === 'communications') { try { cmInit(); } catch(e){ console.error('cmInit', e); } }
   if (name === 'docs')          { try { docsInit(); } catch(e){ console.error('docsInit', e); } }
+  if (name === 'questions')     { try { questionsInit(); } catch(e){ console.error('questionsInit', e); } }
+}
+
+/* ── CLIENT QUESTIONS QUEUE (Sprint 17B) ─────────────────────────────────── */
+var Q_PRIO_COLOR = { urgent:'#ff5555', high:'#f8a84b', normal:'#e8b84b', low:'#9a96c0' };
+var Q_STATUS_COLOR = { new:'#f8a84b', in_review:'#e8b84b', responded:'#22c98a', closed:'#9a96c0' };
+async function questionsInit() {
+  var host = document.getElementById('tab-questions');
+  if (!host) return;
+  host.innerHTML = '<div style="padding:24px;color:#9a96c0">Loading questions…</div>';
+  var key = sessionStorage.getItem('rea_api_token') || '';
+  try {
+    var r = await fetch('/.netlify/functions/client-questions', { headers: { 'X-Dashboard-Token': key } });
+    var j = await r.json();
+    if (!r.ok) { host.innerHTML = '<div style="padding:24px;color:#cc6666">'+ (j && j.error || 'Failed to load questions.') +'</div>'; return; }
+    questionsRender(j.questions || []);
+  } catch (e) { host.innerHTML = '<div style="padding:24px;color:#cc6666">Error: '+ e.message +'</div>'; }
+}
+function qEsc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+function questionsRender(list) {
+  var host = document.getElementById('tab-questions');
+  var openN = list.filter(function(q){return q.status==='new';}).length;
+  var urgentN = list.filter(function(q){return q.priority==='urgent' && q.status!=='closed';}).length;
+  var unresolvedN = list.filter(function(q){return q.status==='new'||q.status==='in_review';}).length;
+  var head = '<div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:18px">'+
+    '<div style="border:1px solid #e8b84b33;padding:14px 20px"><div style="font-size:26px;color:#fff;font-weight:700">'+openN+'</div><div style="font-family:Cinzel,serif;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#e8b84b99">New</div></div>'+
+    '<div style="border:1px solid #ff555533;padding:14px 20px"><div style="font-size:26px;color:#ff5555;font-weight:700">'+urgentN+'</div><div style="font-family:Cinzel,serif;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#ff555599">Urgent</div></div>'+
+    '<div style="border:1px solid #e8b84b33;padding:14px 20px"><div style="font-size:26px;color:#fff;font-weight:700">'+unresolvedN+'</div><div style="font-family:Cinzel,serif;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#e8b84b99">Unresolved</div></div>'+
+  '</div>';
+  var rows = list.length ? list.map(function(q){
+    var pc = Q_PRIO_COLOR[q.priority]||'#e8b84b', sc = Q_STATUS_COLOR[q.status]||'#9a96c0';
+    return '<div style="border:1px solid #e8b84b22;background:#0a0820;padding:16px 18px;margin-bottom:10px">'+
+      '<div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:8px">'+
+        '<div style="font-size:16px;color:#fff">'+qEsc(q.client_name)+' <span style="color:#9a96c0;font-size:13px">· '+qEsc(q.category||'')+' · '+(q.preferred_contact_method||'')+'</span></div>'+
+        '<div><span style="color:'+pc+';font-family:Cinzel,serif;font-size:10px;letter-spacing:.18em;text-transform:uppercase">'+qEsc(q.priority)+'</span> &nbsp; <span style="color:'+sc+';font-family:Cinzel,serif;font-size:10px;letter-spacing:.18em;text-transform:uppercase">'+qEsc(q.status)+'</span></div>'+
+      '</div>'+
+      '<div style="font-size:17px;color:#f0ecff;margin-bottom:10px">'+qEsc(q.question)+'</div>'+
+      (q.practitioner_response?'<div style="padding:10px 12px;background:#22c98a10;border-left:3px solid #22c98a;margin-bottom:10px;color:#d8d4f0">'+qEsc(q.practitioner_response)+'</div>':'')+
+      '<textarea id="qr-'+q.id+'" placeholder="Type a response…" style="width:100%;min-height:54px;background:#06030f;border:1px solid #e8b84b33;color:#fff;padding:9px 11px;font-family:inherit;font-size:15px;margin-bottom:8px">'+qEsc(q.practitioner_response||'')+'</textarea>'+
+      '<div style="display:flex;gap:8px;flex-wrap:wrap">'+
+        '<button onclick="questionAction(\''+q.id+'\',\'in_review\')" style="background:none;border:1px solid #e8b84b55;color:#e8b84b;padding:8px 14px;cursor:pointer;font-family:Cinzel,serif;font-size:10px;letter-spacing:.16em;text-transform:uppercase">Mark In Review</button>'+
+        '<button onclick="questionRespond(\''+q.id+'\')" style="background:#e8b84b;border:none;color:#160a00;padding:8px 14px;cursor:pointer;font-family:Cinzel,serif;font-size:10px;letter-spacing:.16em;text-transform:uppercase;font-weight:700">Save Response</button>'+
+        '<button onclick="questionAction(\''+q.id+'\',\'responded\')" style="background:none;border:1px solid #22c98a55;color:#22c98a;padding:8px 14px;cursor:pointer;font-family:Cinzel,serif;font-size:10px;letter-spacing:.16em;text-transform:uppercase">Mark Responded</button>'+
+        '<button onclick="questionAction(\''+q.id+'\',\'closed\')" style="background:none;border:1px solid #9a96c055;color:#9a96c0;padding:8px 14px;cursor:pointer;font-family:Cinzel,serif;font-size:10px;letter-spacing:.16em;text-transform:uppercase">Close</button>'+
+      '</div></div>';
+  }).join('') : '<div style="padding:24px;color:#9a96c0">No questions yet.</div>';
+  host.innerHTML = '<h2 style="font-family:Cinzel,serif;font-size:16px;letter-spacing:.2em;text-transform:uppercase;color:#e8b84b;margin-bottom:16px">Client Questions Queue</h2>'+head+rows;
+}
+async function questionPatch(id, body) {
+  var key = sessionStorage.getItem('rea_api_token') || '';
+  var r = await fetch('/.netlify/functions/client-questions?id='+encodeURIComponent(id), { method:'PATCH', headers:{ 'Content-Type':'application/json','X-Dashboard-Token':key }, body:JSON.stringify(body) });
+  if (!r.ok) { var j=await r.json().catch(function(){return{};}); alert('Update failed: '+(j.error||r.status)); return false; }
+  return true;
+}
+async function questionAction(id, status) { if (await questionPatch(id, { status: status })) questionsInit(); }
+async function questionRespond(id) {
+  var el = document.getElementById('qr-'+id); var txt = el ? el.value.trim() : '';
+  if (!txt) { alert('Type a response first.'); return; }
+  if (await questionPatch(id, { practitioner_response: txt })) questionsInit();
 }
 
 /* ── ONBOARDING QUEUE ─────────────────────────────────────────────────── */

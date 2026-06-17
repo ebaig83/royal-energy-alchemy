@@ -23,7 +23,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
 .auth-tab.active{color:#160a00;background:linear-gradient(135deg,var(--gold-light),var(--gold));font-weight:700;border-color:transparent}
 .fg{margin-bottom:16px}
 .fg label{display:block;font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
-.fg input{width:100%;padding:12px 14px;background:rgba(8,6,22,.95);border:1px solid rgba(232,184,75,.32);color:#fff;font-family:'EB Garamond',serif;font-size:16px}
+.fg input,.fg select,.fg textarea{width:100%;padding:12px 14px;background:rgba(8,6,22,.95);border:1px solid rgba(232,184,75,.32);color:#fff;font-family:'EB Garamond',serif;font-size:16px}
 .btn{width:100%;font-family:'Cinzel',serif;font-size:12px;letter-spacing:.26em;text-transform:uppercase;color:#160a00;background:linear-gradient(135deg,var(--gold-light),var(--gold));border:none;padding:14px;cursor:pointer;font-weight:700;transition:filter .25s}
 .btn:hover{filter:brightness(1.1)}.btn[disabled]{opacity:.5;cursor:default}
 .link-btn{background:none;border:none;color:#e8b84bb3;font-family:'EB Garamond',serif;font-size:15px;cursor:pointer;text-decoration:underline;margin-top:12px}
@@ -181,14 +181,15 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.22em;color:rg
       '<div class="ap-item"><span class="ap-label">Date</span><span class="ap-val">'+(fmtDate(a.session_date+'T00:00:00')||'—')+'</span></div>'+
       '<div class="ap-item"><span class="ap-label">Time</span><span class="ap-val">'+esc(a.session_time||'—')+(a.session_time?' ET':'')+'</span></div>'+
       '<div class="ap-item"><span class="ap-label">Status</span><span class="ap-val">'+esc(a.status||'—')+'</span></div></div>'; }
-    var p=d.progress||{};
+    var p=d.progress||{}, qs=d.questions_summary||{}, ps=d.purchases_summary||{};
     $('sec-home').innerHTML = banner + apptHtml +
       '<div class="stat-grid">'+
         '<div class="stat"><div class="n">'+(p.completion_percent||0)+'%</div><div class="l">Documents Complete</div></div>'+
         '<div class="stat"><div class="n">'+(p.session_count||0)+'</div><div class="l">Sessions Completed</div></div>'+
-        '<div class="stat"><div class="n">'+(p.documents_completed||0)+'/'+(p.documents_total||0)+'</div><div class="l">Required Docs</div></div>'+
+        '<div class="stat"><div class="n">'+(qs.open||0)+'</div><div class="l">Open Questions</div></div>'+
+        '<div class="stat"><div class="n">'+(ps.pending||0)+'</div><div class="l">Pending Payments</div></div>'+
       '</div>'+
-      '<p style="text-align:center;margin-top:18px;color:#9a96c0">Use the tabs above to view your documents, appointments, and progress.</p>';
+      '<p style="text-align:center;margin-top:18px;color:#9a96c0">Use the tabs above to view your documents, appointments, questions, and purchases.</p>';
 
     // DOCUMENTS
     $('docGrid').innerHTML = (d.documents||[]).map(docCard).join('');
@@ -221,22 +222,77 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.22em;color:rg
       (ctx.via==='account'?'<button class="c-action" id="settingsLogout" style="border:none;cursor:pointer">Log Out</button>':'')+'</div>';
     if($('settingsLogout')) $('settingsLogout').addEventListener('click', doLogout);
 
+    // QUESTIONS
+    renderQuestions(d.questions || []);
+    // PURCHASES
+    renderPurchases(d.purchases || []);
+
     showSection('home');
   }
 
+  var Q_STATUS={ new:{cls:'warn',text:'New'}, in_review:{cls:'warn',text:'In Review'}, responded:{cls:'ok',text:'Responded'}, closed:{cls:'muted',text:'Closed'} };
+  function renderQuestions(list){
+    var form =
+      '<div class="card" style="margin-bottom:18px"><div class="c-title">Ask a Question</div>'+
+      '<div class="fg"><label>Your question</label><textarea id="qText" style="width:100%;min-height:80px;padding:11px 13px;background:rgba(8,6,22,.95);border:1px solid rgba(232,184,75,.32);color:#fff;font-family:\'EB Garamond\',serif;font-size:16px"></textarea></div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'+
+        '<div class="fg"><label>Category</label><select id="qCat">'+['Appointment','Payment','Session Follow-Up','Spiritual / Service Question','Document Help','Technical Portal Help','Other'].map(function(c){return '<option>'+c+'</option>';}).join('')+'</select></div>'+
+        '<div class="fg"><label>Priority</label><select id="qPri"><option value="low">Low</option><option value="normal" selected>Normal</option><option value="high">High</option><option value="urgent">Urgent</option></select></div>'+
+      '</div>'+
+      '<div class="fg"><label>Preferred contact</label><select id="qContact"><option value="email">Email</option><option value="text">Text</option><option value="phone">Phone</option><option value="portal">Portal only</option></select></div>'+
+      '<button class="c-action" id="qSubmit" style="border:none;cursor:pointer">Submit Question</button>'+
+      '<div id="qMsg" style="margin-top:12px;font-size:15px"></div></div>';
+    var items = list.length ? list.map(function(q){
+      var b=Q_STATUS[q.status]||{cls:'muted',text:q.status};
+      var resp = q.practitioner_response ? '<div style="margin-top:10px;padding:12px 14px;background:#22c98a10;border-left:3px solid #22c98a"><div style="font-family:\'Cinzel\',serif;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#22c98a;margin-bottom:5px">Daron\'s Response</div>'+esc(q.practitioner_response)+'</div>' : '';
+      return '<div class="card" style="margin-bottom:10px"><div class="c-head"><div class="c-title" style="text-transform:none;letter-spacing:0;font-family:\'EB Garamond\',serif;font-size:17px">'+esc(q.question)+'</div><span class="badge '+b.cls+'">'+b.text+'</span></div><div class="c-meta"><div>'+esc(q.category||'')+' · '+esc(q.priority||'')+' · '+(fmtDate(q.submitted_at)||'')+'</div></div>'+resp+'</div>';
+    }).join('') : '<div class="placeholder">No questions yet. Ask one above.</div>';
+    $('sec-questions').innerHTML = form + '<h2 style="font-family:\'Cinzel\',serif;font-size:14px;letter-spacing:.2em;text-transform:uppercase;color:#e8b84b;margin:8px 0 12px">Your Questions</h2>' + items;
+
+    $('qSubmit').addEventListener('click', function(){
+      var text=$('qText').value.trim();
+      var msg=$('qMsg');
+      if(!text){ msg.style.color='#ff7777'; msg.textContent='Please enter your question.'; return; }
+      $('qSubmit').disabled=true; msg.style.color='#c8c4e0'; msg.textContent='Sending…';
+      var body=Object.assign({ question:text, category:$('qCat').value, priority:$('qPri').value, preferred_contact_method:$('qContact').value }, authTokenField());
+      fetch('/.netlify/functions/client-questions',{ method:'POST', headers:Object.assign({'Content-Type':'application/json'},authHeaders()), body:JSON.stringify(body) })
+        .then(function(r){ return r.json().then(function(j){return{ok:r.ok,j:j};}); })
+        .then(function(res){ if(!res.ok){ $('qSubmit').disabled=false; msg.style.color='#ff7777'; msg.textContent=(res.j&&res.j.error)||'Could not send.'; return; } msg.style.color='#22c98a'; msg.textContent='✓ Sent. Daron will respond soon.'; reloadPortal(); })
+        .catch(function(){ $('qSubmit').disabled=false; msg.style.color='#ff7777'; msg.textContent='Network error — please try again.'; });
+    });
+  }
+
+  function purchaseBadge(s){ var ok=/paid|credit/i.test(s), warn=/pending|partial/i.test(s); return '<span class="badge '+(ok?'ok':warn?'warn':'miss')+'">'+esc(s)+'</span>'; }
+  function renderPurchases(list){
+    var rows = list.length ? list.map(function(p){
+      return '<div class="appt-row"><div><div class="svc">'+esc(p.service||'Session')+'</div><div class="meta">'+(fmtDate(p.date+'T00:00:00')||'—')+' · $'+Number(p.amount_due||0).toFixed(2)+(p.balance>0?(' · balance $'+Number(p.balance).toFixed(2)):'')+'</div></div>'+purchaseBadge(p.status)+'</div>';
+    }).join('') : '<div class="placeholder">No purchases recorded yet.</div>';
+    $('sec-purchases').innerHTML = '<h2 style="font-family:\'Cinzel\',serif;font-size:14px;letter-spacing:.2em;text-transform:uppercase;color:#e8b84b;margin-bottom:12px">Services &amp; Payments</h2>' + rows;
+  }
+
   // ── Data fetch ──────────────────────────────────────────────────────────────
+  // portalAuth carries how to authenticate follow-up writes (e.g. questions):
+  //   { token } for the portal-link path, { jwt } for the account path.
+  var portalAuth = null;
+  var reloadPortal = function () {};
   function loadWithToken(token){
+    portalAuth = { token: token }; reloadPortal = function(){ loadWithToken(token); };
     fetch('/.netlify/functions/client-portal?token='+encodeURIComponent(token))
       .then(function(r){ return r.json().then(function(j){return{ok:r.ok,j:j};}); })
       .then(function(res){ if(!res.ok){ showError(res.j&&res.j.error||'Unable to load your portal.'); return; } render(res.j,{via:'token'}); })
       .catch(function(){ showError('Something went wrong loading your portal.'); });
   }
   function loadWithSession(session){
+    portalAuth = { jwt: session.access_token }; reloadPortal = function(){ loadWithSession(session); };
     fetch('/.netlify/functions/client-portal',{ headers:{ 'Authorization':'Bearer '+session.access_token } })
       .then(function(r){ return r.json().then(function(j){return{ok:r.ok,j:j};}); })
       .then(function(res){ if(!res.ok){ if(res.j&&/expired|log in/i.test(res.j.error||'')){ showAuth(); return; } showError(res.j&&res.j.error||'Unable to load your portal.'); return; } render(res.j,{via:'account'}); })
       .catch(function(){ showError('Something went wrong loading your portal.'); });
   }
+
+  // Auth headers/body for follow-up writes to client-* functions.
+  function authHeaders(){ return portalAuth && portalAuth.jwt ? { 'Authorization':'Bearer '+portalAuth.jwt } : {}; }
+  function authTokenField(){ return portalAuth && portalAuth.token ? { token: portalAuth.token } : {}; }
   function showError(m){ stateEl.className='state err'; stateEl.style.display='block'; stateEl.textContent=m; authArea.style.display='none'; dashArea.style.display='none'; }
 
   // ── Auth UI ─────────────────────────────────────────────────────────────────
