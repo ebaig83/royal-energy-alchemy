@@ -515,8 +515,10 @@ async function run() {
   if (sbAnon && createdAuthUserId && clientId) {
     try {
       const { data: ownRows, error: ownErr } = await sbAnon.from('clients').select('id').eq('id', clientId);
-      if (ownErr && /permission|rls|row-level/i.test(ownErr.message)) {
-        warn('CJ-17d', 'RLS own-data-only', 'RLS may not be enabled — run 2026-06-25 migration');
+      if (ownErr && /permission/i.test(ownErr.message)) {
+        warn('CJ-17d', 'RLS own-data-only', 'authenticated role lacks SELECT grant — run 2026-06-27-sprint17-rls-grants.sql');
+      } else if (ownErr && /rls|row-level/i.test(ownErr.message)) {
+        warn('CJ-17d', 'RLS own-data-only', 'RLS not enabled — run 2026-06-25 migration');
       } else {
         // With RLS, an unrelated client row must NOT be readable by this user.
         const { data: otherRows } = await sbAnon.from('clients').select('id').neq('id', clientId).limit(1);
