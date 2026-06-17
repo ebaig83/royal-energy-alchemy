@@ -1,14 +1,13 @@
 // /.netlify/functions/client-portal
 //
-// PUBLIC — no dashboard login. Clients reach their document hub via a secure
-// portal token issued on their client record (clients.portal_token).
+// Returns a client's portal dashboard payload. Two access paths reach the SAME
+// client account (Sprint 17):
+//   1. Portal token  — GET ?token=<portal_token>            (booking-email path)
+//   2. Account login — Authorization: Bearer <supabase JWT> (website login path)
 //
-// GET ?token=<portal_token> — return the client's document hub:
-//   { client, appointment, documents[], required_complete, statuses }
-//
-// Every required document is returned SEPARATELY (assessment, the five
-// policies, waiver, intake, treatment plan, follow-ups). Waiver completion and
-// intake completion are never collapsed into one another.
+// service_role stays server-side; the function enforces that the caller only
+// ever receives their own client record. RLS provides defense-in-depth for any
+// direct client-side reads.
 
 'use strict';
 
@@ -17,8 +16,6 @@ const { getClient } = require('./lib/supabase');
 
 const SITE_URL = process.env.SITE_URL || 'https://royal-energy-alchemy.netlify.app';
 
-// Ordered document registry the portal renders. `required` flags the docs that
-// must be complete before a booking is considered fully ready.
 const DOCS = [
   { type: 'privacy_policy',                    title: 'Privacy Policy',                               page: '/privacy-policy.html',                   mode: 'acknowledge', required: true },
   { type: 'ai_recording_transcription_policy', title: 'AI Use, Recording & Transcription Disclosure', page: '/ai-recording-transcription-policy.html', mode: 'acknowledge', required: true },
@@ -47,49 +44,133 @@ function isMissingTableError(err) {
     m.includes('does not exist') || m.includes('Could not find') || m.includes('schema cache');
 }
 
+function bearer(event) {
+  const h = event.headers['authorization'] || event.headers['Authorization'] || '';
+  const m = h.match(/^Bearer\s+(.+)$/i);
+  return m ? m[1].trim() : null;
+}
+
 exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return respond(200, {});
   if (event.httpMethod !== 'GET') return respond(405, { error: 'Method not allowed.' });
 
-  const sb    = getClient();
+  const sb     = getClient();
   const params = Object.fromEntries(new URLSearchParams(event.queryStringParameters || {}));
   const token  = (params.token || params.t || '').trim();
-  if (!token || token.length < 16) return respond(400, { error: 'A valid access link is required.' });
+  const jwt    = bearer(event);
 
-  // ── Validate token → client ──────────────────────────────────────────────
-  const { data: client, error: clientErr } = await sb
-    .from('clients')
-    .select('id, full_name, email, tags, created_at')
-    .eq('portal_token', token)
-    .single();
-  if (clientErr || !client) return respond(404, { error: 'This access link is invalid or has expired.' });
+  let client = null;
+  let via = null;
 
+  // ── Path 1: account login (Bearer JWT) ────────────────────────────────────
+  if (jwt) {
+    const { data: userData, error: authErr } = await sb.auth.getUser(jwt);
+    if (authErr || !userData || !userData.user) {
+      return respond(401, { error: 'Your session has expired. Please log in again.' });
+    }
+    const authUser = userData.user;
+    const emailNorm = (authUser.email || '').toLowerCase().trim();
+
+    // Email must match exactly one booked client.
+    const { data: matches } = await sb
+      .from('clients')
+      .select('id, full_name, email, tags, created_at, auth_user_id, portal_access_method, portal_login_count')
+      .eq('email', emailNorm);
+    if (!matches || matches.length === 0) {
+      return respond(403, { error: 'No client record matches this email. Please use the email you booked with.' });
+    }
+    if (matches.length > 1) {
+      // Duplicate emails — flag for practitioner review, never auto-link.
+      await sb.from('clients').update({ duplicate_flag: true }).eq('email', emailNorm);
+      return respond(409, { error: 'Multiple records found for this email. Daron has been notified to review your account.' });
+    }
+    client = matches[0];
+    via = 'account';
+
+    // Link auth user + login tracking.
+    const existing = client.portal_access_method;
+    const updates = {
+      auth_user_id:        client.auth_user_id || authUser.id,
+      portal_last_login:   new Date().toISOString(),
+      portal_login_count:  (client.portal_login_count || 0) + 1,
+      portal_access_method: (existing && existing !== 'account') ? 'both' : 'account',
+    };
+    if (!client.auth_user_id) updates.portal_account_created = new Date().toISOString();
+    await sb.from('clients').update(updates).eq('id', client.id);
+
+  // ── Path 2: portal token ──────────────────────────────────────────────────
+  } else if (token && token.length >= 16) {
+    // Select ONLY long-standing columns so this path keeps working even before
+    // the Sprint 17 account migration is applied (no regression to token access).
+    const { data, error } = await sb
+      .from('clients')
+      .select('id, full_name, email, tags, created_at')
+      .eq('portal_token', token)
+      .single();
+    if (error || !data) return respond(404, { error: 'This access link is invalid or has expired.' });
+    client = data;
+    via = 'token';
+    // Best-effort access-method tracking — a no-op if account columns are not
+    // yet migrated (the inner query simply errors and is swallowed).
+    try {
+      const { data: acc } = await sb.from('clients').select('portal_access_method, auth_user_id').eq('id', client.id).single();
+      if (acc) {
+        client.auth_user_id = acc.auth_user_id;
+        const existing = acc.portal_access_method;
+        await sb.from('clients').update({
+          portal_access_method: (existing && existing !== 'token') ? 'both' : 'token',
+        }).eq('id', client.id);
+      }
+    } catch (e) { /* columns not migrated yet — non-fatal */ }
+
+  } else {
+    return respond(401, { error: 'Sign in or use your secure portal link to view your portal.' });
+  }
+
+  const payload = await buildPayload(sb, client, token);
+  payload.access_method = via;
+  return respond(200, payload);
+};
+
+async function buildPayload(sb, client, token) {
   const clientName = client.full_name || 'Client';
   const tags       = (client.tags || []).map(t => String(t).toLowerCase());
+  const today      = new Date().toISOString().slice(0, 10);
 
-  // ── Relevant session (next upcoming, else latest) ─────────────────────────
-  let appointment = null, sessionRow = null;
+  // ── Sessions → appointments + relevant session ────────────────────────────
+  let sessions = [];
   try {
-    const today = new Date().toISOString().slice(0, 10);
-    const { data: sessions } = await sb
+    const { data } = await sb
       .from('sessions')
       .select('id, service, session_date, session_time, status, payment_status, intake_status, waiver_status, waiver_signed_at')
       .eq('client_id', client.id)
       .order('session_date', { ascending: true });
-    if (sessions && sessions.length) {
-      sessionRow = sessions.find(s => s.session_date >= today && ['pending', 'confirmed'].includes(s.status))
-                || sessions[sessions.length - 1];
-      if (sessionRow) appointment = {
-        service:        sessionRow.service,
-        session_date:   sessionRow.session_date,
-        session_time:   sessionRow.session_time ? sessionRow.session_time.slice(0, 5) : null,
-        status:         sessionRow.status,
-        payment_status: sessionRow.payment_status,
-      };
-    }
+    sessions = data || [];
   } catch (e) { /* non-fatal */ }
 
-  // ── Explicit document rows ────────────────────────────────────────────────
+  const sessionRow = sessions.find(s => s.session_date >= today && ['pending', 'confirmed'].includes(s.status))
+                  || sessions[sessions.length - 1] || null;
+
+  const appointments = sessions.map(s => ({
+    id:             s.id,
+    service:        s.service,
+    session_date:   s.session_date,
+    session_time:   s.session_time ? s.session_time.slice(0, 5) : null,
+    status:         s.status,
+    payment_status: s.payment_status,
+    upcoming:       s.session_date >= today && !['cancelled', 'completed'].includes(s.status),
+    manage_url:     `${SITE_URL}/manage-appointment.html?session_id=${s.id}`,
+  }));
+
+  const appointment = sessionRow ? {
+    service:        sessionRow.service,
+    session_date:   sessionRow.session_date,
+    session_time:   sessionRow.session_time ? sessionRow.session_time.slice(0, 5) : null,
+    status:         sessionRow.status,
+    payment_status: sessionRow.payment_status,
+  } : null;
+
+  // ── Document rows ──────────────────────────────────────────────────────────
   let rows = [];
   try {
     const { data, error } = await sb
@@ -102,10 +183,6 @@ exports.handler = async (event) => {
   } catch (e) { /* table may not exist yet */ }
   const rowOf = type => rows.filter(r => r.document_type === type).sort((a, b) => (b.version || '') > (a.version || '') ? 1 : -1)[0];
 
-  // ── Follow-up derivation ──────────────────────────────────────────────────
-  // A scheduled/pending follow-up is "pending" — NOT submitted. Only a real
-  // client_documents row (written when the client actually submits) marks it
-  // submitted. Never infer completion from fallback data.
   let followupDerived = 'not_started';
   try {
     const { data: ac } = await sb.from('aftercare').select('status').eq('client_id', client.id);
@@ -114,10 +191,9 @@ exports.handler = async (event) => {
     }
   } catch (e) { /* non-fatal */ }
 
-  // ── Build the per-document list ───────────────────────────────────────────
   const sid   = sessionRow ? sessionRow.id : '';
   const email = encodeURIComponent(client.email || '');
-  const tk    = encodeURIComponent(token);
+  const tk    = encodeURIComponent(token || '');
 
   function derive(def) {
     switch (def.type) {
@@ -137,36 +213,36 @@ exports.handler = async (event) => {
         return { status: 'not_started' };
     }
   }
-
   function actionLink(def) {
-    if (def.mode === 'acknowledge' && def.page) return `${SITE_URL}${def.page}?token=${tk}`;
-    if (def.type === 'waiver')  return `${SITE_URL}/waiver-esign.html?session_id=${sid}&email=${email}&token=${tk}`;
-    if (def.type === 'intake')  return `${SITE_URL}/full-intake.html?session_id=${sid}&name=${encodeURIComponent(clientName)}&email=${email}&token=${tk}`;
-    if (def.type === 'full_assessment') return `${SITE_URL}/full-assessment.html?session_id=${sid}&token=${tk}`;
-    if (def.type === 'assessment') return `${SITE_URL}/assess.html?token=${tk}`;
+    // Token is appended only when present (token path). Account-path links rely
+    // on the logged-in session; the pages also accept a token when available.
+    const t = tk ? `&token=${tk}` : '';
+    const tq = tk ? `?token=${tk}` : '';
+    if (def.mode === 'acknowledge' && def.page) return `${SITE_URL}${def.page}${tq}`;
+    if (def.type === 'waiver')  return `${SITE_URL}/waiver-esign.html?session_id=${sid}&email=${email}${t}`;
+    if (def.type === 'intake')  return `${SITE_URL}/full-intake.html?session_id=${sid}&name=${encodeURIComponent(clientName)}&email=${email}${t}`;
+    if (def.type === 'full_assessment') return `${SITE_URL}/full-assessment.html?session_id=${sid}${t}`;
+    if (def.type === 'assessment') return `${SITE_URL}/assess.html${tq}`;
     return def.page ? `${SITE_URL}${def.page}` : null;
   }
-
   function actionLabel(def, done) {
     if (done) return 'View';
     if (def.mode === 'acknowledge') return 'Acknowledge';
     if (def.mode === 'sign')        return 'Sign';
-    if (def.type === 'treatment_plan') return null; // added by practitioner
+    if (def.type === 'treatment_plan') return null;
     return 'Complete';
   }
 
   let requiredComplete = true;
+  let requiredTotal = 0, requiredDone = 0;
   const documents = DOCS.map(def => {
     const row = rowOf(def.type);
     const der = derive(def);
     const status = row ? row.status : der.status;
     const done   = (DONE[def.mode] || []).includes(status);
-    if (def.required && !done) requiredComplete = false;
+    if (def.required) { requiredTotal++; if (done) requiredDone++; else requiredComplete = false; }
     return {
-      type:            def.type,
-      title:           def.title,
-      required:        def.required,
-      status,
+      type: def.type, title: def.title, required: def.required, status,
       version:         (row && row.version) || 'v1',
       viewed_at:       row ? row.viewed_at : null,
       acknowledged_at: row ? row.acknowledged_at : null,
@@ -178,15 +254,29 @@ exports.handler = async (event) => {
     };
   });
 
-  // Legacy flat statuses kept for any older dashboard reads.
   const statuses = {};
   documents.forEach(d => { statuses[d.type] = d.status; });
 
-  return respond(200, {
-    client: { name: clientName, since: client.created_at },
+  // ── Progress ───────────────────────────────────────────────────────────────
+  const completedSessions = sessions.filter(s => s.status === 'completed').length;
+  const treatmentDoc = rowOf('treatment_plan');
+  const progress = {
+    session_count:        completedSessions,
+    total_sessions:       sessions.length,
+    documents_completed:  requiredDone,
+    documents_total:      requiredTotal,
+    completion_percent:   requiredTotal ? Math.round((requiredDone / requiredTotal) * 100) : 0,
+    followup_status:      statuses.followup,
+    treatment_plan_status: treatmentDoc ? treatmentDoc.status : 'not_available',
+  };
+
+  return {
+    client: { name: clientName, email: client.email, since: client.created_at, has_account: !!client.auth_user_id },
     appointment,
+    appointments,
     documents,
     statuses,
+    progress,
     required_complete: requiredComplete,
-  });
-};
+  };
+}

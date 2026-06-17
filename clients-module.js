@@ -655,6 +655,29 @@
           '</div>' +
         '</div>';
 
+      // ── Portal Account (Sprint 17) ────────────────────────────────────────
+      var reqTypes = ['privacy_policy', 'ai_recording_transcription_policy', 'recording_policy', 'cancellation_policy', 'payment_policy'];
+      var reqDone  = reqTypes.filter(function (t) { return docDone(t); }).length;
+      var reqTotal = reqTypes.length + 3; // + waiver + intake + full_assessment
+      if (waiverSigned || docDone('waiver', ['signed', 'complete'])) reqDone++;
+      if (hasIntake   || docDone('intake', ['submitted', 'complete'])) reqDone++;
+      if (docDone('full_assessment', ['submitted', 'complete'])) reqDone++;
+      var portalPct = Math.round((reqDone / reqTotal) * 100);
+      var hasAccount = !!(cl.auth_user_id || cl.portal_account_created);
+      var accessMethod = cl.portal_access_method || (cl.portal_token ? 'token' : '—');
+
+      snapshotHtml +=
+        '<div style="background:#07051a;border:1px solid #e8b84b33;padding:22px;margin-top:14px">' +
+          '<div style="font-family:\'Cinzel\',serif;font-size:13px;letter-spacing:.32em;text-transform:uppercase;color:#e8b84b;margin-bottom:13px;padding-bottom:10px;border-bottom:1px solid #e8b84b44">Portal Account</div>' +
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:0 28px">' +
+            statusDot(hasAccount, 'Portal Account', '✓ Yes', '○ No') +
+            statusDot(!!cl.portal_last_login, 'Last Login', '✓ ' + (cl.portal_last_login ? fmtDate(cl.portal_last_login) : ''), '○ Never') +
+            statusDot(accessMethod !== '—', 'Access Method', '✓ ' + accessMethod, '○ None') +
+            statusDot(portalPct === 100, 'Portal Completion', '✓ ' + portalPct + '%', '◔ ' + portalPct + '%') +
+            (cl.duplicate_flag ? statusDot(false, 'Duplicate Email', '', '⚠ Review') : '') +
+          '</div>' +
+        '</div>';
+
       // ══════════════════════════════════════════════════════════════════
       // SECTION 2 — NEEDS ATTENTION
       // ══════════════════════════════════════════════════════════════════

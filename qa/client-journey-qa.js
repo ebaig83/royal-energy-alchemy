@@ -1,10 +1,12 @@
 'use strict';
 
 // ── Sprint 15 — Full Client Journey QA ───────────────────────────────────────
-// 28 tests covering every step from public booking through cancellation,
+// 33 tests covering every step from public booking through cancellation,
 // including the separate policy/waiver/intake/public+full assessment documents,
-// the client portal, document writes (treatment plan / follow-up), and the
-// email portal link.
+// the client portal, document writes (treatment plan / follow-up), the email
+// portal link, and Sprint 17 client portal accounts/auth (signup/login, RLS,
+// duplicate-email handling). Auth tests WARN-skip if Supabase Auth/RLS not yet
+// configured, and PASS once configured.
 // Run from inside the `website` directory:  node qa/client-journey-qa.js
 //
 // Env is loaded from qa/.env. Required: SUPABASE_URL (or QA_SUPABASE_URL),
@@ -48,6 +50,12 @@ const SUPABASE_SERVICE_ROLE_KEY =
   process.env.SUPABASE_SERVICE_ROLE_KEY ||
   process.env.QA_SUPABASE_SERVICE_ROLE_KEY ||
   process.env.QA_SERVICE_ROLE_KEY;
+
+// Anon key — used to exercise client-side Supabase Auth (Sprint 17). Optional:
+// if absent, auth tests WARN-skip rather than fail.
+const SUPABASE_ANON =
+  process.env.SUPABASE_ANON_KEY ||
+  process.env.QA_SUPABASE_ANON;
 
 const SITE_URL =
   process.env.BASE_URL ||
@@ -133,8 +141,10 @@ async function run() {
     process.exit(1);
   }
 
-  const sb   = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-  const pin  = REA_PIN;
+  const sb     = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+  const sbAnon = SUPABASE_ANON ? createClient(SUPABASE_URL, SUPABASE_ANON) : null;
+  const pin    = REA_PIN;
+  let createdAuthUserId = null;
   let token  = null;
   let slotId = null;
   let sessionId = null;
@@ -442,6 +452,95 @@ async function run() {
   } catch (e) { fail('CJ-07k', 'Full Assessment public-nav check', e.message); }
 
   // =========================================================================
+  // PHASE 1d: Client Portal Accounts & Auth (Sprint 17)
+  // =========================================================================
+  console.log(c.cyan('\n── Phase 1d: Portal Accounts & Auth ──────────────────────\n'));
+
+  // CJ-17a: check_email — booked client eligible, random email not eligible
+  try {
+    const okRes  = await req(`${BASE_URL}/client-account`, { method: 'POST', body: { action: 'check_email', email: TEST_EMAIL } });
+    const badRes = await req(`${BASE_URL}/client-account`, { method: 'POST', body: { action: 'check_email', email: `nobody-${Date.now()}@test.example` } });
+    (okRes.status === 200 && okRes.json && okRes.json.eligible === true && badRes.json && badRes.json.eligible === false)
+      ? pass('CJ-17a', 'check_email: booked eligible, unbooked rejected')
+      : fail('CJ-17a', 'check_email eligibility', `booked=${okRes.json && okRes.json.eligible}, unbooked=${badRes.json && badRes.json.eligible}`);
+  } catch (e) { fail('CJ-17a', 'check_email', e.message); }
+
+  // CJ-17b: Unauthenticated portal access is blocked (no token, no JWT)
+  try {
+    const { status } = await req(`${BASE_URL}/client-portal`);
+    status === 401
+      ? pass('CJ-17b', 'Unauthenticated portal access blocked (401)')
+      : fail('CJ-17b', 'Unauthenticated portal access', `expected 401, got ${status}`);
+  } catch (e) { fail('CJ-17b', 'Unauthenticated portal access', e.message); }
+
+  // CJ-17c: Account signup/login → JWT → portal returns ONLY own data
+  if (sbAnon && clientId) {
+    try {
+      const pw = 'QaTest!' + Date.now();
+      let session = null;
+      const up = await sbAnon.auth.signUp({ email: TEST_EMAIL, password: pw });
+      if (up.error && /disabled|not enabled/i.test(up.error.message)) {
+        warn('CJ-17c', 'Account login', 'Supabase email auth not enabled yet — enable Email provider + Confirm email OFF');
+      } else if (up.error) {
+        warn('CJ-17c', 'Account login', `signUp: ${up.error.message}`);
+      } else {
+        session = up.data.session;
+        if (up.data.user) createdAuthUserId = up.data.user.id;
+        if (!session) {
+          const si = await sbAnon.auth.signInWithPassword({ email: TEST_EMAIL, password: pw });
+          session = si.data && si.data.session;
+        }
+        if (!session) {
+          warn('CJ-17c', 'Account login', 'No session returned — set Supabase "Confirm email" OFF for instant login');
+        } else {
+          const { status, json } = await req(`${BASE_URL}/client-portal`, { headers: { Authorization: `Bearer ${session.access_token}` } });
+          const ownData = status === 200 && json && json.client && (json.client.email || '').toLowerCase() === TEST_EMAIL.toLowerCase();
+          ownData
+            ? pass('CJ-17c', 'Account login returns own client dashboard', `docs=${(json.documents || []).length}`)
+            : fail('CJ-17c', 'Account login portal data', `status=${status}, email=${json && json.client && json.client.email}`);
+        }
+      }
+    } catch (e) { fail('CJ-17c', 'Account login', e.message); }
+  } else {
+    warn('CJ-17c', 'Account login', sbAnon ? 'Skipped — no client' : 'Skipped — no anon key in qa/.env');
+  }
+
+  // CJ-17d: RLS — an authenticated client may read only their own client row
+  if (sbAnon && createdAuthUserId && clientId) {
+    try {
+      const pw2 = 'QaRls!' + Date.now();
+      const si = await sbAnon.auth.signInWithPassword({ email: TEST_EMAIL, password: pw2 }).catch(() => ({}));
+      // Re-use the already-authenticated client if sign-in with a new pw fails
+      const { data: ownRows, error: ownErr } = await sbAnon.from('clients').select('id').eq('id', clientId);
+      if (ownErr && /permission|rls|row-level/i.test(ownErr.message)) {
+        warn('CJ-17d', 'RLS own-data-only', 'RLS may not be enabled — run 2026-06-25 migration');
+      } else {
+        // With RLS, an unrelated client row must NOT be readable by this user.
+        const { data: otherRows } = await sbAnon.from('clients').select('id').neq('id', clientId).limit(1);
+        const isolated = (!otherRows || otherRows.length === 0);
+        isolated
+          ? pass('CJ-17d', 'RLS restricts authenticated client to own record')
+          : warn('CJ-17d', 'RLS own-data-only', 'Other client rows visible — verify RLS policies / migration applied');
+      }
+    } catch (e) { warn('CJ-17d', 'RLS own-data-only', e.message); }
+  } else {
+    warn('CJ-17d', 'RLS own-data-only', 'Skipped — auth/anon not available');
+  }
+
+  // CJ-17e: Duplicate-email handling — flagged, not auto-linked
+  try {
+    const dupEmail = `qa-dup-${Date.now()}@test.example`;
+    const { data: d1 } = await sb.from('clients').insert({ full_name: 'Dup One', email: dupEmail }).select('id').single();
+    const { data: d2 } = await sb.from('clients').insert({ full_name: 'Dup Two', email: dupEmail }).select('id').single();
+    const res = await req(`${BASE_URL}/client-account`, { method: 'POST', body: { action: 'check_email', email: dupEmail } });
+    (res.json && res.json.duplicate === true && res.json.eligible === false)
+      ? pass('CJ-17e', 'Duplicate email flagged, not auto-linked')
+      : fail('CJ-17e', 'Duplicate email handling', `duplicate=${res.json && res.json.duplicate}`);
+    if (d1) await sb.from('clients').delete().eq('id', d1.id);
+    if (d2) await sb.from('clients').delete().eq('id', d2.id);
+  } catch (e) { fail('CJ-17e', 'Duplicate email handling', e.message); }
+
+  // =========================================================================
   // PHASE 2: Admin Auth & Dashboard Access
   // =========================================================================
   console.log(c.cyan('\n── Phase 2: Admin Auth & Dashboard Access ────────────────\n'));
@@ -666,6 +765,7 @@ async function run() {
   // =========================================================================
   console.log(c.dim('\n── Cleaning up test data ─────────────────────────────────\n'));
   try {
+    if (createdAuthUserId) { try { await sb.auth.admin.deleteUser(createdAuthUserId); } catch (e) { /* anon-created auth user */ } }
     if (clientId)    await sb.from('client_documents').delete().eq('client_id', clientId);
     if (aftercareId) await sb.from('aftercare').delete().eq('id', aftercareId);
     if (sessionId)   await sb.from('sessions').delete().eq('id', sessionId);

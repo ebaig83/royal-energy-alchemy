@@ -35,6 +35,7 @@
           '<li><a href="/training.html#advanced">Level Three - Advanced</a></li>' +
         '</ul></li>' +
       '<li><a href="/waiver-esign.html">Sign Waiver</a></li>' +
+      '<li><a href="/client-portal.html">Client Portal</a></li>' +
       '<li class="rea-nav-dropdown"><a href="/#faq">More</a>' +
         '<ul class="rea-nav-menu" aria-label="More">' +
           '<li><a href="/provider-apply" style="color:#22c98a">Provider Application</a></li>' +
