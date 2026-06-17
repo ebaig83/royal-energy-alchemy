@@ -8,6 +8,7 @@
 const { requireAdmin, respond } = require('./lib/auth');
 const { getClient }             = require('./lib/supabase');
 const { log }                   = require('./lib/audit');
+const { recordClientDocument }  = require('./lib/doc-writer');
 
 const ALLOWED_PRIORITY = ['high', 'medium', 'low'];
 const ALLOWED_STATUS   = ['draft', 'active', 'completed'];
@@ -73,6 +74,15 @@ exports.handler = async function(event) {
       recordId: data.id, newData: data,
       context: 'Action plan created for client ' + data.client_id, ip });
 
+    // A treatment plan now exists → record it as a client document (available).
+    await recordClientDocument(sb, {
+      client_id:     data.client_id,
+      session_id:    data.session_id,
+      document_type: 'treatment_plan',
+      title:         'Treatment Plan',
+      status:        'available',
+    });
+
     return respond(201, { action_plan: data });
   }
 
@@ -96,6 +106,15 @@ exports.handler = async function(event) {
     await log({ actor: auth.user.email, action: 'updated', tableName: 'action_plans',
       recordId: params.id, newData: data,
       context: 'Action plan updated ' + params.id, ip });
+
+    // Keep the treatment plan client-document in sync on update.
+    await recordClientDocument(sb, {
+      client_id:     data.client_id,
+      session_id:    data.session_id,
+      document_type: 'treatment_plan',
+      title:         'Treatment Plan',
+      status:        'available',
+    });
 
     return respond(200, { action_plan: data });
   }

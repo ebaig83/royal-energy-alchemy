@@ -157,9 +157,9 @@ function buildFallbackFlags(d) {
   const hasWaiver = (d.clientTags || []).some(t => t.toLowerCase() === 'waiver');
   if (!hasWaiver) {
     flags.push({ label: 'Waiver Missing', severity: 'urgent',
-      reason: 'No waiver tag found on the client record.',
+      reason: 'No waiver tag found on client record.',
       source: 'documents',
-      suggested_action: 'Collect a signed waiver before the next session.',
+      suggested_action: 'Send the client the waiver link before their session.',
       sources: ['deterministic'] });
   }
 

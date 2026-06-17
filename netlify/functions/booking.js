@@ -14,8 +14,13 @@ const { respond }              = require('./lib/auth');
 const { getClient }            = require('./lib/supabase');
 const { sendWithPreferences }  = require('./lib/comms');
 const { bookingFailure, emailFailure } = require('./lib/ops-alert');
+const crypto                   = require('crypto');
 
 const SITE_URL = process.env.SITE_URL || 'https://royal-energy-alchemy.netlify.app';
+
+// Secure, URL-safe portal token (48 hex chars) — gives the client token-based
+// access to their document hub without a dashboard login.
+function newPortalToken() { return crypto.randomBytes(24).toString('hex'); }
 
 const SERVICES = [
   { id: 'energy-clearing',     label: 'Energy Clearing',            duration: 60 },
@@ -91,33 +96,44 @@ exports.handler = async function(event) {
 
   // ── Step 2: Upsert client record (match by email) ─────────────────────────
   let clientId = null;
+  let portalToken = null;
   try {
     const emailNorm = client_email.toLowerCase().trim();
     const { data: existing } = await sb
       .from('clients')
-      .select('id, email_consent, preferred_contact')
+      .select('id, email_consent, preferred_contact, portal_token')
       .eq('email', emailNorm)
       .single();
 
     if (existing) {
-      clientId = existing.id;
+      clientId    = existing.id;
+      portalToken = existing.portal_token || null;
       // Update phone / preferred_contact if newly provided
       const updates = {};
       if (client_phone) updates.phone = client_phone;
       if (preferred_contact) updates.preferred_contact = preferred_contact;
+      // Issue a portal token if this client doesn't have one yet.
+      if (!portalToken) {
+        portalToken = newPortalToken();
+        updates.portal_token = portalToken;
+        updates.portal_token_issued = new Date().toISOString();
+      }
       if (Object.keys(updates).length) {
         await sb.from('clients').update(updates).eq('id', clientId);
       }
     } else {
+      portalToken = newPortalToken();
       const { data: newClient, error: clientErr } = await sb
         .from('clients')
         .insert({
-          name:              client_name.trim(),
-          email:             emailNorm,
-          phone:             client_phone  || null,
-          preferred_contact: preferred_contact || 'email',
-          email_consent:     true,
-          source:            'booking',
+          name:               client_name.trim(),
+          email:              emailNorm,
+          phone:              client_phone  || null,
+          preferred_contact:  preferred_contact || 'email',
+          email_consent:      true,
+          source:             'booking',
+          portal_token:        portalToken,
+          portal_token_issued: new Date().toISOString(),
         })
         .select('id')
         .single();
@@ -195,18 +211,25 @@ exports.handler = async function(event) {
   // ── Step 6: Build client-facing URLs ──────────────────────────────────────
   const manageUrl = `${SITE_URL}/manage-appointment.html?session_id=${sessionId}`;
   const intakeUrl = `${SITE_URL}/full-intake.html?session_id=${sessionId}&name=${encodeURIComponent(client_name.trim())}&email=${encodeURIComponent(client_email.trim())}`;
-  // Waiver URL — placeholder until waiver.html exists
-  const waiverUrl = `${SITE_URL}/waiver.html?session_id=${sessionId}&email=${encodeURIComponent(client_email.trim())}`;
+  const waiverUrl = `${SITE_URL}/waiver-esign.html?session_id=${sessionId}&email=${encodeURIComponent(client_email.trim())}`;
+  const cancelUrl = `${SITE_URL}/cancel-session.html?session_id=${sessionId}`;
+  // Primary client link — the portal guides them through every required document.
+  const portalUrl = portalToken ? `${SITE_URL}/client-portal.html?token=${portalToken}` : `${SITE_URL}/client-portal.html`;
 
   // ── Step 7: Transactional emails (fire-and-forget) ────────────────────────
   const emailVars = {
     client_name:  client_name.trim(),
     service:      serviceInfo.label,
+    service_name: serviceInfo.label,
     session_date: sessionDate,
     session_time: sessionTime,
     timezone:     'ET',
     manage_url:   manageUrl,
     intake_url:   intakeUrl,
+    waiver_url:   waiverUrl,
+    cancel_url:   cancelUrl,
+    portal_url:   portalUrl,
+    documents_message: 'Please complete your required client documents before your appointment.',
     contact_email: process.env.ADMIN_EMAIL || 'royalenergyalchemy@gmail.com',
   };
 
@@ -243,11 +266,14 @@ exports.handler = async function(event) {
     session_id:  sessionId,
     manage_url:  manageUrl,
     intake_url:  intakeUrl,
+    waiver_url:  waiverUrl,
+    portal_url:  portalUrl,
+    cancel_url:  cancelUrl,
     slot: {
       date:  sessionDate,
       time:  sessionTime,
       label: slot.label,
     },
-    service: serviceInfo.label,
+    service:    serviceInfo.label,
   });
 };

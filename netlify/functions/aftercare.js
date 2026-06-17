@@ -12,6 +12,7 @@ const { pickTemplate }                   = require('./lib/followup-templates');
 const { processFollowup }                = require('./lib/followup-processor');
 const { sendWithPreferences }            = require('./lib/comms');
 const { emailFailure }                   = require('./lib/ops-alert');
+const { recordClientDocument }           = require('./lib/doc-writer');
 
 const SITE_URL = process.env.SITE_URL || 'https://royal-energy-alchemy.netlify.app';
 
@@ -117,6 +118,11 @@ exports.handler = async function(event) {
         const { error: retryErr } = await sb.from('aftercare').update(safeUpdates).eq('id', aftercare_id);
         if (retryErr) return respond(500, { error: 'Unable to save response.' });
         await logAftercareAudit(sb, aftercare_id, record.client_id, ip);
+        // Client actually submitted → record the follow-up document (submitted).
+        await recordClientDocument(sb, {
+          client_id: record.client_id, session_id: record.session_id,
+          document_type: 'followup', title: 'Follow-Up Form', status: 'submitted', submitted_at: now,
+        });
         return respond(200, { saved: true, id: aftercare_id, status: 'completed' });
       }
       console.error('[aftercare] submit_response update error:', updateErr.message);
@@ -125,6 +131,17 @@ exports.handler = async function(event) {
 
     // Audit log for rate limiting + traceability
     await logAftercareAudit(sb, aftercare_id, record.client_id, ip);
+
+    // Client actually submitted the follow-up → record it as a client document.
+    // (Scheduling a follow-up does NOT create this row — only real submission.)
+    await recordClientDocument(sb, {
+      client_id:     record.client_id,
+      session_id:    record.session_id,
+      document_type: 'followup',
+      title:         'Follow-Up Form',
+      status:        'submitted',
+      submitted_at:  now,
+    });
 
     // ── AI agent handoff (fire-and-forget) ──────────────────────────────────
     // Queues a post-response intelligence run: summarize, flag concerns,

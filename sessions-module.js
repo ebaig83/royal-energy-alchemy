@@ -277,9 +277,9 @@
             api('/referrals?client_id=' + s.client_id).catch(function() { return { referrals: [] }; }),
           ]);
           var clTags = (clData.client && clData.client.tags) || [];
-          waiverSigned = clTags.some(function(t) { return t.toLowerCase() === 'waiver'; });
           var intakeEvs = (tlData.timeline || []).filter(function(e) { return e.type === 'intake'; });
           hasIntake     = intakeEvs.length > 0;
+          waiverSigned  = clTags.some(function(t) { return t.toLowerCase() === 'waiver'; });
           intakeDate    = hasIntake ? intakeEvs[intakeEvs.length - 1].date : null;
           latestIntake  = hasIntake ? intakeEvs[0].data : null;
           clientRecs    = recsData.recommendations || [];
@@ -289,7 +289,7 @@
 
       // ── Missing requirements ──────────────────────────────────────
       var missing = [];
-      if (!waiverSigned) missing.push({ icon: '⚠', label: 'Waiver not on file',  hint: 'Add tag "waiver" once signed.' });
+      if (!waiverSigned) missing.push({ icon: '⚠', label: 'Waiver not on file', hint: 'Client has not signed the waiver. Send the waiver link.' });
       if (!hasIntake)    missing.push({ icon: '⚠', label: 'No intake on file',    hint: 'Client has not submitted an intake form.' });
       if (!pays.length)  missing.push({ icon: '○', label: 'No payment recorded',  hint: 'Log a payment for this session.' });
       if (!notes.length) missing.push({ icon: '○', label: 'No session notes yet', hint: 'Add notes below.' });

@@ -397,11 +397,13 @@
         api('/recommendations?client_id=' + id).catch(function() { return { recommendations: [] }; }),
         api('/referrals?client_id=' + id).catch(function() { return { referrals: [] }; }),
         api('/action-plans?client_id=' + id).catch(function() { return { action_plans: [] }; }),
+        api('/client-documents?client_id=' + id).catch(function() { return { documents: [] }; }),
       ]);
-      var data     = results[0];
-      var tlData   = results[1];
-      var recs     = results[2].recommendations || [];
-      var refs     = results[3].referrals       || [];
+      var data       = results[0];
+      var tlData     = results[1];
+      var recs       = results[2].recommendations || [];
+      var refs       = results[3].referrals       || [];
+      var clientDocs = results[5] ? (results[5].documents || []) : [];
       var plans    = results[4].action_plans    || [];
       var cl       = data.client;
       var sess     = data.sessions  || [];
@@ -409,7 +411,6 @@
       var tlStats  = tlData.stats   || {};
 
       var tags         = cl.tags || [];
-      var waiverSigned = tags.some(function(t) { return t.toLowerCase() === 'waiver'; });
       var intakeEvents = tlEvents.filter(function(e) { return e.type === 'intake'; });
       var hasIntake    = intakeEvents.length > 0;
       var intakeDate   = hasIntake ? intakeEvents[intakeEvents.length - 1].date : null;
@@ -446,6 +447,9 @@
       var pendingRefs  = refs.filter(function(r) { return r.followed_through === 'unknown'; });
       var hasAssessment = !!(latestIntake && latestIntake.agent_summary);
       var hasEnvData    = !!(latestIntake && (latestIntake.service_requested || latestIntake.message || latestIntake.agent_summary));
+      // Waiver is a separate client document — tracked by the 'waiver' tag only.
+      // Intake completion does NOT imply waiver completion; they are independent.
+      var waiverSigned  = tags.some(function(t) { return t.toLowerCase() === 'waiver'; });
 
       // Update modal subtitle with client name
       var titleEl = document.getElementById('crmProfileTitle');
@@ -458,12 +462,12 @@
       if (!waiverSigned)
         attention.push({ level: 'critical', icon: '⊘',
           label: 'Waiver not on file',
-          hint:  'Required before treatment — add tag "waiver" once signed.',
+          hint:  'Required before treatment — client must sign the standalone waiver / legal agreement. Send the waiver link.',
           color: '#ff5555' });
       if (!hasIntake)
         attention.push({ level: 'critical', icon: '⊘',
           label: 'No intake form on file',
-          hint:  'Client has not submitted an intake or initial assessment.',
+          hint:  'Client has not submitted the full intake form. Intake is separate from the waiver.',
           color: '#ff5555' });
       if (unpaidSess.length)
         attention.push({ level: 'critical', icon: '⊘',
@@ -610,6 +614,37 @@
             countDot(overdueFollowUps.length, 'Overdue F/U', '#ee7070', '#22c98a') +
           '</div>' +
 
+        '</div>';
+
+      // ── Client Documents — required policies, waiver, intake (separate) ────
+      // Each document is tracked independently; policies are acknowledged,
+      // the waiver is signed, intake is submitted. Never collapsed together.
+      var ACK_DONE = ['acknowledged', 'signed', 'submitted', 'complete'];
+      function docStatusOf(type) {
+        var r = clientDocs.filter(function (d) { return d.document_type === type; })[0];
+        return r ? r.status : null;
+      }
+      function docDone(type, states) { return (states || ACK_DONE).indexOf(docStatusOf(type)) >= 0; }
+
+      snapshotHtml +=
+        '<div style="background:#07051a;border:1px solid #e8b84b33;padding:22px;margin-top:14px">' +
+          '<div style="font-family:\'Cinzel\',serif;font-size:13px;letter-spacing:.32em;text-transform:uppercase;color:#e8b84b;margin-bottom:13px;padding-bottom:10px;border-bottom:1px solid #e8b84b44">Client Documents</div>' +
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:0 28px">' +
+            statusDot(docDone('privacy_policy'),                    'Privacy',       '✓ Acknowledged', '⚠ Missing') +
+            statusDot(docDone('ai_recording_transcription_policy'), 'AI Disclosure', '✓ Acknowledged', '⚠ Missing') +
+            statusDot(docDone('recording_policy'),                  'Recording',     '✓ Acknowledged', '⚠ Missing') +
+            statusDot(docDone('cancellation_policy'),               'Cancellation',  '✓ Acknowledged', '⚠ Missing') +
+            statusDot(docDone('payment_policy'),                    'Payment',       '✓ Acknowledged', '⚠ Missing') +
+            statusDot(waiverSigned || docDone('waiver', ['signed', 'complete']), 'Waiver', '✓ Signed', '⚠ Missing') +
+            statusDot(hasIntake || docDone('intake', ['submitted', 'complete']), 'Intake', '✓ Complete', '⚠ Missing') +
+            statusDot(docDone('treatment_plan', ['available', 'added', 'submitted', 'complete']), 'Treatment Plan', '✓ Available', '⚠ Missing') +
+            (function () {
+              // Follow-Up: real client_documents row only. Submitted / Pending / Missing.
+              var fu = docStatusOf('followup');
+              var submitted = (fu === 'submitted' || fu === 'complete');
+              return statusDot(submitted, 'Follow-Up', '✓ Submitted', fu === 'pending' ? '⚠ Pending' : '⚠ Missing');
+            })() +
+          '</div>' +
         '</div>';
 
       // ══════════════════════════════════════════════════════════════════

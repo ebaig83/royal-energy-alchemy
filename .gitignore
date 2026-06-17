@@ -3,3 +3,21 @@ assets/(1) Facebook.html
 *.zip
 .netlify/
 qa/.env
+
+# Dependencies
+node_modules/
+qa/node_modules/
+
+# Tooling / local junk (not part of the deployed site)
+.claude/
+outputs/
+qa/qa-screenshots/
+*.mp4
+preview-*.png
+patch_*.py
+fix_*.py
+check_*.js
+chk_*.js
+qa-results.txt
+qa/*-report.txt
+qa/data-quality-report.txt
