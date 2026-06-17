@@ -126,7 +126,7 @@ exports.handler = async function(event) {
       const { data: newClient, error: clientErr } = await sb
         .from('clients')
         .insert({
-          name:               client_name.trim(),
+          full_name:          client_name.trim(),
           email:              emailNorm,
           phone:              client_phone  || null,
           preferred_contact:  preferred_contact || 'email',
