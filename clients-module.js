@@ -637,6 +637,14 @@
             statusDot(docDone('payment_policy'),                    'Payment',       '✓ Acknowledged', '⚠ Missing') +
             statusDot(waiverSigned || docDone('waiver', ['signed', 'complete']), 'Waiver', '✓ Signed', '⚠ Missing') +
             statusDot(hasIntake || docDone('intake', ['submitted', 'complete']), 'Intake', '✓ Complete', '⚠ Missing') +
+            statusDot(hasAssessment || docDone('assessment', ['submitted', 'complete']), 'Public Assessment', '✓ Complete', '⚠ Missing') +
+            (function () {
+              // Full Assessment: portal-only document. Submitted / In Progress / Missing.
+              var fa = docStatusOf('full_assessment');
+              var submitted = (fa === 'submitted' || fa === 'complete');
+              return statusDot(submitted, 'Full Assessment', '✓ Submitted',
+                (fa === 'viewed' || fa === 'in_progress') ? '◔ In Progress' : '⚠ Missing');
+            })() +
             statusDot(docDone('treatment_plan', ['available', 'added', 'submitted', 'complete']), 'Treatment Plan', '✓ Available', '⚠ Missing') +
             (function () {
               // Follow-Up: real client_documents row only. Submitted / Pending / Missing.

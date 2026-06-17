@@ -1,9 +1,10 @@
 'use strict';
 
 // ── Sprint 15 — Full Client Journey QA ───────────────────────────────────────
-// 27 tests covering every step from public booking through cancellation,
-// including the separate policy/waiver/intake documents, the client portal,
-// document writes (treatment plan / follow-up), and the email portal link.
+// 28 tests covering every step from public booking through cancellation,
+// including the separate policy/waiver/intake/public+full assessment documents,
+// the client portal, document writes (treatment plan / follow-up), and the
+// email portal link.
 // Run from inside the `website` directory:  node qa/client-journey-qa.js
 //
 // Env is loaded from qa/.env. Required: SUPABASE_URL (or QA_SUPABASE_URL),
@@ -328,7 +329,7 @@ async function run() {
     const pages = [
       'privacy-policy.html', 'ai-recording-transcription-policy.html', 'recording-policy.html',
       'cancellation-policy.html', 'payment-policy.html', 'waiver-esign.html',
-      'full-intake.html', 'assess.html', 'client-portal.html',
+      'full-intake.html', 'assess.html', 'full-assessment.html', 'client-portal.html',
     ];
     const codes = await Promise.all(pages.map(p => fetch(`${SITE_URL}/${p}`).then(r => r.status).catch(() => 0)));
     const bad = pages.filter((p, i) => codes[i] !== 200);
@@ -361,7 +362,7 @@ async function run() {
       const { status, json } = await req(`${BASE_URL}/client-portal?token=${encodeURIComponent(portalToken)}`);
       const docs = (json && json.documents) || [];
       const types = docs.map(d => d.type);
-      const required = ['privacy_policy','ai_recording_transcription_policy','recording_policy','cancellation_policy','payment_policy','waiver','intake','assessment','treatment_plan','followup'];
+      const required = ['privacy_policy','ai_recording_transcription_policy','recording_policy','cancellation_policy','payment_policy','waiver','intake','full_assessment','assessment','treatment_plan','followup'];
       const missing = required.filter(t => !types.includes(t));
       (status === 200 && missing.length === 0)
         ? pass('CJ-07g', `Portal renders all ${required.length} document cards`)
@@ -407,6 +408,38 @@ async function run() {
   } else {
     warn('CJ-07i', 'Treatment/follow-up fallback status', 'Skipped — no portal_token');
   }
+
+  // CJ-07j: Full Assessment is a SEPARATE card from Full Intake, required for new clients
+  if (portalToken) {
+    try {
+      const { json } = await req(`${BASE_URL}/client-portal?token=${encodeURIComponent(portalToken)}`);
+      const docs = (json && json.documents) || [];
+      const fa = docs.find(d => d.type === 'full_assessment');
+      const intake = docs.find(d => d.type === 'intake');
+      const pub = docs.find(d => d.type === 'assessment');
+      const ok = fa && intake && pub
+        && fa.type !== intake.type
+        && fa.required === true && fa.done === false && fa.status === 'not_started'  // required + missing for new client
+        && pub.required === false;                                                    // public assessment optional
+      ok
+        ? pass('CJ-07j', 'Full Assessment separate from intake + required for new clients', `fa=${fa.status}, intake=${intake.status}, public=${pub.status}`)
+        : fail('CJ-07j', 'Full Assessment separation', `fa=${fa && JSON.stringify({req:fa.required,done:fa.done,st:fa.status})}, intake=${intake && intake.type}, public=${pub && pub.required}`);
+    } catch (e) { fail('CJ-07j', 'Full Assessment separation', e.message); }
+  } else {
+    warn('CJ-07j', 'Full Assessment separation', 'Skipped — no portal_token');
+  }
+
+  // CJ-07k: Full Assessment is NOT linked from public navigation
+  try {
+    const [home, nav] = await Promise.all([
+      fetch(`${SITE_URL}/`).then(r => r.text()).catch(() => ''),
+      fetch(`${SITE_URL}/site-nav.js`).then(r => r.text()).catch(() => ''),
+    ]);
+    const leaked = /full-assessment/i.test(home) || /full-assessment/i.test(nav);
+    !leaked
+      ? pass('CJ-07k', 'Full Assessment not exposed in public navigation')
+      : fail('CJ-07k', 'Full Assessment leaked into public nav', 'found "full-assessment" in homepage or site-nav.js');
+  } catch (e) { fail('CJ-07k', 'Full Assessment public-nav check', e.message); }
 
   // =========================================================================
   // PHASE 2: Admin Auth & Dashboard Access

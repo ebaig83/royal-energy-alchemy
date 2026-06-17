@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Full Assessment — Royal Energy Alchemy</title>
+<meta name="robots" content="noindex">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--gold:#e8b84b;--gold-light:#f8e090;--deep:#04020e;--text:#f0ecff;--green:#22c98a;--amber:#f8a84b;--red:#ff5555}
+body{background:#0a0612;color:#f0ecff;font-family:'EB Garamond',serif;line-height:1.7}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:18px 48px;background:rgba(0,4,10,.88);backdrop-filter:blur(14px);border-bottom:1px solid #e8b84b12}
+.nav-brand{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;color:#e8b84bb3;text-transform:uppercase;text-decoration:none}
+.nav-back{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.3em;color:#d8d4f073;text-transform:uppercase;text-decoration:none;transition:color .25s}
+.nav-back:hover{color:var(--gold)}
+.wrap{max-width:760px;margin:0 auto;padding:118px 24px 64px}
+.header{text-align:center;margin-bottom:30px;padding-bottom:26px;border-bottom:1px solid rgba(232,184,75,.42)}
+.header .step-tag{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.45em;color:#ffd977;text-transform:uppercase;display:block;margin-bottom:10px}
+.header h1{font-family:'Cinzel',serif;font-size:clamp(22px,3vw,32px);font-weight:700;color:#fff;letter-spacing:.06em;margin-bottom:8px}
+.header p{font-size:16px;font-style:italic;color:#d8d4f099;line-height:1.7}
+.note{border:1px solid rgba(232,184,75,.3);background:rgba(232,184,75,.07);padding:14px 18px;margin-bottom:26px;font-size:15px;color:#d8d4f0cc;line-height:1.6}
+.fg{margin-bottom:22px}
+.fg label{display:block;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+.fg .hint{font-family:'EB Garamond',serif;font-size:14px;font-style:italic;color:#9a96c0;letter-spacing:0;text-transform:none;margin-top:4px}
+input[type=text],textarea,select{width:100%;padding:13px 15px;background:rgba(8,6,22,.9);border:1px solid rgba(232,184,75,.32);color:#fff;font-family:'EB Garamond',serif;font-size:17px}
+textarea{min-height:92px;resize:vertical;line-height:1.6}
+.scale{display:flex;gap:8px;flex-wrap:wrap}
+.scale label{display:flex;align-items:center;gap:6px;font-family:'EB Garamond',serif;font-size:16px;text-transform:none;letter-spacing:0;color:#d8d4f0;cursor:pointer;border:1px solid rgba(232,184,75,.25);padding:8px 14px;margin:0}
+.scale input{accent-color:var(--gold)}
+.btn{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:#160a00;background:linear-gradient(135deg,var(--gold-light),var(--gold));border:none;padding:15px 30px;cursor:pointer;font-weight:700;transition:filter .25s}
+.btn:hover{filter:brightness(1.1)}
+.btn[disabled]{opacity:.5;cursor:default}
+#msg{margin-top:16px;font-size:16px;line-height:1.6}
+.state{text-align:center;padding:60px 24px;color:#d8d4f099;font-size:17px}
+.state.err{color:#ff8888}
+footer{text-align:center;padding:34px 24px;border-top:1px solid rgba(232,184,75,.28);margin-top:48px}
+footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.22em;color:rgba(232,228,240,.6);text-transform:uppercase;line-height:2}
+@media(max-width:600px){nav{padding:14px 20px}.wrap{padding:92px 16px 48px}}
+</style>
+</head>
+<body>
+<nav>
+  <a href="/" class="nav-brand">Royal Energy Alchemy</a>
+  <a id="backLink" href="/client-portal.html" class="nav-back">← Back to Portal</a>
+</nav>
+
+<div class="wrap">
+  <div class="header">
+    <span class="step-tag">Client Portal · Required Document</span>
+    <h1>Full Assessment</h1>
+    <p>A deeper baseline for Daron to prepare your session, track your progress, and plan your care.</p>
+  </div>
+
+  <div id="formArea" style="display:none">
+    <div class="note">This assessment is part of your private client record. It is more detailed than the public Quick Assessment and is used only for your care, baseline measurement, and follow-up.</div>
+
+    <form id="faForm">
+      <div class="fg">
+        <label>Primary concern(s) right now</label>
+        <textarea id="primary_concern" placeholder="What you are most hoping to address"></textarea>
+      </div>
+      <div class="fg">
+        <label>How long has this been present?</label>
+        <input type="text" id="duration" placeholder="e.g. a few weeks, several years">
+      </div>
+
+      <div class="fg">
+        <label>Baseline — Energy level today</label>
+        <div class="scale" id="scale_energy"></div>
+        <div class="hint">1 = depleted · 5 = vibrant</div>
+      </div>
+      <div class="fg">
+        <label>Baseline — Sleep quality</label>
+        <div class="scale" id="scale_sleep"></div>
+        <div class="hint">1 = very poor · 5 = restful</div>
+      </div>
+      <div class="fg">
+        <label>Baseline — Stress / overwhelm</label>
+        <div class="scale" id="scale_stress"></div>
+        <div class="hint">1 = calm · 5 = overwhelmed</div>
+      </div>
+
+      <div class="fg">
+        <label>Relevant history or context</label>
+        <textarea id="history" placeholder="Anything from your past that feels connected to what you're experiencing"></textarea>
+      </div>
+      <div class="fg">
+        <label>Prior energy / spiritual work</label>
+        <input type="text" id="prior_work" placeholder="e.g. reiki, none, past sessions">
+      </div>
+      <div class="fg">
+        <label>What would a good outcome look like for you?</label>
+        <textarea id="goals" placeholder="Your goals for this work"></textarea>
+      </div>
+
+      <button type="button" class="btn" id="submitBtn">Submit Full Assessment</button>
+      <div id="msg"></div>
+    </form>
+  </div>
+
+  <div id="state" class="state">Loading your assessment…</div>
+</div>
+
+<footer>
+  <p>Royal Energy Alchemy LLC · Erie / Waterford, Pennsylvania</p>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+  var ENDPOINT = '/.netlify/functions/client-documents';
+  var stateEl = document.getElementById('state');
+  var formArea = document.getElementById('formArea');
+  var msg = document.getElementById('msg');
+
+  var params = new URLSearchParams(window.location.search);
+  var token = (params.get('token') || params.get('t') || '').trim();
+
+  function setMsg(t, color) { msg.textContent = t; msg.style.color = color || '#c8c4e0'; }
+
+  // Build 1–5 radio scales.
+  ['energy', 'sleep', 'stress'].forEach(function (key) {
+    var box = document.getElementById('scale_' + key);
+    for (var i = 1; i <= 5; i++) {
+      var id = key + '_' + i;
+      var l = document.createElement('label');
+      l.innerHTML = '<input type="radio" name="' + key + '" value="' + i + '" id="' + id + '">' + i;
+      box.appendChild(l);
+    }
+  });
+
+  if (!token) {
+    stateEl.className = 'state err';
+    stateEl.textContent = 'No access link provided. Please open the Full Assessment from your secure client portal.';
+    return;
+  }
+  document.getElementById('backLink').href = '/client-portal.html?token=' + encodeURIComponent(token);
+
+  // Reveal form + mark "In Progress" (best-effort view record).
+  stateEl.style.display = 'none';
+  formArea.style.display = 'block';
+  fetch(ENDPOINT, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token: token, document_type: 'full_assessment', title: 'Full Assessment', action: 'view' }),
+  }).catch(function () { /* non-fatal */ });
+
+  function scaleVal(name) {
+    var el = document.querySelector('input[name="' + name + '"]:checked');
+    return el ? Number(el.value) : null;
+  }
+
+  document.getElementById('submitBtn').addEventListener('click', function () {
+    var responses = {
+      primary_concern: document.getElementById('primary_concern').value.trim(),
+      duration:        document.getElementById('duration').value.trim(),
+      baseline_energy: scaleVal('energy'),
+      baseline_sleep:  scaleVal('sleep'),
+      baseline_stress: scaleVal('stress'),
+      history:         document.getElementById('history').value.trim(),
+      prior_work:      document.getElementById('prior_work').value.trim(),
+      goals:           document.getElementById('goals').value.trim(),
+    };
+    if (!responses.primary_concern) { setMsg('Please describe your primary concern before submitting.', '#ff7777'); return; }
+
+    setMsg('Submitting…', '#c8c4e0');
+    document.getElementById('submitBtn').disabled = true;
+    fetch(ENDPOINT, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        token: token, document_type: 'full_assessment', title: 'Full Assessment',
+        action: 'submit', responses: responses,
+      }),
+    })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (res) {
+        if (!res.ok) { setMsg((res.j && res.j.error) || 'Could not submit your assessment.', '#ff7777'); document.getElementById('submitBtn').disabled = false; return; }
+        formArea.querySelector('#faForm').style.display = 'none';
+        stateEl.style.display = 'block';
+        stateEl.style.color = '#22c98a';
+        stateEl.innerHTML = '✓ Your Full Assessment has been submitted. Thank you.<br><br>' +
+          '<a href="/client-portal.html?token=' + encodeURIComponent(token) + '" style="font-family:\'Cinzel\',serif;font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:#e8b84b;text-decoration:none">← Return to your portal</a>';
+      })
+      .catch(function () { setMsg('Network error — please try again.', '#ff7777'); document.getElementById('submitBtn').disabled = false; });
+  });
+})();
+</script>
+</body>
+</html>

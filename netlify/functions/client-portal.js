@@ -27,7 +27,8 @@ const DOCS = [
   { type: 'payment_policy',                    title: 'Payment Policy',                               page: '/payment-policy.html',                   mode: 'acknowledge', required: true },
   { type: 'waiver',                            title: 'Waiver / Legal Agreement',                     page: '/waiver-esign.html',                     mode: 'sign',        required: true },
   { type: 'intake',                            title: 'Full Intake',                                  page: '/full-intake.html',                      mode: 'submit',      required: true },
-  { type: 'assessment',                        title: 'Quick Assessment',                             page: '/assess.html',                           mode: 'submit',      required: false },
+  { type: 'full_assessment',                   title: 'Full Assessment',                              page: '/full-assessment.html',                  mode: 'submit',      required: true },
+  { type: 'assessment',                        title: 'Public Assessment',                            page: '/assess.html',                           mode: 'submit',      required: false },
   { type: 'treatment_plan',                    title: 'Treatment Plan',                               page: null,                                     mode: 'view',        required: false },
   { type: 'followup',                          title: 'Follow-Up Forms',                              page: null,                                     mode: 'submit',      required: false },
 ];
@@ -141,6 +142,7 @@ exports.handler = async (event) => {
     if (def.mode === 'acknowledge' && def.page) return `${SITE_URL}${def.page}?token=${tk}`;
     if (def.type === 'waiver')  return `${SITE_URL}/waiver-esign.html?session_id=${sid}&email=${email}&token=${tk}`;
     if (def.type === 'intake')  return `${SITE_URL}/full-intake.html?session_id=${sid}&name=${encodeURIComponent(clientName)}&email=${email}&token=${tk}`;
+    if (def.type === 'full_assessment') return `${SITE_URL}/full-assessment.html?session_id=${sid}&token=${tk}`;
     if (def.type === 'assessment') return `${SITE_URL}/assess.html?token=${tk}`;
     return def.page ? `${SITE_URL}${def.page}` : null;
   }

@@ -29,7 +29,8 @@ const DOC_REGISTRY = {
   payment_policy:                    { title: 'Payment Policy',                                   mode: 'acknowledge', url: '/payment-policy.html' },
   waiver:                            { title: 'Waiver / Legal Agreement',                         mode: 'sign',        url: '/waiver-esign.html' },
   intake:                            { title: 'Full Intake',                                      mode: 'submit',      url: '/full-intake.html' },
-  assessment:                        { title: 'Quick Assessment',                                 mode: 'submit',      url: '/assess.html' },
+  full_assessment:                   { title: 'Full Assessment',                                  mode: 'submit',      url: '/full-assessment.html' },
+  assessment:                        { title: 'Public Assessment',                                mode: 'submit',      url: '/assess.html' },
   treatment_plan:                    { title: 'Treatment Plan',                                   mode: 'view',        url: null },
   followup:                          { title: 'Follow-Up Forms',                                  mode: 'submit',      url: null },
 };
@@ -122,6 +123,8 @@ exports.handler = async (event) => {
   if (action === 'sign')        { row.signed_at = now; row.signature = String(body.signature).trim(); }
   if (action === 'submit')      row.submitted_at = now;
   if (body.consents)            row.consents = body.consents;
+  // Form answers (e.g. the full assessment) persist in the existing metadata jsonb.
+  if (body.responses)           row.metadata = body.responses;
 
   const { data, error } = await sb
     .from('client_documents')
