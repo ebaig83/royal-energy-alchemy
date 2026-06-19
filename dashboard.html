@@ -809,6 +809,30 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
 
 .ck-nav-divider { height: 1px; background: rgba(232,184,75,.1); margin: 8px 14px; }
 
+/* Information density toggle */
+.ck-density { display: inline-flex; gap: 3px; margin-right: 8px; }
+.dn-btn { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: rgba(232,184,75,.55); background: none; border: 1px solid rgba(232,184,75,.22); padding: 6px 10px; cursor: pointer; transition: all .15s; }
+.dn-btn:hover { color: #e8b84b; border-color: rgba(232,184,75,.45); }
+.dn-btn.active { color: #160a00; background: #e8b84b; border-color: #e8b84b; font-weight: 700; }
+@media(max-width:880px){ .ck-density { display: none; } }
+/* Compact: hide secondary descriptive text + tighten spacing */
+#cockpit.density-compact .aq-desc,
+#cockpit.density-compact .flag-reason,
+#cockpit.density-compact .sched-type,
+#cockpit.density-compact .biz-sub,
+#cockpit.density-compact .ac-dim { display: none; }
+#cockpit.density-compact .ck-panel { padding: 14px 16px; }
+#cockpit.density-compact .aq-card { padding: 12px 14px; }
+#cockpit.density-compact .biz-metric { padding: 10px; }
+#cockpit.density-compact .sched-item { padding-top: 6px; padding-bottom: 6px; }
+/* Detailed: more breathing room */
+#cockpit.density-detailed .ck-panel { padding: 28px; }
+
+.sched-toggle { display: inline-flex; gap: 4px; }
+.sv-btn { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: rgba(232,184,75,.6); background: none; border: 1px solid rgba(232,184,75,.25); padding: 4px 9px; cursor: pointer; border-radius: 2px; transition: all .15s; }
+.sv-btn:hover { color: #e8b84b; border-color: rgba(232,184,75,.5); }
+.sv-btn.active { color: #160a00; background: #e8b84b; border-color: #e8b84b; font-weight: 700; }
+
 .ck-sidebar-footer {
   padding: 14px 18px;
   border-top: 1px solid rgba(232,184,75,.08);
@@ -3095,6 +3119,11 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
         </div>
       </div>
       <div class="ck-header-right">
+        <div class="ck-density" title="Information density — applies across the dashboard">
+          <button class="dn-btn" data-density="compact" onclick="setDensity('compact')">Compact</button>
+          <button class="dn-btn" data-density="standard" onclick="setDensity('standard')">Standard</button>
+          <button class="dn-btn" data-density="detailed" onclick="setDensity('detailed')">Detailed</button>
+        </div>
         <div class="ck-search-wrap">
           <input class="ck-header-search" type="text" placeholder="Search clients, sessions…" id="ckGlobalSearch" autocomplete="off">
           <div class="ck-search-results" id="ckSearchResults"></div>
@@ -3158,7 +3187,14 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
     </div>
     <div class="today-zone-grid">
       <div class="ck-panel">
-        <div class="ck-panel-title">📅 Today's Schedule</div>
+        <div class="ck-panel-title" style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+          <span>📅 Schedule</span>
+          <span class="sched-toggle">
+            <button class="sv-btn active" id="svToday" onclick="setScheduleView('today')">Today</button>
+            <button class="sv-btn" id="svWeek" onclick="setScheduleView('week')">Week</button>
+            <button class="sv-btn" id="svMonth" onclick="setScheduleView('month')">Month</button>
+          </span>
+        </div>
         <div id="homeSched"><div class="hshimmer"></div><div class="hshimmer"></div></div>
       </div>
       <div class="ck-panel">
@@ -9145,6 +9181,98 @@ function openClientByName(name) {
   showTab('clients');
 }
 
+// ── INFORMATION DENSITY (Compact / Standard / Detailed) ───────
+function setDensity(d) {
+  var ck = document.getElementById('cockpit');
+  if (!ck) return;
+  ck.classList.remove('density-compact', 'density-standard', 'density-detailed');
+  ck.classList.add('density-' + d);
+  try { localStorage.setItem('rea_density', d); } catch (e) {}
+  document.querySelectorAll('.dn-btn').forEach(function(b) {
+    b.classList.toggle('active', b.getAttribute('data-density') === d);
+  });
+}
+function applyDensity() {
+  var d = 'standard';
+  try { d = localStorage.getItem('rea_density') || 'standard'; } catch (e) {}
+  setDensity(d);
+}
+document.addEventListener('DOMContentLoaded', applyDensity);
+
+// ── SCHEDULE VIEWS (Today / Week / Month) ─────────────────────
+var _schedView = 'today';
+function setScheduleView(v) {
+  _schedView = v;
+  ['Today', 'Week', 'Month'].forEach(function(x) {
+    var b = document.getElementById('sv' + x);
+    if (b) b.classList.toggle('active', x.toLowerCase() === v);
+  });
+  renderScheduleView(v);
+}
+function _schedClientSpan(name) {
+  var safe = String(name).replace(/'/g, "\\'");
+  return '<span class="sched-client" style="cursor:pointer;text-decoration:underline;text-decoration-color:rgba(232,184,75,.4);text-underline-offset:3px" title="Open client profile" onclick="openClientByName(\'' + safe + '\')">' + name + '</span>';
+}
+function renderScheduleView(view) {
+  var el = document.getElementById('homeSched');
+  if (!el) return;
+  var sessions = (typeof REA_DATA !== 'undefined' && REA_DATA.sessions) ? REA_DATA.sessions : [];
+  var today = new Date(); today.setHours(0, 0, 0, 0);
+  var todayStr = today.toISOString().slice(0, 10);
+  function sdate(s) { return (s.session_date || s.date || '').slice(0, 10); }
+  function stime(s) { var t = s.session_time || s.time || ''; return t ? t.slice(0, 5) : '—'; }
+  function sname(s) { return s.client || s.client_name || 'Client'; }
+  function ssvc(s)  { return s.service || s.service_type || 'Session'; }
+
+  if (view === 'week') {
+    var html = '', totalWeek = 0;
+    for (var i = 0; i < 7; i++) {
+      var d = new Date(today); d.setDate(today.getDate() + i);
+      var ds = d.toISOString().slice(0, 10);
+      var dayS = sessions.filter(function(s) { return sdate(s) === ds; }).sort(function(a, b) { return stime(a) > stime(b) ? 1 : -1; });
+      totalWeek += dayS.length;
+      var tc = {}; dayS.forEach(function(s) { var t = stime(s); tc[t] = (tc[t] || 0) + 1; });
+      var conflict = Object.keys(tc).some(function(t) { return t !== '—' && tc[t] > 1; });
+      var label = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+      html += '<div style="margin-bottom:10px;border-left:2px solid ' + (dayS.length ? '#e8b84b66' : '#ffffff14') + ';padding-left:12px">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center">' +
+        '<span style="font-family:\'Cinzel\',serif;font-size:12px;letter-spacing:.1em;color:#e8b84b">' + label + (ds === todayStr ? ' · Today' : '') + '</span>' +
+        '<span style="font-size:12px;color:#9a96c0">' + dayS.length + ' session' + (dayS.length !== 1 ? 's' : '') + (conflict ? ' · <span style="color:#ee7070">⚠ conflict</span>' : '') + '</span></div>' +
+        (dayS.length ? dayS.map(function(s) { return '<div style="font-size:13px;color:#d8d4f0;margin-top:3px">' + stime(s) + ' — ' + _schedClientSpan(sname(s)) + ' <span style="color:#9a96c0">' + ssvc(s) + '</span></div>'; }).join('')
+                     : '<div style="font-size:13px;color:#6860a0;margin-top:3px">Open — no sessions booked</div>') +
+        '</div>';
+    }
+    el.innerHTML = '<div style="font-size:12px;color:#9a96c0;margin-bottom:12px">This week: ' + totalWeek + ' session' + (totalWeek !== 1 ? 's' : '') + ' scheduled</div>' + html;
+    return;
+  }
+
+  if (view === 'month') {
+    var ym = todayStr.slice(0, 7);
+    var monthS = sessions.filter(function(s) { return sdate(s).slice(0, 7) === ym; });
+    var byDate = {}; monthS.forEach(function(s) { var dd = sdate(s); byDate[dd] = (byDate[dd] || 0) + 1; });
+    var dates = Object.keys(byDate).sort();
+    var remaining = dates.filter(function(dd) { return dd >= todayStr; }).length;
+    var head = '<div style="font-size:12px;color:#9a96c0;margin-bottom:12px">This month: ' + monthS.length + ' session' + (monthS.length !== 1 ? 's' : '') + ' · ' + remaining + ' day' + (remaining !== 1 ? 's' : '') + ' with sessions remaining</div>';
+    if (!dates.length) { el.innerHTML = head + '<p class="home-empty">No sessions this month.</p>'; return; }
+    el.innerHTML = head + dates.map(function(dd) {
+      var d = new Date(dd + 'T00:00:00');
+      var label = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+      var past = dd < todayStr;
+      return '<div class="sched-item" style="opacity:' + (past ? '0.45' : '1') + '">' +
+        '<span class="sched-time">' + label + (dd === todayStr ? ' · Today' : '') + '</span><span style="flex:1"></span>' +
+        '<span class="sched-type">' + byDate[dd] + ' session' + (byDate[dd] !== 1 ? 's' : '') + '</span></div>';
+    }).join('');
+    return;
+  }
+
+  // today (default)
+  var list = sessions.filter(function(s) { return sdate(s) === todayStr; }).sort(function(a, b) { return stime(a) > stime(b) ? 1 : -1; });
+  if (!list.length) { el.innerHTML = '<p class="home-empty">No sessions scheduled for today.</p>'; return; }
+  el.innerHTML = list.map(function(s) {
+    return '<div class="sched-item"><span class="sched-time">' + stime(s) + '</span>' + _schedClientSpan(sname(s)) + '<span class="sched-type">' + ssvc(s) + '</span></div>';
+  }).join('');
+}
+
 function renderHomeDashboard() {
   var today = new Date().toISOString().slice(0, 10);
 
@@ -9195,26 +9323,8 @@ function renderHomeDashboard() {
     }
   } catch(e) {}
 
-  // Schedule panel
-  var schedEl = document.getElementById('homeSched');
-  if (schedEl) {
-    if (!todaySess.length) {
-      schedEl.innerHTML = '<p class="home-empty">No sessions scheduled for today.</p>';
-    } else {
-      schedEl.innerHTML = todaySess.map(function(s) {
-        var t = s.session_time || s.time || '';
-        var timeStr = t ? t.slice(0, 5) : '—';
-        var name = s.client || s.client_name || 'Client';
-        var svc  = s.service || s.service_type || 'Session';
-        var safeName = String(name).replace(/'/g, "\\'");
-        return '<div class="sched-item">' +
-          '<span class="sched-time">' + timeStr + '</span>' +
-          '<span class="sched-client" style="cursor:pointer;text-decoration:underline;text-decoration-color:rgba(232,184,75,.4);text-underline-offset:3px" title="Open client profile" onclick="openClientByName(\'' + safeName + '\')">' + name + '</span>' +
-          '<span class="sched-type">' + svc + '</span>' +
-        '</div>';
-      }).join('');
-    }
-  }
+  // Schedule panel (Today / Week / Month)
+  renderScheduleView(_schedView);
 
   // ── RECENT CLIENT ACTIVITY ───────────────────────────────────
   var actEl = document.getElementById('homeActivity');
