@@ -772,37 +772,42 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
 
 .ck-nav-section {
   font-family: 'Cinzel', serif;
-  font-size: 8px;
-  letter-spacing: .5em;
-  color: rgba(232,184,75,.28);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .3em;
+  color: rgba(232,184,75,.7);
   text-transform: uppercase;
-  padding: 14px 18px 5px;
+  padding: 20px 18px 7px;
+  border-top: 1px solid rgba(232,184,75,.08);
+  margin-top: 6px;
 }
+.ck-nav-section:first-of-type { border-top: none; margin-top: 0; }
 
 .ck-nav-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 9px 18px;
+  gap: 12px;
+  padding: 11px 18px;
   font-family: 'Cinzel', serif;
-  font-size: 11px;
-  letter-spacing: .13em;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: .09em;
   text-transform: uppercase;
-  color: rgba(240,236,255,.42);
+  color: rgba(240,236,255,.78);
   background: none;
   border: none;
-  border-left: 2px solid transparent;
+  border-left: 3px solid transparent;
   cursor: pointer;
   width: 100%;
   text-align: left;
   transition: color .15s, background .15s, border-color .15s;
   white-space: nowrap;
 }
-.ck-nav-item .nav-icon { font-size: 14px; width: 18px; text-align: center; flex-shrink: 0; }
-.ck-nav-item:hover { color: #e8b84b; background: rgba(232,184,75,.05); border-left-color: rgba(232,184,75,.3); }
-.ck-nav-item.active { color: #e8b84b; background: rgba(232,184,75,.09); border-left-color: #e8b84b; }
+.ck-nav-item .nav-icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; opacity: .9; }
+.ck-nav-item:hover { color: #fff; background: rgba(232,184,75,.08); border-left-color: rgba(232,184,75,.45); }
+.ck-nav-item.active { color: #ffd977; font-weight: 600; background: rgba(232,184,75,.14); border-left-color: #e8b84b; }
 
-.ck-nav-divider { height: 1px; background: rgba(232,184,75,.07); margin: 7px 14px; }
+.ck-nav-divider { height: 1px; background: rgba(232,184,75,.1); margin: 8px 14px; }
 
 .ck-sidebar-footer {
   padding: 14px 18px;
@@ -3167,36 +3172,43 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
       <span class="exec-zone-label">Actions</span>
       <div class="exec-zone-line"></div>
     </div>
+    <!-- Action Queue — sorted by urgency (most urgent first) -->
     <div class="ck-action-queue" id="homeActionQueue">
-      <div class="aq-card aq-warning">
-        <div class="aq-label">💳 Payments</div>
-        <div class="aq-count" id="aqPayments">—</div>
-        <div class="aq-desc">Awaiting payment confirmation</div>
-        <button class="aq-btn" onclick="showTab('booking');setTimeout(function(){setIntakeFilter('awaiting_payment',null)},200)">Resolve →</button>
+      <div class="aq-card aq-urgent">
+        <div class="aq-label">🔴 Follow-Ups Due</div>
+        <div class="aq-count" id="aqOverdue">—</div>
+        <div class="aq-desc">Overdue clients needing follow-up</div>
+        <button class="aq-btn" onclick="showTab('followups')">Follow Up →</button>
       </div>
-      <div class="aq-card aq-warning">
-        <div class="aq-label">📋 Intake Queue</div>
+      <div class="aq-card aq-urgent">
+        <div class="aq-label">🔴 Intakes Need Review</div>
         <div class="aq-count" id="aqIntake">—</div>
         <div class="aq-desc">Forms pending review</div>
         <button class="aq-btn" onclick="showTab('booking');setTimeout(function(){setIntakeFilter('intake_pending',null)},200)">Review →</button>
       </div>
-      <div class="aq-card aq-info">
-        <div class="aq-label">🔍 Pending Review</div>
+      <div class="aq-card aq-warning">
+        <div class="aq-label">🟠 Pending Review</div>
         <div class="aq-count" id="aqReview">—</div>
         <div class="aq-desc">Intakes awaiting practitioner review</div>
         <button class="aq-btn" onclick="showTab('booking');setTimeout(function(){setIntakeFilter('review_pending',null)},200)">Review →</button>
       </div>
       <div class="aq-card aq-ready">
-        <div class="aq-label">✅ Ready to Schedule</div>
+        <div class="aq-label">🟠 Ready to Schedule</div>
         <div class="aq-count" id="aqReady">—</div>
         <div class="aq-desc">Cleared — awaiting appointment</div>
         <button class="aq-btn" onclick="showTab('booking');setTimeout(function(){setIntakeFilter('ready',null)},200)">Schedule →</button>
       </div>
-      <div class="aq-card aq-urgent">
-        <div class="aq-label">🔴 Overdue Clients</div>
-        <div class="aq-count" id="aqOverdue">—</div>
-        <div class="aq-desc">60+ days since last session</div>
-        <button class="aq-btn" onclick="showTab('followups')">Follow Up →</button>
+      <div class="aq-card aq-warning">
+        <div class="aq-label">🟡 Outstanding Payments</div>
+        <div class="aq-count" id="aqPayments">—</div>
+        <div class="aq-desc">Awaiting payment confirmation</div>
+        <button class="aq-btn" onclick="showTab('booking');setTimeout(function(){setIntakeFilter('awaiting_payment',null)},200)">Resolve →</button>
+      </div>
+      <div class="aq-card aq-ready">
+        <div class="aq-label">🟢 Sessions Today</div>
+        <div class="aq-count" id="aqSessions">—</div>
+        <div class="aq-desc">Scheduled for today</div>
+        <button class="aq-btn" onclick="showTab('booking')">View →</button>
       </div>
     </div>
 
@@ -3213,17 +3225,21 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
       <div class="ck-panel">
         <div class="ck-panel-title">⬡ Business Metrics</div>
         <div class="biz-grid">
-          <div class="biz-metric"><span class="biz-val" id="statRevenue">$0</span><span class="biz-lbl">Total Revenue</span></div>
+          <div class="biz-metric"><span class="biz-val" id="statRevenue">$0</span><span class="biz-lbl">Revenue</span></div>
           <div class="biz-metric"><span class="biz-val" id="statActiveClients">—</span><span class="biz-lbl">Active Clients</span><span class="biz-sub" id="statTotalClients"></span></div>
+          <div class="biz-metric"><span class="biz-val" id="statSessionsMonth">—</span><span class="biz-lbl">Sessions This Month</span></div>
+          <div class="biz-metric"><span class="biz-val good" id="statFollowUp">78%</span><span class="biz-lbl">Follow-Up %</span></div>
+        </div>
+        <div class="biz-grid" id="bizMore" style="display:none;margin-top:1px">
           <div class="biz-metric"><span class="biz-val" id="statNps">—</span><span class="biz-lbl">NPS Score</span></div>
           <div class="biz-metric"><span class="biz-val" id="statRepeatRate">—</span><span class="biz-lbl">Repeat Rate</span></div>
           <div class="biz-metric"><span class="biz-val warn" id="statCancelRate">14%</span><span class="biz-lbl">Cancel Rate</span></div>
           <div class="biz-metric"><span class="biz-val warn" id="statNoShow">6%</span><span class="biz-lbl">No-Show Rate</span></div>
-          <div class="biz-metric"><span class="biz-val good" id="statFollowUp">78%</span><span class="biz-lbl">Follow-Up %</span></div>
           <div class="biz-metric"><span class="biz-val" id="statPending">0</span><span class="biz-lbl">Pending Reviews</span></div>
           <div class="biz-metric"><span class="biz-val" id="statApproved">0</span><span class="biz-lbl">Published</span></div>
           <div class="biz-metric"><span class="biz-val" id="statCheckins">0</span><span class="biz-lbl">Check-Ins</span></div>
         </div>
+        <div style="text-align:center;margin-top:12px"><button id="bizMoreBtn" onclick="toggleBizMore()" style="background:none;border:1px solid rgba(232,184,75,.35);color:#e8b84b;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;padding:8px 20px;cursor:pointer">View More Metrics ▾</button></div>
       </div>
     </div>
     <div class="insights-zone-full">
@@ -9117,6 +9133,18 @@ function _lcStageCounts() {
   return counts;
 }
 
+// Open a client's profile by name (used by Urgent Attention + Today's Schedule)
+function openClientByName(name) {
+  try {
+    var list = window._crmClients || [];
+    var match = list.find(function(c) {
+      return (c.full_name || c.name || '').toLowerCase() === String(name || '').toLowerCase();
+    });
+    if (match && typeof crmOpenProfile === 'function') { crmOpenProfile(match.id); return; }
+  } catch (e) {}
+  showTab('clients');
+}
+
 function renderHomeDashboard() {
   var today = new Date().toISOString().slice(0, 10);
 
@@ -9150,6 +9178,20 @@ function renderHomeDashboard() {
         sc.textContent = todaySess.length;
         sc.className = 'action-stat-val ' + (todaySess.length > 0 ? 'green' : '');
       }
+      var aqs = document.getElementById('aqSessions');
+      if (aqs) aqs.textContent = todaySess.length;
+    }
+  } catch(e) {}
+
+  // ── SESSIONS THIS MONTH ────────────────────────────────────
+  try {
+    if (typeof REA_DATA !== 'undefined') {
+      var ym = today.slice(0, 7);
+      var monthCount = REA_DATA.sessions.filter(function(s) {
+        return (s.session_date || s.date || '').slice(0, 7) === ym;
+      }).length;
+      var smEl = document.getElementById('statSessionsMonth');
+      if (smEl) smEl.textContent = monthCount;
     }
   } catch(e) {}
 
@@ -9164,9 +9206,10 @@ function renderHomeDashboard() {
         var timeStr = t ? t.slice(0, 5) : '—';
         var name = s.client || s.client_name || 'Client';
         var svc  = s.service || s.service_type || 'Session';
+        var safeName = String(name).replace(/'/g, "\\'");
         return '<div class="sched-item">' +
           '<span class="sched-time">' + timeStr + '</span>' +
-          '<span class="sched-client">' + name + '</span>' +
+          '<span class="sched-client" style="cursor:pointer;text-decoration:underline;text-decoration-color:rgba(232,184,75,.4);text-underline-offset:3px" title="Open client profile" onclick="openClientByName(\'' + safeName + '\')">' + name + '</span>' +
           '<span class="sched-type">' + svc + '</span>' +
         '</div>';
       }).join('');
@@ -9180,7 +9223,7 @@ function renderHomeDashboard() {
       var allSess = typeof REA_DATA !== 'undefined' ? REA_DATA.sessions : [];
       var recSess = allSess.slice().sort(function(a, b) {
         return (b.session_date || b.date || '') > (a.session_date || a.date || '') ? 1 : -1;
-      }).slice(0, 8);
+      }).slice(0, 5);
       if (!recSess.length) {
         actEl.innerHTML = '<p class="home-empty">No session activity found.</p>';
       } else {
@@ -9207,7 +9250,8 @@ function renderHomeDashboard() {
         actEl.innerHTML = '<table class="activity-tbl"><thead><tr>' +
           '<th>Client</th><th>Last Session</th><th>Service</th><th>Status</th>' +
           '<th>Outstanding Rec</th><th>Next Action</th>' +
-          '</tr></thead><tbody>' + rows + '</tbody></table>';
+          '</tr></thead><tbody>' + rows + '</tbody></table>' +
+          '<div style="text-align:center;margin-top:14px"><button onclick="showTab(\'clients\')" style="background:none;border:1px solid rgba(232,184,75,.35);color:#e8b84b;font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;padding:9px 22px;cursor:pointer">View All Activity →</button></div>';
       }
     } catch(e) {
       actEl.innerHTML = '<p class="home-empty">Unable to load activity.</p>';
@@ -9257,12 +9301,15 @@ function renderHomeDashboard() {
           } else {
             badgeClass = 'pri-badge--watch'; badgeText = '🟡 Monitor';
           }
-          var reason = days ? days + ' days since last session' : 'No session on record';
-          return '<div class="flag-item">' +
+          var reason = days ? ('Inactive — oldest ' + days + ' days since last session') : 'No session on record';
+          var safeName = String(c.name).replace(/'/g, "\\'");
+          return '<div class="flag-item" style="display:flex;align-items:center;gap:12px">' +
             '<div style="flex:1"><div class="flag-name">' + c.name + '</div>' +
             '<div class="flag-reason">' + reason + '</div>' +
             '<span class="pri-badge ' + badgeClass + '" style="margin-top:5px;display:inline-flex">' + badgeText + '</span>' +
-            '</div></div>';
+            '</div>' +
+            '<button class="aq-btn" style="flex:none;white-space:nowrap" onclick="openClientByName(\'' + safeName + '\')">Open Client →</button>' +
+          '</div>';
         }).join('');
       }
     } catch(e) {
@@ -9287,6 +9334,15 @@ function renderHomeDashboard() {
 
   // ── AI DAILY BRIEFING ─────────────────────────────────────────
   _fetchHomeBriefing();
+}
+
+function toggleBizMore() {
+  var more = document.getElementById('bizMore');
+  var btn  = document.getElementById('bizMoreBtn');
+  if (!more) return;
+  var open = more.style.display !== 'none';
+  more.style.display = open ? 'none' : 'grid';
+  if (btn) btn.innerHTML = open ? 'View More Metrics ▾' : 'View Fewer Metrics ▴';
 }
 
 function _fetchHomeBriefing() {
@@ -9361,29 +9417,35 @@ function _applyBriefingData(data, briefEl) {
     if (b.raw_data && b.raw_data.dueAftercare && b.raw_data.dueAftercare.length) {
       try {
         var today = new Date().toISOString().slice(0, 10);
-        var overdueItems = b.raw_data.dueAftercare.filter(function(a) {
+        // Group overdue follow-ups BY CLIENT — never list the same client repeatedly.
+        var byClient = {};
+        b.raw_data.dueAftercare.forEach(function(a) {
           var sf = a.scheduled_for ? a.scheduled_for.slice(0, 10) : null;
-          return sf && sf < today;
-        }).map(function(a) {
-          var sf = a.scheduled_for.slice(0, 10);
+          if (!sf || sf >= today) return;
           var days = Math.floor((Date.now() - new Date(sf).getTime()) / 86400000);
-          var sev = days >= 30 ? 'critical' : days >= 14 ? 'urgent' : 'warning';
-          return { name: a.client_name || (a.sessions && a.sessions.client_name) || 'Unknown',
-                   days: days, sev: sev, type: a.followup_type || 'follow-up' };
-        }).sort(function(a, b) { return b.days - a.days; });
+          var name = a.client_name || (a.sessions && a.sessions.client_name) || 'Unknown';
+          if (!byClient[name]) byClient[name] = { name: name, count: 0, maxDays: 0 };
+          byClient[name].count++;
+          if (days > byClient[name].maxDays) byClient[name].maxDays = days;
+        });
+        var grouped = Object.keys(byClient).map(function(k) { return byClient[k]; })
+          .sort(function(a, b) { return b.maxDays - a.maxDays; });
 
-        if (overdueItems.length) {
+        if (grouped.length) {
           var flagsEl = document.getElementById('homeFlags');
           if (flagsEl) {
             var sevHtml = '<div style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.25em;' +
               'text-transform:uppercase;color:#ee7070;margin-bottom:10px">Overdue Follow-Ups</div>' +
-              overdueItems.slice(0, 5).map(function(o) {
-                var icon = o.sev === 'critical' ? '🔴' : o.sev === 'urgent' ? '🟠' : '🟡';
-                return '<div class="flag-item">' +
+              grouped.slice(0, 6).map(function(o) {
+                var icon = o.maxDays >= 30 ? '🔴' : o.maxDays >= 14 ? '🟠' : '🟡';
+                var safeName = String(o.name).replace(/'/g, "\\'");
+                return '<div class="flag-item" style="display:flex;align-items:center;gap:12px">' +
                   '<span class="flag-icon">' + icon + '</span>' +
-                  '<div><div class="flag-name">' + o.name + '</div>' +
-                  '<div class="flag-reason">' + o.days + ' day' + (o.days !== 1 ? 's' : '') +
-                  ' overdue — ' + o.type + '</div></div></div>';
+                  '<div style="flex:1"><div class="flag-name">' + o.name + '</div>' +
+                  '<div class="flag-reason">' + o.count + ' overdue follow-up' + (o.count !== 1 ? 's' : '') +
+                  ' · oldest ' + o.maxDays + ' day' + (o.maxDays !== 1 ? 's' : '') + '</div></div>' +
+                  '<button class="aq-btn" style="flex:none;white-space:nowrap" onclick="openClientByName(\'' + safeName + '\')">Open Client →</button>' +
+                  '</div>';
               }).join('');
             var existing = flagsEl.innerHTML;
             flagsEl.innerHTML = sevHtml +
@@ -9393,25 +9455,30 @@ function _applyBriefingData(data, briefEl) {
       } catch(_) {}
     }
 
-    // Render briefing panel rows
-    var rows = [];
-    if (b.ai_summary)       rows.push({ lbl: 'Today\'s Summary',     val: b.ai_summary });
-    if (b.key_priorities)   rows.push({ lbl: 'Key Priorities',        val: Array.isArray(b.key_priorities) ? b.key_priorities.join(' · ') : b.key_priorities });
-    if (b.revenue_due > 0)  rows.push({ lbl: 'Revenue Due Today',    val: '$' + Number(b.revenue_due).toLocaleString() });
-    if (sessCount > 0)      rows.push({ lbl: 'Sessions Today',        val: sessCount });
-    if (intakeCount > 0)    rows.push({ lbl: 'Unprocessed Intakes',  val: intakeCount });
-    if (followCount > 0)    rows.push({ lbl: 'Follow-Ups Due',        val: followCount });
-    if (unpaidCount > 0)    rows.push({ lbl: 'Unpaid Sessions',       val: unpaidCount });
+    // Render briefing as a narrative summary (context + prioritization, not raw stats)
+    var sc = Number(sessCount) || 0, ic = Number(intakeCount) || 0,
+        fc = Number(followCount) || 0, uc = Number(unpaidCount) || 0,
+        rev = Number(b.revenue_due) || 0;
+    var narr = [];
+    narr.push(sc > 0 ? ('You have ' + sc + ' session' + (sc !== 1 ? 's' : '') + ' scheduled today.')
+                     : 'You have no sessions scheduled today.');
+    if (ic > 0) narr.push(ic + ' intake form' + (ic !== 1 ? 's' : '') + ' ' + (ic === 1 ? 'requires' : 'require') + ' review before upcoming appointments.');
+    if (fc > 0) narr.push(fc + ' follow-up' + (fc !== 1 ? 's' : '') + ' ' + (fc === 1 ? 'is' : 'are') + ' currently due, primarily from clients in the aftercare stage.');
+    if (uc > 0) narr.push(uc + ' session' + (uc !== 1 ? 's' : '') + ' ' + (uc === 1 ? 'has' : 'have') + ' an outstanding balance to reconcile.');
+    if (rev > 0) narr.push('Estimated revenue scheduled for today is $' + rev.toLocaleString() + '.');
 
-    if (!rows.length) {
+    var nStyle = 'font-family:\'EB Garamond\',serif;font-size:16px;line-height:1.85;color:rgba(240,236,255,0.92);margin:0 0 12px';
+    var html = '';
+    if (b.ai_summary) html += '<p style="' + nStyle + '">' + b.ai_summary + '</p>';
+    if (narr.length)  html += '<p style="' + nStyle + '">' + narr.join(' ') + '</p>';
+    if (b.key_priorities) {
+      var kp = Array.isArray(b.key_priorities) ? b.key_priorities.join(' · ') : b.key_priorities;
+      html += '<p style="font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#e8b84baa;margin:14px 0 0">Priorities: <span style="color:#f0ecff;font-family:\'EB Garamond\',serif;letter-spacing:0;text-transform:none;font-size:15px">' + kp + '</span></p>';
+    }
+    if (!html || (sc === 0 && ic === 0 && fc === 0 && uc === 0 && rev === 0 && !b.ai_summary)) {
       briefEl.innerHTML = '<p class="home-ok"><span class="pri-badge pri-badge--healthy">🟢 All Clear</span> No urgent items for today.</p>';
     } else {
-      briefEl.innerHTML = rows.map(function(r) {
-        return '<div class="briefing-row">' +
-          '<div class="briefing-lbl">' + r.lbl + '</div>' +
-          '<div class="briefing-val">' + r.val + '</div>' +
-        '</div>';
-      }).join('');
+      briefEl.innerHTML = html;
     }
   } // end _applyBriefingData scope
 }
