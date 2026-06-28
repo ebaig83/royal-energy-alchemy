@@ -2396,6 +2396,388 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
   }
 }
 
+/* ── SPRINT 18K: REFERENCE ALIGNMENT PASS — layout + component hierarchy ── */
+#tab-home {
+  --ref-panel-bg: linear-gradient(180deg, rgba(10,7,24,.98), rgba(5,3,15,.98));
+}
+.cc-ops {
+  grid-template-columns: 1fr !important;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+.cc-row3 {
+  grid-template-columns: .9fr 1.15fr 1.45fr;
+  gap: 14px;
+  align-items: stretch;
+  margin-bottom: 14px;
+}
+.cc-row4 {
+  display: grid;
+  grid-template-columns: 1.18fr .92fr 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 14px;
+  align-items: stretch;
+}
+.cc-row4 .ck-panel {
+  margin: 0;
+}
+#tab-home .ck-panel {
+  border-radius: 7px;
+  background: var(--ref-panel-bg);
+}
+#tab-home .ck-panel-title {
+  min-height: 26px;
+  margin-bottom: 14px !important;
+  padding-bottom: 10px !important;
+  font-size: 11px !important;
+  letter-spacing: .24em !important;
+}
+.ck-panel-title-action {
+  justify-content: space-between !important;
+}
+.panel-title-btn {
+  margin-left: auto;
+  min-height: 29px;
+  padding: 6px 14px;
+  border: 1px solid rgba(232,184,75,.3);
+  border-radius: 6px;
+  background: rgba(232,184,75,.035);
+  color: #e8b84b;
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.panel-title-btn:hover {
+  background: rgba(232,184,75,.12);
+  border-color: rgba(232,184,75,.58);
+}
+.ck-panel--exec-kpis {
+  padding: 14px 16px 15px !important;
+  background:
+    radial-gradient(circle at top left, rgba(232,184,75,.07), transparent 30%),
+    linear-gradient(180deg, rgba(12,8,27,.98), rgba(6,4,17,.98) 70%);
+}
+.ck-panel--exec-kpis .ck-panel-title {
+  display: none !important;
+}
+.exec-kpi-strip {
+  gap: 12px;
+}
+.exec-kpi-group {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding-top: 22px;
+}
+.exec-kpi-group::before {
+  top: 9px;
+}
+.exec-kpi-group-title {
+  background: #0b061a;
+  font-size: 9px;
+  letter-spacing: .24em;
+}
+.exec-kpi-group-title::before {
+  width: 6px;
+  height: 6px;
+}
+.exec-kpi-tile {
+  min-height: 74px;
+  padding: 11px 12px !important;
+  gap: 7px;
+  border-color: rgba(232,184,75,.15) !important;
+  background: linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.008)) !important;
+}
+.exec-kpi-tile::after {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 11px;
+}
+.exec-kpi-tile .glance-lbl {
+  font-size: 9px;
+  letter-spacing: .13em;
+}
+.exec-kpi-tile .action-stat-val {
+  font-size: 25px !important;
+}
+.exec-kpi-tile .glance-context {
+  font-size: 10px;
+  line-height: 1.2;
+}
+.ck-panel--aq .ck-panel-title {
+  color: #ffd977;
+}
+.ck-panel--aq .aqc-group {
+  padding: 10px 0 7px;
+}
+.ck-panel--aq .aqc-group-title {
+  margin-bottom: 6px;
+  font-size: 9px;
+  letter-spacing: .2em;
+}
+.ck-panel--aq .aqc-row {
+  min-height: 43px;
+  padding: 8px 9px !important;
+  gap: 8px;
+}
+.aqc-lbl {
+  font-size: 13px !important;
+}
+.aqc-count {
+  min-width: 36px;
+  font-size: 23px !important;
+}
+.aqc-go {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  color: #e8b84b !important;
+  background: rgba(232,184,75,.08);
+  transform: none !important;
+}
+.aq-footer {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(232,184,75,.11);
+}
+.aq-footer-btn {
+  width: 100%;
+  min-height: 36px;
+  border: 1px solid rgba(232,184,75,.45);
+  border-radius: 7px;
+  background: rgba(232,184,75,.04);
+  color: #e8b84b;
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.aq-footer-btn:hover {
+  background: rgba(232,184,75,.13);
+  border-color: rgba(232,184,75,.72);
+}
+.brief-pri {
+  padding: 15px 16px;
+}
+.brief-intel-list li {
+  padding: 10px 0 10px 28px;
+}
+#homeFlags .flag-item {
+  display: grid !important;
+  grid-template-columns: 34px 1fr auto;
+  align-items: center !important;
+  gap: 12px;
+}
+.urgent-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid rgba(232,184,75,.16);
+  background: rgba(255,255,255,.035);
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+}
+.urgent-badge.urgent-critical {
+  color: #ff6767;
+  border-color: rgba(238,85,85,.34);
+  background: rgba(238,85,85,.12);
+}
+.urgent-badge.urgent-watch {
+  color: #ff9a4f;
+  border-color: rgba(238,153,68,.34);
+  background: rgba(238,153,68,.12);
+}
+.urgent-badge.urgent-review {
+  color: #ffd766;
+  border-color: rgba(232,200,75,.34);
+  background: rgba(232,200,75,.1);
+}
+#homeFlags .flag-name {
+  font-size: 13px !important;
+}
+#homeFlags .aq-btn {
+  min-width: 104px;
+}
+.cc-metrics .biz-signal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.cc-metrics .biz-signal-list .biz-metric {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) auto;
+  grid-template-areas:
+    "icon label value"
+    "icon insight value"
+    "icon sub value";
+  align-items: center;
+  min-height: 48px;
+  padding: 10px 0;
+  border: none;
+  border-radius: 0;
+  border-bottom: 1px solid rgba(232,184,75,.1);
+  background: transparent;
+}
+.cc-metrics .biz-signal-list .biz-metric::before {
+  display: none;
+}
+.biz-signal-icon {
+  grid-area: icon;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  border: 1px solid rgba(232,184,75,.48);
+  color: #e8b84b;
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  font-weight: 700;
+}
+.cc-metrics .biz-signal-list .biz-lbl {
+  grid-area: label;
+  margin: 0;
+  font-size: 10px !important;
+  letter-spacing: .1em;
+  color: rgba(240,236,255,.86);
+}
+.cc-metrics .biz-signal-list .biz-val {
+  grid-area: value;
+  margin: 0;
+  padding-left: 12px;
+  font-size: 15px !important;
+  text-align: right;
+}
+.cc-metrics .biz-signal-list .biz-insight {
+  grid-area: insight;
+  margin-top: 3px;
+  font-size: 10px;
+  letter-spacing: .02em;
+}
+.cc-metrics .biz-signal-list .biz-sub {
+  grid-area: sub;
+  margin-top: 2px;
+  font-size: 10px;
+}
+.cc-metrics #bizMore {
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+}
+.sched-empty {
+  padding-top: 24px;
+}
+.sched-empty-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 54px;
+  height: 54px;
+  margin: 0 auto 15px;
+  border-radius: 50%;
+  border: 1px solid rgba(232,184,75,.48);
+  background: rgba(232,184,75,.08);
+  color: #f1c763;
+  font-family: 'Cinzel', serif;
+  font-size: 24px;
+}
+.sched-empty-guide {
+  gap: 8px;
+}
+.seg-row {
+  min-height: 82px;
+}
+.ck-quick-actions {
+  margin: 0 26px 18px;
+  border: 1px solid rgba(232,184,75,.16);
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(12,8,28,.98), rgba(7,4,18,.98));
+}
+.ck-qa-label {
+  color: rgba(232,184,75,.72);
+}
+.ck-qa-btn {
+  border-radius: 6px;
+  min-height: 34px;
+}
+#cockpit {
+  grid-template-columns: 210px 1fr;
+}
+.ck-sidebar {
+  background: #050611;
+}
+.ck-logo {
+  padding: 19px 16px;
+}
+.ck-logo-icon {
+  width: 31px;
+  height: 31px;
+  border-radius: 7px;
+}
+.ck-nav-section {
+  font-size: 9px;
+  letter-spacing: .32em;
+}
+.ck-nav-item {
+  min-height: 37px;
+  padding: 8px 16px;
+  font-size: 12px;
+  letter-spacing: .02em;
+  text-transform: none;
+}
+.ck-header {
+  min-height: 70px;
+}
+.ck-greeting-text {
+  font-size: 22px;
+  letter-spacing: .02em;
+}
+.ck-greeting-date,
+.ck-freshness {
+  letter-spacing: .18em;
+}
+@media (max-width: 1200px) {
+  .cc-row3 { grid-template-columns: 1fr; }
+  .cc-row4 { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 860px) {
+  #cockpit { grid-template-columns: 56px 1fr; }
+}
+@media (max-width: 760px) {
+  #cockpit { grid-template-columns: 1fr; }
+  .ck-sidebar { display: none; }
+  .cc-row4 { grid-template-columns: 1fr !important; }
+  .ck-panel--exec-kpis { padding: 14px 14px 16px !important; }
+  .exec-kpi-tile { min-height: 76px; }
+  #homeFlags .flag-item {
+    grid-template-columns: 32px 1fr;
+  }
+  #homeFlags .aq-btn {
+    grid-column: 2;
+    width: 100%;
+    margin-left: 0;
+  }
+  .cc-metrics .biz-signal-list .biz-metric {
+    grid-template-columns: 25px minmax(0, 1fr) auto;
+  }
+  .ck-quick-actions {
+    margin: 0 16px 16px;
+  }
+}
+
 /* ── SPRINT 12B: EXECUTIVE ZONE HEADERS ─────────────────────── */
 .exec-zone {
   display: flex;
@@ -4155,7 +4537,7 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
   <!-- HOME TAB — command-center information architecture -->
   <div class="tab-content active" id="tab-home" style="display:block">
 
-    <!-- ══ ROW 1: Today at a Glance · Today's Schedule · Week at a Glance ══ -->
+    <!-- ══ ROW 1: Executive KPI Strip ══ -->
     <div class="cc-ops">
 
       <!-- Today at a Glance — executive KPI strip (existing bindings preserved) -->
@@ -4202,28 +4584,10 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
         <span id="homeStatAlerts" style="display:none">—</span>
       </div>
 
-      <!-- Today's Schedule -->
-      <div class="ck-panel">
-        <div class="ck-panel-title">📅 Today's Schedule</div>
-        <div id="homeSched" class="home-scroll"><div class="hshimmer"></div><div class="hshimmer"></div></div>
-      </div>
-
-      <!-- Week at a Glance (per-day workload) -->
-      <div class="ck-panel cc-secondary">
-        <div class="ck-panel-title">🗓 Week at a Glance</div>
-        <div id="homeWeekGlance"><div class="hshimmer"></div><div class="hshimmer"></div></div>
-      </div>
-
     </div>
 
-    <!-- ══ ROW 2: AI Daily Briefing · Action Queue · Urgent Attention ══ -->
+    <!-- ══ ROW 2: Decision Support — Action Queue · AI Daily Briefing · Urgent Attention ══ -->
     <div class="cc-row3">
-
-      <!-- AI Daily Briefing -->
-      <div class="ck-panel cc-secondary">
-        <div class="ck-panel-title">✦ AI Daily Briefing</div>
-        <div id="homeBriefing"><div class="hshimmer"></div><div class="hshimmer"></div><div class="hshimmer"></div></div>
-      </div>
 
       <!-- Action Queue — operational center (visually dominant) -->
       <div class="ck-panel ck-panel--aq">
@@ -4257,25 +4621,45 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
             </button>
           </div>
         </div>
+        <div class="aq-footer"><button class="aq-footer-btn" onclick="showTab('followups')">View Full Queue</button></div>
+      </div>
+
+      <!-- AI Daily Briefing -->
+      <div class="ck-panel cc-secondary">
+        <div class="ck-panel-title">✦ AI Daily Briefing</div>
+        <div id="homeBriefing"><div class="hshimmer"></div><div class="hshimmer"></div><div class="hshimmer"></div></div>
       </div>
 
       <!-- Urgent Attention -->
       <div class="ck-panel">
-        <div class="ck-panel-title">⚠ Urgent Attention</div>
+        <div class="ck-panel-title ck-panel-title-action"><span>⚠ Urgent Attention</span><button class="panel-title-btn" onclick="showTab('followups')">View All</button></div>
         <div id="homeFlags" class="home-scroll"><div class="hshimmer"></div><div class="hshimmer"></div></div>
       </div>
 
     </div>
 
-    <!-- ══ ROW 3: BUSINESS ANALYTICS — Metrics · Recent Activity ══ -->
-    <div class="cc-row2">
+    <!-- ══ ROW 3: Planning / Operations — Schedule · Week · Signals · Activity ══ -->
+    <div class="cc-row4">
+
+      <!-- Today's Schedule -->
+      <div class="ck-panel">
+        <div class="ck-panel-title">📅 Today's Schedule</div>
+        <div id="homeSched" class="home-scroll"><div class="hshimmer"></div><div class="hshimmer"></div></div>
+      </div>
+
+      <!-- Week at a Glance (per-day workload) -->
+      <div class="ck-panel cc-secondary">
+        <div class="ck-panel-title">🗓 Week at a Glance</div>
+        <div id="homeWeekGlance"><div class="hshimmer"></div><div class="hshimmer"></div></div>
+      </div>
+
       <div class="ck-panel cc-secondary cc-metrics">
         <div class="ck-panel-title">⬡ Operating Signals</div>
-        <div class="biz-grid">
-          <div class="biz-metric"><span class="biz-val" id="statRevenue">$0</span><span class="biz-lbl">Revenue</span></div>
-          <div class="biz-metric"><span class="biz-val" id="statActiveClients">—</span><span class="biz-lbl">Active Clients</span><span class="biz-sub" id="statTotalClients"></span></div>
-          <div class="biz-metric"><span class="biz-val" id="statSessionsMonth">—</span><span class="biz-lbl">Sessions This Month</span></div>
-          <div class="biz-metric"><span class="biz-val good" id="statFollowUp">78%</span><span class="biz-lbl">Follow-Up %</span></div>
+        <div class="biz-grid biz-signal-list">
+          <div class="biz-metric"><span class="biz-signal-icon">$</span><span class="biz-lbl">Revenue</span><span class="biz-val" id="statRevenue">$0</span></div>
+          <div class="biz-metric"><span class="biz-signal-icon">C</span><span class="biz-lbl">Active Clients</span><span class="biz-val" id="statActiveClients">—</span><span class="biz-sub" id="statTotalClients"></span></div>
+          <div class="biz-metric"><span class="biz-signal-icon">S</span><span class="biz-lbl">Sessions This Month</span><span class="biz-val" id="statSessionsMonth">—</span></div>
+          <div class="biz-metric"><span class="biz-signal-icon">%</span><span class="biz-lbl">Follow-Up %</span><span class="biz-val good" id="statFollowUp">78%</span></div>
         </div>
         <div class="biz-grid" id="bizMore" style="display:none;margin-top:1px">
           <div class="biz-metric"><span class="biz-val" id="statNps">—</span><span class="biz-lbl">NPS Score</span></div>
@@ -4292,6 +4676,7 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
         <div class="ck-panel-title">◎ Recent Client Activity</div>
         <div id="homeActivity" class="home-scroll"><div class="hshimmer"></div><div class="hshimmer"></div><div class="hshimmer"></div></div>
       </div>
+
     </div>
 
   </div>
@@ -10315,6 +10700,7 @@ function renderScheduleView(view) {
   var body;
   if (!list.length) {
     body = '<tr class="sched-empty-row"><td colspan="4"><div class="sched-empty">' +
+      '<div class="sched-empty-icon">✓</div>' +
       '<div class="sched-empty-msg">No appointments scheduled today.</div>' +
       '<div class="sched-empty-sub">Suggestions</div>' +
       '<div class="sched-empty-guide">' +
@@ -10766,7 +11152,8 @@ function _renderUrgent() {
   var TOP = 5;
   var rows = list.slice(0, TOP).map(function(c) {
     var oldest = c.oldestDays;
-    var icon = (oldest == null || oldest >= 30) ? '🔴' : oldest >= 14 ? '🟠' : '🟡';
+    var badgeCls = (oldest == null || oldest >= 30) ? 'urgent-critical' : oldest >= 14 ? 'urgent-watch' : 'urgent-review';
+    var badgeTxt = (oldest == null || oldest >= 30) ? 'Crit' : oldest >= 14 ? '30+' : 'Due';
     var items = c.overdue > 0
       ? (c.overdue + ' overdue follow-up' + (c.overdue !== 1 ? 's' : ''))
       : 'Inactive client';
@@ -10775,7 +11162,7 @@ function _renderUrgent() {
       : 'no recent activity';
     var safeName = String(c.name).replace(/'/g, "\\'");
     return '<div class="urgent-item flag-item" style="display:flex;align-items:center;gap:12px">' +
-      '<span class="flag-icon">' + icon + '</span>' +
+      '<span class="flag-icon urgent-badge ' + badgeCls + '">' + badgeTxt + '</span>' +
       '<div style="flex:1"><div class="flag-name">' + c.name + '</div>' +
       '<div class="flag-reason">' + items + ' · ' + oldestTxt + '</div></div>' +
       '<button class="aq-btn" style="flex:none;white-space:nowrap" onclick="openClientByName(\'' + safeName + '\')">Open Client →</button>' +
