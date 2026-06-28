@@ -1776,6 +1776,276 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
   .aqc-group { padding-top: 11px; }
 }
 
+/* ── SPRINT 18I: EXECUTIVE LAYOUT CONVERGENCE — visual layer only ── */
+.ck-panel {
+  border-radius: 8px;
+  box-shadow: 0 16px 38px rgba(0,0,0,.18);
+}
+.cc-ops {
+  grid-template-columns: 1fr 1fr;
+  align-items: stretch;
+}
+.ck-panel--exec-kpis {
+  grid-column: 1 / -1;
+  padding: 22px 26px 24px !important;
+  background: linear-gradient(180deg, rgba(232,184,75,.075), rgba(8,4,26,.98) 55%);
+  border-color: rgba(232,184,75,.26) !important;
+}
+.exec-kpi-strip {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr 1fr;
+  gap: 16px;
+}
+.exec-kpi-group {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  padding-top: 22px;
+}
+.exec-kpi-group::before {
+  content: "";
+  position: absolute;
+  top: 8px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(232,184,75,.55), rgba(232,184,75,.04));
+}
+.exec-kpi-group-title {
+  position: absolute;
+  top: -1px;
+  left: 0;
+  padding-right: 12px;
+  background: #08041a;
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .24em;
+  text-transform: uppercase;
+  color: rgba(232,184,75,.86);
+}
+.exec-kpi-tile {
+  display: grid;
+  align-content: space-between;
+  gap: 10px;
+  min-height: 104px;
+  padding: 16px 17px !important;
+  border: 1px solid rgba(232,184,75,.14) !important;
+  border-radius: 8px !important;
+  background: rgba(255,255,255,.025) !important;
+  transition: transform .16s ease, border-color .16s ease, background .16s ease;
+}
+.exec-kpi-tile:hover {
+  transform: translateY(-1px);
+  border-color: rgba(232,184,75,.34) !important;
+  background: rgba(232,184,75,.055) !important;
+}
+.exec-kpi-tile .glance-lbl {
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  line-height: 1.35;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: rgba(222,216,245,.78);
+}
+.exec-kpi-tile .action-stat-val {
+  min-width: 0 !important;
+  font-size: 30px !important;
+  line-height: 1;
+  text-align: left;
+}
+.exec-kpi-tile .glance-context {
+  margin: 0;
+  padding: 0;
+  font-size: 10px;
+  letter-spacing: .1em;
+}
+.brief-pri {
+  border: 1px solid rgba(232,184,75,.14);
+  border-radius: 8px;
+  padding: 15px 16px;
+  background: linear-gradient(180deg, rgba(232,184,75,.055), rgba(255,255,255,.018));
+}
+.brief-pri-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px !important;
+  color: #ffd977 !important;
+}
+.brief-pri-title::before {
+  content: "✦";
+  font-size: 14px;
+  color: #e8b84b;
+}
+.brief-intel-list {
+  gap: 10px;
+}
+.brief-intel-list li {
+  padding: 10px 0 11px;
+}
+.brief-sec {
+  border: 1px solid rgba(176,158,248,.12);
+  border-radius: 8px;
+  padding: 14px 16px !important;
+  background: rgba(176,158,248,.04);
+}
+.brief-sec-title {
+  color: rgba(176,158,248,.86) !important;
+}
+.sched-empty {
+  padding: 30px 18px 28px;
+}
+.sched-empty-msg {
+  font-size: 20px;
+  color: #f0ecff;
+}
+.sched-empty-guide {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+.seg-row {
+  display: grid;
+  align-content: center;
+  gap: 7px;
+  min-height: 92px;
+  padding: 14px 13px;
+  border: 1px solid rgba(232,184,75,.13);
+  border-radius: 8px;
+  background: rgba(232,184,75,.04);
+}
+.seg-row:last-child { border-bottom: 1px solid rgba(232,184,75,.13); }
+.seg-lbl {
+  font-size: 10px;
+  color: rgba(232,184,75,.82);
+}
+.seg-val {
+  text-align: left;
+  font-size: 15px;
+  line-height: 1.35;
+}
+.sched-empty-actions {
+  margin-top: 18px;
+}
+.sched-empty-btn.primary {
+  min-height: 42px;
+  padding: 12px 24px;
+  font-size: 12px;
+  box-shadow: 0 8px 24px rgba(232,184,75,.16);
+}
+.sched-empty-btn.secondary {
+  min-height: 42px;
+  padding: 12px 22px;
+}
+.ck-panel--aq {
+  box-shadow: inset 0 1px 0 rgba(232,184,75,.12), 0 16px 38px rgba(0,0,0,.2);
+}
+.ck-panel--aq .aqc-group {
+  padding-top: 15px;
+  padding-bottom: 9px;
+}
+.ck-panel--aq .aqc-row {
+  min-height: 49px;
+  padding-right: 8px !important;
+  border-radius: 7px !important;
+}
+.aqc-count {
+  min-width: 44px;
+  font-size: 24px !important;
+}
+.aqc-priority-note {
+  border-radius: 5px;
+  background: rgba(232,184,75,.12);
+  box-shadow: 0 0 0 1px rgba(232,184,75,.06) inset;
+}
+.wg-row, .wk-row {
+  min-height: 42px;
+  padding: 10px 8px;
+  border-radius: 7px;
+}
+.wg-row.wg-today, .wk-row.wk-today {
+  background: linear-gradient(90deg, rgba(232,184,75,.16), rgba(232,184,75,.035));
+  border-left-color: #ffd977;
+}
+.wg-day, .wk-day {
+  font-size: 12.5px;
+}
+.wg-cnt, .wk-count {
+  min-width: 92px;
+  text-align: right;
+  font-family: 'Cinzel', serif;
+  letter-spacing: .04em;
+}
+.week-action-btn,
+#bizMoreBtn,
+#homeActivity button {
+  border-radius: 6px !important;
+  min-height: 36px;
+  transition: background .16s ease, border-color .16s ease, transform .16s ease;
+}
+.week-action-btn:hover,
+#bizMoreBtn:hover,
+#homeActivity button:hover {
+  background: rgba(232,184,75,.08) !important;
+  border-color: rgba(232,184,75,.55) !important;
+  transform: translateY(-1px);
+}
+.cc-metrics .ck-panel-title {
+  color: #ffd977;
+}
+.cc-metrics .biz-grid {
+  gap: 12px;
+}
+.cc-metrics .biz-metric {
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(255,255,255,.028), rgba(255,255,255,.012));
+  text-align: left;
+}
+.cc-metrics .biz-val {
+  margin-bottom: 8px;
+}
+.ac-li {
+  position: relative;
+  padding-left: 18px !important;
+}
+.ac-li::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 19px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #22c98a;
+  box-shadow: 0 0 8px rgba(34,201,138,.35);
+}
+.ac-li .ac-when {
+  min-width: 72px;
+  color: rgba(184,176,216,.72);
+}
+@media (max-width: 1100px) {
+  .exec-kpi-strip { grid-template-columns: 1fr; }
+  .cc-ops { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 760px) {
+  .ck-panel--exec-kpis { padding: 18px 17px !important; }
+  .exec-kpi-strip,
+  .exec-kpi-group,
+  .sched-empty-guide { grid-template-columns: 1fr; }
+  .exec-kpi-group { gap: 9px; }
+  .exec-kpi-tile { min-height: 86px; }
+  .exec-kpi-tile .action-stat-val { font-size: 26px !important; }
+  .sched-empty-btn.primary,
+  .sched-empty-btn.secondary { flex: 1 1 100%; }
+  .wg-cnt, .wk-count { min-width: 72px; }
+  .ac-li .ac-when { min-width: 58px; }
+}
+
 /* ── SPRINT 12B: EXECUTIVE ZONE HEADERS ─────────────────────── */
 .exec-zone {
   display: flex;
@@ -3538,28 +3808,46 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
     <!-- ══ ROW 1: Today at a Glance · Today's Schedule · Week at a Glance ══ -->
     <div class="cc-ops">
 
-      <!-- Today at a Glance — simple operational snapshot (rows stay clickable; KPI IDs preserved) -->
-      <div class="ck-panel cc-secondary">
+      <!-- Today at a Glance — executive KPI strip (existing bindings preserved) -->
+      <div class="ck-panel cc-secondary ck-panel--exec-kpis">
         <div class="ck-panel-title">📊 Today at a Glance</div>
-        <div class="glance-list action-stats">
-          <button class="glance-row" onclick="showTab('sessions')" title="Open sessions">
-            <span class="glance-lbl">Sessions Today</span><span class="glance-dots"></span>
-            <span class="action-stat-val" id="homeStatSessions">—</span>
-          </button>
-          <button class="glance-row" onclick="showTab('booking');setTimeout(function(){setIntakeFilter('intake_pending',null)},200)" title="Open intake queue">
-            <span class="glance-lbl">Intakes Today</span><span class="glance-dots"></span>
-            <span class="action-stat-val" id="homeStatIntakes">—</span>
-          </button>
-          <button class="glance-row" onclick="showTab('followups')" title="Open follow-ups">
-            <span class="glance-lbl">Follow-Ups Due</span><span class="glance-dots"></span>
-            <span class="action-stat-val" id="homeStatFollowUps">—</span>
-          </button>
-          <button class="glance-row" onclick="showTab('financial')" title="Open financial center">
-            <span class="glance-lbl">Estimated Revenue</span><span class="glance-dots"></span>
-            <span class="action-stat-val glance-rev" id="homeStatRevenueToday">$0</span>
-          </button>
+        <div class="glance-list action-stats exec-kpi-strip">
+          <div class="exec-kpi-group">
+            <div class="exec-kpi-group-title">Business</div>
+            <button class="glance-row exec-kpi-tile" onclick="showTab('financial')" title="Open financial center">
+              <span class="glance-lbl">Revenue</span>
+              <span class="action-stat-val glance-rev" id="execKpiRevenue">$0</span>
+            </button>
+            <button class="glance-row exec-kpi-tile" onclick="showTab('clients')" title="Open clients">
+              <span class="glance-lbl">Active Clients</span>
+              <span class="action-stat-val" id="execKpiActiveClients">—</span>
+            </button>
+          </div>
+          <div class="exec-kpi-group">
+            <div class="exec-kpi-group-title">Performance</div>
+            <button class="glance-row exec-kpi-tile" onclick="showTab('sessions')" title="Open sessions">
+              <span class="glance-lbl">Sessions</span>
+              <span class="action-stat-val" id="homeStatSessions">—</span>
+            </button>
+            <button class="glance-row exec-kpi-tile" onclick="showTab('followups')" title="Open follow-ups">
+              <span class="glance-lbl">Follow-Up Rate</span>
+              <span class="action-stat-val good" id="execKpiFollowUpRate">78%</span>
+            </button>
+          </div>
+          <div class="exec-kpi-group">
+            <div class="exec-kpi-group-title">Workload</div>
+            <button class="glance-row exec-kpi-tile" onclick="showTab('booking');setTimeout(function(){setIntakeFilter('intake_pending',null)},200)" title="Open intake queue">
+              <span class="glance-lbl">Intakes</span>
+              <span class="action-stat-val" id="homeStatIntakes">—</span>
+            </button>
+            <button class="glance-row exec-kpi-tile" onclick="showTab('followups')" title="Open follow-ups">
+              <span class="glance-lbl">Overdue Follow-Ups</span>
+              <span class="action-stat-val" id="homeStatFollowUps">—</span>
+            </button>
+          </div>
         </div>
         <!-- Hidden holders preserve KPI bindings used by briefing / urgent / sync -->
+        <span id="homeStatRevenueToday" style="display:none">$0</span>
         <span id="homeStatDocs" style="display:none">—</span>
         <span id="homeStatAlerts" style="display:none">—</span>
       </div>
@@ -3632,7 +3920,7 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
     <!-- ══ ROW 3: BUSINESS ANALYTICS — Metrics · Recent Activity ══ -->
     <div class="cc-row2">
       <div class="ck-panel cc-secondary cc-metrics">
-        <div class="ck-panel-title">⬡ Business Metrics</div>
+        <div class="ck-panel-title">⬡ Operating Signals</div>
         <div class="biz-grid">
           <div class="biz-metric"><span class="biz-val" id="statRevenue">$0</span><span class="biz-lbl">Revenue</span></div>
           <div class="biz-metric"><span class="biz-val" id="statActiveClients">—</span><span class="biz-lbl">Active Clients</span><span class="biz-sub" id="statTotalClients"></span></div>
@@ -5194,6 +5482,7 @@ function updateStats() {
     document.getElementById('statRevenue').textContent = '$2,340';
     document.getElementById('statNps').textContent     = '+72';
   }
+  try { _dashUpdateExecutiveKpis(); } catch(e) {}
 }
 
 updateStats();
@@ -9746,7 +10035,7 @@ function _renderWeekGlance() {
         '<span class="wg-dots"></span>' +
         '<span class="wg-cnt">' + cnt + ' Session' + (cnt !== 1 ? 's' : '') + '</span></div>';
     }
-    el.innerHTML = rows;
+    el.innerHTML = rows + '<div style="text-align:center;margin-top:14px"><button class="week-action-btn" onclick="setScheduleView(\'week\')" style="background:none;border:1px solid rgba(232,184,75,.35);color:#e8b84b;font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;padding:8px 20px;cursor:pointer">Open Week View →</button></div>';
   } catch (e) {
     el.innerHTML = '<p class="home-empty">Unable to load week.</p>';
   }
@@ -9795,6 +10084,22 @@ function _dashSetSubNote(host, cls, text, tone) {
 function _dashReadCount(id) {
   var el = document.getElementById(id);
   return el ? Math.round(_dashNum(el.textContent)) : 0;
+}
+
+function _dashUpdateExecutiveKpis() {
+  var pairs = [
+    ['statRevenue', 'execKpiRevenue'],
+    ['statActiveClients', 'execKpiActiveClients'],
+    ['statFollowUp', 'execKpiFollowUpRate']
+  ];
+  pairs.forEach(function(pair) {
+    var src = document.getElementById(pair[0]);
+    var dst = document.getElementById(pair[1]);
+    if (!src || !dst) return;
+    dst.textContent = src.textContent;
+    if (src.className && src.className.indexOf('good') > -1) dst.classList.add('good');
+    if (src.className && src.className.indexOf('warn') > -1) dst.classList.add('warn');
+  });
 }
 
 function _dashUpdateActionQueuePriority() {
@@ -10050,6 +10355,7 @@ function renderHomeDashboard() {
     _dashUpdateGlanceContext(todaySess);
     _dashUpdateActionQueuePriority();
     _dashUpdateBusinessInsights();
+    _dashUpdateExecutiveKpis();
   } catch(e) {}
 
   // ── AI DAILY BRIEFING ─────────────────────────────────────────
@@ -10307,7 +10613,7 @@ function _applyBriefingData(data, briefEl) {
 
     var html = '';
     if (intel.length) {
-      html += '<div class="brief-pri"><div class="brief-pri-title">Executive Readout</div>' +
+      html += '<div class="brief-pri"><div class="brief-pri-title">Executive Readout · Insights</div>' +
         '<ul class="brief-intel-list">' + intel.map(function (p) {
           return '<li><span class="brief-intel-kicker">' + p.k + '</span><span class="brief-intel-copy">' + p.c + '</span></li>';
         }).join('') + '</ul></div>';
@@ -10323,7 +10629,7 @@ function _applyBriefingData(data, briefEl) {
       secondary.push('Focus: ' + (Array.isArray(b.key_priorities) ? b.key_priorities.join(', ') : b.key_priorities) + '.');
     }
     if (secondary.length) {
-      html += '<div class="brief-sec"><div class="brief-sec-title">Action Context</div>' +
+      html += '<div class="brief-sec"><div class="brief-sec-title">Recommended Focus</div>' +
         '<p class="brief-sec-text">' + secondary.join(' ') + '</p></div>';
     }
     briefEl.innerHTML = html;
@@ -10332,6 +10638,7 @@ function _applyBriefingData(data, briefEl) {
       _dashUpdateGlanceContext();
       _dashUpdateActionQueuePriority();
       _dashUpdateBusinessInsights();
+      _dashUpdateExecutiveKpis();
     } catch(e) {}
   } // end _applyBriefingData scope
 }
