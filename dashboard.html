@@ -772,28 +772,28 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
 
 .ck-nav-section {
   font-family: 'Cinzel', serif;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: .3em;
-  color: rgba(232,184,75,.7);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .18em;
+  color: #f1c763;
   text-transform: uppercase;
-  padding: 20px 18px 7px;
-  border-top: 1px solid rgba(232,184,75,.08);
-  margin-top: 6px;
+  padding: 13px 18px 6px;
+  border-top: 1px solid rgba(232,184,75,.14);
+  margin-top: 4px;
 }
 .ck-nav-section:first-of-type { border-top: none; margin-top: 0; }
 
 .ck-nav-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 11px 18px;
+  gap: 11px;
+  padding: 9px 18px;
   font-family: 'Cinzel', serif;
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: .09em;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: .03em;
   text-transform: uppercase;
-  color: rgba(240,236,255,.78);
+  color: rgba(245,242,255,.94);
   background: none;
   border: none;
   border-left: 3px solid transparent;
@@ -803,7 +803,7 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
   transition: color .15s, background .15s, border-color .15s;
   white-space: nowrap;
 }
-.ck-nav-item .nav-icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; opacity: .9; }
+.ck-nav-item .nav-icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; opacity: 1; }
 .ck-nav-item:hover { color: #fff; background: rgba(232,184,75,.08); border-left-color: rgba(232,184,75,.45); }
 .ck-nav-item.active { color: #ffd977; font-weight: 600; background: rgba(232,184,75,.14); border-left-color: #e8b84b; }
 
@@ -815,18 +815,190 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
 .dn-btn:hover { color: #e8b84b; border-color: rgba(232,184,75,.45); }
 .dn-btn.active { color: #160a00; background: #e8b84b; border-color: #e8b84b; font-weight: 700; }
 @media(max-width:880px){ .ck-density { display: none; } }
-/* Compact: hide secondary descriptive text + tighten spacing */
+.ck-freshness { font-family: 'Inter', sans-serif; font-size: 11px; letter-spacing: .04em; color: rgba(154,150,192,.78); margin-top: 4px; }
+.ck-freshness-dot { color: #22c98a; font-weight: 700; }
+/* ── COMPACT: action-focused. Keep only Action Queue, Today at a Glance,
+      Schedule & Urgent Attention; hide secondary analytics panels (Week,
+      Briefing, Business Metrics, Recent Activity). ── */
 #cockpit.density-compact .aq-desc,
-#cockpit.density-compact .flag-reason,
-#cockpit.density-compact .sched-type,
 #cockpit.density-compact .biz-sub,
 #cockpit.density-compact .ac-dim { display: none; }
-#cockpit.density-compact .ck-panel { padding: 14px 16px; }
-#cockpit.density-compact .aq-card { padding: 12px 14px; }
-#cockpit.density-compact .biz-metric { padding: 10px; }
-#cockpit.density-compact .sched-item { padding-top: 6px; padding-bottom: 6px; }
-/* Detailed: more breathing room */
+#cockpit.density-compact .cc-secondary { display: none; }
+#cockpit.density-compact .cc-row3 { grid-template-columns: 1fr 1fr; }
+#cockpit.density-compact .ck-panel { padding: 16px 18px; }
+#cockpit.density-compact .aqc-row { padding-top: 7px; padding-bottom: 7px; }
+#cockpit.density-compact .glance-list .action-stat { padding-top: 8px; padding-bottom: 8px; }
+#cockpit.density-compact .sched-item { padding-top: 7px; padding-bottom: 7px; }
+#cockpit.density-compact .home-scroll { max-height: 380px; }
+
+/* ── DETAILED: expand analytics — auto-open secondary metrics, show extended
+      activity detail, roomier spacing. (Standard keeps metrics behind View More.) ── */
 #cockpit.density-detailed .ck-panel { padding: 28px; }
+#cockpit.density-detailed .cc-ops { gap: 22px; }
+#cockpit.density-detailed .cc-row3 { gap: 22px; }
+#cockpit.density-detailed .cc-row2 { gap: 22px; }
+#cockpit.density-detailed .home-scroll { max-height: 560px; }
+#cockpit.density-detailed .biz-val { font-size: 30px; }
+#cockpit.density-detailed #bizMore { display: grid !important; }
+#cockpit.density-detailed #bizMoreBtn { display: none; }
+#cockpit.density-detailed .ac-extra { display: block !important; }
+
+/* ── Today's Schedule rows + "next session" highlight ── */
+.sched-item { display: flex; align-items: center; gap: 12px; padding: 11px 4px; border-bottom: 1px solid rgba(232,184,75,.07); }
+.sched-item:last-child { border-bottom: none; }
+.sched-item .sched-time { font-family: 'Cinzel', serif; font-size: 13px; font-weight: 600; color: #c9a86a; min-width: 62px; }
+.sched-main { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.sched-main .sched-type { font-size: 12px; color: #9a96c0; }
+.sched-next { background: linear-gradient(90deg, rgba(232,184,75,.12), transparent); border-left: 3px solid #e8b84b; margin-left: -4px; padding-left: 12px; border-radius: 3px; }
+.sched-next .sched-time { color: #ffd977; }
+.sched-next-badge { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: #160a00; background: #e8b84b; padding: 4px 9px; border-radius: 3px; font-weight: 700; flex: none; }
+.sched-open-btn { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: #c4b5fd; background: rgba(124,92,191,.14); border: 1px solid rgba(124,92,191,.5); border-radius: 5px; padding: 6px 12px; cursor: pointer; flex: none; white-space: nowrap; transition: all .15s; }
+.sched-open-btn:hover { color: #fff; border-color: #7c5cbf; background: rgba(124,92,191,.32); }
+
+/* ── Today's Schedule — table layout ── */
+.sched-table { width: 100%; border-collapse: collapse; }
+.sched-table th { text-align: left; font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: #b89a55; font-weight: 600; padding: 0 10px 10px 0; border-bottom: 1px solid rgba(232,184,75,.2); white-space: nowrap; }
+.sched-table th:last-child, .sched-table .st-action { text-align: right; }
+.sched-table td { padding: 12px 10px 12px 0; border-bottom: 1px solid rgba(232,184,75,.07); vertical-align: middle; }
+.sched-table tbody tr:last-child td { border-bottom: none; }
+.st-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 9px; vertical-align: middle; flex: none; }
+.st-time { font-family: 'Cinzel', serif; font-size: 13px; font-weight: 600; color: #c9a86a; white-space: nowrap; }
+.st-client { font-size: 14px; color: #f0ecff; }
+.st-type { font-size: 13px; color: #9a96c0; }
+.st-action { white-space: nowrap; }
+.st-next { font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: .12em; text-transform: uppercase; color: #160a00; background: #e8b84b; padding: 2px 6px; border-radius: 3px; margin-left: 8px; }
+.sched-trow-next { background: rgba(232,184,75,.045); }
+.sched-empty-row td { text-align: center; color: #9080cc; font-style: italic; font-size: 15px; padding: 28px 10px !important; border-bottom: none !important; }
+
+/* ── Today's Schedule — "View:" dropdown ── */
+.sched-viewsel { font-family: 'Inter', sans-serif; font-size: 11px; color: #9a96c0; letter-spacing: .03em; text-transform: none; display: inline-flex; align-items: center; gap: 6px; }
+.sched-viewsel select { background: #0d0820; color: #e8b84b; border: 1px solid rgba(232,184,75,.3); border-radius: 5px; padding: 5px 8px; font-size: 12px; font-family: 'Cinzel', serif; letter-spacing: .08em; cursor: pointer; outline: none; }
+@media (max-width: 760px) {
+  .sched-table th, .sched-table td { padding-right: 6px; }
+  .st-client, .st-type { font-size: 12px; }
+}
+
+/* ── Today's Schedule empty state ── */
+.sched-empty { text-align: center; padding: 22px 14px; }
+.sched-empty-msg { font-size: 17px; color: #ded8f5; margin-bottom: 16px; }
+.sched-empty-sub { font-size: 13px; color: #8880aa; letter-spacing: .04em; margin-bottom: 16px; }
+.sched-empty-guide { text-align: left; background: rgba(232,184,75,.04); border: 1px solid rgba(232,184,75,.12); border-radius: 8px; padding: 6px 14px; margin-bottom: 18px; }
+.seg-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px solid rgba(232,184,75,.08); }
+.seg-row:last-child { border-bottom: none; }
+.seg-lbl { font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: #b89a55; white-space: nowrap; }
+.seg-val { font-size: 14px; color: #ded8f5; text-align: right; }
+.sched-empty-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.sched-empty-btn { font-family: 'Cinzel', serif; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; padding: 10px 18px; border-radius: 6px; cursor: pointer; background: none; border: 1px solid rgba(232,184,75,.4); color: #e8b84b; transition: all .15s; }
+.sched-empty-btn:hover { background: rgba(232,184,75,.1); border-color: #e8b84b; }
+.sched-empty-btn.primary { background: #e8b84b; color: #160a00; font-weight: 700; border-color: #e8b84b; }
+.sched-empty-btn.primary:hover { background: #f1c763; }
+.sched-empty-btn.secondary { background: transparent; color: #e8b84b; border-color: rgba(232,184,75,.34); }
+
+/* ── KPI priority dots ── */
+.ck-kpi-row .kpi-dot { font-size: 13px; line-height: 1; display: inline-block; margin-bottom: 4px; }
+
+/* ── Week-at-a-glance load bars ── */
+.wk-row { display: flex; align-items: center; gap: 12px; padding: 7px 4px; border-bottom: 1px solid rgba(232,184,75,.06); }
+.wk-row:last-child { border-bottom: none; }
+.wk-day { font-family: 'Cinzel', serif; font-size: 12px; letter-spacing: .06em; color: #cfc9ee; min-width: 96px; }
+.wk-bar-track { flex: 1; height: 9px; background: rgba(255,255,255,.06); border-radius: 5px; overflow: hidden; }
+.wk-bar-fill { height: 100%; border-radius: 5px; background: linear-gradient(90deg, #e8b84b, #d08a3a); }
+.wk-count { font-size: 12px; color: #9a96c0; min-width: 78px; text-align: right; }
+.wk-row.wk-today { background: rgba(232,184,75,.10); border-left: 3px solid #e8b84b; margin-left: -4px; padding-left: 12px; border-radius: 3px; }
+.wk-row.wk-today .wk-day { color: #ffd977; font-weight: 700; }
+.wk-row.wk-busy .wk-count { color: #ee9944; }
+
+/* ── COMMAND-CENTER LAYOUT GRID ── */
+.cc-ops  { display: grid; grid-template-columns: 1.15fr 1.1fr 1fr; gap: 18px; margin-bottom: 18px; align-items: start; }
+.cc-row3 { display: grid; grid-template-columns: 1fr 1fr 1.3fr; gap: 18px; margin-bottom: 18px; align-items: start; }
+.cc-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; align-items: start; }
+.cc-row1 { display: grid; grid-template-columns: 1fr; gap: 18px; margin-bottom: 18px; }
+.cc-ops .ck-panel, .cc-row3 .ck-panel, .cc-row2 .ck-panel, .cc-row1 .ck-panel { margin: 0; }
+.home-scroll { max-height: 340px; overflow-y: auto; }
+.home-scroll::-webkit-scrollbar { width: 6px; }
+.home-scroll::-webkit-scrollbar-thumb { background: rgba(232,184,75,.25); border-radius: 3px; }
+@media (max-width: 1100px) { .cc-row3, .cc-ops { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 760px) { .cc-row3, .cc-row2, .cc-ops { grid-template-columns: 1fr; } }
+
+/* ── Action Queue — dominant operational panel ── */
+.ck-panel--aq { background: linear-gradient(180deg, rgba(232,184,75,.06), #08041a 55%); border-color: rgba(232,184,75,.28); }
+.ck-panel--aq .ck-panel-title { color: #ffd977; }
+.ck-panel--aq .aqc-row { border-bottom: 1px solid rgba(232,184,75,.09); border-radius: 0 6px 6px 0; }
+.aqc-row.aqc-red    { border-left: 3px solid #ee5555; padding-left: 9px; }
+.aqc-row.aqc-orange { border-left: 3px solid #ee9944; padding-left: 9px; }
+.aqc-row.aqc-yellow { border-left: 3px solid #e8c84b; padding-left: 9px; }
+.aqc-row.aqc-green  { border-left: 3px solid #22c98a; padding-left: 9px; }
+.aqc-row.aqc-red:hover    { background: rgba(238,85,85,.10); }
+.aqc-row.aqc-orange:hover { background: rgba(238,153,68,.10); }
+.aqc-go { color: rgba(232,184,75,0); font-size: 20px; font-weight: 700; width: 12px; text-align: right; transition: color .15s, transform .15s; }
+.aqc-row:hover .aqc-go { color: #e8b84b; transform: translateX(2px); }
+
+/* ── Business Metrics — reduced visual dominance ── */
+.cc-metrics .biz-val { font-size: 26px !important; }
+.cc-metrics .biz-metric { padding: 14px 12px; }
+.cc-metrics .biz-lbl { font-size: 12px !important; }
+
+/* ── Compact Action Queue (row 1) ── */
+.aq-compact { display: flex; flex-direction: column; gap: 1px; }
+.aqc-group { padding: 8px 0 5px; }
+.aqc-group:first-child { padding-top: 0; }
+.aqc-group-title { display: flex; align-items: center; gap: 9px; font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: .18em; color: rgba(232,184,75,.76); text-transform: uppercase; margin: 2px 0 6px; }
+.aqc-group-title:after { content: ""; height: 1px; flex: 1; background: rgba(232,184,75,.16); }
+.aqc-row { display: flex; align-items: center; gap: 9px; width: 100%; text-align: left; background: none; border: none; border-bottom: 1px solid rgba(232,184,75,.06); padding: 8px 2px; cursor: pointer; transition: background .15s; }
+.aqc-row:last-child { border-bottom: none; }
+.aqc-row:hover { background: rgba(232,184,75,.07); }
+.aqc-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.aqc-dot.red { background: #ee5555; } .aqc-dot.orange { background: #ee9944; }
+.aqc-dot.yellow { background: #e8c84b; } .aqc-dot.green { background: #22c98a; }
+.aqc-lbl { flex: 1; font-size: 13px; color: #e8e4ff; }
+.aqc-count { font-family: 'Cinzel', serif; font-size: 17px; font-weight: 700; color: #fff; min-width: 28px; text-align: right; }
+
+/* ── Today at a Glance — simple snapshot with dotted leaders ── */
+.glance-list { display: flex; flex-direction: column; gap: 0; }
+.glance-row { display: flex; align-items: baseline; gap: 10px; width: 100%; padding: 12px 4px; border: none; background: none; text-align: left; cursor: pointer; transition: background .12s; }
+.glance-row:hover { background: rgba(232,184,75,.05); }
+.glance-lbl { font-size: 15px; color: #cfc9ee; white-space: nowrap; flex: none; }
+.glance-dots { flex: 1; border-bottom: 1px dotted rgba(232,184,75,.28); transform: translateY(-4px); min-width: 14px; }
+.glance-list .action-stat-val { font-family: 'Cinzel', serif; font-size: 22px; font-weight: 700; color: #f4f1ff !important; min-width: 34px; text-align: right; margin: 0; letter-spacing: 0; flex: none; }
+.glance-rev { color: #e8b84b !important; }
+
+/* ── Week at a Glance — simple day + count snapshot ── */
+.wg-row { display: flex; align-items: baseline; gap: 10px; padding: 11px 4px; border-radius: 4px; }
+.wg-day { font-family: 'Cinzel', serif; font-size: 14px; letter-spacing: .04em; color: #cfc9ee; white-space: nowrap; flex: none; }
+.wg-dots { flex: 1; border-bottom: 1px dotted rgba(232,184,75,.28); transform: translateY(-4px); min-width: 14px; }
+.wg-cnt { font-size: 14px; color: #ded8f5; white-space: nowrap; flex: none; }
+.wg-row.wg-today { background: rgba(232,184,75,.12); border-left: 3px solid #e8b84b; padding-left: 9px; }
+.wg-row.wg-today .wg-day { color: #ffd977; font-weight: 700; }
+.wg-row.wg-today .wg-cnt { color: #ffd977; font-weight: 700; }
+.wg-tier { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: .06em; text-transform: uppercase; padding: 2px 7px; border-radius: 3px; white-space: nowrap; }
+.wg-tier.wl-open  { color: #6fb0ff; background: rgba(111,176,255,.12); }
+.wg-tier.wl-light { color: #22c98a; background: rgba(34,201,138,.12); }
+.wg-tier.wl-mod   { color: #e8c84b; background: rgba(232,200,75,.12); }
+.wg-tier.wl-heavy { color: #ee9944; background: rgba(238,153,68,.14); }
+.wg-tier.wl-full  { color: #ee6666; background: rgba(238,102,102,.15); }
+.wg-summary { display: flex; justify-content: space-between; gap: 12px; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(232,184,75,.1); font-size: 12px; color: #9a96c0; }
+.wg-summary strong { color: #e8b84b; }
+
+/* ── AI Daily Briefing — priorities-first ── */
+.brief-pri-title { font-family: 'Cinzel', serif; font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: #ffd977; margin-bottom: 10px; }
+.brief-pri-list { margin: 0 0 4px; padding-left: 0; list-style: none; counter-reset: bp; }
+.brief-pri-list li { counter-increment: bp; position: relative; padding: 9px 0 9px 32px; font-size: 15px; line-height: 1.45; color: #ece8ff; border-bottom: 1px solid rgba(232,184,75,.07); }
+.brief-pri-list li:last-child { border-bottom: none; }
+.brief-pri-list li::before { content: counter(bp); position: absolute; left: 0; top: 8px; width: 21px; height: 21px; border-radius: 50%; background: rgba(232,184,75,.16); color: #ffd977; font-family: 'Cinzel', serif; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+.brief-sec { margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(232,184,75,.12); }
+.brief-sec-title { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: #8880aa; margin-bottom: 6px; }
+.brief-sec-text { font-family: 'EB Garamond', serif; font-size: 14px; line-height: 1.6; color: #a8a2cc; margin: 0; }
+
+/* ── Recent Activity — compact but readable list ── */
+.ac-list { display: flex; flex-direction: column; gap: 2px; }
+.ac-li { display: flex; align-items: center; gap: 12px; padding: 11px 4px; border-bottom: 1px solid rgba(232,184,75,.07); }
+.ac-li:last-child { border-bottom: none; }
+.ac-li .ac-name { font-size: 15px; font-weight: 600; color: #f4f1ff; cursor: pointer; text-decoration: underline; text-decoration-color: rgba(232,184,75,.4); text-underline-offset: 3px; }
+.ac-li .ac-when { font-size: 12px; color: #8880aa; white-space: nowrap; flex: none; text-align: right; }
+.ac-li .ac-meta { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ac-li .ac-act { font-size: 12.5px; color: #a8a2cc; }
+.ac-li .ac-extra { display: none; font-size: 12px; color: #8880aa; }
+.ac-li .ac-stat { font-size: 12px; font-family: 'Cinzel', serif; letter-spacing: .08em; white-space: nowrap; }
 
 .sched-toggle { display: inline-flex; gap: 4px; }
 .sv-btn { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: rgba(232,184,75,.6); background: none; border: 1px solid rgba(232,184,75,.25); padding: 4px 9px; cursor: pointer; border-radius: 2px; transition: all .15s; }
@@ -1394,6 +1566,28 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
 .sched-type     { font-size: 12px !important; }
 .activity-tbl td { font-size: 16px !important; padding: 12px 14px 12px 0 !important; }
 .activity-tbl th { font-size: 12px !important; }
+
+/* ── SPRINT 19: COMMAND-CENTER REFINEMENT — larger, less compressed ── */
+.ck-content .tab-content { padding: 26px 30px 40px; }
+.cc-row3 .ck-panel, .cc-row2 .ck-panel, .cc-row1 .ck-panel { padding: 24px 26px; }
+.ck-panel-title { font-size: 15px !important; letter-spacing: .22em !important; margin-bottom: 18px !important; padding-bottom: 13px !important; }
+.aqc-lbl   { font-size: 15px !important; }
+.aqc-count { font-size: 22px !important; }
+.aqc-row   { padding-top: 11px !important; padding-bottom: 11px !important; }
+.aqc-dot   { width: 10px !important; height: 10px !important; }
+.aq-btn    { font-size: 13px; padding: 9px 16px; }
+.home-empty { font-size: 16px; padding: 22px 14px; }
+
+/* ── SPRINT 18C — operations-first emphasis ── */
+.ck-panel--aq .aqc-lbl   { font-size: 15px !important; }
+.ck-panel--aq .aqc-count { font-size: 30px !important; line-height: 1; }
+.ck-panel--aq .aqc-row   { padding-top: 13px !important; padding-bottom: 13px !important; }
+.ck-panel--aq .aqc-dot   { width: 11px !important; height: 11px !important; }
+.ac-li { padding: 14px 6px !important; gap: 14px !important; cursor: pointer; border-radius: 6px; }
+.ac-li:hover { background: rgba(232,184,75,.05); }
+.ac-li .ac-name { font-size: 16px !important; }
+.ac-li .ac-act  { font-size: 13px !important; }
+.ac-li .ac-stat { font-size: 13px !important; }
 
 /* ── SPRINT 12B: EXECUTIVE ZONE HEADERS ─────────────────────── */
 .exec-zone {
@@ -3116,6 +3310,7 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
         <div>
           <div class="ck-greeting-text" id="ckGreeting">Good morning, Daron</div>
           <div class="ck-greeting-date" id="ckDate"></div>
+          <div class="ck-freshness"><span class="ck-freshness-dot">Live</span> &bull; Updated 2 minutes ago</div>
         </div>
       </div>
       <div class="ck-header-right">
@@ -3145,120 +3340,111 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
     <!-- Mobile sidebar backdrop -->
     <div class="ck-sidebar-backdrop" id="ckSidebarBackdrop"></div>
 
-    <!-- KPI bar — .action-stats / .action-stat preserved for QA selectors -->
-    <div class="action-stats ck-kpi-row">
-      <div class="action-stat">
-        <span class="ck-kpi-icon">📅</span>
-        <span class="action-stat-val" id="homeStatSessions">—</span>
-        <span class="action-stat-label">Sessions Today</span>
-      </div>
-      <div class="action-stat">
-        <span class="ck-kpi-icon">📥</span>
-        <span class="action-stat-val" id="homeStatIntakes">—</span>
-        <span class="action-stat-label">Intake Queue</span>
-      </div>
-      <div class="action-stat">
-        <span class="ck-kpi-icon">◎</span>
-        <span class="action-stat-val" id="homeStatFollowUps">—</span>
-        <span class="action-stat-label">Follow-Ups Due</span>
-      </div>
-      <div class="action-stat">
-        <span class="ck-kpi-icon">💳</span>
-        <span class="action-stat-val" id="homeStatDocs">—</span>
-        <span class="action-stat-label">Pending Payments</span>
-      </div>
-      <div class="action-stat">
-        <span class="ck-kpi-icon">⚡</span>
-        <span class="action-stat-val" id="homeStatAlerts">—</span>
-        <span class="action-stat-label">AI Alerts</span>
-      </div>
-    </div>
+    <!-- KPI stats relocated into the "Today at a Glance" panel below; IDs preserved. -->
 
     <!-- Scrollable tab content -->
     <div class="ck-content">
 
-  <!-- HOME TAB -->
+  <!-- HOME TAB — command-center information architecture -->
   <div class="tab-content active" id="tab-home" style="display:block">
 
-    <!-- ══ ZONE: TODAY ═══════════════════════════════════════════ -->
-    <div class="exec-zone exec-zone--today">
-      <span class="exec-zone-label">Today</span>
-      <div class="exec-zone-line"></div>
-    </div>
-    <div class="today-zone-grid">
-      <div class="ck-panel">
-        <div class="ck-panel-title" style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
-          <span>📅 Schedule</span>
-          <span class="sched-toggle">
-            <button class="sv-btn active" id="svToday" onclick="setScheduleView('today')">Today</button>
-            <button class="sv-btn" id="svWeek" onclick="setScheduleView('week')">Week</button>
-            <button class="sv-btn" id="svMonth" onclick="setScheduleView('month')">Month</button>
-          </span>
+    <!-- ══ ROW 1: Today at a Glance · Today's Schedule · Week at a Glance ══ -->
+    <div class="cc-ops">
+
+      <!-- Today at a Glance — simple operational snapshot (rows stay clickable; KPI IDs preserved) -->
+      <div class="ck-panel cc-secondary">
+        <div class="ck-panel-title">📊 Today at a Glance</div>
+        <div class="glance-list action-stats">
+          <button class="glance-row" onclick="showTab('sessions')" title="Open sessions">
+            <span class="glance-lbl">Sessions Today</span><span class="glance-dots"></span>
+            <span class="action-stat-val" id="homeStatSessions">—</span>
+          </button>
+          <button class="glance-row" onclick="showTab('booking');setTimeout(function(){setIntakeFilter('intake_pending',null)},200)" title="Open intake queue">
+            <span class="glance-lbl">Intakes Today</span><span class="glance-dots"></span>
+            <span class="action-stat-val" id="homeStatIntakes">—</span>
+          </button>
+          <button class="glance-row" onclick="showTab('followups')" title="Open follow-ups">
+            <span class="glance-lbl">Follow-Ups Due</span><span class="glance-dots"></span>
+            <span class="action-stat-val" id="homeStatFollowUps">—</span>
+          </button>
+          <button class="glance-row" onclick="showTab('financial')" title="Open financial center">
+            <span class="glance-lbl">Estimated Revenue</span><span class="glance-dots"></span>
+            <span class="action-stat-val glance-rev" id="homeStatRevenueToday">$0</span>
+          </button>
         </div>
-        <div id="homeSched"><div class="hshimmer"></div><div class="hshimmer"></div></div>
+        <!-- Hidden holders preserve KPI bindings used by briefing / urgent / sync -->
+        <span id="homeStatDocs" style="display:none">—</span>
+        <span id="homeStatAlerts" style="display:none">—</span>
       </div>
+
+      <!-- Today's Schedule -->
       <div class="ck-panel">
-        <div class="ck-panel-title">⚠ Urgent Attention</div>
-        <div id="homeFlags"><div class="hshimmer"></div><div class="hshimmer"></div></div>
+        <div class="ck-panel-title">📅 Today's Schedule</div>
+        <div id="homeSched" class="home-scroll"><div class="hshimmer"></div><div class="hshimmer"></div></div>
       </div>
+
+      <!-- Week at a Glance (per-day workload) -->
+      <div class="ck-panel cc-secondary">
+        <div class="ck-panel-title">🗓 Week at a Glance</div>
+        <div id="homeWeekGlance"><div class="hshimmer"></div><div class="hshimmer"></div></div>
+      </div>
+
     </div>
 
-    <!-- ══ ZONE: ACTIONS ═════════════════════════════════════════ -->
-    <div class="exec-zone exec-zone--actions">
-      <span class="exec-zone-label">Actions</span>
-      <div class="exec-zone-line"></div>
-    </div>
-    <!-- Action Queue — sorted by urgency (most urgent first) -->
-    <div class="ck-action-queue" id="homeActionQueue">
-      <div class="aq-card aq-urgent">
-        <div class="aq-label">🔴 Follow-Ups Due</div>
-        <div class="aq-count" id="aqOverdue">—</div>
-        <div class="aq-desc">Overdue clients needing follow-up</div>
-        <button class="aq-btn" onclick="showTab('followups')">Follow Up →</button>
-      </div>
-      <div class="aq-card aq-urgent">
-        <div class="aq-label">🔴 Intakes Need Review</div>
-        <div class="aq-count" id="aqIntake">—</div>
-        <div class="aq-desc">Forms pending review</div>
-        <button class="aq-btn" onclick="showTab('booking');setTimeout(function(){setIntakeFilter('intake_pending',null)},200)">Review →</button>
-      </div>
-      <div class="aq-card aq-warning">
-        <div class="aq-label">🟠 Pending Review</div>
-        <div class="aq-count" id="aqReview">—</div>
-        <div class="aq-desc">Intakes awaiting practitioner review</div>
-        <button class="aq-btn" onclick="showTab('booking');setTimeout(function(){setIntakeFilter('review_pending',null)},200)">Review →</button>
-      </div>
-      <div class="aq-card aq-ready">
-        <div class="aq-label">🟠 Ready to Schedule</div>
-        <div class="aq-count" id="aqReady">—</div>
-        <div class="aq-desc">Cleared — awaiting appointment</div>
-        <button class="aq-btn" onclick="showTab('booking');setTimeout(function(){setIntakeFilter('ready',null)},200)">Schedule →</button>
-      </div>
-      <div class="aq-card aq-warning">
-        <div class="aq-label">🟡 Outstanding Payments</div>
-        <div class="aq-count" id="aqPayments">—</div>
-        <div class="aq-desc">Awaiting payment confirmation</div>
-        <button class="aq-btn" onclick="showTab('booking');setTimeout(function(){setIntakeFilter('awaiting_payment',null)},200)">Resolve →</button>
-      </div>
-      <div class="aq-card aq-ready">
-        <div class="aq-label">🟢 Sessions Today</div>
-        <div class="aq-count" id="aqSessions">—</div>
-        <div class="aq-desc">Scheduled for today</div>
-        <button class="aq-btn" onclick="showTab('booking')">View →</button>
-      </div>
-    </div>
+    <!-- ══ ROW 2: AI Daily Briefing · Action Queue · Urgent Attention ══ -->
+    <div class="cc-row3">
 
-    <!-- ══ ZONE: INSIGHTS ════════════════════════════════════════ -->
-    <div class="exec-zone exec-zone--insights">
-      <span class="exec-zone-label">Insights</span>
-      <div class="exec-zone-line"></div>
-    </div>
-    <div class="insights-zone-grid">
-      <div class="ck-panel">
+      <!-- AI Daily Briefing -->
+      <div class="ck-panel cc-secondary">
         <div class="ck-panel-title">✦ AI Daily Briefing</div>
         <div id="homeBriefing"><div class="hshimmer"></div><div class="hshimmer"></div><div class="hshimmer"></div></div>
       </div>
+
+      <!-- Action Queue — operational center (visually dominant) -->
+      <div class="ck-panel ck-panel--aq">
+        <div class="ck-panel-title">✅ Action Queue</div>
+        <div class="aq-compact" id="homeActionQueue">
+          <div class="aqc-group">
+            <div class="aqc-group-title">Review</div>
+            <button class="aqc-row aqc-red" onclick="showTab('followups')">
+              <span class="aqc-dot red"></span><span class="aqc-lbl">Follow-Ups Due</span><span class="aqc-count" id="aqOverdue">—</span><span class="aqc-go">›</span>
+            </button>
+            <button class="aqc-row aqc-red" onclick="showTab('booking');setTimeout(function(){setIntakeFilter('intake_pending',null)},200)">
+              <span class="aqc-dot red"></span><span class="aqc-lbl">Intakes Need Review</span><span class="aqc-count" id="aqIntake">—</span><span class="aqc-go">›</span>
+            </button>
+            <button class="aqc-row aqc-orange" onclick="showTab('booking');setTimeout(function(){setIntakeFilter('review_pending',null)},200)">
+              <span class="aqc-dot orange"></span><span class="aqc-lbl">Pending Review</span><span class="aqc-count" id="aqReview">—</span><span class="aqc-go">›</span>
+            </button>
+          </div>
+          <div class="aqc-group">
+            <div class="aqc-group-title">Scheduling</div>
+            <button class="aqc-row aqc-orange" onclick="showTab('booking');setTimeout(function(){setIntakeFilter('ready',null)},200)">
+              <span class="aqc-dot orange"></span><span class="aqc-lbl">Ready to Schedule</span><span class="aqc-count" id="aqReady">—</span><span class="aqc-go">›</span>
+            </button>
+            <button class="aqc-row aqc-green" onclick="showTab('booking')">
+              <span class="aqc-dot green"></span><span class="aqc-lbl">Sessions Today</span><span class="aqc-count" id="aqSessions">—</span><span class="aqc-go">›</span>
+            </button>
+          </div>
+          <div class="aqc-group">
+            <div class="aqc-group-title">Financial</div>
+            <button class="aqc-row aqc-yellow" onclick="showTab('booking');setTimeout(function(){setIntakeFilter('awaiting_payment',null)},200)">
+              <span class="aqc-dot yellow"></span><span class="aqc-lbl">Outstanding Payments</span><span class="aqc-count" id="aqPayments">—</span><span class="aqc-go">›</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Urgent Attention -->
       <div class="ck-panel">
+        <div class="ck-panel-title">⚠ Urgent Attention</div>
+        <div id="homeFlags" class="home-scroll"><div class="hshimmer"></div><div class="hshimmer"></div></div>
+      </div>
+
+    </div>
+
+    <!-- ══ ROW 3: BUSINESS ANALYTICS — Metrics · Recent Activity ══ -->
+    <div class="cc-row2">
+      <div class="ck-panel cc-secondary cc-metrics">
         <div class="ck-panel-title">⬡ Business Metrics</div>
         <div class="biz-grid">
           <div class="biz-metric"><span class="biz-val" id="statRevenue">$0</span><span class="biz-lbl">Revenue</span></div>
@@ -3277,11 +3463,9 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
         </div>
         <div style="text-align:center;margin-top:12px"><button id="bizMoreBtn" onclick="toggleBizMore()" style="background:none;border:1px solid rgba(232,184,75,.35);color:#e8b84b;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;padding:8px 20px;cursor:pointer">View More Metrics ▾</button></div>
       </div>
-    </div>
-    <div class="insights-zone-full">
-      <div class="ck-panel">
+      <div class="ck-panel cc-secondary">
         <div class="ck-panel-title">◎ Recent Client Activity</div>
-        <div id="homeActivity"><div class="hshimmer"></div><div class="hshimmer"></div><div class="hshimmer"></div></div>
+        <div id="homeActivity" class="home-scroll"><div class="hshimmer"></div><div class="hshimmer"></div><div class="hshimmer"></div></div>
       </div>
     </div>
 
@@ -9181,6 +9365,15 @@ function openClientByName(name) {
   showTab('clients');
 }
 
+// AI Alerts glance row → ensure Home tab, then reveal the Urgent Attention panel.
+function _gotoUrgent() {
+  try { showTab('home'); } catch (e) {}
+  setTimeout(function () {
+    var f = document.getElementById('homeFlags');
+    if (f && f.scrollIntoView) f.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 60);
+}
+
 // ── INFORMATION DENSITY (Compact / Standard / Detailed) ───────
 function setDensity(d) {
   var ck = document.getElementById('cockpit');
@@ -9203,6 +9396,9 @@ document.addEventListener('DOMContentLoaded', applyDensity);
 var _schedView = 'today';
 function setScheduleView(v) {
   _schedView = v;
+  var sel = document.getElementById('schedViewSelect');
+  if (sel && sel.value !== v) sel.value = v;
+  // Legacy toggle buttons (if present) stay in sync; null-safe.
   ['Today', 'Week', 'Month'].forEach(function(x) {
     var b = document.getElementById('sv' + x);
     if (b) b.classList.toggle('active', x.toLowerCase() === v);
@@ -9225,24 +9421,47 @@ function renderScheduleView(view) {
   function ssvc(s)  { return s.service || s.service_type || 'Session'; }
 
   if (view === 'week') {
-    var html = '', totalWeek = 0;
+    var days = [], maxCount = 1, totalWeek = 0, busiest = null;
     for (var i = 0; i < 7; i++) {
       var d = new Date(today); d.setDate(today.getDate() + i);
       var ds = d.toISOString().slice(0, 10);
       var dayS = sessions.filter(function(s) { return sdate(s) === ds; }).sort(function(a, b) { return stime(a) > stime(b) ? 1 : -1; });
-      totalWeek += dayS.length;
       var tc = {}; dayS.forEach(function(s) { var t = stime(s); tc[t] = (tc[t] || 0) + 1; });
       var conflict = Object.keys(tc).some(function(t) { return t !== '—' && tc[t] > 1; });
-      var label = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-      html += '<div style="margin-bottom:10px;border-left:2px solid ' + (dayS.length ? '#e8b84b66' : '#ffffff14') + ';padding-left:12px">' +
-        '<div style="display:flex;justify-content:space-between;align-items:center">' +
-        '<span style="font-family:\'Cinzel\',serif;font-size:12px;letter-spacing:.1em;color:#e8b84b">' + label + (ds === todayStr ? ' · Today' : '') + '</span>' +
-        '<span style="font-size:12px;color:#9a96c0">' + dayS.length + ' session' + (dayS.length !== 1 ? 's' : '') + (conflict ? ' · <span style="color:#ee7070">⚠ conflict</span>' : '') + '</span></div>' +
-        (dayS.length ? dayS.map(function(s) { return '<div style="font-size:13px;color:#d8d4f0;margin-top:3px">' + stime(s) + ' — ' + _schedClientSpan(sname(s)) + ' <span style="color:#9a96c0">' + ssvc(s) + '</span></div>'; }).join('')
-                     : '<div style="font-size:13px;color:#6860a0;margin-top:3px">Open — no sessions booked</div>') +
-        '</div>';
+      totalWeek += dayS.length;
+      if (dayS.length > maxCount) maxCount = dayS.length;
+      var rec = {
+        ds: ds, count: dayS.length, sessions: dayS, conflict: conflict, isToday: ds === todayStr,
+        label: d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+      };
+      if (!busiest || rec.count > busiest.count) busiest = rec;
+      days.push(rec);
     }
-    el.innerHTML = '<div style="font-size:12px;color:#9a96c0;margin-bottom:12px">This week: ' + totalWeek + ' session' + (totalWeek !== 1 ? 's' : '') + ' scheduled</div>' + html;
+    var head = '<div style="font-size:13px;color:#cfc9ee;margin-bottom:14px">This week: ' +
+      '<strong style="color:#e8b84b">' + totalWeek + '</strong> session' + (totalWeek !== 1 ? 's' : '') + ' scheduled' +
+      (busiest && busiest.count > 0 ? ' · busiest <strong style="color:#e8b84b">' + busiest.label.split(',')[0] + '</strong> (' + busiest.count + ')' : '') + '</div>';
+    el.innerHTML = head + days.map(function(r) {
+      var pct = r.count ? Math.max(Math.round((r.count / maxCount) * 100), 8) : 0;
+      var cls = 'wk-row' + (r.isToday ? ' wk-today' : '') + (r.count === maxCount && maxCount > 1 ? ' wk-busy' : '');
+      // Show only the first 3 client names, then "+N more" — no long inline chains.
+      var names = r.sessions.map(function(s) { return _schedClientSpan(sname(s)); });
+      var shown = names.slice(0, 3).join(', ');
+      var extra = names.length > 3 ? ' <span style="color:#e8b84b99">+' + (names.length - 3) + ' more</span>' : '';
+      var detail = r.sessions.length
+        ? '<div style="font-size:13px;color:#a8a2cc;margin:2px 0 10px;padding-left:90px">' +
+            shown + extra +
+            (r.conflict ? ' <span style="color:#ee7070">· ⚠ conflict</span>' : '') + '</div>'
+        : '';
+      var t = r.count === 0 ? { n: 'Open', c: 'wl-open' } : r.count <= 2 ? { n: 'Light', c: 'wl-light' }
+            : r.count <= 4 ? { n: 'Moderate', c: 'wl-mod' } : r.count <= 6 ? { n: 'Heavy', c: 'wl-heavy' }
+            : { n: 'Full', c: 'wl-full' };
+      return '<div class="' + cls + '">' +
+        '<span class="wk-day">' + r.label + (r.isToday ? ' · Today' : '') + '</span>' +
+        '<span class="wk-bar-track"><span class="wk-bar-fill" style="width:' + pct + '%"></span></span>' +
+        '<span class="wg-tier ' + t.c + '">' + t.n + '</span>' +
+        '<span class="wk-count">' + r.count + ' session' + (r.count !== 1 ? 's' : '') + '</span>' +
+      '</div>' + detail;
+    }).join('');
     return;
   }
 
@@ -9265,12 +9484,104 @@ function renderScheduleView(view) {
     return;
   }
 
-  // today (default)
+  // today (default) — ALWAYS render the table shell (headers visible even when empty).
   var list = sessions.filter(function(s) { return sdate(s) === todayStr; }).sort(function(a, b) { return stime(a) > stime(b) ? 1 : -1; });
-  if (!list.length) { el.innerHTML = '<p class="home-empty">No sessions scheduled for today.</p>'; return; }
-  el.innerHTML = list.map(function(s) {
-    return '<div class="sched-item"><span class="sched-time">' + stime(s) + '</span>' + _schedClientSpan(sname(s)) + '<span class="sched-type">' + ssvc(s) + '</span></div>';
-  }).join('');
+  var body;
+  if (!list.length) {
+    body = '<tr class="sched-empty-row"><td colspan="4"><div class="sched-empty">' +
+      '<div class="sched-empty-msg">No appointments scheduled today.</div>' +
+      '<div class="sched-empty-sub">Suggestions</div>' +
+      '<div class="sched-empty-guide">' +
+        '<div class="seg-row"><span class="seg-lbl">Review</span><span class="seg-val">Review intake forms</span></div>' +
+        '<div class="seg-row"><span class="seg-lbl">Follow-Up</span><span class="seg-val">Complete follow-ups</span></div>' +
+        '<div class="seg-row"><span class="seg-lbl">Scheduling</span><span class="seg-val">Schedule new clients</span></div>' +
+      '</div>' +
+      '<div class="sched-empty-actions">' +
+        '<button class="sched-empty-btn primary" onclick="showTab(\'booking\');setTimeout(function(){toggleApptForm()},200)">Create Appointment</button>' +
+        '<button class="sched-empty-btn secondary" onclick="setScheduleView(\'month\')">Open Calendar</button>' +
+      '</div>' +
+    '</div></td></tr>';
+  } else {
+    // Highlight the next upcoming session (first whose time is still ahead of now).
+    var nowHM = new Date().toTimeString().slice(0, 5);
+    var nextIdx = -1;
+    for (var n = 0; n < list.length; n++) { if (stime(list[n]) >= nowHM) { nextIdx = n; break; } }
+    var dotColors = ['#7c5cbf', '#f07030', '#3b82f6', '#22c98a', '#e8b84b'];
+    body = list.map(function(s, i) {
+      var isNext = (i === nextIdx);
+      var safe = String(sname(s)).replace(/'/g, "\\'");
+      var dot = dotColors[i % dotColors.length];
+      return '<tr class="sched-trow' + (isNext ? ' sched-trow-next' : '') + '">' +
+        '<td class="st-time"><span class="st-dot" style="background:' + dot + '"></span>' + _fmt12(stime(s)) +
+          (isNext ? '<span class="st-next">Next</span>' : '') + '</td>' +
+        '<td class="st-client">' + _schedClientSpan(sname(s)) + '</td>' +
+        '<td class="st-type">' + ssvc(s) + '</td>' +
+        '<td class="st-action"><button class="sched-open-btn" onclick="openClientByName(\'' + safe + '\')">Open Client</button></td>' +
+      '</tr>';
+    }).join('');
+  }
+  el.innerHTML = '<table class="sched-table"><thead><tr>' +
+    '<th>Time</th><th>Client</th><th>Session Type</th><th>Action</th>' +
+    '</tr></thead><tbody>' + body + '</tbody></table>';
+}
+
+// 24h "HH:MM" → 12-hour "09:00 AM" for the schedule table.
+function _fmt12(hhmm) {
+  if (!hhmm || hhmm === '—') return '—';
+  var p = String(hhmm).split(':');
+  var h = parseInt(p[0], 10);
+  var m = (p[1] || '00').slice(0, 2);
+  if (isNaN(h)) return hhmm;
+  var ap = h >= 12 ? 'PM' : 'AM';
+  var h12 = h % 12; if (h12 === 0) h12 = 12;
+  return (h12 < 10 ? '0' + h12 : h12) + ':' + m + ' ' + ap;
+}
+
+// Week-at-a-Glance: compact per-day session counts for the next 7 days,
+// today highlighted. Live data from REA_DATA; clicking opens the week schedule.
+function _renderWeekGlance() {
+  var el = document.getElementById('homeWeekGlance');
+  if (!el) return;
+  try {
+    var sessions = (typeof REA_DATA !== 'undefined' && REA_DATA.sessions) ? REA_DATA.sessions : [];
+    var today = new Date(); today.setHours(0, 0, 0, 0);
+    var todayStr = today.toISOString().slice(0, 10);
+    function sdate(s) { return (s.session_date || s.date || '').slice(0, 10); }
+    // Simple weekly snapshot — day + session count, today highlighted.
+    var rows = '';
+    for (var i = 0; i < 7; i++) {
+      var d = new Date(today); d.setDate(today.getDate() + i);
+      var ds = d.toISOString().slice(0, 10);
+      var cnt = sessions.filter(function(s) { return sdate(s) === ds; }).length;
+      var label = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+      rows += '<div class="wg-row' + (ds === todayStr ? ' wg-today' : '') + '">' +
+        '<span class="wg-day">' + label + '</span>' +
+        '<span class="wg-dots"></span>' +
+        '<span class="wg-cnt">' + cnt + ' Session' + (cnt !== 1 ? 's' : '') + '</span></div>';
+    }
+    el.innerHTML = rows;
+  } catch (e) {
+    el.innerHTML = '<p class="home-empty">Unable to load week.</p>';
+  }
+}
+
+// Relative-time formatter for Recent Activity ("2 hours ago", "1 day ago", …).
+function _relTime(dateStr, timeStr) {
+  if (!dateStr) return '';
+  var dt = new Date(String(dateStr).slice(0, 10) + 'T' + String(timeStr || '00:00').slice(0, 5) + ':00');
+  var diff = Date.now() - dt.getTime();
+  if (isNaN(diff)) return dateStr;
+  if (diff < 0) diff = 0;
+  var mins = Math.round(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return mins + (mins === 1 ? ' min ago' : ' mins ago');
+  var hrs = Math.round(mins / 60);
+  if (hrs < 24) return hrs + (hrs === 1 ? ' hour ago' : ' hours ago');
+  var days = Math.round(hrs / 24);
+  if (days < 7) return days + (days === 1 ? ' day ago' : ' days ago');
+  var wks = Math.round(days / 7);
+  if (wks < 5) return wks + (wks === 1 ? ' week ago' : ' weeks ago');
+  return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
 function renderHomeDashboard() {
@@ -9311,6 +9622,15 @@ function renderHomeDashboard() {
     }
   } catch(e) {}
 
+  // ── ESTIMATED REVENUE TODAY (sum of today's scheduled session prices) ──
+  try {
+    var revToday = todaySess.reduce(function(sum, s) {
+      return sum + (Number(s.price != null ? s.price : (s.amount || 0)) || 0);
+    }, 0);
+    var revEl = document.getElementById('homeStatRevenueToday');
+    if (revEl) revEl.textContent = '$' + revToday.toLocaleString();
+  } catch(e) {}
+
   // ── SESSIONS THIS MONTH ────────────────────────────────────
   try {
     if (typeof REA_DATA !== 'undefined') {
@@ -9324,9 +9644,11 @@ function renderHomeDashboard() {
   } catch(e) {}
 
   // Schedule panel (Today / Week / Month)
-  renderScheduleView(_schedView);
+  renderScheduleView('today');
+  // Week-at-a-glance summary panel
+  _renderWeekGlance();
 
-  // ── RECENT CLIENT ACTIVITY ───────────────────────────────────
+  // ── RECENT CLIENT ACTIVITY (compact summary list, top 5) ─────
   var actEl = document.getElementById('homeActivity');
   if (actEl) {
     try {
@@ -9339,29 +9661,30 @@ function renderHomeDashboard() {
       } else {
         var rows = recSess.map(function(s) {
           var name  = s.client || s.client_name || '—';
-          var date  = s.session_date || s.date || '—';
-          var svc   = s.service || s.service_type || '—';
-          var pstat = s.payment_status || s.status || '—';
-          var pcolor = pstat === 'paid' || pstat === 'completed' ? 'color:#22c98a'
-                     : pstat === 'unpaid' || pstat === 'partial' ? 'color:#ee9944' : '';
-          var rec = (s.recommendations && s.recommendations[0])
-                    ? s.recommendations[0].product_name : '—';
+          var date  = s.session_date || s.date || '';
+          var time  = s.session_time || s.time || '';
+          var svc   = s.service || s.service_type || '';
+          var pstat = s.payment_status || s.status || '';
+          // Activity description derived from available signals.
+          var desc  = s.activity || (s.followup_sent ? 'Follow-Up Submitted'
+                      : (pstat === 'completed' || pstat === 'paid') ? 'Session Completed'
+                      : 'Session Logged');
+          var rel   = _relTime(date, time);
           var nextAction = pstat === 'unpaid' ? 'Reconcile payment'
                          : (!s.followup_sent ? 'Send follow-up' : 'Review notes');
-          return '<tr>' +
-            '<td class="ac-name" onclick="showTab(\'clients\')" title="Go to Clients">' + name + '</td>' +
-            '<td>' + date + '</td>' +
-            '<td>' + svc + '</td>' +
-            '<td style="' + pcolor + '">' + pstat + '</td>' +
-            '<td class="ac-dim">' + rec + '</td>' +
-            '<td style="color:#e8b84b99;font-family:\'Cinzel\',serif;font-size:12px;letter-spacing:.1em">' + nextAction + '</td>' +
-          '</tr>';
+          var extra = (svc ? svc + ' · ' : '') + nextAction;
+          var safe  = String(name).replace(/'/g, "\\'");
+          return '<div class="ac-li" onclick="openClientByName(\'' + safe + '\')" title="Open client">' +
+            '<div class="ac-meta">' +
+              '<span class="ac-name">' + name + '</span>' +
+              '<span class="ac-act">' + desc + '</span>' +
+              '<span class="ac-extra ac-dim">' + extra + '</span>' +
+            '</div>' +
+            '<span class="ac-when">' + rel + '</span>' +
+          '</div>';
         }).join('');
-        actEl.innerHTML = '<table class="activity-tbl"><thead><tr>' +
-          '<th>Client</th><th>Last Session</th><th>Service</th><th>Status</th>' +
-          '<th>Outstanding Rec</th><th>Next Action</th>' +
-          '</tr></thead><tbody>' + rows + '</tbody></table>' +
-          '<div style="text-align:center;margin-top:14px"><button onclick="showTab(\'clients\')" style="background:none;border:1px solid rgba(232,184,75,.35);color:#e8b84b;font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;padding:9px 22px;cursor:pointer">View All Activity →</button></div>';
+        actEl.innerHTML = '<div class="ac-list">' + rows + '</div>' +
+          '<div style="text-align:center;margin-top:12px"><button onclick="showTab(\'clients\')" style="background:none;border:1px solid rgba(232,184,75,.35);color:#e8b84b;font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;padding:8px 20px;cursor:pointer">View All Activity →</button></div>';
       }
     } catch(e) {
       actEl.innerHTML = '<p class="home-empty">Unable to load activity.</p>';
@@ -9388,44 +9711,26 @@ function renderHomeDashboard() {
         return (a.last || '') < (b.last || '') ? -1 : 1;
       }).slice(0, 6);
 
-      var alertEl = document.getElementById('homeStatAlerts');
-      if (alertEl) {
-        alertEl.textContent = stale.length;
-        alertEl.className = 'action-stat-val ' + (stale.length > 0 ? 'amber' : 'green');
-      }
-      var aqOvEl = document.getElementById('aqOverdue');
-      if (aqOvEl) aqOvEl.textContent = stale.length;
-
-      if (!stale.length) {
-        flagsEl.innerHTML = '<p class="home-ok"><span class="pri-badge pri-badge--healthy">🟢 All Clear</span> No overdue clients detected.</p>';
-      } else {
-        flagsEl.innerHTML = stale.map(function(c) {
-          var days = c.last
-            ? Math.floor((Date.now() - new Date(c.last).getTime()) / 86400000)
-            : null;
-          var badgeClass, badgeText;
-          if (!days || days > 120) {
-            badgeClass = 'pri-badge--critical'; badgeText = '🔴 Critical';
-          } else if (days > 90) {
-            badgeClass = 'pri-badge--warn'; badgeText = '🟠 Needs Attention';
-          } else {
-            badgeClass = 'pri-badge--watch'; badgeText = '🟡 Monitor';
-          }
-          var reason = days ? ('Inactive — oldest ' + days + ' days since last session') : 'No session on record';
-          var safeName = String(c.name).replace(/'/g, "\\'");
-          return '<div class="flag-item" style="display:flex;align-items:center;gap:12px">' +
-            '<div style="flex:1"><div class="flag-name">' + c.name + '</div>' +
-            '<div class="flag-reason">' + reason + '</div>' +
-            '<span class="pri-badge ' + badgeClass + '" style="margin-top:5px;display:inline-flex">' + badgeText + '</span>' +
-            '</div>' +
-            '<button class="aq-btn" style="flex:none;white-space:nowrap" onclick="openClientByName(\'' + safeName + '\')">Open Client →</button>' +
-          '</div>';
-        }).join('');
-      }
+      // Seed the SHARED urgent registry with inactive (stale) clients.
+      // The overdue-follow-up scan in _applyBriefingData writes to this SAME
+      // registry keyed by client name, so each client is listed only once
+      // even when they are both inactive AND have overdue follow-ups.
+      window._urgentRegistry = {};
+      stale.forEach(function(c) {
+        var days = c.last ? Math.floor((Date.now() - new Date(c.last).getTime()) / 86400000) : null;
+        var key = _urgentKey(c.name);
+        if (!key) return;
+        window._urgentRegistry[key] = {
+          name: c.name, overdue: 0,
+          oldestDays: (days != null ? days : 999), stale: true
+        };
+      });
+      _renderUrgent();
     } catch(e) {
       flagsEl.innerHTML = '<p class="home-empty">Unable to compute flags.</p>';
     }
   }
+  _syncKpiDots();
 
   // ── Pending docs stat: clients missing waiver (tag check) ────
   try {
@@ -9444,6 +9749,95 @@ function renderHomeDashboard() {
 
   // ── AI DAILY BRIEFING ─────────────────────────────────────────
   _fetchHomeBriefing();
+}
+
+// Normalized identity key so the same client never appears twice, regardless of
+// casing / extra whitespace differences between the session and follow-up feeds.
+function _urgentKey(name) {
+  return String(name == null ? '' : name).toLowerCase().replace(/\s+/g, ' ').trim();
+}
+
+// Render the Urgent Attention panel from the shared, deduped registry.
+// One consolidated record per client; default top 5 + "View All Urgent Items".
+function _renderUrgent() {
+  var flagsEl = document.getElementById('homeFlags');
+  if (!flagsEl) return;
+  var reg = window._urgentRegistry || {};
+  // Final safety collapse: merge any entries that resolve to the same client,
+  // summing overdue counts and keeping the oldest item + fullest display name.
+  var byKey = {};
+  Object.keys(reg).forEach(function(k) {
+    var e = reg[k]; if (!e) return;
+    var nk = _urgentKey(e.name);
+    if (!nk) return;
+    if (!byKey[nk]) byKey[nk] = { name: e.name, overdue: 0, oldestDays: 0, stale: false };
+    byKey[nk].overdue += (e.overdue || 0);
+    byKey[nk].oldestDays = Math.max(byKey[nk].oldestDays, e.oldestDays || 0);
+    byKey[nk].stale = byKey[nk].stale || !!e.stale;
+    if (e.name && String(e.name).length > String(byKey[nk].name).length) byKey[nk].name = e.name;
+  });
+  var list = Object.keys(byKey).map(function(k) { return byKey[k]; });
+  // Most overdue items first, then oldest outstanding.
+  list.sort(function(a, b) {
+    if (b.overdue !== a.overdue) return b.overdue - a.overdue;
+    return (b.oldestDays || 0) - (a.oldestDays || 0);
+  });
+
+  // Keep the deduped client count in sync with the KPI / action-queue counters.
+  var aqOvEl = document.getElementById('aqOverdue');
+  if (aqOvEl) aqOvEl.textContent = list.length;
+  var alertEl = document.getElementById('homeStatAlerts');
+  if (alertEl) {
+    alertEl.textContent = list.length;
+    alertEl.className = 'action-stat-val ' + (list.length > 0 ? 'amber' : 'green');
+  }
+
+  if (!list.length) {
+    flagsEl.innerHTML = '<p class="home-ok"><span class="pri-badge pri-badge--healthy">🟢 All Clear</span> No clients need urgent attention.</p>';
+    _syncKpiDots();
+    return;
+  }
+
+  var TOP = 5;
+  var rows = list.slice(0, TOP).map(function(c) {
+    var oldest = c.oldestDays;
+    var icon = (oldest == null || oldest >= 30) ? '🔴' : oldest >= 14 ? '🟠' : '🟡';
+    var items = c.overdue > 0
+      ? (c.overdue + ' overdue follow-up' + (c.overdue !== 1 ? 's' : ''))
+      : 'Inactive client';
+    var oldestTxt = (oldest != null && oldest < 999)
+      ? ('oldest ' + oldest + ' day' + (oldest !== 1 ? 's' : '') + ' overdue')
+      : 'no recent activity';
+    var safeName = String(c.name).replace(/'/g, "\\'");
+    return '<div class="urgent-item flag-item" style="display:flex;align-items:center;gap:12px">' +
+      '<span class="flag-icon">' + icon + '</span>' +
+      '<div style="flex:1"><div class="flag-name">' + c.name + '</div>' +
+      '<div class="flag-reason">' + items + ' · ' + oldestTxt + '</div></div>' +
+      '<button class="aq-btn" style="flex:none;white-space:nowrap" onclick="openClientByName(\'' + safeName + '\')">Open Client →</button>' +
+    '</div>';
+  }).join('');
+
+  var more = list.length > TOP
+    ? '<div style="text-align:center;margin-top:12px"><button class="aq-btn" style="border-color:rgba(232,184,75,.3)" onclick="showTab(\'followups\')">View All Urgent Items (' + list.length + ') →</button></div>'
+    : '';
+  flagsEl.innerHTML = rows + more;
+  _syncKpiDots();
+}
+
+// Set a 🔴/🟠/🟢 priority dot on each KPI based on its value's severity class.
+function _syncKpiDots() {
+  var map = {
+    kdotSessions: 'homeStatSessions', kdotIntakes: 'homeStatIntakes',
+    kdotFollowUps: 'homeStatFollowUps', kdotDocs: 'homeStatDocs', kdotAlerts: 'homeStatAlerts'
+  };
+  Object.keys(map).forEach(function(dotId) {
+    var dot = document.getElementById(dotId);
+    var val = document.getElementById(map[dotId]);
+    if (!dot || !val) return;
+    var c = val.className || '';
+    dot.textContent = /\bred\b/.test(c) ? '🔴' : /\bamber\b/.test(c) ? '🟠'
+                    : /\bgreen\b/.test(c) ? '🟢' : '⚪';
+  });
 }
 
 function toggleBizMore() {
@@ -9523,45 +9917,27 @@ function _applyBriefingData(data, briefEl) {
     }
     if (unpaidCount !== undefined) setStat('homeStatDocs',      unpaidCount, unpaidCount > 0 ? 'amber' : 'green');
 
-    // Prepend overdue aftercare items to homeFlags panel
+    // Merge overdue follow-ups into the SHARED urgent registry (keyed by client),
+    // then re-render once. This guarantees a client who is both inactive AND has
+    // overdue follow-ups is shown a single consolidated time — never duplicated.
     if (b.raw_data && b.raw_data.dueAftercare && b.raw_data.dueAftercare.length) {
       try {
         var today = new Date().toISOString().slice(0, 10);
-        // Group overdue follow-ups BY CLIENT — never list the same client repeatedly.
-        var byClient = {};
+        window._urgentRegistry = window._urgentRegistry || {};
+        var reg = window._urgentRegistry;
         b.raw_data.dueAftercare.forEach(function(a) {
           var sf = a.scheduled_for ? a.scheduled_for.slice(0, 10) : null;
           if (!sf || sf >= today) return;
           var days = Math.floor((Date.now() - new Date(sf).getTime()) / 86400000);
           var name = a.client_name || (a.sessions && a.sessions.client_name) || 'Unknown';
-          if (!byClient[name]) byClient[name] = { name: name, count: 0, maxDays: 0 };
-          byClient[name].count++;
-          if (days > byClient[name].maxDays) byClient[name].maxDays = days;
+          var key = _urgentKey(name);
+          if (!key) return;
+          if (!reg[key]) reg[key] = { name: name, overdue: 0, oldestDays: 0, stale: false };
+          reg[key].overdue++;
+          if (days > reg[key].oldestDays) reg[key].oldestDays = days;
+          if (name && String(name).length > String(reg[key].name).length) reg[key].name = name;
         });
-        var grouped = Object.keys(byClient).map(function(k) { return byClient[k]; })
-          .sort(function(a, b) { return b.maxDays - a.maxDays; });
-
-        if (grouped.length) {
-          var flagsEl = document.getElementById('homeFlags');
-          if (flagsEl) {
-            var sevHtml = '<div style="font-family:\'Cinzel\',serif;font-size:9px;letter-spacing:.25em;' +
-              'text-transform:uppercase;color:#ee7070;margin-bottom:10px">Overdue Follow-Ups</div>' +
-              grouped.slice(0, 6).map(function(o) {
-                var icon = o.maxDays >= 30 ? '🔴' : o.maxDays >= 14 ? '🟠' : '🟡';
-                var safeName = String(o.name).replace(/'/g, "\\'");
-                return '<div class="flag-item" style="display:flex;align-items:center;gap:12px">' +
-                  '<span class="flag-icon">' + icon + '</span>' +
-                  '<div style="flex:1"><div class="flag-name">' + o.name + '</div>' +
-                  '<div class="flag-reason">' + o.count + ' overdue follow-up' + (o.count !== 1 ? 's' : '') +
-                  ' · oldest ' + o.maxDays + ' day' + (o.maxDays !== 1 ? 's' : '') + '</div></div>' +
-                  '<button class="aq-btn" style="flex:none;white-space:nowrap" onclick="openClientByName(\'' + safeName + '\')">Open Client →</button>' +
-                  '</div>';
-              }).join('');
-            var existing = flagsEl.innerHTML;
-            flagsEl.innerHTML = sevHtml +
-              (existing ? '<div style="margin-top:14px;padding-top:14px;border-top:1px solid #dddaee0d">' + existing + '</div>' : '');
-          }
-        }
+        _renderUrgent();
       } catch(_) {}
     }
 
@@ -9577,19 +9953,36 @@ function _applyBriefingData(data, briefEl) {
     if (uc > 0) narr.push(uc + ' session' + (uc !== 1 ? 's' : '') + ' ' + (uc === 1 ? 'has' : 'have') + ' an outstanding balance to reconcile.');
     if (rev > 0) narr.push('Estimated revenue scheduled for today is $' + rev.toLocaleString() + '.');
 
-    var nStyle = 'font-family:\'EB Garamond\',serif;font-size:16px;line-height:1.85;color:rgba(240,236,255,0.92);margin:0 0 12px';
+    // ── PRIMARY: Today's Priorities — operational action list (the focus) ──
+    var alertsN = (function () { var e = document.getElementById('homeStatAlerts'); var v = e ? parseInt(e.textContent, 10) : NaN; return isNaN(v) ? 0 : v; })();
+    var priorities = [];
+    if (fc > 0) priorities.push('Review ' + fc + ' overdue follow-up' + (fc !== 1 ? 's' : '') + '.');
+    if (ic > 0) priorities.push('Clear ' + ic + ' intake form' + (ic !== 1 ? 's' : '') + '.');
+    if (uc > 0) priorities.push('Reconcile ' + uc + ' outstanding payment' + (uc !== 1 ? 's' : '') + '.');
+    if (alertsN > 0) priorities.push('Address ' + alertsN + ' AI alert' + (alertsN !== 1 ? 's' : '') + '.');
+    if (sc > 0) priorities.push('Prepare for ' + sc + ' session' + (sc !== 1 ? 's' : '') + ' today.');
+
     var html = '';
-    if (b.ai_summary) html += '<p style="' + nStyle + '">' + b.ai_summary + '</p>';
-    if (narr.length)  html += '<p style="' + nStyle + '">' + narr.join(' ') + '</p>';
-    if (b.key_priorities) {
-      var kp = Array.isArray(b.key_priorities) ? b.key_priorities.join(' · ') : b.key_priorities;
-      html += '<p style="font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#e8b84baa;margin:14px 0 0">Priorities: <span style="color:#f0ecff;font-family:\'EB Garamond\',serif;letter-spacing:0;text-transform:none;font-size:15px">' + kp + '</span></p>';
-    }
-    if (!html || (sc === 0 && ic === 0 && fc === 0 && uc === 0 && rev === 0 && !b.ai_summary)) {
-      briefEl.innerHTML = '<p class="home-ok"><span class="pri-badge pri-badge--healthy">🟢 All Clear</span> No urgent items for today.</p>';
+    if (priorities.length) {
+      html += '<div class="brief-pri"><div class="brief-pri-title">Today’s Priorities</div>' +
+        '<ol class="brief-pri-list">' + priorities.map(function (p) { return '<li>' + p + '</li>'; }).join('') + '</ol></div>';
     } else {
-      briefEl.innerHTML = html;
+      html += '<p class="home-ok"><span class="pri-badge pri-badge--healthy">🟢 All Clear</span> No priority actions for today.</p>';
     }
+
+    // ── SECONDARY: observations (narrative context, demoted below priorities) ──
+    var secondary = [];
+    if (b.ai_summary) secondary.push(b.ai_summary);
+    if (narr.length) secondary.push(narr.join(' '));
+    if (b.key_priorities) {
+      secondary.push('Focus: ' + (Array.isArray(b.key_priorities) ? b.key_priorities.join(', ') : b.key_priorities) + '.');
+    }
+    if (secondary.length) {
+      html += '<div class="brief-sec"><div class="brief-sec-title">Secondary Observations</div>' +
+        '<p class="brief-sec-text">' + secondary.join(' ') + '</p></div>';
+    }
+    briefEl.innerHTML = html;
+    try { _syncKpiDots(); } catch(e) {}
   } // end _applyBriefingData scope
 }
 
