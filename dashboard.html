@@ -979,6 +979,166 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
 .wg-summary { display: flex; justify-content: space-between; gap: 12px; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(232,184,75,.1); font-size: 12px; color: #9a96c0; }
 .wg-summary strong { color: #e8b84b; }
 
+/* ── Week Agenda — expanded schedule view with times ── */
+.week-picker-bar {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 14px;
+}
+.week-picker-copy { min-width: 0; text-align: center; }
+.week-picker-title {
+  display: block;
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: #e8b84b;
+}
+.week-picker-sub {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: #8f89b8;
+}
+.week-nav-btn,
+.week-pick-input {
+  min-height: 32px;
+  border: 1px solid rgba(232,184,75,.28);
+  border-radius: 6px;
+  background: rgba(255,255,255,.025);
+  color: #e8b84b;
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background .16s ease, border-color .16s ease, transform .16s ease;
+}
+.week-nav-btn { padding: 7px 11px; }
+.week-pick-input {
+  width: 100%;
+  margin: 0 0 14px;
+  padding: 7px 10px;
+  color-scheme: dark;
+}
+.week-nav-btn:hover,
+.week-pick-input:hover {
+  background: rgba(232,184,75,.08);
+  border-color: rgba(232,184,75,.52);
+}
+.week-agenda-summary {
+  margin: 0 0 13px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #cfc9ee;
+}
+.week-agenda-summary strong { color: #e8b84b; }
+.week-agenda-list { display: flex; flex-direction: column; gap: 10px; }
+.week-day-card {
+  border: 1px solid rgba(232,184,75,.09);
+  border-radius: 8px;
+  background: rgba(255,255,255,.015);
+  padding: 12px 12px 11px;
+}
+.week-day-card.is-today {
+  border-color: rgba(232,184,75,.34);
+  background: linear-gradient(90deg, rgba(232,184,75,.15), rgba(232,184,75,.035));
+  box-shadow: inset 3px 0 0 #e8b84b;
+}
+.week-day-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 8px;
+}
+.week-day-label {
+  flex: 1;
+  min-width: 0;
+  font-family: 'Cinzel', serif;
+  font-size: 12px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #dcd6f6;
+}
+.week-day-card.is-today .week-day-label { color: #ffd977; font-weight: 700; }
+.week-day-count {
+  min-width: 76px;
+  text-align: right;
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #cfc9ee;
+  white-space: nowrap;
+}
+.week-agenda-empty {
+  font-size: 13px;
+  color: #8f89b8;
+  padding: 3px 0 2px;
+}
+.week-session-row {
+  display: grid;
+  grid-template-columns: 70px minmax(0, 1fr);
+  gap: 11px;
+  align-items: baseline;
+  padding: 5px 0;
+  border-top: 1px solid rgba(232,184,75,.055);
+}
+.week-session-row:first-of-type { border-top: none; }
+.week-session-time {
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  letter-spacing: .05em;
+  color: #bda86c;
+  white-space: nowrap;
+}
+.week-session-client {
+  min-width: 0;
+  color: #f0ecff;
+  font-family: 'EB Garamond', serif;
+  font-size: 15px;
+  line-height: 1.25;
+  cursor: pointer;
+  text-decoration: none;
+}
+.week-session-client:hover {
+  color: #ffd977;
+  text-decoration: underline;
+  text-decoration-color: rgba(232,184,75,.45);
+  text-underline-offset: 3px;
+}
+.week-more-row {
+  padding-top: 5px;
+  font-size: 12px;
+  color: rgba(232,184,75,.72);
+  text-align: right;
+}
+.wg-row {
+  border: none;
+  width: 100%;
+  text-align: left;
+  background: none;
+  cursor: pointer;
+  transition: background .16s ease, border-color .16s ease, transform .16s ease;
+}
+.wg-row:hover {
+  background: rgba(232,184,75,.07);
+  transform: translateX(2px);
+}
+.wg-controls {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 7px;
+  margin-top: 13px;
+}
+.wg-controls .week-action-btn {
+  width: 100%;
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+}
+
 /* ── AI Daily Briefing — priorities-first ── */
 .brief-pri-title { font-family: 'Cinzel', serif; font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: #ffd977; margin-bottom: 10px; }
 .brief-pri-list { margin: 0 0 4px; padding-left: 0; list-style: none; counter-reset: bp; }
@@ -2043,6 +2203,10 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
   .sched-empty-btn.primary,
   .sched-empty-btn.secondary { flex: 1 1 100%; }
   .wg-cnt, .wk-count { min-width: 72px; }
+  .week-picker-bar { grid-template-columns: 1fr; }
+  .week-picker-copy { order: -1; }
+  .week-session-row { grid-template-columns: 62px minmax(0, 1fr); }
+  .wg-controls { grid-template-columns: 1fr; }
   .ac-li .ac-when { min-width: 58px; }
 }
 
@@ -10605,6 +10769,36 @@ document.addEventListener('DOMContentLoaded', applyDensity);
 
 // ── SCHEDULE VIEWS (Today / Week / Month) ─────────────────────
 var _schedView = 'today';
+var _schedWeekStart = null;
+function _schedISO(d) {
+  var x = new Date(d); x.setHours(12, 0, 0, 0);
+  return x.toISOString().slice(0, 10);
+}
+function _schedWeekStartFor(dateLike) {
+  var d = dateLike instanceof Date ? new Date(dateLike) : (dateLike ? new Date(String(dateLike).slice(0, 10) + 'T12:00:00') : new Date());
+  if (isNaN(d.getTime())) d = new Date();
+  d.setHours(12, 0, 0, 0);
+  d.setDate(d.getDate() - d.getDay());
+  return d;
+}
+function _schedActiveWeekStart() {
+  return _schedWeekStart ? new Date(_schedWeekStart + 'T12:00:00') : _schedWeekStartFor(new Date());
+}
+function setScheduleWeek(action) {
+  var base = _schedActiveWeekStart();
+  if (action === 'prev') base.setDate(base.getDate() - 7);
+  else if (action === 'next') base.setDate(base.getDate() + 7);
+  else base = _schedWeekStartFor(new Date());
+  _schedWeekStart = _schedISO(base);
+  setScheduleView('week');
+  _renderWeekGlance();
+}
+function setScheduleWeekDate(value) {
+  if (!value) return;
+  _schedWeekStart = _schedISO(_schedWeekStartFor(value));
+  setScheduleView('week');
+  _renderWeekGlance();
+}
 function setScheduleView(v) {
   _schedView = v;
   var sel = document.getElementById('schedViewSelect');
@@ -10620,6 +10814,10 @@ function _schedClientSpan(name) {
   var safe = String(name).replace(/'/g, "\\'");
   return '<span class="sched-client" style="cursor:pointer;text-decoration:underline;text-decoration-color:rgba(232,184,75,.4);text-underline-offset:3px" title="Open client profile" onclick="openClientByName(\'' + safe + '\')">' + name + '</span>';
 }
+function _schedAgendaClient(name) {
+  var safe = String(name).replace(/'/g, "\\'");
+  return '<span class="week-session-client" title="Open client profile" onclick="openClientByName(\'' + safe + '\')">' + name + '</span>';
+}
 function renderScheduleView(view) {
   var el = document.getElementById('homeSched');
   if (!el) return;
@@ -10633,9 +10831,11 @@ function renderScheduleView(view) {
 
   if (view === 'week') {
     var days = [], maxCount = 1, totalWeek = 0, busiest = null;
+    var weekStart = _schedActiveWeekStart();
+    var weekEnd = new Date(weekStart); weekEnd.setDate(weekStart.getDate() + 6);
     for (var i = 0; i < 7; i++) {
-      var d = new Date(today); d.setDate(today.getDate() + i);
-      var ds = d.toISOString().slice(0, 10);
+      var d = new Date(weekStart); d.setDate(weekStart.getDate() + i);
+      var ds = _schedISO(d);
       var dayS = sessions.filter(function(s) { return sdate(s) === ds; }).sort(function(a, b) { return stime(a) > stime(b) ? 1 : -1; });
       var tc = {}; dayS.forEach(function(s) { var t = stime(s); tc[t] = (tc[t] || 0) + 1; });
       var conflict = Object.keys(tc).some(function(t) { return t !== '—' && tc[t] > 1; });
@@ -10648,31 +10848,41 @@ function renderScheduleView(view) {
       if (!busiest || rec.count > busiest.count) busiest = rec;
       days.push(rec);
     }
-    var head = '<div style="font-size:13px;color:#cfc9ee;margin-bottom:14px">This week: ' +
+    var rangeLabel = weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + '–' +
+      weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    var datePick = _schedISO(weekStart);
+    var head = '<div class="week-picker-bar">' +
+        '<button class="week-nav-btn" onclick="setScheduleWeek(\'prev\')">Prev</button>' +
+        '<div class="week-picker-copy"><span class="week-picker-title">Week of ' + rangeLabel + '</span>' +
+          '<span class="week-picker-sub">Choose any date to view that week</span></div>' +
+        '<button class="week-nav-btn" onclick="setScheduleWeek(\'next\')">Next</button>' +
+      '</div>' +
+      '<input class="week-pick-input" type="date" value="' + datePick + '" onchange="setScheduleWeekDate(this.value)" aria-label="Choose week">' +
+      '<div class="week-agenda-summary">This week: ' +
       '<strong style="color:#e8b84b">' + totalWeek + '</strong> session' + (totalWeek !== 1 ? 's' : '') + ' scheduled' +
       (busiest && busiest.count > 0 ? ' · busiest <strong style="color:#e8b84b">' + busiest.label.split(',')[0] + '</strong> (' + busiest.count + ')' : '') + '</div>';
-    el.innerHTML = head + days.map(function(r) {
-      var pct = r.count ? Math.max(Math.round((r.count / maxCount) * 100), 8) : 0;
-      var cls = 'wk-row' + (r.isToday ? ' wk-today' : '') + (r.count === maxCount && maxCount > 1 ? ' wk-busy' : '');
-      // Show only the first 3 client names, then "+N more" — no long inline chains.
-      var names = r.sessions.map(function(s) { return _schedClientSpan(sname(s)); });
-      var shown = names.slice(0, 3).join(', ');
-      var extra = names.length > 3 ? ' <span style="color:#e8b84b99">+' + (names.length - 3) + ' more</span>' : '';
-      var detail = r.sessions.length
-        ? '<div style="font-size:13px;color:#a8a2cc;margin:2px 0 10px;padding-left:90px">' +
-            shown + extra +
-            (r.conflict ? ' <span style="color:#ee7070">· ⚠ conflict</span>' : '') + '</div>'
-        : '';
+    el.innerHTML = head + '<div class="week-agenda-list">' + days.map(function(r) {
       var t = r.count === 0 ? { n: 'Open', c: 'wl-open' } : r.count <= 2 ? { n: 'Light', c: 'wl-light' }
             : r.count <= 4 ? { n: 'Moderate', c: 'wl-mod' } : r.count <= 6 ? { n: 'Heavy', c: 'wl-heavy' }
             : { n: 'Full', c: 'wl-full' };
-      return '<div class="' + cls + '">' +
-        '<span class="wk-day">' + r.label + (r.isToday ? ' · Today' : '') + '</span>' +
-        '<span class="wk-bar-track"><span class="wk-bar-fill" style="width:' + pct + '%"></span></span>' +
-        '<span class="wg-tier ' + t.c + '">' + t.n + '</span>' +
-        '<span class="wk-count">' + r.count + ' session' + (r.count !== 1 ? 's' : '') + '</span>' +
-      '</div>' + detail;
-    }).join('');
+      var shown = r.sessions.slice(0, 3).map(function(s) {
+        return '<div class="week-session-row">' +
+          '<span class="week-session-time">' + _fmt12(stime(s)) + '</span>' +
+          _schedAgendaClient(sname(s)) +
+        '</div>';
+      }).join('');
+      var extra = r.sessions.length > 3 ? '<div class="week-more-row">+' + (r.sessions.length - 3) + ' more session' + (r.sessions.length - 3 !== 1 ? 's' : '') + '</div>' : '';
+      var detail = r.sessions.length ? shown + extra : '<div class="week-agenda-empty">No sessions scheduled</div>';
+      return '<div class="week-day-card' + (r.isToday ? ' is-today' : '') + '">' +
+        '<div class="week-day-head">' +
+          '<span class="week-day-label">' + r.label + (r.isToday ? ' · Today' : '') + '</span>' +
+          '<span class="wg-tier ' + t.c + '">' + t.n + '</span>' +
+          '<span class="week-day-count">' + r.count + ' session' + (r.count !== 1 ? 's' : '') + '</span>' +
+        '</div>' +
+        detail +
+        (r.conflict ? '<div class="week-more-row" style="color:#ee7070">Time conflict detected</div>' : '') +
+      '</div>';
+    }).join('') + '</div>';
     return;
   }
 
@@ -10756,22 +10966,28 @@ function _renderWeekGlance() {
   if (!el) return;
   try {
     var sessions = (typeof REA_DATA !== 'undefined' && REA_DATA.sessions) ? REA_DATA.sessions : [];
-    var today = new Date(); today.setHours(0, 0, 0, 0);
-    var todayStr = today.toISOString().slice(0, 10);
+    var weekStart = _schedActiveWeekStart();
+    var today = new Date(); today.setHours(12, 0, 0, 0);
+    var todayStr = _schedISO(today);
+    var activeWeekStr = _schedISO(weekStart);
     function sdate(s) { return (s.session_date || s.date || '').slice(0, 10); }
     // Simple weekly snapshot — day + session count, today highlighted.
     var rows = '';
     for (var i = 0; i < 7; i++) {
-      var d = new Date(today); d.setDate(today.getDate() + i);
-      var ds = d.toISOString().slice(0, 10);
+      var d = new Date(weekStart); d.setDate(weekStart.getDate() + i);
+      var ds = _schedISO(d);
       var cnt = sessions.filter(function(s) { return sdate(s) === ds; }).length;
       var label = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-      rows += '<div class="wg-row' + (ds === todayStr ? ' wg-today' : '') + '">' +
+      rows += '<button type="button" class="wg-row' + (ds === todayStr ? ' wg-today' : '') + '" onclick="setScheduleWeekDate(\'' + ds + '\')">' +
         '<span class="wg-day">' + label + '</span>' +
         '<span class="wg-dots"></span>' +
-        '<span class="wg-cnt">' + cnt + ' Session' + (cnt !== 1 ? 's' : '') + '</span></div>';
+        '<span class="wg-cnt">' + cnt + ' Session' + (cnt !== 1 ? 's' : '') + '</span></button>';
     }
-    el.innerHTML = rows + '<div style="text-align:center;margin-top:14px"><button class="week-action-btn" onclick="setScheduleView(\'week\')" style="background:none;border:1px solid rgba(232,184,75,.35);color:#e8b84b;font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;padding:8px 20px;cursor:pointer">Open Week View →</button></div>';
+    el.innerHTML = rows + '<div class="wg-controls">' +
+      '<button class="week-action-btn" onclick="setScheduleWeek(\'prev\')" style="background:none;border:1px solid rgba(232,184,75,.35);color:#e8b84b;font-family:\'Cinzel\',serif;font-size:10px;letter-spacing:.14em;text-transform:uppercase;padding:8px 12px;cursor:pointer">Prev</button>' +
+      '<button class="week-action-btn" onclick="setScheduleWeek(\'today\')" style="background:none;border:1px solid rgba(232,184,75,.35);color:#e8b84b;font-family:\'Cinzel\',serif;font-size:10px;letter-spacing:.14em;text-transform:uppercase;padding:8px 12px;cursor:pointer">This Week</button>' +
+      '<button class="week-action-btn" onclick="setScheduleWeek(\'next\')" style="background:none;border:1px solid rgba(232,184,75,.35);color:#e8b84b;font-family:\'Cinzel\',serif;font-size:10px;letter-spacing:.14em;text-transform:uppercase;padding:8px 12px;cursor:pointer">Next</button>' +
+      '</div><div style="text-align:center;margin-top:10px"><button class="week-action-btn" onclick="setScheduleWeekDate(\'' + activeWeekStr + '\')" style="background:none;border:1px solid rgba(232,184,75,.35);color:#e8b84b;font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;padding:8px 20px;cursor:pointer">Open Week View →</button></div>';
   } catch (e) {
     el.innerHTML = '<p class="home-empty">Unable to load week.</p>';
   }
