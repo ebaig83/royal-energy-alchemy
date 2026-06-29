@@ -4878,6 +4878,8 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
             <button class="aichat-chip" onclick="_reaBizChatAsk('What should I focus on today?')">What should I focus on today?</button>
             <button class="aichat-chip" onclick="_reaBizChatAsk('Why are follow-ups overdue?')">Why are follow-ups overdue?</button>
             <button class="aichat-chip" onclick="_reaBizChatAsk(&quot;What&apos;s my revenue forecast?&quot;)">What's my revenue forecast?</button>
+            <button class="aichat-chip" onclick="_reaBizChatAsk('Who needs attention first?')">Who needs attention first?</button>
+            <button class="aichat-chip" onclick="_reaBizChatAsk('How is the business doing?')">How is the business doing?</button>
           </div>
         </div>
       </div>
@@ -15303,62 +15305,264 @@ function _reaBizChatAsk(q) {
   resp.style.display = 'block';
   resp.innerHTML = '<span class="aichat-thinking">Thinking…</span>';
   setTimeout(function() {
-    resp.textContent = _reaBizChatAnswer(q);
+    var ctx = _dashCollectBusinessContext();
+    var answer = _dashAnswerBusinessQuestion(q, ctx);
+    resp.textContent = answer;
   }, 380);
 }
 
-function _reaBizChatAnswer(q) {
+function _dashCollectBusinessContext() {
+  var ctx = {};
+  // DOM values (populated by dashboard load)
+  function dv(id) { var e = document.getElementById(id); return e ? e.textContent.trim() : null; }
+  ctx.revenue          = dv('execKpiRevenue') || dv('statRevenue') || null;
+  ctx.activeClientsStr = dv('execKpiActiveClients') || null;
+  ctx.followUpsOverdue = parseInt(dv('homeStatFollowUps') || dv('aqOverdue') || '0', 10) || 0;
+  ctx.intakesPending   = parseInt(dv('homeStatIntakes')  || dv('aqIntake')  || '0', 10) || 0;
+  ctx.paymentsOut      = parseInt(dv('aqPayments') || '0', 10) || 0;
+  ctx.pendingReview    = parseInt(dv('aqReview')   || '0', 10) || 0;
+  ctx.readyToSchedule  = parseInt(dv('aqReady')    || '0', 10) || 0;
+  ctx.followUpRate     = dv('execKpiFollowUpRate') || null;
+
+  // REA_DATA — rich session/client analytics
+  if (typeof REA_DATA !== 'undefined') {
+    var c = REA_DATA.computed || (typeof REA_DATA.compute === 'function' ? REA_DATA.compute() : null);
+    if (c) {
+      ctx.totalRevenue   = c.revenue;
+      ctx.totalSessions  = c.sessCount;
+      ctx.totalClients   = c.totalClients;
+      ctx.repeatClients  = c.repeatClients;
+      ctx.repeatRate     = c.repeatRate;
+      ctx.avgPerSession  = c.avgPerSession;
+      ctx.payingCount    = c.paying;
+      ctx.tarotCount     = c.tarotCount;
+      ctx.exchangeCount  = c.exchangeCount;
+      ctx.inPersonCount  = c.inPersonCount;
+      ctx.weeks          = c.weeks || [];
+      ctx.clientList     = c.clientList || [];
+    }
+    // Today's sessions
+    var todayStr = new Date().toISOString().slice(0, 10);
+    try {
+      ctx.todaySessions = REA_DATA.sessions.filter(function(s) {
+        return (s.session_date || s.date || '') === todayStr;
+      });
+      ctx.sessionsToday = ctx.todaySessions.length;
+    } catch(e) { ctx.sessionsToday = 0; ctx.todaySessions = []; }
+
+    // Week session counts
+    try {
+      var monOf = function(d) {
+        var x = new Date(d); var day = x.getDay();
+        x.setDate(x.getDate() + (day === 0 ? -6 : 1 - day));
+        x.setHours(0, 0, 0, 0); return x;
+      };
+      var iso = function(d) { return d.toISOString().slice(0, 10); };
+      var tm = monOf(new Date()); var ts = new Date(tm); ts.setDate(tm.getDate() + 6);
+      var nm = new Date(tm); nm.setDate(tm.getDate() + 7); var ns = new Date(nm); ns.setDate(nm.getDate() + 6);
+      ctx.thisWeekCount = REA_DATA.sessions.filter(function(s) {
+        var sd = (s.session_date || s.date || '').slice(0, 10);
+        return sd >= iso(tm) && sd <= iso(ts);
+      }).length;
+      ctx.nextWeekCount = REA_DATA.sessions.filter(function(s) {
+        var sd = (s.session_date || s.date || '').slice(0, 10);
+        return sd >= iso(nm) && sd <= iso(ns);
+      }).length;
+      ctx.peakWeekly = (ctx.weeks || []).reduce(function(m, w) { return Math.max(m, w.sessions || 0); }, 0);
+
+      // Revenue forecast: trailing avg of up to 4 completed weeks
+      var thisMon = iso(tm);
+      var completed = (ctx.weeks || []).filter(function(w) { return w.week < thisMon; });
+      if (completed.length >= 2) {
+        var lastN = completed.slice(-4);
+        ctx.revForecastWeekly = Math.round(lastN.reduce(function(t, w) { return t + (w.revenue || 0); }, 0) / lastN.length);
+        ctx.revForecastWeeks  = lastN.length;
+      }
+    } catch(e) {}
+  }
+
+  // Urgent client registry
+  if (window._urgentRegistry) {
+    try {
+      ctx.urgentClients = Object.values(window._urgentRegistry)
+        .filter(function(u) { return u.overdue > 0 || u.stale; })
+        .sort(function(a, b) { return (b.oldestDays || 0) - (a.oldestDays || 0); });
+    } catch(e) { ctx.urgentClients = []; }
+  } else {
+    ctx.urgentClients = [];
+  }
+
+  // Lifecycle stage counts
+  try {
+    if (typeof _lcStageCounts === 'function') ctx.lc = _lcStageCounts();
+  } catch(e) {}
+
+  return ctx;
+}
+
+function _dashAnswerBusinessQuestion(q, ctx) {
   var lower = (q || '').toLowerCase();
+  var fu    = ctx.followUpsOverdue  || 0;
+  var si    = ctx.sessionsToday     || 0;
+  var ic    = ctx.intakesPending    || 0;
+  var pay   = ctx.paymentsOut       || 0;
+  var rev   = ctx.pendingReview     || 0;
+  var ready = ctx.readyToSchedule   || 0;
+  var urg   = ctx.urgentClients     || [];
 
-  // Read live values from populated DOM elements
-  function _dv(id) { var e = document.getElementById(id); return e ? e.textContent.trim() : null; }
-  var revenue   = _dv('execKpiRevenue')      || '$0';
-  var clients   = _dv('execKpiActiveClients')|| '—';
-  var sessions  = _dv('homeStatSessions')    || '—';
-  var followRate= _dv('execKpiFollowUpRate') || '—';
-  var followUps = _dv('homeStatFollowUps')   || '0';
-  var intakes   = _dv('homeStatIntakes')     || '0';
-  var fu = parseInt(followUps, 10) || 0;
-  var si = parseInt(sessions,  10) || 0;
-  var ic = parseInt(intakes,   10) || 0;
-
-  // Focus / priority
-  if (/focus|priorit|start|what.*(do|should).*today|work on/.test(lower)) {
-    if (fu > 0)
-      return 'Your top priority today is the ' + fu + ' overdue follow-up' + (fu !== 1 ? 's' : '') + '. That\'s your highest client-drift risk right now. After those, review intakes (' + intakes + ' pending) and check outstanding payments.';
-    if (ic > 0)
-      return 'No overdue follow-ups — clear the ' + ic + ' pending intake' + (ic !== 1 ? 's' : '') + ' so new clients don\'t stall before scheduling.';
-    if (si > 0)
-      return 'You have ' + si + ' session' + (si !== 1 ? 's' : '') + ' today. Protect same-day follow-through: session notes, follow-up scheduling, and payment status.';
-    return 'Your queue looks clear. Use the open capacity for proactive follow-up outreach or intake review.';
+  // ── FOCUS / PRIORITY ──
+  if (/focus|priorit|start|what.*(do|should).*today|work on|top.*action/.test(lower)) {
+    var actions = [];
+    if (fu > 0)    actions.push(fu    + ' overdue follow-up'   + (fu    !== 1 ? 's' : '') + ' (highest client-drift risk)');
+    if (ic > 0)    actions.push(ic    + ' intake'              + (ic    !== 1 ? 's' : '') + ' waiting for review');
+    if (pay > 0)   actions.push(pay   + ' outstanding payment' + (pay   !== 1 ? 's' : '') + ' to reconcile');
+    if (rev > 0)   actions.push(rev   + ' pending review'      + (rev   !== 1 ? 's' : ''));
+    if (si > 0)    actions.push(si    + ' session'             + (si    !== 1 ? 's' : '') + ' today — protect follow-through');
+    if (ready > 0) actions.push(ready + ' client'              + (ready !== 1 ? 's' : '') + ' ready to schedule');
+    if (!actions.length) return 'Your queue is clear today. Use the open capacity for proactive outreach or forward scheduling.';
+    return 'Priority order for today:\n' + actions.map(function(a, i) { return (i + 1) + '. ' + a + '.'; }).join('\n');
   }
 
-  // Follow-ups / overdue
+  // ── FOLLOW-UPS ──
   if (/follow.?up|overdue|aftercare/.test(lower)) {
-    if (fu === 0)
-      return 'No follow-ups are currently overdue — the follow-up queue is clear.';
-    return 'You have ' + fu + ' overdue follow-up' + (fu !== 1 ? 's' : '') + '. Your current follow-up rate is ' + followRate + '. The most common cause is sessions completing without a scheduled aftercare date. Open the Action Queue to resolve them now.';
+    if (fu === 0) return 'No follow-ups are currently overdue — the follow-up queue is clear.';
+    var urgNames = urg.slice(0, 3).map(function(u) {
+      return u.name + (u.oldestDays ? ' (' + u.oldestDays + 'd since contact)' : '');
+    });
+    var ans = fu + ' follow-up' + (fu !== 1 ? 's' : '') + ' are overdue.';
+    if (ctx.followUpRate) ans += ' Current follow-up rate: ' + ctx.followUpRate + '.';
+    if (urgNames.length)  ans += ' Longest-overdue: ' + urgNames.join(', ') + '.';
+    ans += ' Root cause is usually sessions completing without a next-contact date. Open the Action Queue to resolve.';
+    return ans;
   }
 
-  // Revenue / forecast
+  // ── REVENUE / FORECAST ──
   if (/revenue|forecast|income|earn|money|financ/.test(lower)) {
-    return 'Month-to-date revenue is ' + revenue + ' across ' + clients + ' active clients and ' + sessions + ' sessions this month. To project forward, multiply your average session value by remaining booked appointments. Outstanding payments may still be pending collection.';
+    var revStr = ctx.revenue || (ctx.totalRevenue != null ? '$' + ctx.totalRevenue.toLocaleString() : null);
+    if (!revStr) return 'Revenue data is not yet available. Make sure the dashboard has finished loading.';
+    var ans = 'Month-to-date revenue: ' + revStr + '.';
+    if (ctx.avgPerSession) ans += ' Average per paid session: $' + ctx.avgPerSession + '.';
+    if (ctx.revForecastWeekly != null) {
+      ans += ' Trailing ' + ctx.revForecastWeeks + '-week average: $' + ctx.revForecastWeekly.toLocaleString() + '/week.';
+    } else {
+      ans += ' Revenue forecast needs ≥2 completed weeks of data.';
+    }
+    if (pay > 0) ans += ' ' + pay + ' outstanding payment' + (pay !== 1 ? 's' : '') + ' may still be pending collection.';
+    return ans;
   }
 
-  // Sessions / appointments
+  // ── CLIENTS ──
+  if (/client|roster|active|how many client/.test(lower)) {
+    var tc = ctx.totalClients || ctx.activeClientsStr || '—';
+    var ans = tc + ' unique clients on record.';
+    if (ctx.repeatClients != null && ctx.totalClients) {
+      ans += ' ' + ctx.repeatClients + ' are repeat clients (' + (ctx.repeatRate || 0) + '% retention).';
+    }
+    if (ctx.followUpRate) ans += ' Follow-up rate: ' + ctx.followUpRate + '.';
+    if (fu > 0)           ans += ' ' + fu + ' have overdue follow-ups.';
+    return ans;
+  }
+
+  // ── SESSIONS ──
   if (/session|appointment|booking|scheduled/.test(lower)) {
-    return 'You have ' + sessions + ' session' + (si !== 1 ? 's' : '') + ' logged this month. Today\'s schedule shows ' + (si > 0 ? si + ' appointment' + (si !== 1 ? 's' : '') : 'no appointments') + '.';
+    var ans = '';
+    if (ctx.totalSessions) {
+      ans = ctx.totalSessions + ' total sessions on record.';
+      if (ctx.thisWeekCount != null) ans += ' This week: ' + ctx.thisWeekCount + '.';
+      if (ctx.nextWeekCount != null) ans += ' Next week: ' + ctx.nextWeekCount + ' booked.';
+    }
+    ans += (ans ? ' ' : '') + 'Today: ' + si + (si > 0 ? ' session' + (si !== 1 ? 's' : '') + ' scheduled.' : ' — no sessions scheduled.');
+    if (ctx.peakWeekly) ans += ' Peak capacity observed: ' + ctx.peakWeekly + ' sessions/week.';
+    return ans || 'I don\'t have enough session data to answer that yet.';
   }
 
-  // Clients
-  if (/client|active|roster|how many/.test(lower)) {
-    return 'You currently have ' + clients + ' active clients in the 30-day window. Your follow-up rate is ' + followRate + ', meaning most clients are receiving aftercare outreach.';
+  // ── WHO NEEDS ATTENTION FIRST ──
+  if (/who|attent|urgent|at.?risk|needs.*first|first.*needs/.test(lower)) {
+    if (!urg.length && fu === 0) return 'No urgent client attention flagged right now.';
+    var ans = '';
+    if (urg.length) {
+      ans = 'Urgent clients (' + urg.length + ' flagged): ' +
+        urg.slice(0, 5).map(function(u) {
+          var p = [u.name];
+          if (u.overdue)    p.push(u.overdue + ' overdue follow-up' + (u.overdue !== 1 ? 's' : ''));
+          if (u.oldestDays) p.push(u.oldestDays + 'd since last contact');
+          return p.join(' — ');
+        }).join('; ') + '.';
+    }
+    if (fu > 0) ans += (ans ? ' Also: ' : '') + fu + ' total overdue follow-up' + (fu !== 1 ? 's' : '') + ' in the Action Queue.';
+    return ans;
   }
 
-  // Intakes
-  if (/intake|new client|application|pending/.test(lower)) {
-    if (ic === 0) return 'No intake forms are pending review right now.';
-    return 'There are ' + ic + ' intake form' + (ic !== 1 ? 's' : '') + ' awaiting review. These represent potential new clients who have not yet been scheduled.';
+  // ── BUSINESS HEALTH / OVERVIEW ──
+  if (/business|health|overview|summary|how.*doing|overall|performance|state of/.test(lower)) {
+    var revStr = ctx.revenue || (ctx.totalRevenue != null ? '$' + ctx.totalRevenue.toLocaleString() : null);
+    var parts = [];
+    if (revStr)             parts.push('Revenue: ' + revStr + ' MTD');
+    if (ctx.totalClients)   parts.push(ctx.totalClients + ' clients (' + (ctx.repeatRate || 0) + '% repeat)');
+    if (ctx.totalSessions)  parts.push(ctx.totalSessions + ' total sessions');
+    if (ctx.avgPerSession)  parts.push('avg $' + ctx.avgPerSession + '/session');
+    if (ctx.followUpRate)   parts.push(ctx.followUpRate + ' follow-up rate');
+    var risks = [];
+    if (fu > 0)  risks.push(fu  + ' overdue follow-up' + (fu  !== 1 ? 's' : ''));
+    if (ic > 0)  risks.push(ic  + ' unreviewed intake' + (ic  !== 1 ? 's' : ''));
+    if (pay > 0) risks.push(pay + ' outstanding payment' + (pay !== 1 ? 's' : ''));
+    var ans = (parts.length ? parts.join(' · ') + '.' : 'Snapshot data loading.');
+    if (risks.length) ans += ' Current risks: ' + risks.join(', ') + '.';
+    if (ctx.revForecastWeekly != null) ans += ' Revenue trend: $' + ctx.revForecastWeekly.toLocaleString() + '/week trailing avg.';
+    if (fu > 0)       ans += ' Best next action: clear the overdue follow-up queue.';
+    else if (ic > 0)  ans += ' Best next action: review pending intakes.';
+    else if (pay > 0) ans += ' Best next action: reconcile outstanding payments.';
+    else              ans += ' Best next action: use open capacity for proactive outreach.';
+    return ans;
+  }
+
+  // ── INTAKES ──
+  if (/intake|new client|onboard|application/.test(lower)) {
+    if (ic === 0 && ready === 0) return 'No intake forms pending and no clients waiting to schedule.';
+    var ans = '';
+    if (ic > 0)    ans  = ic    + ' intake form' + (ic    !== 1 ? 's' : '') + ' awaiting review.';
+    if (ready > 0) ans += (ans ? ' ' : '') + ready + ' client' + (ready !== 1 ? 's' : '') + ' approved and ready to schedule.';
+    if (rev > 0)   ans += ' ' + rev + ' pending review' + (rev !== 1 ? 's' : '') + ' in queue.';
+    return ans;
+  }
+
+  // ── PAYMENTS ──
+  if (/payment|invoice|unpaid|outstanding|owe|balance/.test(lower)) {
+    if (pay === 0) return 'No outstanding payments on record.';
+    var revStr = ctx.revenue || (ctx.totalRevenue != null ? '$' + ctx.totalRevenue.toLocaleString() : '—');
+    return pay + ' outstanding payment' + (pay !== 1 ? 's' : '') + ' in queue. Collected MTD: ' + revStr + '. Open Booking → Awaiting Payment to reconcile.';
+  }
+
+  // ── CAPACITY / WORKLOAD ──
+  if (/capacit|workload|utiliz|load|busy|peak/.test(lower)) {
+    if (!ctx.peakWeekly) return 'Not enough session history to compute utilization yet.';
+    var util = ctx.thisWeekCount != null ? Math.round(ctx.thisWeekCount / ctx.peakWeekly * 100) : null;
+    var ans = 'Peak observed: ' + ctx.peakWeekly + ' sessions/week.';
+    if (util != null)          ans += ' This week: ' + ctx.thisWeekCount + ' booked (' + util + '% of peak).';
+    if (ctx.nextWeekCount != null) ans += ' Next week: ' + ctx.nextWeekCount + ' booked.';
+    return ans;
+  }
+
+  // ── TODAY'S SCHEDULE ──
+  if (/today.*schedule|schedule.*today|today.*session|who.*today/.test(lower)) {
+    if (si === 0) return 'No sessions scheduled for today.';
+    var names = (ctx.todaySessions || []).map(function(s) {
+      var n = s.client || s.client_name || '—';
+      var svc = s.service || s.service_type || '';
+      return n + (svc ? ' (' + svc + ')' : '');
+    });
+    return si + ' session' + (si !== 1 ? 's' : '') + ' today' + (names.length ? ': ' + names.join(', ') : '') + '.';
+  }
+
+  // ── RECOMMENDATIONS ──
+  if (/recommend|suggest|advice|should i|best.*action|what.*do/.test(lower)) {
+    var recs = [];
+    if (fu > 0)    recs.push('Clear ' + fu    + ' overdue follow-up'    + (fu    !== 1 ? 's' : '') + ' — highest retention risk');
+    if (ic > 0)    recs.push('Review ' + ic   + ' pending intake'       + (ic    !== 1 ? 's' : '') + ' before new clients stall');
+    if (pay > 0)   recs.push('Reconcile ' + pay + ' outstanding payment' + (pay   !== 1 ? 's' : ''));
+    if (ready > 0) recs.push('Schedule '  + ready + ' approved client'  + (ready !== 1 ? 's' : '') + ' who are ready');
+    if (!recs.length) return 'Queue is clear. Focus on proactive outreach to inactive clients or advance booking for coming weeks.';
+    return 'Recommended actions:\n' + recs.map(function(r, i) { return (i + 1) + '. ' + r + '.'; }).join('\n');
   }
 
   return 'I don\'t have enough business data to answer that yet.';
