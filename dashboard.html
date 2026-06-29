@@ -2349,17 +2349,16 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
   border: 1px solid rgba(232,184,75,.22);
   border-radius: 7px;
   background: rgba(232,184,75,.07);
-  color: #f1c763;
-  font-family: 'Cinzel', serif;
-  font-size: 13px;
+  font-family: 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif;
+  font-size: 16px;
   line-height: 1;
 }
-.exec-kpi-group:nth-child(1) .exec-kpi-tile:nth-of-type(1)::after { content: "$"; }
-.exec-kpi-group:nth-child(1) .exec-kpi-tile:nth-of-type(2)::after { content: "C"; }
-.exec-kpi-group:nth-child(2) .exec-kpi-tile:nth-of-type(1)::after { content: "S"; }
-.exec-kpi-group:nth-child(2) .exec-kpi-tile:nth-of-type(2)::after { content: "%"; }
-.exec-kpi-group:nth-child(3) .exec-kpi-tile:nth-of-type(1)::after { content: "I"; }
-.exec-kpi-group:nth-child(3) .exec-kpi-tile:nth-of-type(2)::after { content: "!"; }
+.exec-kpi-group:nth-child(1) .exec-kpi-tile:nth-of-type(1)::after { content: "💰"; }
+.exec-kpi-group:nth-child(1) .exec-kpi-tile:nth-of-type(2)::after { content: "👤"; }
+.exec-kpi-group:nth-child(2) .exec-kpi-tile:nth-of-type(1)::after { content: "📋"; }
+.exec-kpi-group:nth-child(2) .exec-kpi-tile:nth-of-type(2)::after { content: "📈"; }
+.exec-kpi-group:nth-child(3) .exec-kpi-tile:nth-of-type(1)::after { content: "📥"; }
+.exec-kpi-group:nth-child(3) .exec-kpi-tile:nth-of-type(2)::after { content: "⚠️"; }
 .exec-kpi-tile .glance-lbl {
   grid-area: label;
   align-self: center;
@@ -2676,7 +2675,10 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
     linear-gradient(180deg, rgba(12,8,27,.98), rgba(6,4,17,.98) 70%);
 }
 .ck-panel--exec-kpis .ck-panel-title {
-  display: none !important;
+  margin-bottom: 18px;
+  font-size: 10px;
+  letter-spacing: .38em;
+  color: rgba(241,199,99,.7);
 }
 .exec-kpi-strip {
   gap: 12px;
@@ -2706,10 +2708,10 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
   background: linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.008)) !important;
 }
 .exec-kpi-tile::after {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  font-size: 11px;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  font-size: 15px;
 }
 .exec-kpi-tile .glance-lbl {
   font-size: 9px;
@@ -4764,10 +4766,12 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
             <button class="glance-row exec-kpi-tile" onclick="showTab('financial')" title="Open financial center">
               <span class="glance-lbl">Revenue</span>
               <span class="action-stat-val glance-rev" id="execKpiRevenue">$0</span>
+              <span class="glance-context">Month to date</span>
             </button>
             <button class="glance-row exec-kpi-tile" onclick="showTab('clients')" title="Open clients">
               <span class="glance-lbl">Active Clients</span>
               <span class="action-stat-val" id="execKpiActiveClients">—</span>
+              <span class="glance-context">30-day window</span>
             </button>
           </div>
           <div class="exec-kpi-group">
@@ -4775,10 +4779,12 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
             <button class="glance-row exec-kpi-tile" onclick="showTab('sessions')" title="Open sessions">
               <span class="glance-lbl">Sessions</span>
               <span class="action-stat-val" id="homeStatSessions">—</span>
+              <span class="glance-context">This month</span>
             </button>
             <button class="glance-row exec-kpi-tile" onclick="showTab('followups')" title="Open follow-ups">
               <span class="glance-lbl">Follow-Up Rate</span>
               <span class="action-stat-val good" id="execKpiFollowUpRate">78%</span>
+              <span class="glance-context">30-day avg</span>
             </button>
           </div>
           <div class="exec-kpi-group">
@@ -4786,10 +4792,12 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
             <button class="glance-row exec-kpi-tile" onclick="showTab('booking');setTimeout(function(){setIntakeFilter('intake_pending',null)},200)" title="Open intake queue">
               <span class="glance-lbl">Intakes</span>
               <span class="action-stat-val" id="homeStatIntakes">—</span>
+              <span class="glance-context">Pending review</span>
             </button>
             <button class="glance-row exec-kpi-tile" onclick="showTab('followups')" title="Open follow-ups">
               <span class="glance-lbl">Overdue Follow-Ups</span>
               <span class="action-stat-val" id="homeStatFollowUps">—</span>
+              <span class="glance-context">Need action</span>
             </button>
           </div>
         </div>
