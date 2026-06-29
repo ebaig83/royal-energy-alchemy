@@ -4833,33 +4833,33 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
         <div class="aq-compact" id="homeActionQueue">
           <div class="aqc-group">
             <div class="aqc-group-title">Review</div>
-            <button class="aqc-row aqc-red" onclick="showTab('followups')">
+            <button class="aqc-row aqc-red" onclick="_dashOpenQueueTarget('followups')">
               <span class="aqc-dot red"></span><span class="aqc-lbl">Follow-Ups Due</span><span class="aqc-count" id="aqOverdue">—</span><span class="aqc-go">›</span>
             </button>
-            <button class="aqc-row aqc-red" onclick="showTab('booking');setTimeout(function(){setIntakeFilter('intake_pending',null)},200)">
+            <button class="aqc-row aqc-red" onclick="_dashOpenQueueTarget('booking','intake_pending')">
               <span class="aqc-dot red"></span><span class="aqc-lbl">Intakes Need Review</span><span class="aqc-count" id="aqIntake">—</span><span class="aqc-go">›</span>
             </button>
-            <button class="aqc-row aqc-orange" onclick="showTab('booking');setTimeout(function(){setIntakeFilter('review_pending',null)},200)">
+            <button class="aqc-row aqc-orange" onclick="_dashOpenQueueTarget('booking','review_pending')">
               <span class="aqc-dot orange"></span><span class="aqc-lbl">Pending Review</span><span class="aqc-count" id="aqReview">—</span><span class="aqc-go">›</span>
             </button>
           </div>
           <div class="aqc-group">
             <div class="aqc-group-title">Scheduling</div>
-            <button class="aqc-row aqc-orange" onclick="showTab('booking');setTimeout(function(){setIntakeFilter('ready',null)},200)">
+            <button class="aqc-row aqc-orange" onclick="_dashOpenQueueTarget('booking','ready')">
               <span class="aqc-dot orange"></span><span class="aqc-lbl">Ready to Schedule</span><span class="aqc-count" id="aqReady">—</span><span class="aqc-go">›</span>
             </button>
-            <button class="aqc-row aqc-green" onclick="showTab('booking')">
+            <button class="aqc-row aqc-green" onclick="_dashOpenQueueTarget('booking')">
               <span class="aqc-dot green"></span><span class="aqc-lbl">Sessions Today</span><span class="aqc-count" id="aqSessions">—</span><span class="aqc-go">›</span>
             </button>
           </div>
           <div class="aqc-group">
             <div class="aqc-group-title">Financial</div>
-            <button class="aqc-row aqc-yellow" onclick="showTab('booking');setTimeout(function(){setIntakeFilter('awaiting_payment',null)},200)">
+            <button class="aqc-row aqc-yellow" onclick="_dashOpenQueueTarget('booking','awaiting_payment')">
               <span class="aqc-dot yellow"></span><span class="aqc-lbl">Outstanding Payments</span><span class="aqc-count" id="aqPayments">—</span><span class="aqc-go">›</span>
             </button>
           </div>
         </div>
-        <div class="aq-footer"><button class="aq-footer-btn" onclick="showTab('followups')">View Full Queue</button></div>
+        <div class="aq-footer"><button class="aq-footer-btn" onclick="_dashOpenQueueTarget('followups')">View Full Queue</button></div>
       </div>
 
       <!-- AI Daily Briefing -->
@@ -5819,10 +5819,10 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
       <button class="ck-qa-btn gold" onclick="crmOpenCreate()">＋ New Client</button>
       <button class="ck-qa-btn purple" onclick="openQuickLogModal()">✦ Session Note</button>
       <button class="ck-qa-btn purple" onclick="showTab('clients')">◈ Recommendation</button>
-      <button class="ck-qa-btn" onclick="document.getElementById('qaDocInput').click()">📄 Upload Doc</button>
+      <button class="ck-qa-btn" onclick="_dashOpenDocPicker()">📄 Upload Doc</button>
       <button class="ck-qa-btn teal" onclick="showTab('booking')">💳 Invoice</button>
       <button class="ck-qa-btn" onclick="openCreateFollowUpModal()">◎ Add Follow-Up</button>
-      <input type="file" id="qaDocInput" style="display:none" onchange="_handleDocPick(this)" aria-hidden="true">
+      <input type="file" id="qaDocInput" style="display:none" onchange="_handleDocPick(this)" aria-hidden="true" aria-label="Choose document">
       <span id="qaDocFilename" class="ck-qa-filename"></span>
     </div>
 
@@ -10972,9 +10972,9 @@ function renderScheduleView(view) {
       var extra = '';
       if (r.sessions.length > 3) {
         var moreN = r.sessions.length - 3;
-        extra = '<div class="week-more-hidden" id="wmh-' + r.ds + '" data-count="' + moreN + '" style="display:none">' +
+        extra = '<div class="week-more-hidden" id="wmh-' + r.ds + '" data-count="' + moreN + '" style="display:none" aria-hidden="true">' +
             r.sessions.slice(3).map(rowFn).join('') + '</div>' +
-          '<button type="button" class="week-more-row week-more-toggle" onclick="_toggleWeekMore(\'' + r.ds + '\',this)">+' + moreN + ' more session' + (moreN !== 1 ? 's' : '') + '</button>';
+          '<button type="button" class="week-more-row week-more-toggle" aria-expanded="false" aria-controls="wmh-' + r.ds + '" onclick="_toggleWeekMore(\'' + r.ds + '\',this)">+' + moreN + ' more session' + (moreN !== 1 ? 's' : '') + '</button>';
       }
       var detail = r.sessions.length ? shown + extra : '<div class="week-agenda-empty">No sessions scheduled</div>';
       return '<div class="week-day-card' + (r.isToday ? ' is-today' : '') + '">' +
@@ -11251,23 +11251,42 @@ function _dashSessionDeltaLine(sc) {
   }
 }
 
+function _dashOpenQueueTarget(tab, filter) {
+  if (typeof showTab === 'function') showTab(tab);
+  if (tab === 'booking' && filter && typeof setIntakeFilter === 'function') {
+    setTimeout(function() { setIntakeFilter(filter, null); }, 250);
+  }
+}
+
+function _dashOpenDocPicker() {
+  var input = document.getElementById('qaDocInput');
+  var out = document.getElementById('qaDocFilename');
+  if (!input) return;
+  input.value = '';
+  if (out) out.textContent = 'Choose a document to attach.';
+  input.click();
+}
+
 // Quick Action: open the file picker, then show the chosen filename. No backend
 // exists, so we explicitly do NOT claim the file was uploaded.
 function _handleDocPick(input) {
   var out = document.getElementById('qaDocFilename');
   if (!out) return;
   var f = input && input.files && input.files[0];
-  out.textContent = f ? ('Selected: ' + f.name + ' — not yet uploaded') : '';
+  out.textContent = f ? ('Selected: ' + f.name + ' - upload workflow not connected yet') : 'No document selected.';
 }
 
 // Week agenda: expand / collapse the sessions beyond the first three for a day.
 function _toggleWeekMore(ds, btn) {
   var box = document.getElementById('wmh-' + ds);
-  if (!box) return;
+  if (!box || !btn) return;
   var open = box.style.display !== 'none';
-  box.style.display = open ? 'none' : 'block';
-  var n = box.getAttribute('data-count');
-  btn.textContent = open ? ('+' + n + ' more session' + (n !== '1' ? 's' : '')) : 'Show fewer';
+  var nextOpen = !open;
+  box.style.display = nextOpen ? 'block' : 'none';
+  box.setAttribute('aria-hidden', nextOpen ? 'false' : 'true');
+  btn.setAttribute('aria-expanded', nextOpen ? 'true' : 'false');
+  var n = box.getAttribute('data-count') || '0';
+  btn.textContent = nextOpen ? 'Show fewer' : ('+' + n + ' more session' + (n !== '1' ? 's' : ''));
 }
 
 // ── OPERATING SIGNALS — strategic, forward-looking; derived from existing data
@@ -11333,11 +11352,11 @@ function _renderOperatingSignals() {
       out.push(_opSigEmpty('Client Retention'));
     }
 
-    // 5) Average days to follow-up — no follow-up timestamps in current data.
-    out.push(_opSigEmpty('Avg Days to Follow-Up', 'Needs follow-up timestamps'));
+    var gaps = [];
+    gaps.push('follow-up timestamps');
+    gaps.push('lead-source conversion data');
+    out.push(_opSig('Strategy Data Gaps', gaps.length + ' inputs', 'Needed for follow-up speed and booking conversion', 'muted'));
 
-    // 6) Booking conversion — no lead/inquiry source data.
-    out.push(_opSigEmpty('Booking Conversion', 'Needs lead-source data'));
 
     el.innerHTML = out.join('');
   } catch (e) {
@@ -15324,6 +15343,19 @@ function _dashCollectBusinessContext() {
   ctx.readyToSchedule  = parseInt(dv('aqReady')    || '0', 10) || 0;
   ctx.followUpRate     = dv('execKpiFollowUpRate') || null;
 
+  ctx.actionPriority   = (document.querySelector('.aqc-row--priority .aqc-lbl') || {}).textContent || null;
+  ctx.actionPriorityNote = (document.querySelector('.aqc-row--priority .aqc-priority-note') || {}).textContent || null;
+  ctx.operatingSignals = Array.prototype.slice.call(document.querySelectorAll('#opSignals .op-sig')).map(function(el) {
+    return {
+      label: ((el.querySelector('.op-sig-lbl') || {}).textContent || '').trim(),
+      value: ((el.querySelector('.op-sig-val') || {}).textContent || '').trim(),
+      sub: ((el.querySelector('.op-sig-sub') || {}).textContent || '').trim()
+    };
+  }).filter(function(x) { return x.label; });
+  ctx.recentActivity = Array.prototype.slice.call(document.querySelectorAll('#homeActivity .ac-li')).slice(0, 5).map(function(el) {
+    return (el.innerText || '').replace(/\s+/g, ' ').trim();
+  });
+
   // REA_DATA — rich session/client analytics
   if (typeof REA_DATA !== 'undefined') {
     var c = REA_DATA.computed || (typeof REA_DATA.compute === 'function' ? REA_DATA.compute() : null);
@@ -15436,6 +15468,17 @@ function _dashAnswerBusinessQuestion(q, ctx) {
     return ans;
   }
 
+  // -- OPERATING SIGNALS / STRATEGY --
+  if (/operating signal|strategy|trend|capacity|utilization|retention|conversion|data gap/.test(lower)) {
+    var sigs = ctx.operatingSignals || [];
+    if (!sigs.length) return 'Operating Signals are still loading. Try again after the dashboard finishes refreshing.';
+    var lines = sigs.map(function(s) { return s.label + ': ' + s.value + (s.sub ? ' (' + s.sub + ')' : ''); });
+    var risks = [];
+    if (fu > 0) risks.push(fu + ' overdue follow-up' + (fu !== 1 ? 's' : ''));
+    if (ic > 0) risks.push(ic + ' intake' + (ic !== 1 ? 's' : '') + ' awaiting review');
+    return 'Operating Signals: ' + lines.join('; ') + '.' + (risks.length ? ' Watch: ' + risks.join(', ') + '.' : ' No immediate workload risk is showing.');
+  }
+
   // ── REVENUE / FORECAST ──
   if (/revenue|forecast|income|earn|money|financ/.test(lower)) {
     var revStr = ctx.revenue || (ctx.totalRevenue != null ? '$' + ctx.totalRevenue.toLocaleString() : null);
@@ -15507,6 +15550,7 @@ function _dashAnswerBusinessQuestion(q, ctx) {
     if (ic > 0)  risks.push(ic  + ' unreviewed intake' + (ic  !== 1 ? 's' : ''));
     if (pay > 0) risks.push(pay + ' outstanding payment' + (pay !== 1 ? 's' : ''));
     var ans = (parts.length ? parts.join(' · ') + '.' : 'Snapshot data loading.');
+    if (ctx.actionPriority) ans += ' Current priority: ' + ctx.actionPriority + (ctx.actionPriorityNote ? ' (' + ctx.actionPriorityNote + ')' : '') + '.';
     if (risks.length) ans += ' Current risks: ' + risks.join(', ') + '.';
     if (ctx.revForecastWeekly != null) ans += ' Revenue trend: $' + ctx.revForecastWeekly.toLocaleString() + '/week trailing avg.';
     if (fu > 0)       ans += ' Best next action: clear the overdue follow-up queue.';
