@@ -855,6 +855,31 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
 .sched-open-btn { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: #c4b5fd; background: rgba(124,92,191,.14); border: 1px solid rgba(124,92,191,.5); border-radius: 5px; padding: 6px 12px; cursor: pointer; flex: none; white-space: nowrap; transition: all .15s; }
 .sched-open-btn:hover { color: #fff; border-color: #7c5cbf; background: rgba(124,92,191,.32); }
 
+/* ── Today's Schedule — compact appointment list ── */
+#homeSched.home-scroll { max-height: none; overflow: visible; }
+.today-appt-list { display: flex; flex-direction: column; gap: 8px; }
+.today-appt-row {
+  display: grid;
+  grid-template-columns: minmax(82px, .62fr) minmax(0, 1.35fr) minmax(86px, .8fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid rgba(232,184,75,.07);
+}
+.today-appt-row:last-child { border-bottom: none; }
+.today-appt-row.is-next { background: linear-gradient(90deg, rgba(232,184,75,.10), transparent); border-left: 3px solid #e8b84b; margin-left: -5px; padding-left: 10px; border-radius: 4px; }
+.today-appt-time { display: flex; align-items: center; gap: 8px; min-width: 0; font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: .04em; color: #c9a86a; white-space: nowrap; }
+.today-appt-time .st-dot { margin-right: 0; }
+.today-appt-client { min-width: 0; }
+.today-appt-client .sched-client { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; line-height: 1.25; }
+.today-appt-type { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; color: #9a96c0; }
+.today-appt-row .sched-open-btn { justify-self: end; }
+@media (max-width: 760px) {
+  .today-appt-row { grid-template-columns: minmax(76px, .75fr) minmax(0, 1.25fr) auto; gap: 9px; }
+  .today-appt-type { grid-column: 2 / 3; font-size: 11px; }
+  .today-appt-row .sched-open-btn { grid-column: 3 / 4; grid-row: 1 / 3; padding: 7px 9px; font-size: 9px; max-width: 100%; }
+}
+
 /* ── Today's Schedule — table layout ── */
 .sched-table { width: 100%; border-collapse: collapse; }
 .sched-table th { text-align: left; font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: #b89a55; font-weight: 600; padding: 0 10px 10px 0; border-bottom: 1px solid rgba(232,184,75,.2); white-space: nowrap; }
@@ -1001,7 +1026,7 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
 /* ── Week Agenda — expanded schedule view with times ── */
 .week-picker-bar {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto auto 1fr auto;
   align-items: center;
   gap: 10px;
   margin: 0 0 14px;
@@ -1069,6 +1094,7 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
 .week-day-head {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 9px;
   margin-bottom: 8px;
 }
@@ -1080,6 +1106,9 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
   letter-spacing: .08em;
   text-transform: uppercase;
   color: #dcd6f6;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .week-day-card.is-today .week-day-label { color: #ffd977; font-weight: 700; }
 .week-day-count {
@@ -1099,10 +1128,10 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
 }
 .week-session-row {
   display: grid;
-  grid-template-columns: 70px minmax(0, 1fr);
-  gap: 11px;
-  align-items: baseline;
-  padding: 5px 0;
+  grid-template-columns: minmax(80px, .35fr) minmax(0, 1fr) minmax(86px, .55fr);
+  gap: 12px;
+  align-items: center;
+  padding: 8px 0;
   border-top: 1px solid rgba(232,184,75,.055);
 }
 .week-session-row:first-of-type { border-top: none; }
@@ -1119,6 +1148,9 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
   font-family: 'EB Garamond', serif;
   font-size: 15px;
   line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   cursor: pointer;
   text-decoration: none;
 }
@@ -1128,6 +1160,7 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
   text-decoration-color: rgba(232,184,75,.45);
   text-underline-offset: 3px;
 }
+.week-session-type { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; color: #9a96c0; }
 .week-more-row {
   padding-top: 5px;
   font-size: 12px;
@@ -10887,13 +10920,11 @@ function setScheduleWeek(action) {
   else base = _schedWeekStartFor(new Date());
   _schedWeekStart = _schedISO(base);
   setScheduleView('week');
-  _renderWeekGlance();
 }
 function setScheduleWeekDate(value) {
   if (!value) return;
   _schedWeekStart = _schedISO(_schedWeekStartFor(value));
   setScheduleView('week');
-  _renderWeekGlance();
 }
 function setScheduleView(v) {
   _schedView = v;
@@ -10915,16 +10946,23 @@ function _schedAgendaClient(name) {
   return '<span class="week-session-client" title="Open client profile" onclick="openClientByName(\'' + safe + '\')">' + name + '</span>';
 }
 function renderScheduleView(view) {
-  var el = document.getElementById('homeSched');
+  var homeEl = document.getElementById('homeSched');
+  var weekEl = document.getElementById('homeWeekGlance');
+  var el = view === 'today' ? homeEl : (weekEl || homeEl);
   if (!el) return;
+  if (view !== 'today' && homeEl) renderScheduleView('today');
   el.classList.remove('sched-empty-mode');
-  var sessions = (typeof REA_DATA !== 'undefined' && REA_DATA.sessions) ? REA_DATA.sessions : [];
+  var sessions = (typeof REA_DATA !== 'undefined' && REA_DATA.sessions) ? REA_DATA.sessions.slice() : [];
+  try {
+    if (typeof getAppts === 'function') sessions = sessions.concat(getAppts());
+  } catch(e) {}
   var today = new Date(); today.setHours(0, 0, 0, 0);
   var todayStr = today.toISOString().slice(0, 10);
   function sdate(s) { return (s.session_date || s.date || '').slice(0, 10); }
-  function stime(s) { var t = s.session_time || s.time || ''; return t ? t.slice(0, 5) : '—'; }
+  function stime(s) { var t = s.session_time || s.time || ''; return t ? t.slice(0, 5) : ''; }
+  function stimeSort(s) { return stime(s) || '99:99'; }
   function sname(s) { return s.client || s.client_name || 'Client'; }
-  function ssvc(s)  { return s.service || s.service_type || 'Session'; }
+  function ssvc(s)  { return s.service || s.service_type || s.type || 'Session'; }
 
   if (view === 'week') {
     var days = [], maxCount = 1, totalWeek = 0, busiest = null;
@@ -10933,9 +10971,9 @@ function renderScheduleView(view) {
     for (var i = 0; i < 7; i++) {
       var d = new Date(weekStart); d.setDate(weekStart.getDate() + i);
       var ds = _schedISO(d);
-      var dayS = sessions.filter(function(s) { return sdate(s) === ds; }).sort(function(a, b) { return stime(a) > stime(b) ? 1 : -1; });
+      var dayS = sessions.filter(function(s) { return sdate(s) === ds; }).sort(function(a, b) { return stimeSort(a) > stimeSort(b) ? 1 : -1; });
       var tc = {}; dayS.forEach(function(s) { var t = stime(s); tc[t] = (tc[t] || 0) + 1; });
-      var conflict = Object.keys(tc).some(function(t) { return t !== '—' && tc[t] > 1; });
+      var conflict = Object.keys(tc).some(function(t) { return t && tc[t] > 1; });
       totalWeek += dayS.length;
       if (dayS.length > maxCount) maxCount = dayS.length;
       var rec = {
@@ -10949,7 +10987,8 @@ function renderScheduleView(view) {
       weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     var datePick = _schedISO(weekStart);
     var head = '<div class="week-picker-bar">' +
-        '<button class="week-nav-btn" onclick="setScheduleWeek(\'prev\')">Prev</button>' +
+        '<button class="week-nav-btn" onclick="setScheduleWeek(\'prev\')">Previous</button>' +
+        '<button class="week-nav-btn" onclick="setScheduleWeek(\'today\')">This Week</button>' +
         '<div class="week-picker-copy"><span class="week-picker-title">Week of ' + rangeLabel + '</span>' +
           '<span class="week-picker-sub">Choose any date to view that week</span></div>' +
         '<button class="week-nav-btn" onclick="setScheduleWeek(\'next\')">Next</button>' +
@@ -10966,6 +11005,7 @@ function renderScheduleView(view) {
         return '<div class="week-session-row">' +
           '<span class="week-session-time">' + _fmt12(stime(s)) + '</span>' +
           _schedAgendaClient(sname(s)) +
+          '<span class="week-session-type">' + ssvc(s) + '</span>' +
         '</div>';
       };
       var shown = r.sessions.slice(0, 3).map(rowFn).join('');
@@ -11010,7 +11050,7 @@ function renderScheduleView(view) {
   }
 
   // today (default)
-  var list = sessions.filter(function(s) { return sdate(s) === todayStr; }).sort(function(a, b) { return stime(a) > stime(b) ? 1 : -1; });
+  var list = sessions.filter(function(s) { return sdate(s) === todayStr; }).sort(function(a, b) { return stimeSort(a) > stimeSort(b) ? 1 : -1; });
 
   // ── Empty state: clean centered card (matches approved sample) ──
   if (!list.length) {
@@ -11040,28 +11080,26 @@ function renderScheduleView(view) {
   el.classList.remove('sched-empty-mode');
   var nowHM = new Date().toTimeString().slice(0, 5);
   var nextIdx = -1;
-  for (var n = 0; n < list.length; n++) { if (stime(list[n]) >= nowHM) { nextIdx = n; break; } }
+  for (var n = 0; n < list.length; n++) { if (stime(list[n]) && stime(list[n]) >= nowHM) { nextIdx = n; break; } }
   var dotColors = ['#7c5cbf', '#f07030', '#3b82f6', '#22c98a', '#e8b84b'];
   var body = list.map(function(s, i) {
     var isNext = (i === nextIdx);
     var safe = String(sname(s)).replace(/'/g, "\\'");
     var dot = dotColors[i % dotColors.length];
-    return '<tr class="sched-trow' + (isNext ? ' sched-trow-next' : '') + '">' +
-      '<td class="st-time"><span class="st-dot" style="background:' + dot + '"></span>' + _fmt12(stime(s)) +
-        (isNext ? '<span class="st-next">Next</span>' : '') + '</td>' +
-      '<td class="st-client">' + _schedClientSpan(sname(s)) + '</td>' +
-      '<td class="st-type">' + ssvc(s) + '</td>' +
-      '<td class="st-action"><button class="sched-open-btn" onclick="openClientByName(\'' + safe + '\')">Open Client</button></td>' +
-    '</tr>';
+    return '<div class="today-appt-row' + (isNext ? ' is-next' : '') + '">' +
+      '<div class="today-appt-time"><span class="st-dot" style="background:' + dot + '"></span><span>' + _fmt12(stime(s)) + '</span>' +
+        (isNext ? '<span class="st-next">Next</span>' : '') + '</div>' +
+      '<div class="today-appt-client">' + _schedClientSpan(sname(s)) + '</div>' +
+      '<div class="today-appt-type">' + ssvc(s) + '</div>' +
+      '<button class="sched-open-btn" onclick="openClientByName(\'' + safe + '\')">Open Client</button>' +
+    '</div>';
   }).join('');
-  el.innerHTML = '<table class="sched-table"><thead><tr>' +
-    '<th>Time</th><th>Client</th><th>Session Type</th><th>Action</th>' +
-    '</tr></thead><tbody>' + body + '</tbody></table>';
+  el.innerHTML = '<div class="today-appt-list">' + body + '</div>';
 }
 
 // 24h "HH:MM" → 12-hour "09:00 AM" for the schedule table.
 function _fmt12(hhmm) {
-  if (!hhmm || hhmm === '—') return '—';
+  if (!hhmm || hhmm === '—') return 'Time not set';
   var p = String(hhmm).split(':');
   var h = parseInt(p[0], 10);
   var m = (p[1] || '00').slice(0, 2);
