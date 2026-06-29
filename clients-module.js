@@ -121,10 +121,46 @@
       (extraStyle ? ';' + extraStyle : '') + '">' + content + '</div>';
   }
 
+  function ensureClientPolishStyles() {
+    if (document.getElementById('crmClientSimplifyStyles')) return;
+    var style = document.createElement('style');
+    style.id = 'crmClientSimplifyStyles';
+    style.textContent =
+      '.client-card.crm-roster-card{padding:20px 22px!important;margin-bottom:12px!important;border-color:rgba(232,184,75,.28)!important}' +
+      '.client-card.crm-roster-card:hover{border-color:rgba(232,184,75,.68)!important;background:#100d22!important}' +
+      '.crm-roster-head{display:flex;gap:18px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}' +
+      '.crm-roster-name{font-family:Cinzel,serif;font-size:17px;letter-spacing:.04em;color:#fff;font-weight:700;display:flex;align-items:center;gap:10px;flex-wrap:wrap}' +
+      '.crm-roster-contact{font-family:"EB Garamond",serif;font-size:16px;color:rgba(221,218,238,.78);margin-top:6px}' +
+      '.crm-roster-added{font-family:Cinzel,serif;font-size:10px;letter-spacing:.22em;color:rgba(232,184,75,.78);text-transform:uppercase;margin-top:7px}' +
+      '.crm-roster-metrics{display:grid;grid-template-columns:repeat(3,minmax(120px,1fr));gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid rgba(232,184,75,.14)}' +
+      '.crm-roster-metric{background:rgba(255,255,255,.018);border:1px solid rgba(232,184,75,.12);padding:10px 12px;min-width:0}' +
+      '.crm-roster-metric span{display:block;font-family:Cinzel,serif;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:rgba(232,184,75,.72);margin-bottom:5px}' +
+      '.crm-roster-metric strong{display:block;font-family:"EB Garamond",serif;font-size:17px;color:#f0ecff;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
+      '.crm-roster-actions{display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;position:relative;flex-shrink:0}' +
+      '.crm-primary-action{background:rgba(232,184,75,.9)!important;border-color:#e8b84b!important;color:#070514!important;font-weight:700!important}' +
+      '.crm-more-menu{display:none;width:100%;margin-top:12px;padding:14px;background:#080614;border:1px solid rgba(232,184,75,.22)}' +
+      '.crm-more-menu.open{display:block}' +
+      '.crm-more-title{font-family:Cinzel,serif;font-size:10px;letter-spacing:.24em;color:rgba(232,184,75,.75);text-transform:uppercase;margin:12px 0 8px}' +
+      '.crm-more-grid{display:flex;gap:7px;flex-wrap:wrap}' +
+      '.crm-case-tabs{display:flex;gap:8px;flex-wrap:wrap;position:sticky;top:0;z-index:2;background:#080614;padding:10px 0 14px;margin:4px 0 24px;border-bottom:1px solid rgba(232,184,75,.2)}' +
+      '.crm-case-tab{font-family:Cinzel,serif;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#b09ef8;background:rgba(176,158,248,.06);border:1px solid rgba(176,158,248,.28);padding:9px 12px;cursor:pointer}' +
+      '.crm-case-tab.active{color:#070514;background:#e8b84b;border-color:#e8b84b;font-weight:700}' +
+      '.crm-case-panel{display:none}' +
+      '.crm-case-panel.active{display:block}' +
+      '.crm-care-summary{display:grid;grid-template-columns:repeat(3,minmax(120px,1fr));gap:10px}' +
+      '.crm-care-summary div{background:#07051a;border:1px solid rgba(232,184,75,.22);padding:14px 16px}' +
+      '.crm-care-summary span{display:block;font-family:Cinzel,serif;font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:#e8b84b;margin-bottom:6px}' +
+      '.crm-care-summary strong{font-family:"EB Garamond",serif;font-size:22px;color:#fff}' +
+      '@media(max-width:760px){.crm-roster-head{display:block}.crm-roster-actions{margin-top:14px}.crm-roster-actions .action-btn{flex:1}.crm-roster-metrics,.crm-care-summary{grid-template-columns:1fr}.crm-case-tab{flex:1;text-align:center}.crm-case-tabs{position:static}}';
+    document.head.appendChild(style);
+  }
+
+
   // ═══════════════════════════════════════════════════════════════════════════
   // RENDER CLIENTS
   // ═══════════════════════════════════════════════════════════════════════════
   window.renderClients = async function () {
+    ensureClientPolishStyles();
     var roster  = document.getElementById('clientRoster');
     var countEl = document.getElementById('clientCount');
     if (!roster) return;
@@ -213,6 +249,11 @@
     var status   = c.status || 'active';
     var tags     = (c.tags || []).filter(Boolean);
     var archived = status === 'archived';
+    var lastSessionText = c.last_session || c.last_session_date || c.latest_session_date || '—';
+    var nextSessionText = c.next_session || c.next_session_date || c.upcoming_session_date || '—';
+    var followUpsText   = (c.follow_ups_due != null) ? c.follow_ups_due :
+                          (c.pending_follow_ups != null) ? c.pending_follow_ups :
+                          (c.followups != null) ? c.followups : '—';
 
     var statusRow = Object.keys(STATUS_LABELS).map(function(s) {
       var pair   = STATUS_LABELS[s];
@@ -225,50 +266,51 @@
         'cursor:pointer;font-weight:' + (isCur ? '700' : '400') + '">' + lbl + '</button>';
     }).join('');
 
-    return '<div class="client-card" style="' +
-        'background:#0e0b1f;border:1px solid #e8b84b44;padding:26px;margin-bottom:14px;' +
+    return '<div class="client-card crm-roster-card" style="background:#0e0b1f;border:1px solid #e8b84b44;' +
         (archived ? 'opacity:.55;' : '') + '">' +
-
-      '<div class="card-head">' +
+      '<div class="crm-roster-head">' +
         '<div style="flex:1;min-width:0">' +
-          '<div style="font-family:\'Cinzel\',serif;font-size:18px;letter-spacing:.06em;color:#fff;' +
-            'display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-weight:600">' +
-            name + ' ' + statusBadge(status) +
-          '</div>' +
+          '<div class="crm-roster-name">' + name + ' ' + statusBadge(status) + '</div>' +
           (c.email || c.phone
-            ? '<div style="font-family:\'EB Garamond\',serif;font-size:17px;color:#dddaeecc;margin-top:6px">' +
-                [c.email, c.phone].filter(Boolean).join(' · ') +
-              '</div>'
+            ? '<div class="crm-roster-contact">' + [c.email, c.phone].filter(Boolean).join(' · ') + '</div>'
             : '') +
-          '<div style="font-family:\'Cinzel\',serif;font-size:12px;letter-spacing:.2em;color:#e8b84b;' +
-            'text-transform:uppercase;margin-top:7px">' +
-            'Added ' + fmtDate(c.created_at) +
+          '<div class="crm-roster-added">Added ' + fmtDate(c.created_at) +
             (c.source && c.source !== 'manual' ? ' · ' + c.source : '') +
           '</div>' +
         '</div>' +
-        '<div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;flex-shrink:0;margin-left:14px">' +
-          '<button class="action-btn view" onclick="crmOpenProfile(\'' + esc(id) + '\')">📋 Case File</button>' +
-          '<button class="action-btn view" style="border-color:#9b7fe899;color:#b09ef8" ' +
-            'onclick="crmOpenTimeline(\'' + esc(id) + '\')">⏱ Timeline</button>' +
-          '<button class="action-btn view" style="border-color:#e8b84b;color:#e8b84b" ' +
-            'onclick="crmOpenEdit(\'' + esc(id) + '\')">✎ Edit</button>' +
-          '<button class="action-btn reject" style="border-color:#ff555577;color:#ff8888" ' +
-            'onclick="crmConfirmArchive(\'' + esc(id) + '\',\'' + esc(name) + '\')">⊘ Archive</button>' +
+        '<div class="crm-roster-actions">' +
+          '<button class="action-btn view crm-primary-action" onclick="crmOpenProfile(\'' + esc(id) + '\')">Open Client</button>' +
+          '<button class="action-btn view" onclick="crmToggleMore(\'' + esc(id) + '\')">More ▾</button>' +
         '</div>' +
       '</div>' +
-
       (tags.length
         ? '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">' + tags.map(tagChip).join('') + '</div>'
         : '') +
-
-      '<div style="display:flex;gap:7px;align-items:center;margin-top:14px;flex-wrap:wrap;' +
-        'padding-top:14px;border-top:1px solid #e8b84b22">' +
-        '<span style="font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:.3em;' +
-          'color:#e8b84b;text-transform:uppercase">Status:</span>' +
-        statusRow +
+      '<div class="crm-roster-metrics">' +
+        '<div class="crm-roster-metric"><span>Last Session</span><strong>' + lastSessionText + '</strong></div>' +
+        '<div class="crm-roster-metric"><span>Next Session</span><strong>' + nextSessionText + '</strong></div>' +
+        '<div class="crm-roster-metric"><span>Follow-ups</span><strong>' + followUpsText + '</strong></div>' +
+      '</div>' +
+      '<div id="crm-more-' + id + '" class="crm-more-menu">' +
+        '<div class="crm-more-title">Client Actions</div>' +
+        '<div class="crm-more-grid">' +
+          '<button class="action-btn view" style="border-color:#9b7fe899;color:#b09ef8" onclick="crmOpenTimeline(\'' + esc(id) + '\')">Timeline</button>' +
+          '<button class="action-btn view" style="border-color:#e8b84b;color:#e8b84b" onclick="crmOpenEdit(\'' + esc(id) + '\')">Edit</button>' +
+          '<button class="action-btn reject" style="border-color:#ff555577;color:#ff8888" onclick="crmConfirmArchive(\'' + esc(id) + '\',\'' + esc(name) + '\')">Archive</button>' +
+        '</div>' +
+        '<div class="crm-more-title">Status</div>' +
+        '<div class="crm-more-grid">' + statusRow + '</div>' +
       '</div>' +
     '</div>';
   }
+
+  window.crmToggleMore = function(id) {
+    var menu = document.getElementById('crm-more-' + id);
+    if (!menu) return;
+    var willOpen = !menu.classList.contains('open');
+    document.querySelectorAll('.crm-more-menu.open').forEach(function(el) { el.classList.remove('open'); });
+    if (willOpen) menu.classList.add('open');
+  };
 
   // ── Set status ───────────────────────────────────────────────────────────
   window.crmSetStatus = async function (id, status) {
@@ -384,6 +426,7 @@
   // CASE FILE / PROFILE MODAL
   // ═══════════════════════════════════════════════════════════════════════════
   window.crmOpenProfile = async function (id) {
+    ensureClientPolishStyles();
     _profileId = id;
     var modal = document.getElementById('crmProfileModal');
     var body  = document.getElementById('crmProfileBody');
@@ -626,7 +669,7 @@
       }
       function docDone(type, states) { return (states || ACK_DONE).indexOf(docStatusOf(type)) >= 0; }
 
-      snapshotHtml +=
+      var docChecklistHtml =
         '<div style="background:#07051a;border:1px solid #e8b84b33;padding:22px;margin-top:14px">' +
           '<div style="font-family:\'Cinzel\',serif;font-size:13px;letter-spacing:.32em;text-transform:uppercase;color:#e8b84b;margin-bottom:13px;padding-bottom:10px;border-bottom:1px solid #e8b84b44">Client Documents</div>' +
           '<div style="display:grid;grid-template-columns:1fr 1fr;gap:0 28px">' +
@@ -666,7 +709,7 @@
       var hasAccount = !!(cl.auth_user_id || cl.portal_account_created);
       var accessMethod = cl.portal_access_method || (cl.portal_token ? 'token' : '—');
 
-      snapshotHtml +=
+      var portalHtml =
         '<div style="background:#07051a;border:1px solid #e8b84b33;padding:22px;margin-top:14px">' +
           '<div style="font-family:\'Cinzel\',serif;font-size:13px;letter-spacing:.32em;text-transform:uppercase;color:#e8b84b;margin-bottom:13px;padding-bottom:10px;border-bottom:1px solid #e8b84b44">Portal Account</div>' +
           '<div style="display:grid;grid-template-columns:1fr 1fr;gap:0 28px">' +
@@ -839,6 +882,45 @@
         '#e8b84b'
       );
 
+
+
+      var notesHtml = caseSection('◇', 'Client Notes',
+        cardWrap(
+          (cl.notes
+            ? '<div style="font-family:\'EB Garamond\',serif;font-size:18px;color:#f0ecff;line-height:1.65;white-space:pre-wrap">' + cl.notes + '</div>'
+            : '<div style="font-family:\'EB Garamond\',serif;font-size:17px;color:#dddaee66;font-style:italic">No client notes yet.</div>') +
+          (lastNoteSnippet
+            ? '<div style="margin-top:18px;padding-top:16px;border-top:1px solid #e8b84b22">' +
+                '<div style="font-family:\'Cinzel\',serif;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#e8b84b;margin-bottom:8px">Most Recent Session Note</div>' +
+                '<div style="font-family:\'EB Garamond\',serif;font-size:17px;color:#e8e6f8;line-height:1.65;white-space:pre-wrap">' + lastNoteSnippet + '</div>' +
+              '</div>'
+            : '')
+        ),
+        '#b09ef8'
+      );
+
+      var careResourceSummaryHtml = caseSection('◇', 'Care Resources',
+        cardWrap(
+          '<div class="crm-care-summary">' +
+            '<div><span>Recommendations</span><strong>' + recs.length + '</strong></div>' +
+            '<div><span>Referrals</span><strong>' + refs.length + '</strong></div>' +
+            '<div><span>Action Plans</span><strong>' + plans.length + '</strong></div>' +
+          '</div>' +
+          '<div style="margin-top:14px">' +
+            '<button class="action-btn view" style="border-color:#22c98a66;color:#22c98a" onclick="crmShowCaseTab(\'recommendations\')">Open Recommendations</button>' +
+          '</div>'
+        ),
+        '#22c98a'
+      );
+
+      function caseTabButton(key, label, active) {
+        return '<button class="crm-case-tab' + (active ? ' active' : '') + '" data-crm-case-tab-btn="' + key + '" onclick="crmShowCaseTab(\'' + key + '\')">' + label + '</button>';
+      }
+
+      function caseTabPanel(key, content, active) {
+        return '<div class="crm-case-panel' + (active ? ' active' : '') + '" data-crm-case-tab-panel="' + key + '">' + content + '</div>';
+      }
+
       // ── Shared AI payload (reused by flags, prep brief, and timeline) ─
       _prepBriefClientId = id;
       _prepBriefPayload  = {
@@ -865,20 +947,39 @@
 
       // ── Assemble ────────────────────────────────────────────────────
       body.innerHTML =
-        caseSection('◈', 'Practitioner Snapshot', snapshotHtml, '#e8b84b') +
-        needsAttentionHtml +
-        activeTreatmentHtml +
-        '<div id="crmPrepBriefWrap">'           + _prepBriefLoadingHtml()       + '</div>' +
-        '<div id="crmAttentionFlagsWrap">'      + _attentionFlagsLoadingHtml()  + '</div>' +
-        '<div id="crmPractitionerTimelineWrap">'+ _timelineLoadingHtml()        + '</div>' +
-        sessionDocHtml +
-        financialHtml +
-        commHtml +
-        recsHtml +
-        refsHtml +
-        plansHtml +
-        envHtml +
-        clientInfoHtml +
+        '<div class="crm-case-tabs">' +
+          caseTabButton('overview', 'Overview', true) +
+          caseTabButton('documents', 'Documents') +
+          caseTabButton('treatment', 'Treatment') +
+          caseTabButton('timeline', 'Timeline') +
+          caseTabButton('notes', 'Notes') +
+          caseTabButton('recommendations', 'Recommendations') +
+        '</div>' +
+        caseTabPanel('overview',
+          caseSection('◈', 'Client Snapshot', snapshotHtml, '#e8b84b') +
+          needsAttentionHtml +
+          clientInfoHtml,
+          true
+        ) +
+        caseTabPanel('documents',
+          caseSection('◇', 'Documents', docChecklistHtml + portalHtml, '#e8b84b')
+        ) +
+        caseTabPanel('treatment',
+          activeTreatmentHtml +
+          '<div id="crmPrepBriefWrap">'           + _prepBriefLoadingHtml()       + '</div>' +
+          '<div id="crmAttentionFlagsWrap">'      + _attentionFlagsLoadingHtml()  + '</div>' +
+          sessionDocHtml +
+          financialHtml +
+          commHtml +
+          plansHtml +
+          envHtml +
+          careResourceSummaryHtml
+        ) +
+        caseTabPanel('timeline',
+          '<div id="crmPractitionerTimelineWrap">'+ _timelineLoadingHtml()        + '</div>'
+        ) +
+        caseTabPanel('notes', notesHtml) +
+        caseTabPanel('recommendations', recsHtml + refsHtml) +
         '<div style="margin-top:8px;padding-top:20px;border-top:1px solid #e8b84b1a;display:flex;gap:12px;flex-wrap:wrap">' +
           '<button class="action-btn view" style="border-color:#e8b84b;color:#e8b84b" ' +
             'onclick="crmCloseProfileModal();crmOpenEdit(\'' + esc(id) + '\')">✎ Edit Client</button>' +
@@ -1171,6 +1272,15 @@
   window.crmCloseProfileModal = function (e) {
     if (e && e.target !== document.getElementById('crmProfileModal')) return;
     document.getElementById('crmProfileModal').classList.remove('open');
+  };
+
+  window.crmShowCaseTab = function(key) {
+    document.querySelectorAll('[data-crm-case-tab-panel]').forEach(function(panel) {
+      panel.classList.toggle('active', panel.getAttribute('data-crm-case-tab-panel') === key);
+    });
+    document.querySelectorAll('[data-crm-case-tab-btn]').forEach(function(btn) {
+      btn.classList.toggle('active', btn.getAttribute('data-crm-case-tab-btn') === key);
+    });
   };
 
   // ═══════════════════════════════════════════════════════════════════════════
