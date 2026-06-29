@@ -1115,6 +1115,38 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
   color: rgba(232,184,75,.72);
   text-align: right;
 }
+/* ── Sprint 18L: interactive +N more toggle ── */
+button.week-more-toggle {
+  display: block; width: 100%; border: none; background: none; cursor: pointer;
+  font-family: inherit; letter-spacing: .02em; transition: color .15s;
+}
+button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text-decoration-color: rgba(232,184,75,.4); text-underline-offset: 3px; }
+.week-more-hidden { display: block; }
+
+/* ── Sprint 18L: clickable empty-schedule suggestions ── */
+.seg-row.seg-action {
+  width: 100%; text-align: left; background: none; border: none; cursor: pointer;
+  display: flex; align-items: center; gap: 8px; border-radius: 5px; transition: background .15s;
+}
+.seg-row.seg-action:hover { background: rgba(232,184,75,.07); }
+.seg-row.seg-action .seg-go { margin-left: auto; color: rgba(232,184,75,.55); font-size: 15px; font-weight: 700; transition: transform .15s, color .15s; }
+.seg-row.seg-action:hover .seg-go { color: #e8b84b; transform: translateX(2px); }
+
+/* ── Sprint 18L: Operating Signals (strategic) ── */
+.op-signals { display: flex; flex-direction: column; gap: 2px; }
+.op-sig { padding: 10px 2px; border-bottom: 1px solid rgba(232,184,75,.07); }
+.op-sig:last-child { border-bottom: none; }
+.op-sig-main { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.op-sig-lbl { font-family: 'Cinzel', serif; font-size: 12px; letter-spacing: .08em; color: #cfc9ee; }
+.op-sig-val { font-family: 'Cinzel', serif; font-size: 19px; font-weight: 700; color: #f4f1ff; white-space: nowrap; text-align: right; }
+.op-sig-val.good { color: #22c98a; }
+.op-sig-val.warn { color: #ee9944; }
+.op-sig-val.muted { font-size: 13px; font-weight: 600; color: #8f89b8; font-style: italic; }
+.op-sig-sub { font-size: 11.5px; color: #8f89b8; margin-top: 2px; }
+.op-sig-empty .op-sig-lbl { color: #a8a2cc; }
+
+/* ── Sprint 18L: Upload Doc selected-filename note ── */
+.ck-qa-filename { font-size: 11px; color: #9a96c0; align-self: center; margin-left: 4px; }
 .wg-row {
   border: none;
   width: 100%;
@@ -4819,22 +4851,26 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
 
       <div class="ck-panel cc-secondary cc-metrics">
         <div class="ck-panel-title">⬡ Operating Signals</div>
-        <div class="biz-grid biz-signal-list">
-          <div class="biz-metric"><span class="biz-signal-icon">$</span><span class="biz-lbl">Revenue</span><span class="biz-val" id="statRevenue">$0</span></div>
-          <div class="biz-metric"><span class="biz-signal-icon">C</span><span class="biz-lbl">Active Clients</span><span class="biz-val" id="statActiveClients">—</span><span class="biz-sub" id="statTotalClients"></span></div>
-          <div class="biz-metric"><span class="biz-signal-icon">S</span><span class="biz-lbl">Sessions This Month</span><span class="biz-val" id="statSessionsMonth">—</span></div>
-          <div class="biz-metric"><span class="biz-signal-icon">%</span><span class="biz-lbl">Follow-Up %</span><span class="biz-val good" id="statFollowUp">78%</span></div>
+        <div class="op-signals" id="opSignals"><div class="hshimmer"></div><div class="hshimmer"></div></div>
+        <!-- Current-state KPIs retained (hidden) — these feed the Executive KPI strip and other bindings; do not remove. -->
+        <div class="op-legacy-stats" style="display:none" aria-hidden="true">
+          <div class="biz-grid biz-signal-list">
+            <div class="biz-metric"><span class="biz-signal-icon">$</span><span class="biz-lbl">Revenue</span><span class="biz-val" id="statRevenue">$0</span></div>
+            <div class="biz-metric"><span class="biz-signal-icon">C</span><span class="biz-lbl">Active Clients</span><span class="biz-val" id="statActiveClients">—</span><span class="biz-sub" id="statTotalClients"></span></div>
+            <div class="biz-metric"><span class="biz-signal-icon">S</span><span class="biz-lbl">Sessions This Month</span><span class="biz-val" id="statSessionsMonth">—</span></div>
+            <div class="biz-metric"><span class="biz-signal-icon">%</span><span class="biz-lbl">Follow-Up %</span><span class="biz-val good" id="statFollowUp">78%</span></div>
+          </div>
+          <div class="biz-grid" id="bizMore" style="display:none;margin-top:1px">
+            <div class="biz-metric"><span class="biz-val" id="statNps">—</span><span class="biz-lbl">NPS Score</span></div>
+            <div class="biz-metric"><span class="biz-val" id="statRepeatRate">—</span><span class="biz-lbl">Repeat Rate</span></div>
+            <div class="biz-metric"><span class="biz-val warn" id="statCancelRate">14%</span><span class="biz-lbl">Cancel Rate</span></div>
+            <div class="biz-metric"><span class="biz-val warn" id="statNoShow">6%</span><span class="biz-lbl">No-Show Rate</span></div>
+            <div class="biz-metric"><span class="biz-val" id="statPending">0</span><span class="biz-lbl">Pending Reviews</span></div>
+            <div class="biz-metric"><span class="biz-val" id="statApproved">0</span><span class="biz-lbl">Published</span></div>
+            <div class="biz-metric"><span class="biz-val" id="statCheckins">0</span><span class="biz-lbl">Check-Ins</span></div>
+          </div>
+          <button id="bizMoreBtn" onclick="toggleBizMore()" style="display:none">View More Metrics</button>
         </div>
-        <div class="biz-grid" id="bizMore" style="display:none;margin-top:1px">
-          <div class="biz-metric"><span class="biz-val" id="statNps">—</span><span class="biz-lbl">NPS Score</span></div>
-          <div class="biz-metric"><span class="biz-val" id="statRepeatRate">—</span><span class="biz-lbl">Repeat Rate</span></div>
-          <div class="biz-metric"><span class="biz-val warn" id="statCancelRate">14%</span><span class="biz-lbl">Cancel Rate</span></div>
-          <div class="biz-metric"><span class="biz-val warn" id="statNoShow">6%</span><span class="biz-lbl">No-Show Rate</span></div>
-          <div class="biz-metric"><span class="biz-val" id="statPending">0</span><span class="biz-lbl">Pending Reviews</span></div>
-          <div class="biz-metric"><span class="biz-val" id="statApproved">0</span><span class="biz-lbl">Published</span></div>
-          <div class="biz-metric"><span class="biz-val" id="statCheckins">0</span><span class="biz-lbl">Check-Ins</span></div>
-        </div>
-        <div style="text-align:center;margin-top:12px"><button id="bizMoreBtn" onclick="toggleBizMore()" style="background:none;border:1px solid rgba(232,184,75,.35);color:#e8b84b;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;padding:8px 20px;cursor:pointer">View More Metrics ▾</button></div>
       </div>
       <div class="ck-panel cc-secondary">
         <div class="ck-panel-title">◎ Recent Client Activity</div>
@@ -5725,9 +5761,11 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
       <button class="ck-qa-btn gold" onclick="crmOpenCreate()">＋ New Client</button>
       <button class="ck-qa-btn purple" onclick="openQuickLogModal()">✦ Session Note</button>
       <button class="ck-qa-btn purple" onclick="showTab('clients')">◈ Recommendation</button>
-      <button class="ck-qa-btn" onclick="showTab('operations')">📄 Upload Doc</button>
+      <button class="ck-qa-btn" onclick="document.getElementById('qaDocInput').click()">📄 Upload Doc</button>
       <button class="ck-qa-btn teal" onclick="showTab('booking')">💳 Invoice</button>
       <button class="ck-qa-btn" onclick="openCreateFollowUpModal()">◎ Add Follow-Up</button>
+      <input type="file" id="qaDocInput" style="display:none" onchange="_handleDocPick(this)" aria-hidden="true">
+      <span id="qaDocFilename" class="ck-qa-filename"></span>
     </div>
 
   </div><!-- /ck-main -->
@@ -10865,13 +10903,20 @@ function renderScheduleView(view) {
       var t = r.count === 0 ? { n: 'Open', c: 'wl-open' } : r.count <= 2 ? { n: 'Light', c: 'wl-light' }
             : r.count <= 4 ? { n: 'Moderate', c: 'wl-mod' } : r.count <= 6 ? { n: 'Heavy', c: 'wl-heavy' }
             : { n: 'Full', c: 'wl-full' };
-      var shown = r.sessions.slice(0, 3).map(function(s) {
+      var rowFn = function(s) {
         return '<div class="week-session-row">' +
           '<span class="week-session-time">' + _fmt12(stime(s)) + '</span>' +
           _schedAgendaClient(sname(s)) +
         '</div>';
-      }).join('');
-      var extra = r.sessions.length > 3 ? '<div class="week-more-row">+' + (r.sessions.length - 3) + ' more session' + (r.sessions.length - 3 !== 1 ? 's' : '') + '</div>' : '';
+      };
+      var shown = r.sessions.slice(0, 3).map(rowFn).join('');
+      var extra = '';
+      if (r.sessions.length > 3) {
+        var moreN = r.sessions.length - 3;
+        extra = '<div class="week-more-hidden" id="wmh-' + r.ds + '" data-count="' + moreN + '" style="display:none">' +
+            r.sessions.slice(3).map(rowFn).join('') + '</div>' +
+          '<button type="button" class="week-more-row week-more-toggle" onclick="_toggleWeekMore(\'' + r.ds + '\',this)">+' + moreN + ' more session' + (moreN !== 1 ? 's' : '') + '</button>';
+      }
       var detail = r.sessions.length ? shown + extra : '<div class="week-agenda-empty">No sessions scheduled</div>';
       return '<div class="week-day-card' + (r.isToday ? ' is-today' : '') + '">' +
         '<div class="week-day-head">' +
@@ -10914,9 +10959,9 @@ function renderScheduleView(view) {
       '<div class="sched-empty-msg">No appointments scheduled today.</div>' +
       '<div class="sched-empty-sub">Suggestions</div>' +
       '<div class="sched-empty-guide">' +
-        '<div class="seg-row"><span class="seg-lbl">Review</span><span class="seg-val">Review intake forms</span></div>' +
-        '<div class="seg-row"><span class="seg-lbl">Follow-Up</span><span class="seg-val">Complete follow-ups</span></div>' +
-        '<div class="seg-row"><span class="seg-lbl">Scheduling</span><span class="seg-val">Schedule new clients</span></div>' +
+        '<button class="seg-row seg-action" onclick="showTab(\'booking\');setTimeout(function(){setIntakeFilter(\'intake_pending\',null)},200)"><span class="seg-lbl">Review</span><span class="seg-val">Review intake forms</span><span class="seg-go">›</span></button>' +
+        '<button class="seg-row seg-action" onclick="showTab(\'followups\')"><span class="seg-lbl">Follow-Up</span><span class="seg-val">Complete follow-ups</span><span class="seg-go">›</span></button>' +
+        '<button class="seg-row seg-action" onclick="showTab(\'booking\');setTimeout(function(){setIntakeFilter(\'ready\',null)},200)"><span class="seg-lbl">Scheduling</span><span class="seg-val">Schedule new clients</span><span class="seg-go">›</span></button>' +
       '</div>' +
       '<div class="sched-empty-actions">' +
         '<button class="sched-empty-btn primary" onclick="showTab(\'booking\');setTimeout(function(){toggleApptForm()},200)">Create Appointment</button>' +
@@ -11139,6 +11184,100 @@ function _dashSessionDeltaLine(sc) {
   }
 }
 
+// Quick Action: open the file picker, then show the chosen filename. No backend
+// exists, so we explicitly do NOT claim the file was uploaded.
+function _handleDocPick(input) {
+  var out = document.getElementById('qaDocFilename');
+  if (!out) return;
+  var f = input && input.files && input.files[0];
+  out.textContent = f ? ('Selected: ' + f.name + ' — not yet uploaded') : '';
+}
+
+// Week agenda: expand / collapse the sessions beyond the first three for a day.
+function _toggleWeekMore(ds, btn) {
+  var box = document.getElementById('wmh-' + ds);
+  if (!box) return;
+  var open = box.style.display !== 'none';
+  box.style.display = open ? 'none' : 'block';
+  var n = box.getAttribute('data-count');
+  btn.textContent = open ? ('+' + n + ' more session' + (n !== '1' ? 's' : '')) : 'Show fewer';
+}
+
+// ── OPERATING SIGNALS — strategic, forward-looking; derived from existing data
+//    only. Anything we cannot compute honestly shows an "Insufficient data" state. ──
+function _opSig(label, val, sub, tone) {
+  return '<div class="op-sig"><div class="op-sig-main"><span class="op-sig-lbl">' + label + '</span>' +
+    '<span class="op-sig-val ' + (tone || '') + '">' + val + '</span></div>' +
+    '<div class="op-sig-sub">' + sub + '</div></div>';
+}
+function _opSigEmpty(label, sub) {
+  return '<div class="op-sig op-sig-empty"><div class="op-sig-main"><span class="op-sig-lbl">' + label + '</span>' +
+    '<span class="op-sig-val muted">Insufficient data</span></div>' +
+    '<div class="op-sig-sub">' + (sub || 'Needs more history') + '</div></div>';
+}
+function _renderOperatingSignals() {
+  var el = document.getElementById('opSignals');
+  if (!el) return;
+  try {
+    var c = (typeof REA_DATA !== 'undefined' && typeof REA_DATA.compute === 'function') ? REA_DATA.compute() : null;
+    var sessions = (typeof REA_DATA !== 'undefined' && REA_DATA.sessions) ? REA_DATA.sessions : [];
+    function sdate(s) { return (s.session_date || s.date || '').slice(0, 10); }
+    function iso(d) { return d.toISOString().slice(0, 10); }
+    function mondayOf(d) { var x = new Date(d); var day = x.getDay(); x.setDate(x.getDate() + ((day === 0) ? -6 : 1 - day)); x.setHours(0, 0, 0, 0); return x; }
+    var today = new Date(); today.setHours(0, 0, 0, 0);
+    var thisMon = mondayOf(today);
+    var thisSun = new Date(thisMon); thisSun.setDate(thisMon.getDate() + 6);
+    var nextMon = new Date(thisMon); nextMon.setDate(thisMon.getDate() + 7);
+    var nextSun = new Date(nextMon); nextSun.setDate(nextMon.getDate() + 6);
+    function inRange(ds, a, b) { return ds >= iso(a) && ds <= iso(b); }
+    var thisWeekCount = sessions.filter(function(s) { return inRange(sdate(s), thisMon, thisSun); }).length;
+    var nextWeekCount = sessions.filter(function(s) { return inRange(sdate(s), nextMon, nextSun); }).length;
+    var weeks = (c && c.weeks) ? c.weeks : [];
+    var peakWeekly = weeks.reduce(function(m, w) { return Math.max(m, w.sessions || 0); }, 0);
+
+    var out = [];
+
+    // 1) Revenue forecast — trailing average of up to 4 completed weeks.
+    var completed = weeks.filter(function(w) { return w.week < iso(thisMon); });
+    if (completed.length >= 2) {
+      var lastN = completed.slice(-4);
+      var avgRev = Math.round(lastN.reduce(function(t, w) { return t + (w.revenue || 0); }, 0) / lastN.length);
+      out.push(_opSig('Revenue Forecast', '$' + avgRev.toLocaleString() + '/wk', 'Trailing ' + lastN.length + '-week average', avgRev > 0 ? 'good' : 'warn'));
+    } else {
+      out.push(_opSigEmpty('Revenue Forecast', 'Needs ≥2 prior weeks'));
+    }
+
+    // 2) Capacity next week — booked vs observed peak.
+    out.push(_opSig('Capacity Next Week', nextWeekCount + ' booked',
+      peakWeekly > 0 ? (Math.round(nextWeekCount / peakWeekly * 100) + '% of peak (' + peakWeekly + '/wk)') : 'No peak history yet', ''));
+
+    // 3) Practitioner utilization — this week vs observed peak.
+    if (peakWeekly > 0) {
+      var util = Math.round(thisWeekCount / peakWeekly * 100);
+      out.push(_opSig('Practitioner Utilization', util + '%', thisWeekCount + ' of peak ' + peakWeekly + ' sessions/wk', util >= 85 ? 'warn' : 'good'));
+    } else {
+      out.push(_opSigEmpty('Practitioner Utilization'));
+    }
+
+    // 4) Client retention — repeat-client share.
+    if (c && c.totalClients > 0) {
+      out.push(_opSig('Client Retention', (c.repeatRate || 0) + '%', (c.repeatClients || 0) + ' of ' + c.totalClients + ' clients return', (c.repeatRate >= 40) ? 'good' : 'warn'));
+    } else {
+      out.push(_opSigEmpty('Client Retention'));
+    }
+
+    // 5) Average days to follow-up — no follow-up timestamps in current data.
+    out.push(_opSigEmpty('Avg Days to Follow-Up', 'Needs follow-up timestamps'));
+
+    // 6) Booking conversion — no lead/inquiry source data.
+    out.push(_opSigEmpty('Booking Conversion', 'Needs lead-source data'));
+
+    el.innerHTML = out.join('');
+  } catch (e) {
+    el.innerHTML = '<p class="home-empty">Unable to compute signals.</p>';
+  }
+}
+
 function renderHomeDashboard() {
   var today = new Date().toISOString().slice(0, 10);
 
@@ -11203,6 +11342,8 @@ function renderHomeDashboard() {
   renderScheduleView('today');
   // Week-at-a-glance summary panel
   _renderWeekGlance();
+  // Operating Signals — strategic, forward-looking (distinct from KPI strip)
+  _renderOperatingSignals();
 
   // ── RECENT CLIENT ACTIVITY (compact summary list, top 5) ─────
   var actEl = document.getElementById('homeActivity');
