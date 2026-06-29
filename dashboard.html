@@ -4581,6 +4581,21 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
 @media (max-width: 900px)  { .lp-pipeline-cols { grid-template-columns: repeat(2, 1fr); } .lp-dash-grid { grid-template-columns: 1fr; } .lp-form-row-2 { grid-template-columns: 1fr; } .lp-rev-row { grid-template-columns: 2fr 1fr 1fr; } .lp-rev-row span:nth-child(4), .lp-rev-row span:nth-child(5) { display: none; } }
 @media (max-width: 640px)  { .lp-kpi-row { grid-template-columns: repeat(2, 1fr); } .lp-pipeline-cols { grid-template-columns: 1fr; } }
 </style>
+<style>
+/* ── AI Business Chat Bar ── */
+#rea-biz-chat-bar { margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(232,184,75,.15); }
+.aichat-input-row { display: flex; gap: 7px; align-items: center; }
+.aichat-input { flex: 1; background: rgba(4,2,14,.75); border: 1px solid rgba(232,184,75,.28); color: #f0ecff; font-family: 'EB Garamond', serif; font-size: 15px; padding: 9px 13px; border-radius: 6px; outline: none; transition: border-color .15s; min-width: 0; box-sizing: border-box; }
+.aichat-input:focus { border-color: rgba(232,184,75,.65); }
+.aichat-input::placeholder { color: rgba(222,216,245,.35); font-style: italic; }
+.aichat-send { flex-shrink: 0; background: #e8b84b; border: none; color: #0a0612; font-size: 15px; width: 36px; height: 36px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .15s; font-family: sans-serif; }
+.aichat-send:hover { background: #f1c763; }
+.aichat-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.aichat-chip { font-family: 'Cinzel', serif; font-size: 8.5px; letter-spacing: .08em; text-transform: uppercase; padding: 5px 9px; border: 1px solid rgba(232,184,75,.2); color: rgba(232,184,75,.65); background: transparent; border-radius: 20px; cursor: pointer; white-space: nowrap; transition: all .15s; }
+.aichat-chip:hover { border-color: rgba(232,184,75,.55); color: #ffd977; background: rgba(232,184,75,.07); }
+.aichat-response { margin-top: 10px; background: rgba(232,184,75,.05); border: 1px solid rgba(232,184,75,.16); border-radius: 6px; padding: 11px 14px; font-family: 'EB Garamond', serif; font-size: 15px; color: #ece8ff; line-height: 1.6; }
+.aichat-thinking { color: rgba(232,184,75,.45); font-style: italic; font-size: 13px; }
+</style>
 </head>
 <body>
 
@@ -4851,6 +4866,20 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
       <div class="ck-panel cc-secondary">
         <div class="ck-panel-title">✦ AI Daily Briefing</div>
         <div id="homeBriefing"><div class="hshimmer"></div><div class="hshimmer"></div><div class="hshimmer"></div></div>
+        <div id="rea-biz-chat-bar">
+          <div id="rea-biz-chat-response" class="aichat-response" style="display:none"></div>
+          <div class="aichat-input-row">
+            <input type="text" id="rea-biz-chat-input" class="aichat-input"
+                   placeholder="Ask your AI about your business…"
+                   onkeydown="if(event.key==='Enter')_reaBizChatSend()">
+            <button class="aichat-send" onclick="_reaBizChatSend()" title="Send">✈</button>
+          </div>
+          <div class="aichat-chips">
+            <button class="aichat-chip" onclick="_reaBizChatAsk('What should I focus on today?')">What should I focus on today?</button>
+            <button class="aichat-chip" onclick="_reaBizChatAsk('Why are follow-ups overdue?')">Why are follow-ups overdue?</button>
+            <button class="aichat-chip" onclick="_reaBizChatAsk(&quot;What&apos;s my revenue forecast?&quot;)">What's my revenue forecast?</button>
+          </div>
+        </div>
       </div>
 
       <!-- Urgent Attention -->
@@ -15257,6 +15286,84 @@ purgeTestEntries();
   }, 2000);
 
 })();
+
+// ── AI Business Chat Bar ─────────────────────────────────────────────────────
+function _reaBizChatSend() {
+  var input = document.getElementById('rea-biz-chat-input');
+  if (!input) return;
+  var q = input.value.trim();
+  if (!q) return;
+  input.value = '';
+  _reaBizChatAsk(q);
+}
+
+function _reaBizChatAsk(q) {
+  var resp = document.getElementById('rea-biz-chat-response');
+  if (!resp) return;
+  resp.style.display = 'block';
+  resp.innerHTML = '<span class="aichat-thinking">Thinking…</span>';
+  setTimeout(function() {
+    resp.textContent = _reaBizChatAnswer(q);
+  }, 380);
+}
+
+function _reaBizChatAnswer(q) {
+  var lower = (q || '').toLowerCase();
+
+  // Read live values from populated DOM elements
+  function _dv(id) { var e = document.getElementById(id); return e ? e.textContent.trim() : null; }
+  var revenue   = _dv('execKpiRevenue')      || '$0';
+  var clients   = _dv('execKpiActiveClients')|| '—';
+  var sessions  = _dv('homeStatSessions')    || '—';
+  var followRate= _dv('execKpiFollowUpRate') || '—';
+  var followUps = _dv('homeStatFollowUps')   || '0';
+  var intakes   = _dv('homeStatIntakes')     || '0';
+  var fu = parseInt(followUps, 10) || 0;
+  var si = parseInt(sessions,  10) || 0;
+  var ic = parseInt(intakes,   10) || 0;
+
+  // Focus / priority
+  if (/focus|priorit|start|what.*(do|should).*today|work on/.test(lower)) {
+    if (fu > 0)
+      return 'Your top priority today is the ' + fu + ' overdue follow-up' + (fu !== 1 ? 's' : '') + '. That\'s your highest client-drift risk right now. After those, review intakes (' + intakes + ' pending) and check outstanding payments.';
+    if (ic > 0)
+      return 'No overdue follow-ups — clear the ' + ic + ' pending intake' + (ic !== 1 ? 's' : '') + ' so new clients don\'t stall before scheduling.';
+    if (si > 0)
+      return 'You have ' + si + ' session' + (si !== 1 ? 's' : '') + ' today. Protect same-day follow-through: session notes, follow-up scheduling, and payment status.';
+    return 'Your queue looks clear. Use the open capacity for proactive follow-up outreach or intake review.';
+  }
+
+  // Follow-ups / overdue
+  if (/follow.?up|overdue|aftercare/.test(lower)) {
+    if (fu === 0)
+      return 'No follow-ups are currently overdue — the follow-up queue is clear.';
+    return 'You have ' + fu + ' overdue follow-up' + (fu !== 1 ? 's' : '') + '. Your current follow-up rate is ' + followRate + '. The most common cause is sessions completing without a scheduled aftercare date. Open the Action Queue to resolve them now.';
+  }
+
+  // Revenue / forecast
+  if (/revenue|forecast|income|earn|money|financ/.test(lower)) {
+    return 'Month-to-date revenue is ' + revenue + ' across ' + clients + ' active clients and ' + sessions + ' sessions this month. To project forward, multiply your average session value by remaining booked appointments. Outstanding payments may still be pending collection.';
+  }
+
+  // Sessions / appointments
+  if (/session|appointment|booking|scheduled/.test(lower)) {
+    return 'You have ' + sessions + ' session' + (si !== 1 ? 's' : '') + ' logged this month. Today\'s schedule shows ' + (si > 0 ? si + ' appointment' + (si !== 1 ? 's' : '') : 'no appointments') + '.';
+  }
+
+  // Clients
+  if (/client|active|roster|how many/.test(lower)) {
+    return 'You currently have ' + clients + ' active clients in the 30-day window. Your follow-up rate is ' + followRate + ', meaning most clients are receiving aftercare outreach.';
+  }
+
+  // Intakes
+  if (/intake|new client|application|pending/.test(lower)) {
+    if (ic === 0) return 'No intake forms are pending review right now.';
+    return 'There are ' + ic + ' intake form' + (ic !== 1 ? 's' : '') + ' awaiting review. These represent potential new clients who have not yet been scheduled.';
+  }
+
+  return 'I don\'t have enough business data to answer that yet.';
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 </script>
 <script src="clients-module.js"></script>
