@@ -57,6 +57,16 @@ input::placeholder,textarea::placeholder{color:#dddaee55}
 .tab.active{color:#fff;border-bottom-color:var(--gold)}
 .tab-content{display:none}
 .tab-content.active{display:block}
+.kc-shell{max-width:1280px;margin:0 auto;padding:32px 28px 48px}
+.kc-header{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:18px}
+.kc-title{font-family:'Cinzel',serif;font-size:24px;letter-spacing:.18em;text-transform:uppercase;color:#fff;margin:0 0 6px}
+.kc-subtitle{font-family:'EB Garamond',serif;font-size:15px;color:#9a96c0;margin:0}
+.kc-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;border-bottom:1px solid rgba(232,184,75,.16);padding-bottom:12px}
+.kc-tab{background:rgba(232,184,75,.06);border:1px solid rgba(232,184,75,.22);color:#d8d4f0;font-family:'Cinzel',serif;font-size:10px;letter-spacing:.16em;text-transform:uppercase;padding:9px 14px;cursor:pointer}
+.kc-tab:hover,.kc-tab.active{background:rgba(232,184,75,.16);border-color:rgba(232,184,75,.62);color:#ffd977}
+.kc-panel{display:none}
+.kc-panel.active{display:block}
+@media(max-width:640px){.kc-shell{padding:22px 16px 34px}.kc-header{gap:10px}.kc-title{font-size:18px}.kc-tabs{display:grid;grid-template-columns:1fr;gap:7px}.kc-tab{width:100%;text-align:left}}
 /* ── VISUAL UPGRADES ──────────────────────────────────────── */
 .section-title{font-size:26px !important}
 .card-name{font-size:28px !important}
@@ -4687,14 +4697,8 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
 
       <div class="ck-nav-divider"></div>
       <div class="ck-nav-section">Knowledge</div>
-      <button class="tab ck-nav-item" onclick="showTab('kh')">
-        <span class="nav-icon">◈</span><span class="nav-text">KNOWLEDGE HUB</span>
-      </button>
-      <button class="tab ck-nav-item" onclick="showTab('cs')">
-        <span class="nav-icon">✦</span><span class="nav-text">CONTENT STUDIO</span>
-      </button>
-      <button class="tab ck-nav-item" onclick="showTab('tc')">
-        <span class="nav-icon">🎓</span><span class="nav-text">TRAINING CENTER</span>
+      <button class="tab ck-nav-item" onclick="showTab('knowledge')">
+        <span class="nav-icon">◈</span><span class="nav-text">Knowledge Center</span>
       </button>
     </nav>
 
@@ -5190,13 +5194,25 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
 
   <div class="tab-content" id="tab-training"></div>
 
-  <div class="tab-content" id="tab-kh"></div>
-
-  <!-- CONTENT STUDIO TAB -->
-  <div class="tab-content" id="tab-cs"></div>
-
-  <!-- TRAINING CENTER TAB -->
-  <div class="tab-content" id="tab-tc"></div>
+  <!-- KNOWLEDGE CENTER TAB -->
+  <div class="tab-content" id="tab-knowledge">
+    <div class="kc-shell">
+      <div class="kc-header">
+        <div>
+          <h2 class="kc-title">Knowledge Center</h2>
+          <p class="kc-subtitle">Knowledge, content, and training tools gathered into one workspace.</p>
+        </div>
+      </div>
+      <div class="kc-tabs" role="tablist" aria-label="Knowledge Center sections">
+        <button type="button" class="kc-tab active" data-kc-tab="kh" onclick="showKnowledgeCenter('kh')">Knowledge Hub</button>
+        <button type="button" class="kc-tab" data-kc-tab="cs" onclick="showKnowledgeCenter('cs')">Content Studio</button>
+        <button type="button" class="kc-tab" data-kc-tab="tc" onclick="showKnowledgeCenter('tc')">Training Center</button>
+      </div>
+      <div class="kc-panel active" id="tab-kh"></div>
+      <div class="kc-panel" id="tab-cs"></div>
+      <div class="kc-panel" id="tab-tc"></div>
+    </div>
+  </div>
 
   <!-- PRACTITIONER NETWORK TAB -->
   <div class="tab-content" id="tab-pn"></div>
@@ -5953,6 +5969,11 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
 })();
 
 function showTab(name) {
+  var knowledgeAliases = { kh: true, cs: true, tc: true };
+  var knowledgeSub = knowledgeAliases[name] ? name : null;
+  if (knowledgeSub) name = 'knowledge';
+  if (name === 'knowledge' && !knowledgeSub) knowledgeSub = window._knowledgeCenterSub || 'kh';
+
   // Hide all tab content via inline style (bypasses any CSS cascade issues)
   document.querySelectorAll('.tab-content').forEach(el => { el.style.display='none'; el.classList.remove('active'); });
   document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
@@ -5968,6 +5989,7 @@ function showTab(name) {
   if (name === 'booking')     { try { renderCal(); renderUpcoming(); renderWaitlist(); updateCapacityStats(); renderCancellationLog(); renderBooking(); renderSyncLastRun(); loadCancelRequests(); } catch(e){ console.error('booking tab',e); } }
   if (name === 'operations')  { try { renderOperationsCenter(); } catch(e){ console.error('renderOperationsCenter', e); } }
   if (name === 'followups')   { try { loadFollowUps(); } catch(e){ console.error('loadFollowUps', e); } }
+  if (name === 'knowledge')   { try { renderKnowledgeCenter(knowledgeSub); } catch(e){ console.error('renderKnowledgeCenter', e); } }
   if (name === 'kh')             { try { khInit(); } catch(e){ console.error('khInit', e); } }
   if (name === 'cs')             { try { csInit(); } catch(e){ console.error('csInit', e); } }
   if (name === 'tc')             { try { tcInit(); } catch(e){ console.error('tcInit', e); } }
@@ -5978,6 +6000,28 @@ function showTab(name) {
   if (name === 'docs')          { try { docsInit(); } catch(e){ console.error('docsInit', e); } }
   if (name === 'questions')     { try { questionsInit(); } catch(e){ console.error('questionsInit', e); } }
   if (name === 'training')      { try { trainingInit(); } catch(e){ console.error('trainingInit', e); } }
+}
+
+function showKnowledgeCenter(section) {
+  window._knowledgeCenterSub = section || window._knowledgeCenterSub || 'kh';
+  showTab('knowledge');
+}
+
+function renderKnowledgeCenter(section) {
+  var active = section || window._knowledgeCenterSub || 'kh';
+  if (!/^(kh|cs|tc)$/.test(active)) active = 'kh';
+  window._knowledgeCenterSub = active;
+  document.querySelectorAll('.kc-tab').forEach(function(btn) {
+    btn.classList.toggle('active', btn.getAttribute('data-kc-tab') === active);
+  });
+  document.querySelectorAll('.kc-panel').forEach(function(panel) {
+    var isActive = panel.id === 'tab-' + active;
+    panel.style.display = isActive ? 'block' : 'none';
+    panel.classList.toggle('active', isActive);
+  });
+  if (active === 'kh') { try { khInit(); } catch(e){ console.error('khInit', e); } }
+  if (active === 'cs') { try { csInit(); } catch(e){ console.error('csInit', e); } }
+  if (active === 'tc') { try { tcInit(); } catch(e){ console.error('tcInit', e); } }
 }
 
 /* ── TRAINING INTEREST LEADS (Sprint 18) ─────────────────────────────────── */
