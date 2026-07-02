@@ -2684,6 +2684,105 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
   align-items: stretch;
   margin-bottom: 14px;
 }
+.cc-row3.cc-row-priority {
+  grid-template-columns: minmax(0, 1.65fr) minmax(320px, .9fr);
+}
+.priority-command-card {
+  border-color: rgba(232,184,75,.32) !important;
+  background: linear-gradient(180deg, rgba(232,184,75,.055), rgba(5,3,15,.98) 54%) !important;
+}
+.priority-command-grid {
+  display: grid;
+  grid-template-columns: minmax(250px,.86fr) minmax(0,1.14fr);
+  gap: 18px;
+  align-items: start;
+}
+.priority-lane {
+  min-width: 0;
+}
+.priority-lane-title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0 0 10px;
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  letter-spacing: .18em;
+  color: rgba(232,184,75,.8);
+  text-transform: uppercase;
+}
+.priority-lane-title:after {
+  content: "";
+  height: 1px;
+  flex: 1;
+  background: rgba(232,184,75,.14);
+}
+.priority-side-stack {
+  display: grid;
+  gap: 14px;
+}
+.priority-mini-card {
+  border: 1px solid rgba(232,184,75,.12);
+  background: rgba(255,255,255,.018);
+  border-radius: 8px;
+  padding: 13px 14px;
+}
+#homeSignals {
+  display: grid;
+  gap: 8px;
+}
+.signal-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 9px 0;
+  border-bottom: 1px solid rgba(232,184,75,.07);
+  cursor: pointer;
+}
+.signal-row:hover .signal-label { color: #ffd977; }
+.signal-row:last-child { border-bottom: none; }
+.signal-label {
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  letter-spacing: .16em;
+  color: #f0ecff;
+  text-transform: uppercase;
+}
+.signal-sub {
+  margin-top: 2px;
+  font-size: 13px;
+  color: rgba(221,218,238,.65);
+  line-height: 1.35;
+}
+.signal-count {
+  min-width: 34px;
+  text-align: center;
+  border: 1px solid rgba(232,184,75,.22);
+  background: rgba(232,184,75,.08);
+  color: #ffd977;
+  font-family: 'Cinzel', serif;
+  font-size: 16px;
+  padding: 5px 7px;
+  border-radius: 6px;
+}
+.priority-command-card #homeFlags {
+  max-height: none;
+  overflow: visible;
+}
+@media (max-width: 1100px) {
+  .cc-row3.cc-row-priority { grid-template-columns: 1fr; }
+}
+@media (max-width: 760px) {
+  .priority-command-grid { grid-template-columns: 1fr; }
+  .priority-mini-card { padding: 12px; }
+  .signal-row { grid-template-columns: 1fr; }
+  .signal-count { width: max-content; }
+}
 .cc-row4 {
   display: grid;
   grid-template-columns: 1.18fr .92fr 1fr 1fr;
@@ -4834,42 +4933,56 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
 
     </div>
 
-    <!-- ══ ROW 2: Decision Support — Action Queue · AI Daily Briefing · Urgent Attention ══ -->
-    <div class="cc-row3">
+    <!-- ══ ROW 2: Decision Support — Priority Command Center · AI Daily Briefing ══ -->
+    <div class="cc-row3 cc-row-priority">
 
-      <!-- Action Queue — operational center (visually dominant) -->
-      <div class="ck-panel ck-panel--aq">
-        <div class="ck-panel-title">✅ Action Queue</div>
-        <div class="aq-compact" id="homeActionQueue">
-          <div class="aqc-group">
-            <div class="aqc-group-title">Review</div>
-            <button class="aqc-row aqc-red" onclick="_dashOpenQueueTarget('followups')">
-              <span class="aqc-dot red"></span><span class="aqc-lbl">Follow-Ups Due</span><span class="aqc-count" id="aqOverdue">—</span><span class="aqc-go">›</span>
-            </button>
-            <button class="aqc-row aqc-red" onclick="_dashOpenQueueTarget('booking','intake_pending')">
-              <span class="aqc-dot red"></span><span class="aqc-lbl">Intakes Need Review</span><span class="aqc-count" id="aqIntake">—</span><span class="aqc-go">›</span>
-            </button>
-            <button class="aqc-row aqc-orange" onclick="_dashOpenQueueTarget('booking','review_pending')">
-              <span class="aqc-dot orange"></span><span class="aqc-lbl">Pending Review</span><span class="aqc-count" id="aqReview">—</span><span class="aqc-go">›</span>
-            </button>
+      <!-- Priority Command Center — queue counts + urgent client signals -->
+      <div class="ck-panel ck-panel--aq priority-command-card">
+        <div class="ck-panel-title ck-panel-title-action"><span>✅ Priority Command Center</span><button class="panel-title-btn" onclick="_dashOpenQueueTarget('followups')">View Queue</button></div>
+        <div class="priority-command-grid">
+          <div class="priority-lane">
+            <div class="priority-lane-title">Workload Queue</div>
+            <div class="aq-compact" id="homeActionQueue">
+              <div class="aqc-group">
+                <div class="aqc-group-title">Review</div>
+                <button class="aqc-row aqc-red" onclick="_dashOpenQueueTarget('followups')">
+                  <span class="aqc-dot red"></span><span class="aqc-lbl">Follow-Ups Due</span><span class="aqc-count" id="aqOverdue">—</span><span class="aqc-go">›</span>
+                </button>
+                <button class="aqc-row aqc-red" onclick="_dashOpenQueueTarget('booking','intake_pending')">
+                  <span class="aqc-dot red"></span><span class="aqc-lbl">Intakes Need Review</span><span class="aqc-count" id="aqIntake">—</span><span class="aqc-go">›</span>
+                </button>
+                <button class="aqc-row aqc-orange" onclick="_dashOpenQueueTarget('booking','review_pending')">
+                  <span class="aqc-dot orange"></span><span class="aqc-lbl">Pending Review</span><span class="aqc-count" id="aqReview">—</span><span class="aqc-go">›</span>
+                </button>
+              </div>
+              <div class="aqc-group">
+                <div class="aqc-group-title">Scheduling</div>
+                <button class="aqc-row aqc-orange" onclick="_dashOpenQueueTarget('booking','ready')">
+                  <span class="aqc-dot orange"></span><span class="aqc-lbl">Ready to Schedule</span><span class="aqc-count" id="aqReady">—</span><span class="aqc-go">›</span>
+                </button>
+                <button class="aqc-row aqc-green" onclick="_dashOpenQueueTarget('booking')">
+                  <span class="aqc-dot green"></span><span class="aqc-lbl">Sessions Today</span><span class="aqc-count" id="aqSessions">—</span><span class="aqc-go">›</span>
+                </button>
+              </div>
+              <div class="aqc-group">
+                <div class="aqc-group-title">Financial</div>
+                <button class="aqc-row aqc-yellow" onclick="_dashOpenQueueTarget('booking','awaiting_payment')">
+                  <span class="aqc-dot yellow"></span><span class="aqc-lbl">Outstanding Payments</span><span class="aqc-count" id="aqPayments">—</span><span class="aqc-go">›</span>
+                </button>
+              </div>
+            </div>
           </div>
-          <div class="aqc-group">
-            <div class="aqc-group-title">Scheduling</div>
-            <button class="aqc-row aqc-orange" onclick="_dashOpenQueueTarget('booking','ready')">
-              <span class="aqc-dot orange"></span><span class="aqc-lbl">Ready to Schedule</span><span class="aqc-count" id="aqReady">—</span><span class="aqc-go">›</span>
-            </button>
-            <button class="aqc-row aqc-green" onclick="_dashOpenQueueTarget('booking')">
-              <span class="aqc-dot green"></span><span class="aqc-lbl">Sessions Today</span><span class="aqc-count" id="aqSessions">—</span><span class="aqc-go">›</span>
-            </button>
-          </div>
-          <div class="aqc-group">
-            <div class="aqc-group-title">Financial</div>
-            <button class="aqc-row aqc-yellow" onclick="_dashOpenQueueTarget('booking','awaiting_payment')">
-              <span class="aqc-dot yellow"></span><span class="aqc-lbl">Outstanding Payments</span><span class="aqc-count" id="aqPayments">—</span><span class="aqc-go">›</span>
-            </button>
+          <div class="priority-side-stack">
+            <div class="priority-mini-card">
+              <div class="priority-lane-title">Urgent Clients</div>
+              <div id="homeFlags"><div class="hshimmer"></div><div class="hshimmer"></div></div>
+            </div>
+            <div class="priority-mini-card">
+              <div class="priority-lane-title">Incoming Signals</div>
+              <div id="homeSignals"><div class="hshimmer"></div><div class="hshimmer"></div></div>
+            </div>
           </div>
         </div>
-        <div class="aq-footer"><button class="aq-footer-btn" onclick="_dashOpenQueueTarget('followups')">View Full Queue</button></div>
       </div>
 
       <!-- AI Daily Briefing -->
@@ -4892,12 +5005,6 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
             <button class="aichat-chip" onclick="_reaBizChatAsk('How is the business doing?')">How is the business doing?</button>
           </div>
         </div>
-      </div>
-
-      <!-- Urgent Attention -->
-      <div class="ck-panel">
-        <div class="ck-panel-title ck-panel-title-action"><span>⚠ Urgent Attention</span><button class="panel-title-btn" onclick="showTab('followups')">View All</button></div>
-        <div id="homeFlags" class="home-scroll"><div class="hshimmer"></div><div class="hshimmer"></div></div>
       </div>
 
     </div>
@@ -11411,6 +11518,72 @@ function _dashOpenQueueTarget(tab, filter) {
   }
 }
 
+function _renderHomeSignalsState(questions, training, inquiries) {
+  var el = document.getElementById('homeSignals');
+  if (!el) return;
+  var qList = Array.isArray(questions) ? questions : [];
+  var tList = Array.isArray(training) ? training : [];
+  var iList = Array.isArray(inquiries) ? inquiries : [];
+  var openQuestions = qList.filter(function(q) { return q && q.status !== 'closed' && q.status !== 'responded'; });
+  var openTraining = tList.filter(function(l) { return l && (!l.status || l.status === 'new' || l.status === 'contacted'); });
+  var openInquiries = iList.filter(function(i) { return i; });
+  var rows = [
+    {
+      label: 'Client Portal Questions',
+      count: openQuestions.length,
+      empty: 'No new portal questions.',
+      action: 'questions'
+    },
+    {
+      label: 'Training Session Interest',
+      count: openTraining.length,
+      empty: 'No new training inquiries.',
+      action: 'training'
+    },
+    {
+      label: 'Website Inquiries',
+      count: openInquiries.length,
+      empty: 'No new website inquiries.',
+      action: 'communications'
+    }
+  ];
+  el.innerHTML = rows.map(function(row) {
+    var sub = row.count > 0 ? 'Needs review' : row.empty;
+    return '<button type="button" class="signal-row" onclick="showTab(\'' + row.action + '\')">' +
+      '<span><span class="signal-label">' + row.label + '</span><span class="signal-sub">' + sub + '</span></span>' +
+      '<span class="signal-count">' + row.count + '</span>' +
+    '</button>';
+  }).join('');
+}
+
+function _fetchHomeSignals() {
+  var el = document.getElementById('homeSignals');
+  if (!el) return;
+  var key = sessionStorage.getItem('rea_api_token') || '';
+  if (!key) {
+    _renderHomeSignalsState([], [], []);
+    return;
+  }
+  Promise.all([
+    fetch('/.netlify/functions/client-questions', { headers: { 'X-Dashboard-Token': key } })
+      .then(function(r) { return r.ok ? r.json() : { questions: [] }; })
+      .catch(function() { return { questions: [] }; }),
+    fetch('/.netlify/functions/training-interest', { headers: { 'X-Dashboard-Token': key } })
+      .then(function(r) { return r.ok ? r.json() : { leads: [] }; })
+      .catch(function() { return { leads: [] }; }),
+    fetch('/.netlify/functions/forms?kind=inquiry', { headers: { 'X-Dashboard-Token': key } })
+      .then(function(r) { return r.ok ? r.json() : { inquiries: [] }; })
+      .catch(function() { return { inquiries: [] }; })
+  ]).then(function(results) {
+    var q = results[0] || {};
+    var t = results[1] || {};
+    var i = results[2] || {};
+    _renderHomeSignalsState(q.questions || [], t.leads || [], i.inquiries || i.forms || i.submissions || []);
+  }).catch(function() {
+    _renderHomeSignalsState([], [], []);
+  });
+}
+
 function _dashOpenDocPicker() {
   var input = document.getElementById('qaDocInput');
   var out = document.getElementById('qaDocFilename');
@@ -11583,6 +11756,8 @@ function renderHomeDashboard() {
   _renderWeekGlance();
   // Operating Signals — strategic, forward-looking (distinct from KPI strip)
   _renderOperatingSignals();
+  // Incoming portal/business signals
+  _fetchHomeSignals();
 
   // ── RECENT CLIENT ACTIVITY (compact summary list, top 5) ─────
   var actEl = document.getElementById('homeActivity');
