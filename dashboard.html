@@ -881,29 +881,46 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
 .sched-open-btn { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: #c4b5fd; background: rgba(124,92,191,.14); border: 1px solid rgba(124,92,191,.5); border-radius: 5px; padding: 6px 12px; cursor: pointer; flex: none; white-space: nowrap; transition: all .15s; }
 .sched-open-btn:hover { color: #fff; border-color: #7c5cbf; background: rgba(124,92,191,.32); }
 
-/* ── Today's Schedule — compact appointment list ── */
-#homeSched.home-scroll { max-height: none; overflow: visible; }
-.today-appt-list { display: flex; flex-direction: column; gap: 8px; }
+/* ── Today's Schedule — reference compact card ── */
+#homeSched.home-scroll { max-height: none; overflow: visible; min-height: 392px; }
+#homeSched { padding-top: 4px; }
+.today-appt-list { display: flex; flex-direction: column; gap: 0; }
 .today-appt-row {
   display: grid;
-  grid-template-columns: minmax(82px, .62fr) minmax(0, 1.35fr) minmax(86px, .8fr) auto;
+  grid-template-columns: minmax(112px, .82fr) minmax(0, 1.05fr) minmax(70px, .58fr) auto;
   align-items: center;
-  gap: 12px;
-  padding: 11px 0;
-  border-bottom: 1px solid rgba(232,184,75,.07);
+  gap: 14px;
+  min-height: 96px;
+  padding: 18px 0;
+  border-bottom: 1px solid rgba(232,184,75,.08);
 }
 .today-appt-row:last-child { border-bottom: none; }
-.today-appt-row.is-next { background: linear-gradient(90deg, rgba(232,184,75,.10), transparent); border-left: 3px solid #e8b84b; margin-left: -5px; padding-left: 10px; border-radius: 4px; }
-.today-appt-time { display: flex; align-items: center; gap: 8px; min-width: 0; font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: .04em; color: #c9a86a; white-space: nowrap; }
+.today-appt-row.is-next { background: linear-gradient(90deg, rgba(232,184,75,.07), transparent); border-left: 2px solid #e8b84b; margin-left: -5px; padding-left: 10px; border-radius: 6px; }
+.today-appt-time { display: flex; align-items: center; gap: 10px; min-width: 0; font-family: 'Cinzel', serif; font-size: 13px; letter-spacing: .03em; color: #f0c85a; white-space: nowrap; text-transform: none; }
 .today-appt-time .st-dot { margin-right: 0; }
 .today-appt-client { min-width: 0; }
-.today-appt-client .sched-client { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; line-height: 1.25; }
-.today-appt-type { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; color: #9a96c0; }
+.today-appt-client .sched-client,
+.today-appt-client .sched-client[style] { display: block !important; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 17px !important; line-height: 1.2; color: #fff7ff !important; text-decoration-thickness: 1px !important; text-decoration-color: rgba(232,184,75,.55) !important; text-underline-offset: 4px !important; }
+.today-appt-type { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; color: #b8ace7; }
 .today-appt-row .sched-open-btn { justify-self: end; }
+.today-appt-row .sched-open-btn {
+  min-width: 136px;
+  min-height: 52px;
+  border-radius: 8px;
+  font-size: 12px;
+  letter-spacing: .14em;
+  color: #e3d6ff;
+  background: rgba(124,92,191,.18);
+  border-color: rgba(154,121,226,.58);
+}
+.today-appt-row .sched-open-btn:hover { background: rgba(124,92,191,.32); border-color: rgba(196,181,253,.85); color: #fff; }
 @media (max-width: 760px) {
-  .today-appt-row { grid-template-columns: minmax(76px, .75fr) minmax(0, 1.25fr) auto; gap: 9px; }
-  .today-appt-type { grid-column: 2 / 3; font-size: 11px; }
-  .today-appt-row .sched-open-btn { grid-column: 3 / 4; grid-row: 1 / 3; padding: 7px 9px; font-size: 9px; max-width: 100%; }
+  #homeSched.home-scroll { min-height: 0; }
+  .today-appt-row { grid-template-columns: 1fr auto; gap: 8px 12px; min-height: 0; padding: 14px 0; }
+  .today-appt-time { grid-column: 1 / 2; font-size: 12px; }
+  .today-appt-client { grid-column: 1 / 2; }
+  .today-appt-type { grid-column: 1 / 2; font-size: 12px; }
+  .today-appt-row .sched-open-btn { grid-column: 2 / 3; grid-row: 1 / 4; min-width: 112px; min-height: 44px; padding: 8px 10px; font-size: 10px; max-width: 100%; }
 }
 
 /* ── Today's Schedule — table layout ── */
@@ -921,24 +938,25 @@ footer p{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.25em;color:#d
 .sched-trow-next { background: rgba(232,184,75,.045); }
 .sched-empty-row td { text-align: center; color: #9080cc; font-style: italic; font-size: 15px; padding: 28px 10px !important; border-bottom: none !important; }
 
-/* ── Sprint 18L fix: Today's Schedule empty state — rebuilt, mobile-safe ── */
+/* ── Sprint 18L fix: Today's Schedule empty state — reference, mobile-safe ── */
 .home-scroll.sched-empty-mode { max-height: none; overflow: visible; }
-.ts-empty { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; padding: 20px 14px 8px; box-sizing: border-box; width: 100%; }
-.ts-empty-icon { width: 46px; height: 46px; flex: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(232,184,75,.10); border: 1px solid rgba(232,184,75,.25); font-size: 21px; }
-.ts-empty-msg { font-size: 15px; color: #ded8f5; }
-.ts-suggest-label { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: .22em; text-transform: uppercase; color: #8f89b8; margin-top: 2px; }
-.ts-tiles { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 340px; }
-.ts-tile { width: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; padding: 10px 14px; border: 1px solid rgba(232,184,75,.18); border-radius: 8px; background: rgba(232,184,75,.03); cursor: pointer; transition: border-color .15s, background .15s; font-family: inherit; }
-.ts-tile:hover { border-color: rgba(232,184,75,.45); background: rgba(232,184,75,.07); }
-.ts-tile-title { font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #e8b84b; }
-.ts-tile-desc { font-size: 13px; color: #cfc9ee; line-height: 1.3; }
-.ts-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; width: 100%; max-width: 340px; margin-top: 4px; }
-.ts-btn { flex: 1 1 auto; min-width: 140px; box-sizing: border-box; font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; padding: 11px 16px; border-radius: 6px; cursor: pointer; border: 1px solid; transition: all .15s; white-space: nowrap; }
+.ts-empty { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; padding: 24px 14px 12px; box-sizing: border-box; width: 100%; min-height: 300px; }
+.ts-empty-icon { width: 46px; height: 46px; flex: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(232,184,75,.10); border: 1px solid rgba(232,184,75,.35); box-shadow: 0 0 28px rgba(232,184,75,.16); font-size: 22px; }
+.ts-empty-msg { font-size: 15px; color: #ded8f5; margin-top: 2px; }
+.ts-suggest-label { font-size: 13px; color: #9f98bd; margin-top: -2px; }
+.ts-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; max-width: 430px; }
+.ts-tile { width: 100%; min-height: 84px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; text-align: center; padding: 12px 8px; border: 1px solid rgba(232,184,75,.22); border-radius: 6px; background: rgba(12,14,32,.68); cursor: pointer; transition: border-color .15s, background .15s, transform .15s; font-family: inherit; color: inherit; }
+.ts-tile:hover { border-color: rgba(232,184,75,.55); background: rgba(232,184,75,.07); transform: translateY(-1px); }
+.ts-tile-icon { font-size: 23px; line-height: 1; color: #e8b84b; }
+.ts-tile-title { display: none; }
+.ts-tile-desc { font-size: 13px; color: #d8d3ee; line-height: 1.25; }
+.ts-actions { display: flex; flex-direction: column; gap: 10px; justify-content: center; width: 100%; max-width: 430px; margin-top: 4px; }
+.ts-btn { width: 100%; box-sizing: border-box; font-family: 'Cinzel', serif; font-size: 12px; letter-spacing: .04em; text-transform: none; padding: 12px 16px; border-radius: 5px; cursor: pointer; border: 1px solid; transition: all .15s; white-space: nowrap; }
 .ts-btn-primary { background: #e8b84b; color: #160a00; border-color: #e8b84b; font-weight: 700; }
 .ts-btn-primary:hover { background: #f1c763; }
-.ts-btn-secondary { background: none; color: #c4b5fd; border-color: rgba(124,92,191,.5); }
+.ts-btn-secondary { background: rgba(12,14,32,.48); color: #c4b5fd; border-color: rgba(124,92,191,.5); }
 .ts-btn-secondary:hover { background: rgba(124,92,191,.15); border-color: #7c5cbf; color: #fff; }
-@media (max-width: 560px) { .ts-actions { flex-direction: column; } .ts-btn { width: 100%; flex: none; min-width: 0; } }
+@media (max-width: 560px) { .ts-empty { padding: 20px 10px 8px; } .ts-tiles { gap: 8px; } .ts-tile { min-height: 78px; padding: 10px 6px; } .ts-tile-desc { font-size: 12px; } .ts-btn { min-width: 0; } }
 
 /* ── Today's Schedule — "View:" dropdown ── */
 .sched-viewsel { font-family: 'Inter', sans-serif; font-size: 11px; color: #9a96c0; letter-spacing: .03em; text-transform: none; display: inline-flex; align-items: center; gap: 6px; }
@@ -11284,11 +11302,11 @@ function renderScheduleView(view) {
         '<div class="ts-suggest-label">Suggestions</div>' +
         '<div class="ts-tiles">' +
           '<button type="button" class="ts-tile" onclick="showTab(\'booking\');setTimeout(function(){setIntakeFilter(\'intake_pending\',null)},200)">' +
-            '<span class="ts-tile-title">Review</span><span class="ts-tile-desc">Review intake forms</span></button>' +
+            '<span class="ts-tile-icon">▣</span><span class="ts-tile-title">Review</span><span class="ts-tile-desc">Review<br>intake forms</span></button>' +
           '<button type="button" class="ts-tile" onclick="showTab(\'followups\')">' +
-            '<span class="ts-tile-title">Follow-Up</span><span class="ts-tile-desc">Complete follow-ups</span></button>' +
+            '<span class="ts-tile-icon">▱</span><span class="ts-tile-title">Follow-Up</span><span class="ts-tile-desc">Complete<br>follow-ups</span></button>' +
           '<button type="button" class="ts-tile" onclick="showTab(\'booking\');setTimeout(function(){setIntakeFilter(\'ready\',null)},200)">' +
-            '<span class="ts-tile-title">Scheduling</span><span class="ts-tile-desc">Schedule new clients</span></button>' +
+            '<span class="ts-tile-icon">▦</span><span class="ts-tile-title">Scheduling</span><span class="ts-tile-desc">Schedule<br>new clients</span></button>' +
         '</div>' +
         '<div class="ts-actions">' +
           '<button type="button" class="ts-btn ts-btn-primary" onclick="showTab(\'booking\');setTimeout(function(){toggleApptForm()},200)">Create Appointment</button>' +
