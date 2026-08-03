@@ -234,7 +234,7 @@ exports.handler = async function(event) {
     // Build public URL with aftercare ID and assigned template letter.
     // Client clicks link → aftercare.html renders template-specific questions.
     const templateLetter = data.followup_template_used || 'A';
-    const followupUrl    = `${SITE_URL}/aftercare.html?aid=${data.id}&tmpl=${templateLetter}&t=${data.followup_type || '24hr'}`;
+    const followupUrl    = `${SITE_URL}/aftercare.html?aid=${data.id}&tmpl=${templateLetter}&t=${data.followup_type || '72hr'}`;
 
     if (data.client_id) {
       // Fetch client email for delivery
@@ -249,7 +249,7 @@ exports.handler = async function(event) {
             messageType:    'followup_reminder',
             variables: {
               client_name:   data.client_name || client.name || '',
-              followup_type: data.followup_type || '24hr',
+              followup_type: data.followup_type || '72hr',
               followup_url:  followupUrl,
               scheduled_for: data.scheduled_for || '',
               contact_email: process.env.ADMIN_EMAIL || 'royalenergyalchemy@gmail.com',

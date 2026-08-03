@@ -72,16 +72,16 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#c
 <body>
 <div class="wrap">
   <div class="header">
-    <div class="badge" id="timepointBadge">24-Hour Check-In</div>
+    <div class="badge" id="timepointBadge">72-Hour Check-In</div>
     <h1>How Are You Feeling?</h1>
     <p id="headerSub">Your session was yesterday. Daron's AI assistant is checking in on your behalf.</p>
   </div>
 
   <!-- Progress -->
   <div class="progress">
-    <div class="prog-step"><div class="prog-dot active" id="pd24">24H</div><div class="prog-label active">Now</div></div>
-    <div class="prog-step"><div class="prog-dot" id="pd48">48H</div><div class="prog-label">Tomorrow</div></div>
-    <div class="prog-step"><div class="prog-dot" id="pd72">72H</div><div class="prog-label">Day 3</div></div>
+    <div class="prog-step"><div class="prog-dot active" id="pd24">72H</div><div class="prog-label active">Check-In</div></div>
+    <div class="prog-step"><div class="prog-dot" id="pd48">GUIDE</div><div class="prog-label">As Needed</div></div>
+    <div class="prog-step"><div class="prog-dot" id="pd72">NEXT</div><div class="prog-label">Care Plan</div></div>
     <div class="prog-step"><div class="prog-dot" id="pd1m">1MO</div><div class="prog-label">Month 1</div></div>
     <div class="prog-step"><div class="prog-dot" id="pd3m">3MO</div><div class="prog-label">Month 3</div></div>
   </div>
@@ -92,7 +92,7 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#c
   </div>
 
   <form id="aftercareForm" novalidate>
-    <input type="hidden" id="timepoint" name="timepoint" value="24hr">
+    <input type="hidden" id="timepoint" name="timepoint" value="72hr">
     <input type="hidden" id="clientFlags" name="flags" value="">
     <input type="hidden" id="clientCid" name="cid" value="">
     <input type="hidden" name="form-name" value="aftercare">
@@ -191,10 +191,10 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#c
       <span class="ai-name" style="margin-top:12px">✦ Royal Energy Alchemy AI</span>
     </div>
 
-    <!-- BELIEF AFTER (24hr only — injected by JS) -->
+    <!-- BELIEF AFTER (72-hour check-in — injected by JS) -->
     <div id="beliefAfterBlock" style="display:none">
       <div class="q-block">
-        <div class="q-head"><span class="q-tag">Belief Shift · 24-Hour Only</span></div>
+        <div class="q-head"><span class="q-tag">Belief Shift · 72-Hour Check-In</span></div>
         <div class="q-body">
           <div class="q-text">Now that you've experienced a session, how do you rate your belief in energy work? <span style="font-style:italic;font-size:15px;color:#c8c4e080">(1 = still skeptical, 10 = fully convinced)</span></div>
           <div class="scale-wrap">
@@ -417,7 +417,8 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#c
 
 <script>
 const params = new URLSearchParams(window.location.search);
-const timepoint     = params.get('t')    || '24hr';
+let timepoint       = params.get('t')    || '72hr';
+if (['24','48'].map(n => n + 'hr').includes(timepoint)) timepoint = '72hr';
 const templateLetter = (params.get('tmpl') || '').toUpperCase();
 const flags = (params.get('f') || '').split(',').filter(Boolean);
 const clientName = params.get('name') || 'there';
@@ -426,18 +427,16 @@ const clientCid = params.get('cid') || '';
 document.getElementById('timepoint').value = timepoint;
 document.getElementById('clientFlags').value = flags.join(',');
 if (clientCid) document.getElementById('clientCid').value = clientCid;
-// Belief After scale only appears on the 24hr check-in
-if (timepoint === '24hr') document.getElementById('beliefAfterBlock').style.display = 'block';
+// Belief After scale appears on the 72-hour check-in
+if (timepoint === '72hr') document.getElementById('beliefAfterBlock').style.display = 'block';
 
 const tpConfig = {
-  '24hr': { badge: '24-Hour Check-In', sub: 'Your session was yesterday. Daron\'s AI is checking in on your behalf.', active: 'pd24' },
-  '48hr': { badge: '48-Hour Check-In', sub: 'It\'s been two days since your session. How is the shift continuing?', active: 'pd48' },
-  '72hr': { badge: '72-Hour Check-In', sub: 'Three days post-session. This is often when the deepest shifts become clear.', active: 'pd72' },
+  '72hr': { badge: '72-Hour Check-In', sub: 'Three days post-session. This check-in helps Daron understand what shifted and whether ongoing guidance is appropriate.', active: 'pd24' },
   '1mo': { badge: '1-Month Check-In', sub: 'One month since your session. Daron wants to see how the work has held.', active: 'pd1m' },
   '3mo': { badge: '3-Month Check-In', sub: 'Three months out. This is your long-term progress review with Daron.', active: 'pd3m' }
 };
 
-const tp = tpConfig[timepoint] || tpConfig['24hr'];
+const tp = tpConfig[timepoint] || tpConfig['72hr'];
 document.getElementById('timepointBadge').textContent = tp.badge;
 document.getElementById('headerSub').textContent = tp.sub;
 ['pd24','pd48','pd72','pd1m','pd3m'].forEach(id => {
@@ -451,13 +450,11 @@ order.forEach((id,i) => {
 });
 
 const intros = {
-  '24hr': '"Thank you for completing your session with Daron. I\'m checking in to see how your body, mind, and energy are responding in the first 24 hours. Your answers help Daron track what\'s shifting. There are no wrong answers — just be honest."',
-  '48hr': '"Two days have passed. Some shifts take a little time to surface. I\'m checking in to see what has continued to change and what may still feel active. Daron reviews every response personally."',
-  '72hr': '"By day three, most people notice the deepest changes from their session. I\'m also following up on your aftercare and will recommend next steps based on what you share. Daron may reach out after reviewing this."',
+  '72hr': '"By day three, most people notice the deeper changes from their session. I\'m checking in on your aftercare and integration. Daron reviews every response personally and may provide ongoing guidance when appropriate."',
   '1mo': '"One month out. Daron wants to know how the work has held over time. Has the shift been lasting? Have new things surfaced? This check-in feeds into your long-term treatment plan."',
   '3mo': '"Three months is a milestone. This is your long-term progress review. Your responses today will be compared against your original intake and all previous check-ins to show the full arc of your healing."'
 };
-document.getElementById('aiIntroText').textContent = intros[timepoint] || intros['24hr'];
+document.getElementById('aiIntroText').textContent = intros[timepoint] || intros['72hr'];
 
 const adaptiveBank = {
   depression: [
@@ -486,9 +483,9 @@ const adaptiveBank = {
     { tag: 'Physical Pain Follow-Up', q: 'Have you followed up with a medical provider about this pain since the session?', type: 'select', name: 'medFollowUp', opts: ['Yes — appointment scheduled','Yes — already seen someone','No — planning to','No'] }
   ],
   cords: [
-    { tag: 'Cord Removal Follow-Up', q: 'Do you still feel energetically connected to the person, place, or pattern you came in about?', type: 'select', name: 'cordSense', opts: ['No — completely released','Mostly released','Partially — lighter but still there','Still strongly connected'] },
-    { tag: 'Cord Removal Follow-Up', q: 'Have you had contact with or thoughts about the person or situation since the session?', type: 'textarea', name: 'cordContact' },
-    { tag: 'Cord Removal Follow-Up', q: 'Do you feel the emotional charge around this connection has changed? Describe.', type: 'textarea', name: 'cordEmotional' }
+    { tag: 'Follow-Up Session', q: 'Do you still feel energetically connected to the person, place, or pattern you came in about?', type: 'select', name: 'cordSense', opts: ['No — completely released','Mostly released','Partially — lighter but still there','Still strongly connected'] },
+    { tag: 'Follow-Up Session', q: 'Have you had contact with or thoughts about the person or situation since the session?', type: 'textarea', name: 'cordContact' },
+    { tag: 'Follow-Up Session', q: 'Do you feel the emotional charge around this connection has changed? Describe.', type: 'textarea', name: 'cordEmotional' }
   ],
   space: [
     { tag: 'Space / Home Energy Follow-Up', q: 'How does your home or the space feel now compared to before the session?', type: 'select', name: 'spacePost', opts: ['Much lighter and cleaner','Somewhat better','About the same','Still feels heavy or off'] },
@@ -604,7 +601,7 @@ function generateAIResponse(formData) {
   if (intVal <= 3) {
     response = `What you're describing points to real movement. An intensity of ${intVal} out of 10 is a meaningful shift. `;
   } else if (intVal <= 6) {
-    response = `You're in the middle of the shift. An intensity of ${intVal} suggests the work is still processing. This is normal — especially in the first ${timepoint === '24hr' ? '24 hours' : timepoint === '48hr' ? '48 hours' : '72 hours'}. `;
+    response = `You're in the middle of the shift. An intensity of ${intVal} suggests the work is still processing. This is normal around the 72-hour integration point. `;
   } else {
     response = `An intensity of ${intVal} tells me there may be more to address. Daron will review this carefully. `;
   }

@@ -22,8 +22,38 @@ const LOCATION_ID   = process.env.SQUARE_LOCATION_ID || 'LA19CVXRF3KDC';
 // Map Square service variation IDs to human names, fallback to the raw ID
 const SERVICE_NAMES = {
   // Add your Square service variation IDs here after setup
-  // e.g. 'ABCDEF123': 'Energetic Parasite Removal'
+  // e.g. 'ABCDEF123': 'Energetic Parasite Session'
 };
+
+const SERVICE_PRICES = {
+  'Initial Session': 90,
+  '15-Minute Consultation': 50,
+  'Extended Session': 110,
+  'House Clearing': 80,
+  'Emergency Removal': 120,
+  'Coaching': 50,
+  'Follow-Up Session': 80,
+  'Energetic Parasite Session': 75,
+};
+
+const SERVICE_ALIASES = {
+  'Energetic Parasite Removal': 'Energetic Parasite Session',
+  'Cord Removal & Transmutation': '15-Minute Consultation',
+  'Energy Alchemy Exorcism': 'Initial Session',
+  'Distance Energy Session': 'Extended Session',
+  'House Cleansing & Blessing': 'House Clearing',
+  'Emergency Removal Session': 'Emergency Removal',
+  'Removal + Tarot Bundle': 'Follow-Up Session',
+  'Spiritual Coaching': 'Coaching',
+  'Round 2 Session': 'Follow-Up Session',
+};
+
+function normalizeServiceName(rawName) {
+  const name = (rawName || '').trim();
+  if (!name) return 'Session';
+  const base = name.split('—')[0].trim();
+  return SERVICE_ALIASES[base] || SERVICE_PRICES[base] ? (SERVICE_ALIASES[base] || base) : name;
+}
 
 exports.handler = async function(event) {
   const token = process.env.SQUARE_ACCESS_TOKEN;
@@ -108,7 +138,7 @@ exports.handler = async function(event) {
       const timeStr   = localDate.toISOString().slice(11, 16);
 
       const svcId   = seg.service_variation_id || '';
-      const svcName = SERVICE_NAMES[svcId] || svcId || 'Session';
+      const svcName = normalizeServiceName(SERVICE_NAMES[svcId] || svcId || 'Session');
 
       const statusMap = {
         'ACCEPTED':               'active',
@@ -129,6 +159,7 @@ exports.handler = async function(event) {
         time:             timeStr,
         dur:              seg.duration_minutes || b.duration_minutes || 60,
         service:          svcName,
+        price:            SERVICE_PRICES[svcName] || 0,
         status:           statusMap[b.status] || 'active',
         squareStatus:     b.status,
         notes:            b.seller_note || b.customer_note || '',

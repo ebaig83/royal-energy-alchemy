@@ -9,14 +9,14 @@
       '<li><a href="/#about">About</a></li>' +
       '<li class="rea-nav-dropdown"><a href="/#services">Services</a>' +
         '<ul class="rea-nav-menu" aria-label="Services">' +
-          '<li><a href="/#services">Energetic Parasite Removal</a></li>' +
-          '<li><a href="/#services">Cord Removal &amp; Transmutation</a></li>' +
-          '<li><a href="/#services">Energy Alchemy Exorcism</a></li>' +
-          '<li><a href="/#services">Distance Energy Session</a></li>' +
-          '<li><a href="/#services">House Cleansing &amp; Blessing</a></li>' +
-          '<li><a href="/#services">Emergency Removal Session</a></li>' +
-          '<li><a href="/#services">Removal + Tarot Bundle</a></li>' +
-          '<li><a href="/#services">Spiritual Coaching</a></li>' +
+          '<li><a href="/#services">Initial Session</a></li>' +
+          '<li><a href="/#services">15-Minute Consultation</a></li>' +
+          '<li><a href="/#services">Extended Session</a></li>' +
+          '<li><a href="/#services">House Clearing</a></li>' +
+          '<li><a href="/#services">Emergency Removal</a></li>' +
+          '<li><a href="/#services">Coaching</a></li>' +
+          '<li><a href="/#services">Follow-Up Session</a></li>' +
+          '<li><a href="/#services">Energetic Parasite Session</a></li>' +
           '<li><a href="/#services">Youth Sessions (Ages 9-14)</a></li>' +
         '</ul></li>' +
       '<li class="rea-nav-dropdown"><a href="/#plans">Plans</a>' +

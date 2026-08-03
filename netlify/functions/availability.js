@@ -13,6 +13,8 @@ const { requireAdmin, respond } = require('./lib/auth');
 const { getClient }             = require('./lib/supabase');
 const { log }                   = require('./lib/audit');
 
+const ALLOWED_SLOT_TIMES = new Set(['10:00', '12:00', '14:00', '16:00', '18:00']);
+
 // ── helpers ──────────────────────────────────────────────────────────────────
 
 function buildLabel(dateStr, timeStr) {
@@ -64,7 +66,7 @@ exports.handler = async function(event) {
     if (error) return respond(500, { error: error.message });
 
     // Shape into the same format the booking calendar expects
-    const slots = (data || []).map(row => ({
+    const slots = (data || []).filter(row => ALLOWED_SLOT_TIMES.has((row.slot_time || '').slice(0, 5))).map(row => ({
       id:          row.id,
       date:        row.slot_date,
       time:        row.slot_time ? row.slot_time.slice(0, 5) : '',
@@ -95,6 +97,7 @@ exports.handler = async function(event) {
     const rows = items.map(item => {
       if (!item.date || !item.time) throw new Error('Each slot requires date and time.');
       const timeNorm = item.time.length === 5 ? item.time + ':00' : item.time;
+      if (!ALLOWED_SLOT_TIMES.has(timeNorm.slice(0, 5))) throw new Error('Slots must be at 10 AM, 12 PM, 2 PM, 4 PM, or 6 PM.');
       return {
         slot_date:    item.date,
         slot_time:    timeNorm,

@@ -1018,12 +1018,14 @@
               '<div>' + formLabel('Service') +
                 '<select id="snCreateService" class="appt-input" style="width:100%;background:#04020e;color:#f0ecff;border-color:#e8b84b44">' +
                   '<option value="">Select service…</option>' +
-                  '<option value="Energy Healing">Energy Healing</option>' +
-                  '<option value="Distance Healing">Distance Healing</option>' +
-                  '<option value="Tarot Reading">Tarot Reading</option>' +
-                  '<option value="Chakra Clearing">Chakra Clearing</option>' +
-                  '<option value="Entity Removal">Entity Removal</option>' +
-                  '<option value="Consultation">Consultation</option>' +
+                  '<option value="Initial Session">Initial Session</option>' +
+                  '<option value="15-Minute Consultation">15-Minute Consultation</option>' +
+                  '<option value="Extended Session">Extended Session</option>' +
+                  '<option value="House Clearing">House Clearing</option>' +
+                  '<option value="Emergency Removal">Emergency Removal</option>' +
+                  '<option value="Coaching">Coaching</option>' +
+                  '<option value="Follow-Up Session">Follow-Up Session</option>' +
+                  '<option value="Energetic Parasite Session">Energetic Parasite Session</option>' +
                   '<option value="Other">Other</option>' +
                 '</select>' +
               '</div>' +

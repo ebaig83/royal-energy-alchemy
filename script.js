@@ -611,9 +611,9 @@ function escapeHtml(value) {
 
 function followUpPlan(service) {
   if (/Treatment Plan|Parasite|Cord|Transmutation/i.test(service)) {
-    return "24-hour, 48-hour, 72-hour, 1-month, and 3-month follow-ups with progress tracking.";
+    return "72-hour check-in plus ongoing guidance when appropriate, with longer-term follow-ups if needed.";
   }
-  return "24-hour and 72-hour follow-ups with optional maintenance recommendation.";
+  return "72-hour check-in plus ongoing guidance when appropriate.";
 }
 
 function selectedSymptoms() {
@@ -649,12 +649,12 @@ function selectedIntakeSymptoms() {
 }
 
 function serviceRecommendation(concern, score) {
-  if (/distance/i.test(concern)) return "Distance Energy Session - $70";
-  if (/house|room/i.test(concern)) return "House Cleansing / Blessing - $60";
-  if (/cord|person|place/i.test(concern)) return score >= 11 ? "Cord Removal & Transmutation with follow-up" : "Cord Removal assessment";
-  if (/entity|intrusive/i.test(concern)) return score >= 16 ? "Energy Alchemy Exorcism - $100 or Emergency Removal - $120 after review" : "Energy Alchemy Exorcism assessment";
-  if (/parasite|attachment/i.test(concern)) return score >= 16 ? "Treatment plan plus Implant / Parasite Removal - $80" : "Implant / Parasite Removal - $80";
-  return score >= 11 ? "Assessment Session followed by removal or treatment plan" : "Assessment Session or Spiritual Coaching - $50 / 1 hour";
+  if (/distance/i.test(concern)) return "Extended Session - $110";
+  if (/house|room/i.test(concern)) return "House Clearing - $80";
+  if (/cord|person|place/i.test(concern)) return score >= 11 ? "Follow-Up Session - $80 after initial assessment" : "15-Minute Consultation - $50";
+  if (/entity|intrusive/i.test(concern)) return score >= 16 ? "Initial Session - $90 or Emergency Removal - $120 after review" : "Initial Session - $90";
+  if (/parasite|attachment/i.test(concern)) return score >= 16 ? "Treatment plan plus Energetic Parasite Session - $75" : "Energetic Parasite Session - $75";
+  return score >= 11 ? "Initial Session followed by a treatment plan if needed" : "Initial Session - $90 or Coaching - $50";
 }
 
 function assessIntake() {
@@ -666,7 +666,7 @@ function assessIntake() {
   const safety = intakeSafety?.value || "no";
   const score = severity + durationWeight(duration) + frequencyWeight(frequency) + concernWeight(concern) + Math.min(symptoms.length, 4);
   let level = "Light";
-  let followUp = "24-hour and 72-hour follow-up.";
+  let followUp = "72-hour check-in plus ongoing guidance when appropriate.";
   let plan = "One assessment or coaching session may be enough to choose the next step.";
 
   if (safety === "yes") {
@@ -675,11 +675,11 @@ function assessIntake() {
     plan = "Pause booking until safety is clear.";
   } else if (score >= 16) {
     level = "High";
-    followUp = "24-hour, 48-hour, 72-hour, 1-month, and 3-month follow-ups with progress tracking.";
-    plan = "Recommend a treatment plan with multiple sessions and longitudinal progress reports.";
+    followUp = "72-hour check-in plus ongoing guidance when appropriate, with longer-term follow-ups if needed.";
+    plan = "Recommend a treatment plan with multiple sessions and care recommendations.";
   } else if (score >= 11) {
     level = "Moderate";
-    followUp = "24-hour, 48-hour, and 72-hour check-ins with possible maintenance session.";
+    followUp = "72-hour check-in plus ongoing guidance when appropriate.";
     plan = "Recommend a full clearing or removal session, then review whether follow-up work is needed.";
   }
 
@@ -780,7 +780,7 @@ function assessConcern() {
 
   if (score >= 14) {
     level = "High";
-    recommendation = "Recommend a treatment plan with multiple sessions, payment confirmation, and longitudinal progress reports.";
+    recommendation = "Recommend a treatment plan with multiple sessions, payment confirmation, and care recommendations.";
   } else if (score >= 9) {
     level = "Moderate";
     recommendation = "Recommend a full clearing or removal session with 24/48/72-hour check-ins and possible maintenance.";

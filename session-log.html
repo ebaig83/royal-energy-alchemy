@@ -80,14 +80,14 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#c
           <div class="fg"><label>Service delivered</label>
             <select id="serviceType" name="serviceType">
               <option value="">Choose one</option>
-              <option>Energetic Parasite Removal</option>
-              <option>Cord Removal & Transmutation</option>
-              <option>Energy Alchemy Exorcism</option>
-              <option>Distance Energy Session</option>
-              <option>House Cleansing & Blessing</option>
-              <option>Emergency Removal Session</option>
-              <option>Removal + Tarot Bundle</option>
-              <option>Spiritual Coaching</option>
+              <option>Initial Session</option>
+              <option>15-Minute Consultation</option>
+              <option>Extended Session</option>
+              <option>House Clearing</option>
+              <option>Emergency Removal</option>
+              <option>Coaching</option>
+              <option>Follow-Up Session</option>
+              <option>Energetic Parasite Session</option>
               <option>Youth Session</option>
             </select>
           </div>
@@ -177,14 +177,6 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.25em;color:#c
     <div class="links-section">
       <span class="links-title">Client Check-In Links — Send at These Times</span>
       <div class="link-row">
-        <div><div class="link-label">24-Hour Check-In</div><div class="link-url" id="link24"></div></div>
-        <button class="copy-btn" onclick="copyLink('link24', this)">Copy</button>
-      </div>
-      <div class="link-row">
-        <div><div class="link-label">48-Hour Check-In</div><div class="link-url" id="link48"></div></div>
-        <button class="copy-btn" onclick="copyLink('link48', this)">Copy</button>
-      </div>
-      <div class="link-row">
         <div><div class="link-label">72-Hour Check-In</div><div class="link-url" id="link72"></div></div>
         <button class="copy-btn" onclick="copyLink('link72', this)">Copy</button>
       </div>
@@ -227,15 +219,13 @@ function generateLinks() {
 
   const makeLink = (t) => `${BASE}/aftercare.html?t=${t}&name=${encodedName}&f=${encodedFlags}${cidParam}`;
 
-  document.getElementById('link24').textContent = makeLink('24hr');
-  document.getElementById('link48').textContent = makeLink('48hr');
   document.getElementById('link72').textContent = makeLink('72hr');
   document.getElementById('link1m').textContent = makeLink('1mo');
   document.getElementById('link3m').textContent = makeLink('3mo');
   document.getElementById('linkRating').textContent = `${BASE}/rating.html?name=${encodedName}${cidParam}`;
 
   const service = document.getElementById('serviceType').value || 'your session';
-  document.getElementById('suggestedMsg').textContent = `Hi ${name}, thank you for your session today. I'll be checking in with you over the next few days to track how you're feeling. Here's your 24-hour check-in link — please fill it out tomorrow: [paste 24hr link]. Your feedback helps me track what's shifting and what may still need attention. — Daron`;
+  document.getElementById('suggestedMsg').textContent = `Hi ${name}, thank you for your session today. I'll be checking in at the 72-hour mark to track how you're feeling, with ongoing guidance when appropriate. Here's your 72-hour check-in link: [paste 72hr link]. Your feedback helps me track what's shifting and what may still need attention. — Daron`;
 
   document.getElementById('linksSection').style.display = 'block';
   document.getElementById('linksSection').scrollIntoView({ behavior: 'smooth' });

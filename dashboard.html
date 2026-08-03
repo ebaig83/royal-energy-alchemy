@@ -5083,7 +5083,7 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
         <div class="card-head">
           <div>
             <div class="card-name">Sarah M. <span class="badge pending">Pending</span></div>
-            <div class="card-time">Energetic Parasite Removal · Just now</div>
+            <div class="card-time">Energetic Parasite Session · Just now</div>
           </div>
           <div class="stars s5">★★★★★</div>
         </div>
@@ -5098,7 +5098,7 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
         <div class="card-head">
           <div>
             <div class="card-name">Marcus T. <span class="badge pending">Pending</span></div>
-            <div class="card-time">Distance Energy Session · 2 hours ago</div>
+            <div class="card-time">Extended Session · 2 hours ago</div>
           </div>
           <div class="stars s4">★★★★☆</div>
         </div>
@@ -5117,7 +5117,7 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
         <div class="card-head">
           <div>
             <div class="card-name">Anonymous <span class="badge approved">Published</span></div>
-            <div class="card-time">Cord Removal · 3 days ago</div>
+            <div class="card-time">Follow-Up Session · 3 days ago</div>
           </div>
           <div class="stars s5">★★★★★</div>
         </div>
@@ -5133,7 +5133,7 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
       <div class="card-head">
         <div>
           <div class="card-name">Client: Jordan L. <span class="badge checkin">72-Hour</span></div>
-          <div class="card-time">Energetic Parasite Removal · Today</div>
+          <div class="card-time">Energetic Parasite Session · Today</div>
         </div>
       </div>
       <div class="checkin-detail">
@@ -5157,7 +5157,7 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
     <div class="card">
       <div class="card-head">
         <div>
-          <div class="card-name">Client: Renee K. <span class="badge checkin">24-Hour</span></div>
+          <div class="card-name">Client: Renee K. <span class="badge checkin">72-Hour</span></div>
           <div class="card-time">Distance Session · Yesterday</div>
         </div>
       </div>
@@ -5196,7 +5196,7 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
         <option value="exchange">Exchange</option>
         <option value="repeat">Repeat Rounds</option>
         <option value="distance">Distance</option>
-        <option value="tarot">Tarot</option>
+        <option value="followup">Follow-Up</option>
       </select>
     </div>
     <div id="sessionLog"></div>
@@ -5225,8 +5225,6 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
       <input class="fuc-search" id="fucSearch" type="text" placeholder="Search by client name…" oninput="fucRender()">
       <select class="fuc-filter" id="fucTypeFilter" onchange="fucRender()">
         <option value="all">All Types</option>
-        <option value="24h">24-Hour</option>
-        <option value="48h">48-Hour</option>
         <option value="72h">72-Hour</option>
         <option value="1mo">1-Month</option>
         <option value="3mo">3-Month</option>
@@ -5671,33 +5669,11 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
           <div><label>Client Name</label><input class="appt-input" id="apptClient" placeholder="Full name" /></div>
           <div><label>Date</label><input class="appt-input" id="apptDate" type="date" /></div>
           <div><label>Start Time</label><select class="appt-input" id="apptTime"><option value="">— Select time —</option>
-              <option value="07:00">7:00 AM</option>
-              <option value="07:30">7:30 AM</option>
-              <option value="08:00">8:00 AM</option>
-              <option value="08:30">8:30 AM</option>
-              <option value="09:00">9:00 AM</option>
-              <option value="09:30">9:30 AM</option>
               <option value="10:00">10:00 AM</option>
-              <option value="10:30">10:30 AM</option>
-              <option value="11:00">11:00 AM</option>
-              <option value="11:30">11:30 AM</option>
               <option value="12:00">12:00 PM</option>
-              <option value="12:30">12:30 PM</option>
-              <option value="13:00">1:00 PM</option>
-              <option value="13:30">1:30 PM</option>
               <option value="14:00">2:00 PM</option>
-              <option value="14:30">2:30 PM</option>
-              <option value="15:00">3:00 PM</option>
-              <option value="15:30">3:30 PM</option>
               <option value="16:00">4:00 PM</option>
-              <option value="16:30">4:30 PM</option>
-              <option value="17:00">5:00 PM</option>
-              <option value="17:30">5:30 PM</option>
               <option value="18:00">6:00 PM</option>
-              <option value="18:30">6:30 PM</option>
-              <option value="19:00">7:00 PM</option>
-              <option value="19:30">7:30 PM</option>
-              <option value="20:00">8:00 PM</option>
               </select></div>
           <div><label>Duration</label>
             <select class="appt-input" id="apptDuration">
@@ -5709,14 +5685,14 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
           </div>
           <div><label>Service</label><select class="appt-input" id="apptService">
               <option value="">— Select service —</option>
-              <option>Cord Removal &amp; Transmutation — from $40</option>
-              <option>Energetic Parasite Removal — $80</option>
-              <option>Aura Repair &amp; Sealing — $60</option>
-              <option>Chakra Balancing &amp; Alignment — $55</option>
-              <option>Soul Retrieval — $90</option>
-              <option>Spiritual Consultation — $45</option>
-              <option>Distance Healing Session — $70</option>
-              <option>Full Energetic Assessment — $120</option>
+              <option>Initial Session — $90</option>
+              <option>15-Minute Consultation — $50</option>
+              <option>Extended Session — $110</option>
+              <option>House Clearing — $80</option>
+              <option>Emergency Removal — $120</option>
+              <option>Coaching — $50</option>
+              <option>Follow-Up Session — $80</option>
+              <option>Energetic Parasite Session — $75</option>
               <option>Custom / Other</option>
             </select></div>
           <div><label>Client Email</label><input class="appt-input" id="apptEmail" type="email" placeholder="For reminders &amp; confirmation" /></div>
@@ -7108,7 +7084,7 @@ function renderAnalytics() {
     <div class="card" style="margin-bottom:28px;padding:0;overflow:hidden">
       ${funnelRow('New Clients', newClients, newClients, '#e8b84b', 'Everyone who ever booked a session')}
       ${dropLabel(dropR2)}
-      ${funnelRow('Returned — Round 2', returnedR2, newClients, '#22c98a', 'Came back for a second session')}
+      ${funnelRow('Returned — Follow-Up', returnedR2, newClients, '#22c98a', 'Came back for a follow-up session')}
       ${dropLabel(dropR3)}
       ${funnelRow('Deepening — Round 3+', returnedR3, newClients, '#9b7fe8', 'Committed to ongoing work')}
       ${dropLabel(dropComp)}
@@ -8309,7 +8285,7 @@ function renderBooking() {
 
     const cells = [
       ['New Clients This Week', newThisWeek],
-      ['Round 2',               round2],
+      ['Follow-Up Session',     round2],
       ['Round 3+',              round3plus],
       ['Package Clients',       packages],
       ['Distance Sessions',     distWeek],
@@ -8730,7 +8706,7 @@ function renderClients() {
       .map(t => `<span class="tag">${t}</span>`).join('');
 
     const serviceTypes = [...new Set(c.sessions.map(s => {
-      if (s.tags && s.tags.includes('tarot')) return 'Tarot';
+      if (s.tags && s.tags.includes('tarot')) return 'Legacy Service';
       if (s.tags && s.tags.includes('in-person')) return 'In Person';
       if (s.tags && s.tags.includes('distance')) return 'Distance';
       if ((s.notes||'').toLowerCase().includes('exchange')) return 'Exchange';
@@ -10286,7 +10262,7 @@ function openReschedulePanel(id) {
       </div>
       <div>
         <span class="lbl">New Time</span>
-        <select id="reschedTime_${id}" class="appt-input"><option value="">-- time --</option><option value="07:00">7:00 AM</option><option value="07:30">7:30 AM</option><option value="08:00">8:00 AM</option><option value="08:30">8:30 AM</option><option value="09:00">9:00 AM</option><option value="09:30">9:30 AM</option><option value="10:00">10:00 AM</option><option value="10:30">10:30 AM</option><option value="11:00">11:00 AM</option><option value="11:30">11:30 AM</option><option value="12:00">12:00 PM</option><option value="12:30">12:30 PM</option><option value="13:00">1:00 PM</option><option value="13:30">1:30 PM</option><option value="14:00">2:00 PM</option><option value="14:30">2:30 PM</option><option value="15:00">3:00 PM</option><option value="15:30">3:30 PM</option><option value="16:00">4:00 PM</option><option value="16:30">4:30 PM</option><option value="17:00">5:00 PM</option><option value="17:30">5:30 PM</option><option value="18:00">6:00 PM</option><option value="18:30">6:30 PM</option><option value="19:00">7:00 PM</option><option value="19:30">7:30 PM</option><option value="20:00">8:00 PM</option></select>
+        <select id="reschedTime_${id}" class="appt-input"><option value="">-- time --</option><option value="10:00">10:00 AM</option><option value="12:00">12:00 PM</option><option value="14:00">2:00 PM</option><option value="16:00">4:00 PM</option><option value="18:00">6:00 PM</option></select>
       </div>
     </div>
     <span class="lbl">Reason for Rescheduling</span>
@@ -11337,7 +11313,7 @@ function renderScheduleView(view) {
   el.innerHTML = '<div class="today-appt-list">' + body + '</div>';
 }
 
-// 24h "HH:MM" → 12-hour "09:00 AM" for the schedule table.
+// Converts "HH:MM" time strings into 12-hour labels for the schedule table.
 function _fmt12(hhmm) {
   if (!hhmm || hhmm === '—') return 'Time not set';
   var p = String(hhmm).split(':');
@@ -12672,16 +12648,14 @@ function saveClientProfile_form(id) {
         <label class="ql-lbl">Service</label>
         <input class="ql-input" id="qlService" list="qlServiceList" placeholder="Distance Reiki, House Clearing…" autocomplete="off">
         <datalist id="qlServiceList">
-          <option value="Distance Reiki">
-          <option value="Remote House Clearing">
-          <option value="Chakra Balancing">
-          <option value="Energetic Parasite Removal">
-          <option value="Ancestral Clearing">
-          <option value="Cord Cutting">
-          <option value="Soul Retrieval">
-          <option value="Protection Work">
-          <option value="Tarot Reading">
-          <option value="Spiritual Consultation">
+          <option value="Initial Session">
+          <option value="15-Minute Consultation">
+          <option value="Extended Session">
+          <option value="House Clearing">
+          <option value="Emergency Removal">
+          <option value="Coaching">
+          <option value="Follow-Up Session">
+          <option value="Energetic Parasite Session">
         </datalist>
       </div>
       <div class="ql-field">
@@ -12754,8 +12728,6 @@ function saveClientProfile_form(id) {
         <div>
           <label style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.3em;color:#e8b84b88;text-transform:uppercase;display:block;margin-bottom:5px">Type *</label>
           <select id="cfuType" style="width:100%;background:#0a0612;border:1px solid #e8b84b22;color:#f0ecff;font-family:'Cinzel',serif;font-size:11px;padding:9px 10px;border-radius:2px">
-            <option value="24h">24-Hour Check-in</option>
-            <option value="48h">48-Hour Check-in</option>
             <option value="72h">72-Hour Check-in</option>
             <option value="1mo">1-Month Follow-Up</option>
             <option value="3mo">3-Month Follow-Up</option>
@@ -13650,7 +13622,7 @@ function fucItemHtml(f, sev) {
   const schedDate  = (f.scheduled_for || '').slice(0, 10);
   const daysAgo    = schedDate ? Math.floor((new Date(TODAY_STR) - new Date(schedDate)) / 86400000) : null;
   const timeStr    = daysAgo === null ? '' : daysAgo > 0 ? daysAgo + 'd overdue' : daysAgo === 0 ? 'due today' : Math.abs(daysAgo) + 'd away';
-  const typeLabel  = { '24h':'24-Hour','48h':'48-Hour','72h':'72-Hour','1mo':'1-Month','3mo':'3-Month' }[f.followup_type] || f.followup_type;
+  const typeLabel  = { '24h':'72-Hour','48h':'72-Hour','72h':'72-Hour','1mo':'1-Month','3mo':'3-Month' }[f.followup_type] || f.followup_type;
   const statusBadge = f.status === 'sent' ? '✓ Sent' : f.status === 'skipped' ? '– Skipped' : 'Pending';
   const clientName = (f.client_name || 'Unknown').replace(/\s*\[.*?\]/g, '').trim();
   const service    = f.sessions ? (f.sessions.service || '') : '';
@@ -14080,7 +14052,7 @@ async function saveQuickLog() {
 /* ── AVAILABLE BOOKING SLOTS — Calendar UI ── */
 var _slotCalYear=new Date().getFullYear(), _slotCalMonth=new Date().getMonth();
 var _slotPickerDate=null;
-var SLOT_TIMES=['7:00 AM','7:30 AM','8:00 AM','8:30 AM','9:00 AM','9:30 AM','10:00 AM','10:30 AM','11:00 AM','11:30 AM','12:00 PM','12:30 PM','1:00 PM','1:30 PM','2:00 PM','2:30 PM','3:00 PM','3:30 PM','4:00 PM','4:30 PM','5:00 PM','5:30 PM','6:00 PM','6:30 PM','7:00 PM','7:30 PM','8:00 PM'];
+var SLOT_TIMES=['10:00 AM','12:00 PM','2:00 PM','4:00 PM','6:00 PM'];
 
 // ── Slot management — Supabase-backed via availability API ───────────────────
 // _slotsCache is the in-memory/localStorage mirror; Supabase is source of truth.
@@ -14395,14 +14367,14 @@ renderSlotMetrics();
 
 /* ====== PAYMENT LINKS ====== */
 var PAY_SERVICES = [
-  "Energetic Parasite Removal — $80",
-  "Cord Removal & Transmutation — from $40",
-  "Energy Alchemy Exorcism — $100",
-  "Distance Energy Session — $70",
-  "House Cleansing & Blessing — $60",
-  "Emergency Removal Session — $120",
-  "Removal + Tarot Bundle — $100",
-  "Spiritual Coaching — $50",
+  "Initial Session — $90",
+  "15-Minute Consultation — $50",
+  "Extended Session — $110",
+  "House Clearing — $80",
+  "Emergency Removal — $120",
+  "Coaching — $50",
+  "Follow-Up Session — $80",
+  "Energetic Parasite Session — $75",
   "Youth Sessions (Ages 9–14) — $20–$30",
   "Not sure — need assessment first"
 ];

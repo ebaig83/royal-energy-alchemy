@@ -5,7 +5,7 @@
 // Structure: each session entry is one booked slot.
 // price: number (USD) — 0 for exchange/unknown/TBD
 // round: session number with this client (1 = first time)
-// tags: descriptive flags (inPerson, distance, tarot, exchange, reschedule, package, deposit)
+// tags: descriptive flags (inPerson, distance, legacy, exchange, reschedule, package, deposit)
 // ============================================================
 
 const REA_DATA = {
@@ -14,8 +14,8 @@ const REA_DATA = {
 
     // ── WEEK OF JUNE 8 ──────────────────────────────────────
     { date:'2026-06-08', client:'Maureen',                    price:0,   round:null, tags:['reschedule'],  notes:'Reschedule pending — price TBD' },
-    { date:'2026-06-08', client:'Hilda',                      price:0,   round:2,    tags:[],              notes:'Round 2 — price not listed' },
-    { date:'2026-06-08', client:'Brandon',                    price:0,   round:2,    tags:[],              notes:'Round 2 — price not listed' },
+    { date:'2026-06-08', client:'Hilda',                      price:0,   round:2,    tags:[],              notes:'Follow-up session — price not listed' },
+    { date:'2026-06-08', client:'Brandon',                    price:0,   round:2,    tags:[],              notes:'Follow-up session — price not listed' },
     { date:'2026-06-08', client:'Daniel Vousey',              price:70,  round:1,    tags:[],              notes:'' },
     { date:'2026-06-08', client:'Nancy Brooking',             price:70,  round:1,    tags:['paid'],        notes:'Paid' },
     { date:'2026-06-08', client:'Mirella-Sierra Nevada',      price:70,  round:2,    tags:[],              notes:'' },
@@ -128,7 +128,7 @@ const REA_DATA = {
     { date:'2026-06-30', client:'Cindy Belich',               price:80,  round:1,    tags:[],              notes:'' },
     { date:'2026-06-30', client:'Maristella Altung',          price:70,  round:1,    tags:[],              notes:'' },
     { date:'2026-06-30', client:'Marc Lord',                  price:70,  round:2,    tags:[],              notes:'' },
-    { date:'2026-06-30', client:'Daughter Hillary',           price:60,  round:1,    tags:['tarot'],       notes:'Tarot reading' },
+    { date:'2026-06-30', client:'Daughter Hillary',           price:60,  round:1,    tags:['legacy'],      notes:'Legacy service' },
 
     // ── WEEK OF JULY 1 ──────────────────────────────────────
     { date:'2026-07-01', client:'Olivia Hinsmt Son (Finland)',price:90,  round:2,    tags:[],              notes:'' },
@@ -147,7 +147,7 @@ const REA_DATA = {
     { date:'2026-07-03', client:"Ghea (Katie Cahill's Son)",  price:70,  round:1,    tags:[],              notes:'' },
     { date:'2026-07-03', client:'Sally Granados',             price:70,  round:1,    tags:[],              notes:'' },
     { date:'2026-07-03', client:'Mark Anthony',               price:60,  round:1,    tags:[],              notes:'' },
-    { date:'2026-07-03', client:'Tarot Reading',              price:30,  round:1,    tags:['tarot'],       notes:'Tarot reading' },
+    { date:'2026-07-03', client:'Legacy Service',             price:30,  round:1,    tags:['legacy'],      notes:'Legacy service' },
 
     { date:'2026-07-04', client:"Kirk's Noon",                price:0,   round:1,    tags:[],              notes:'Price not listed' },
 
