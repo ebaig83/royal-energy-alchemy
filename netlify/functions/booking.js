@@ -23,14 +23,14 @@ const SITE_URL = process.env.SITE_URL || 'https://royal-energy-alchemy.netlify.a
 function newPortalToken() { return crypto.randomBytes(24).toString('hex'); }
 
 const SERVICES = [
-  { id: 'energy-clearing',     label: 'Energy Clearing',            duration: 60 },
-  { id: 'cord-cutting',        label: 'Cord Cutting',               duration: 60 },
-  { id: 'ancestral-healing',   label: 'Ancestral Healing',          duration: 90 },
-  { id: 'parasite-removal',    label: 'Energetic Parasite Removal', duration: 90 },
-  { id: 'spiritual-protection',label: 'Spiritual Protection',       duration: 60 },
-  { id: 'full-assessment',     label: 'Full Assessment',            duration: 120 },
-  { id: 'soul-retrieval',      label: 'Soul Retrieval',             duration: 90 },
-  { id: 'remote-session',      label: 'Remote Distance Session',    duration: 60 },
+  { id: 'initial-session',       label: 'Initial Session',             duration: 60 },
+  { id: 'consultation-15',       label: '15-Minute Consultation',       duration: 15 },
+  { id: 'extended-session',      label: 'Extended Session',            duration: 90 },
+  { id: 'house-clearing',        label: 'House Clearing',              duration: 60 },
+  { id: 'emergency-removal',     label: 'Emergency Removal',           duration: 60 },
+  { id: 'coaching',              label: 'Coaching',                    duration: 60 },
+  { id: 'follow-up-session',     label: 'Follow-Up Session',           duration: 60 },
+  { id: 'parasite-session',      label: 'Energetic Parasite Session',  duration: 60 },
 ];
 
 exports.handler = async function(event) {
@@ -223,7 +223,7 @@ exports.handler = async function(event) {
     service_name: serviceInfo.label,
     session_date: sessionDate,
     session_time: sessionTime,
-    timezone:     'ET',
+    timezone:     'EST',
     manage_url:   manageUrl,
     intake_url:   intakeUrl,
     waiver_url:   waiverUrl,

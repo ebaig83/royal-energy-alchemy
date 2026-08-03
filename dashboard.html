@@ -7688,7 +7688,7 @@ const REA_PRODUCTS = [
 
   // SALT
   { id:'salt_himalayan', name:'Himalayan Pink Salt (3 lb Bag)',         cat:'Salt & Cleansing',  desc:'Place along doorways and windowsills after any clearing session to absorb residual energy before it can resettle. Replace every 3 days for the first week. Also use 1–2 cups in a foot soak before bed — draws energetic residue out through the skin.',                                         themes:['aftercare','house','protection','entity','trauma'],     url:'https://www.amazon.com/s?k=himalayan+pink+salt+3+lb' },
-  { id:'salt_bath',      name:'Dead Sea Salt (Bath Soaking)',           cat:'Salt & Cleansing',  desc:'Add 2 cups to a warm bath within 24 hours of your session. Soak for 20 minutes. Dead Sea salt pulls energetic and physical toxins released during clearing. Rinse thoroughly after.',                                                                                                          themes:['aftercare','trauma','cord','anxiety','entity'],         url:'https://www.amazon.com/s?k=dead+sea+salt+bath+soak' },
+  { id:'salt_bath',      name:'Dead Sea Salt (Bath Soaking)',           cat:'Salt & Cleansing',  desc:'Add 2 cups to a warm bath after your session. Soak for 20 minutes. Dead Sea salt pulls energetic and physical toxins released during clearing. Rinse thoroughly after.',                                                                                                          themes:['aftercare','trauma','cord','anxiety','entity'],         url:'https://www.amazon.com/s?k=dead+sea+salt+bath+soak' },
   { id:'salt_lamp2',     name:'Himalayan Salt Lamp',                    cat:'Salt & Cleansing',  desc:'Continuous negative ion emission — keeps the air and the energetic field in your home clear between sessions. Place in your bedroom and main living space. Leaves it on 24/7 for best effect.',                                                                                                 themes:['aftercare','sleep','house','anxiety'],                  url:'https://www.amazon.com/s?k=himalayan+salt+lamp' },
 
   // INCENSE
@@ -9003,6 +9003,49 @@ function shouldSkipEntry(name,email){
 
 function saveAppts(arr) { localStorage.setItem('rea_appointments', JSON.stringify(arr)); }
 
+function blockSharedSlotForAppointment(appt) {
+  if (!appt || !appt.date || !appt.time) return;
+  var token = sessionStorage.getItem('rea_api_token') || '';
+  var timeNorm = appt.time.length === 5 ? appt.time : appt.time.slice(0, 5);
+  function time24ToDisplay(t) {
+    var p = String(t || '').split(':');
+    var h = parseInt(p[0], 10);
+    var m = p[1] || '00';
+    var ampm = h >= 12 ? 'PM' : 'AM';
+    var h12 = h % 12 || 12;
+    return h12 + ':' + m + ' ' + ampm;
+  }
+  var slots = getSlots();
+  var slot = slots.find(function(s){ return s.date === appt.date && String(s.time || '').slice(0, 5) === timeNorm; });
+
+  function patchSlot(id) {
+    fetch('/.netlify/functions/availability?id=' + id, {
+      method: 'PATCH',
+      headers: {'Content-Type':'application/json','X-Dashboard-Token':token},
+      body: JSON.stringify({ status: 'booked' })
+    }).then(function(){
+      syncSlotsFromAPI();
+      showToast('Shared availability blocked for appointment ✓', '#44cc88');
+    }).catch(function(e){ showToast('Shared slot update failed: ' + e.message, '#cc4455'); });
+  }
+
+  if (slot && slot.id && !String(slot.id).startsWith('tmp_')) {
+    slot.status = 'booked';
+    slot.booked = true;
+    _setSlots(slots);
+    patchSlot(slot.id);
+    return;
+  }
+
+  fetch('/.netlify/functions/availability', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','X-Dashboard-Token':token},
+    body: JSON.stringify({ date: appt.date, time: timeNorm, display_time: time24ToDisplay(timeNorm), label: _buildLabel(appt.date, time24ToDisplay(timeNorm)), status: 'booked' })
+  }).then(function(r){ return r.json(); })
+    .then(function(){ syncSlotsFromAPI(); showToast('Shared availability blocked for appointment ✓', '#44cc88'); })
+    .catch(function(e){ showToast('Shared slot create failed: ' + e.message, '#cc4455'); });
+}
+
 // ── SYNC ENGINE ──────────────────────────────────────────────────────────────
 // Pulls appointments from Square and website forms into rea_appointments.
 // Deduplicates by squareBookingId / netlifySubmissionId.
@@ -9327,6 +9370,7 @@ function saveAppt() {
   const appts = getAppts();
   appts.push({ client, date, time, dur, service, email, phone, video, notes, id: Date.now() });
   saveAppts(appts);
+  blockSharedSlotForAppointment(appts[appts.length-1]);
   ensureCRMClient(appts[appts.length-1].client);
   addTimelineEvent(appts[appts.length-1].client, {
     type: 'booking',

@@ -3185,7 +3185,7 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&modal.clas
     <div class="reveal">
       <span class="sec-label">Reach Daron</span>
       <h2 class="sec-title">Book a Session</h2>
-      <p class="sec-body">Select your service, preferred time, and payment method. Your request goes directly to Daron — he confirms and sends your session details within 24 hours.</p>
+      <p class="sec-body">Select your service, preferred time, and payment method. Your request goes directly to Daron for confirmation, session details, a 72-hour check-in, and ongoing guidance when appropriate.</p>
     </div>
     <form id="bookingForm" class='reveal reveal-d1' onsubmit='return handleBookingSubmit(event)'>
       <p style="display:none"><label>Don't fill this out: <input name="bot-field"/></label></p>
@@ -4256,7 +4256,7 @@ function showOnboardingConfirmation(method){
   var form=document.getElementById('bookingForm');
   if(!form)return;
   var msg=method==='written'
-    ? 'Your intake questionnaire has been received. Daron will review your responses and reach out within 24 hours to confirm your session time.'
+    ? 'Your intake questionnaire has been received. Daron will review your responses, confirm your session time, and provide a 72-hour check-in with ongoing guidance when appropriate.'
     : 'Your onboarding request has been received. Daron will contact you to schedule your AI intake call and confirm your session time.';
   var conf=document.createElement('div');
   conf.style.cssText='text-align:center;padding:28px 20px;font-family:EB Garamond,serif;font-size:17px;color:#66cc88;margin-top:16px;border:1px solid #66cc8833;border-radius:8px;background:#0d1a12';
@@ -4391,6 +4391,11 @@ function fetchPublicSlots(cb){
       _publicSlotsFetched=true;
       if(cb)cb();
     });
+}
+
+function easternSlotLabel(value){
+  var label=String(value||'').trim();
+  return label&&!/\bE[DS]?T\b/i.test(label)?label+' EST':label;
 }
 
 function clientCalPrev(){
@@ -4538,7 +4543,7 @@ function renderClientTimeGrid(dateStr){
     var statusLabel=isPrimary?'<div class="rea-time-btn-label" style="color:#f8d060">★ Preferred</div>':
                     isBackup?'<div class="rea-time-btn-label" style="color:#d4b8f8">◆ Backup</div>':
                     '<div class="rea-time-btn-label" style="color:#44ffaa">Available</div>';
-    btn.innerHTML='<div>'+sl.displayTime+'</div>'+statusLabel;
+    btn.innerHTML='<div>'+easternSlotLabel(sl.displayTime||sl.time)+'</div>'+statusLabel;
     btn.dataset.slotId=sl.id;
     (function(slot){btn.addEventListener('click',function(){selectClientSlot(slot);});})(sl);
     grid.appendChild(btn);
@@ -4557,7 +4562,7 @@ function renderNextAvailable(){
   var timeEl=document.getElementById('nextAvailTime');
   var btn=document.getElementById('nextAvailBtn');
   if(dateEl)dateEl.textContent=dateLabel;
-  if(timeEl)timeEl.textContent=next.displayTime||next.time;
+  if(timeEl)timeEl.textContent=easternSlotLabel(next.displayTime||next.time);
   banner.style.display='block';
   if(btn){
     btn.onclick=function(){
