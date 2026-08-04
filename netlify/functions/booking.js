@@ -213,9 +213,6 @@ exports.handler = async function(event) {
   const intakeUrl = `${SITE_URL}/full-intake.html?session_id=${sessionId}&name=${encodeURIComponent(client_name.trim())}&email=${encodeURIComponent(client_email.trim())}`;
   const waiverUrl = `${SITE_URL}/waiver-esign.html?session_id=${sessionId}&email=${encodeURIComponent(client_email.trim())}`;
   const cancelUrl = `${SITE_URL}/cancel-session.html?session_id=${sessionId}`;
-  // Primary client link — the portal guides them through every required document.
-  const portalUrl = portalToken ? `${SITE_URL}/client-portal.html?token=${portalToken}` : `${SITE_URL}/client-portal.html`;
-
   // ── Step 7: Transactional emails (fire-and-forget) ────────────────────────
   const emailVars = {
     client_name:  client_name.trim(),
@@ -228,7 +225,6 @@ exports.handler = async function(event) {
     intake_url:   intakeUrl,
     waiver_url:   waiverUrl,
     cancel_url:   cancelUrl,
-    portal_url:   portalUrl,
     documents_message: 'Please complete your required client documents before your appointment.',
     contact_email: process.env.ADMIN_EMAIL || 'royalenergyalchemy@gmail.com',
   };
@@ -267,7 +263,6 @@ exports.handler = async function(event) {
     manage_url:  manageUrl,
     intake_url:  intakeUrl,
     waiver_url:  waiverUrl,
-    portal_url:  portalUrl,
     cancel_url:  cancelUrl,
     slot: {
       date:  sessionDate,

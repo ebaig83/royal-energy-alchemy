@@ -67,7 +67,7 @@
   function setMsg(text, color) { msg.textContent = text; msg.style.color = color || '#c8c4e0'; }
 
   if (!token) {
-    setMsg('Tip: open this policy from your secure client portal link so your acknowledgment is saved to your record.', '#f8a84b');
+    setMsg('Your acknowledgment will be saved locally on this device. Contact Royal Energy Alchemy if you need this added to your client record.', '#f8a84b');
   }
 
   function collectConsents() {
@@ -109,7 +109,7 @@
     localMirror();
 
     if (!token) {
-      setMsg('✓ Acknowledged locally. To file this on your client record, please use your secure portal link.', '#22c98a');
+      setMsg('✓ Acknowledged locally. Contact Royal Energy Alchemy if you need this added to your client record.', '#22c98a');
       finishUI();
       return;
     }
@@ -137,8 +137,8 @@
     box.querySelector('#ackSubmit').style.opacity = '.5';
     box.querySelector('#ackSubmit').style.cursor = 'default';
     var back = document.createElement('a');
-    back.href = token ? ('/client-portal.html?token=' + encodeURIComponent(token)) : '/client-portal.html';
-    back.textContent = '← Return to your portal';
+    back.href = token ? ('/client-portal.html?token=' + encodeURIComponent(token)) : '/';
+    back.textContent = token ? '← Return to your portal' : '← Return home';
     back.style.cssText = 'display:inline-block;margin-top:14px;font-family:\'Cinzel\',serif;font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:' + GOLD;
     msg.appendChild(document.createElement('br'));
     msg.appendChild(back);

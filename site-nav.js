@@ -35,7 +35,6 @@
           '<li><a href="/training.html#operations">Level Four - Running the Practice</a></li>' +
           '<li><a href="/training.html#leadership">Level Five - Leadership &amp; Legacy</a></li>' +
         '</ul></li>' +
-      '<li><a href="/client-portal.html">Client Portal</a></li>' +
       '<li class="rea-nav-dropdown"><a href="/#faq">More</a>' +
         '<ul class="rea-nav-menu" aria-label="More">' +
           '<li><a href="/#faq">FAQ</a></li>' +
