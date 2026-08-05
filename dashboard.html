@@ -7936,8 +7936,8 @@ function renderBooking() {
   if (typeof REA_DATA === 'undefined') return;
   if (!REA_DATA.computed) REA_DATA.compute();
 
-  const allSessions = REA_DATA.sessions;
-  const allAppts    = getAppts();
+  const allSessions = getScheduleSessions();
+  const allAppts    = _scheduleStore.loaded ? [] : getAppts();
   const today       = new Date().toISOString().slice(0, 10);
   const weekStart   = getWeekStart(today);
   const weekDays    = getWeekDays(weekStart);
@@ -8988,6 +8988,68 @@ function toggleApptForm() {
 function getAppts() {
   try { return JSON.parse(localStorage.getItem('rea_appointments') || '[]'); } catch(e) { return []; }
 }
+
+// ── UNIFIED SCHEDULE SOURCE ────────────────────────────────────────────────
+// Supabase sessions are authoritative after an authenticated load succeeds.
+// The legacy static/local stores remain available only as an offline/demo fallback.
+var _scheduleStore = { loaded: false, loading: null, sessions: [], error: null };
+function _normalizeScheduleSession(s) {
+  var paid = Number(s.amount_paid || 0) || 0;
+  var due = Number(s.amount_due != null ? s.amount_due : (s.price || 0)) || 0;
+  var amount = paid > 0 ? paid : due;
+  return Object.assign({}, s, {
+    client: s.client_name || s.client || 'Client',
+    client_name: s.client_name || s.client || 'Client',
+    date: (s.session_date || s.date || '').slice(0, 10),
+    session_date: (s.session_date || s.date || '').slice(0, 10),
+    time: (s.session_time || s.time || '').slice(0, 5),
+    session_time: (s.session_time || s.time || '').slice(0, 5),
+    dur: Number(s.duration_minutes || s.dur || 60),
+    service: s.service || s.service_type || '',
+    price: amount,
+    notes: s.seller_notes || s.notes || '',
+    scheduleSource: s.scheduleSource || 'supabase'
+  });
+}
+function getScheduleSessions() {
+  if (_scheduleStore.loaded) return _scheduleStore.sessions.slice();
+  var legacy = (typeof REA_DATA !== 'undefined' && Array.isArray(REA_DATA.sessions)) ? REA_DATA.sessions.slice() : [];
+  var local = typeof getAppts === 'function' ? getAppts() : [];
+  return legacy.concat(local).map(function(s) {
+    return _normalizeScheduleSession(Object.assign({ scheduleSource: s.scheduleSource || (local.indexOf(s) >= 0 ? 'local' : 'static') }, s));
+  });
+}
+function _refreshScheduleConsumers() {
+  try { renderHomeDashboard(); } catch(e) {}
+  try { renderCal(); } catch(e) {}
+  try { renderUpcoming(); } catch(e) {}
+  try { renderBooking(); } catch(e) {}
+  try { updateCapacityStats(); } catch(e) {}
+  try { updateBookingCommandKpis(); } catch(e) {}
+}
+async function refreshScheduleFromSupabase(force) {
+  if (_scheduleStore.loading && !force) return _scheduleStore.loading;
+  var token = sessionStorage.getItem('rea_api_token') || '';
+  if (!token) return getScheduleSessions();
+  _scheduleStore.loading = fetch('/.netlify/functions/sessions', {
+    headers: { 'X-Dashboard-Token': token }
+  }).then(function(r) {
+    if (!r.ok) throw new Error('Schedule request failed (' + r.status + ')');
+    return r.json();
+  }).then(function(payload) {
+    _scheduleStore.sessions = (payload.sessions || []).map(_normalizeScheduleSession);
+    _scheduleStore.loaded = true;
+    _scheduleStore.error = null;
+    _refreshScheduleConsumers();
+    return _scheduleStore.sessions;
+  }).catch(function(err) {
+    _scheduleStore.error = err;
+    return getScheduleSessions();
+  }).finally(function() {
+    _scheduleStore.loading = null;
+  });
+  return _scheduleStore.loading;
+}
 /* ── TEST ENTRY FILTER ── */
 function isTestEntry(str){
   if(!str)return false;
@@ -9356,7 +9418,7 @@ function rejectSuggestedInfo(name, field) {
   saveCRM(crm);
   renderClients();
 }
-function saveAppt() {
+async function saveAppt() {
   const client  = (document.getElementById('apptClient')||{}).value.trim();
   const date    = (document.getElementById('apptDate')||{}).value;
   const time    = (document.getElementById('apptTime')||{}).value;
@@ -9367,22 +9429,47 @@ function saveAppt() {
   const video   = (document.getElementById('apptVideo')||{}).value.trim();
   const notes   = (document.getElementById('apptNotes')||{}).value.trim();
   if (!client || !date || !time) { alert('Client name, date, and time are required.'); return; }
-  const appts = getAppts();
-  appts.push({ client, date, time, dur, service, email, phone, video, notes, id: Date.now() });
-  saveAppts(appts);
-  blockSharedSlotForAppointment(appts[appts.length-1]);
-  ensureCRMClient(appts[appts.length-1].client);
-  addTimelineEvent(appts[appts.length-1].client, {
+  const appt = { client, date, time, dur, service, email, phone, video, notes, id: Date.now(), status: 'confirmed', source: 'manual' };
+  const token = sessionStorage.getItem('rea_api_token') || '';
+  if (token) {
+    try {
+      const response = await fetch('/.netlify/functions/sessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Dashboard-Token': token },
+        body: JSON.stringify({
+          client_name: client, client_email: email || null, service: service || null,
+          session_date: date, session_time: time, duration_minutes: dur,
+          status: 'confirmed', payment_status: 'unpaid', source: 'manual',
+          seller_notes: notes || null
+        })
+      });
+      if (!response.ok) {
+        const failure = await response.json().catch(function(){ return {}; });
+        throw new Error(failure.error || ('HTTP ' + response.status));
+      }
+    } catch (err) {
+      alert('Appointment was not saved: ' + err.message);
+      return;
+    }
+  } else {
+    const appts = getAppts();
+    appts.push(appt);
+    saveAppts(appts);
+  }
+  blockSharedSlotForAppointment(appt);
+  ensureCRMClient(appt.client);
+  addTimelineEvent(appt.client, {
     type: 'booking',
     date: new Date().toISOString().slice(0,10),
-    description: `Appointment booked for ${appts[appts.length-1].date}`,
-    data: { date: appts[appts.length-1].date, service: appts[appts.length-1].service||'' }
+    description: `Appointment booked for ${appt.date}`,
+    data: { date: appt.date, service: appt.service||'' }
   });
   ['apptClient','apptDate','apptTime','apptService','apptEmail','apptPhone','apptVideo','apptNotes'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
   toggleApptForm();
   renderUpcoming();
   updateCapacityStats();
   renderCal();
+  if (token) await refreshScheduleFromSupabase(true);
 }
 // ── CALENDAR ────────────────────────────────────────────────────────────────
 var _calYear  = new Date().getFullYear();
@@ -9401,15 +9488,13 @@ function renderCal() {
 
   // Build date → sessions map from REA_DATA
   var sessMap = {};
-  if (typeof REA_DATA !== 'undefined') {
-    REA_DATA.sessions.forEach(function(s) {
+  getScheduleSessions().filter(function(s) { return s.status !== 'cancelled' && s.status !== 'no_show'; }).forEach(function(s) {
       if (!sessMap[s.date]) sessMap[s.date] = [];
       sessMap[s.date].push({ label: s.client, sub: s.service || '', type: 'session', price: s.price, notes: s.notes });
     });
-  }
   // Overlay manual appointments from localStorage
   var apptMap = {};
-  getAppts().forEach(function(a) {
+  (_scheduleStore.loaded ? [] : getAppts()).forEach(function(a) {
     if (!apptMap[a.date]) apptMap[a.date] = [];
     apptMap[a.date].push({ label: a.client, sub: (a.service||'') + (a.time?' · '+a.time:''), type: 'appt', id: a.id, time: a.time || '' });
   });
@@ -10098,7 +10183,7 @@ function confirmPendingAppt(id) {
 function renderUpcoming() {
   const el = document.getElementById('upcomingList');
   if (!el) return;
-  const appts = getAppts().sort((a,b) => (a.date+a.time).localeCompare(b.date+b.time));
+  const appts = (_scheduleStore.loaded ? getScheduleSessions() : getAppts()).sort((a,b) => (a.date+a.time).localeCompare(b.date+b.time));
   if (!appts.length) {
     el.innerHTML = '<p style="color:#dddaeecc;font-style:italic;padding:12px 0 20px">No upcoming appointments logged. Use "+ Add Appointment" to track sessions.</p>';
     return;
@@ -10150,9 +10235,10 @@ function renderUpcoming() {
     const pendingTag  = isPending ? `<span class="appt-pending-tag">⏳ Pending Confirmation</span>` : '';
     const sourceLabel = a.source === 'square' ? 'Square' : a.source === 'website_form' ? 'Website Form' : '';
     const sourceTag   = sourceLabel ? `<span class="appt-source-tag">${sourceLabel}</span>` : '';
-    const confirmBtn  = isPending
+    const isSupabase = a.scheduleSource === 'supabase';
+    const confirmBtn  = isPending && !isSupabase
       ? `<button class="action-btn approve" style="padding:5px 12px;font-size:10px;white-space:nowrap;background:#22c98a11;border-color:#22c98a44;color:#22c98acc" onclick="confirmPendingAppt(${a.id})">✓ Confirm</button>` : '';
-    const actionBtns = isCancelled
+    const actionBtns = isSupabase ? '' : isCancelled
       ? `<button class="action-btn approve" style="padding:5px 12px;font-size:10px;white-space:nowrap" onclick="restoreAppt(${a.id})">↩ Restore</button>`
       : `<button class="action-btn view" style="padding:5px 12px;font-size:10px;white-space:nowrap" onclick="openEditAppt(${a.id})">✎ Edit</button>
         <button class="action-btn view" style="padding:5px 12px;font-size:10px;white-space:nowrap;border-color:#9b7fe844;color:#9b7fe8cc" onclick="openVerificationFromAppt(${a.id})">👤 Client</button>
@@ -11010,7 +11096,9 @@ function updateCapacityStats() {
   if (inp && !inp.value) inp.value = cap;
 
   const { mon, sun } = getWeekBounds();
-  const appts = getAppts();
+  const appts = _scheduleStore.loaded
+    ? getScheduleSessions().filter(function(s) { return s.status !== 'cancelled' && s.status !== 'no_show'; })
+    : getAppts();
   const bookedThisWeek = appts.filter(a => a.date >= mon && a.date <= sun).length;
   const available = Math.max(0, cap - bookedThisWeek);
 
@@ -11212,10 +11300,7 @@ function renderScheduleView(view) {
   if (!el) return;
   if (view !== 'today' && homeEl) renderScheduleView('today');
   el.classList.remove('sched-empty-mode');
-  var sessions = (typeof REA_DATA !== 'undefined' && REA_DATA.sessions) ? REA_DATA.sessions.slice() : [];
-  try {
-    if (typeof getAppts === 'function') sessions = sessions.concat(getAppts());
-  } catch(e) {}
+  var sessions = getScheduleSessions().filter(function(s) { return s.status !== 'cancelled' && s.status !== 'no_show'; });
   var today = new Date(); today.setHours(0, 0, 0, 0);
   var todayStr = today.toISOString().slice(0, 10);
   function sdate(s) { return (s.session_date || s.date || '').slice(0, 10); }
@@ -11375,7 +11460,7 @@ function _renderWeekGlance() {
   var el = document.getElementById('homeWeekGlance');
   if (!el) return;
   try {
-    var sessions = (typeof REA_DATA !== 'undefined' && REA_DATA.sessions) ? REA_DATA.sessions : [];
+    var sessions = getScheduleSessions().filter(function(s) { return s.status !== 'cancelled' && s.status !== 'no_show'; });
     var weekStart = _schedActiveWeekStart();
     var today = new Date(); today.setHours(12, 0, 0, 0);
     var todayStr = _schedISO(today);
@@ -11670,7 +11755,7 @@ function _renderOperatingSignals() {
   if (!el) return;
   try {
     var c = (typeof REA_DATA !== 'undefined' && typeof REA_DATA.compute === 'function') ? REA_DATA.compute() : null;
-    var sessions = (typeof REA_DATA !== 'undefined' && REA_DATA.sessions) ? REA_DATA.sessions : [];
+    var sessions = getScheduleSessions().filter(function(s) { return s.status !== 'cancelled' && s.status !== 'no_show'; });
     function sdate(s) { return (s.session_date || s.date || '').slice(0, 10); }
     function iso(d) { return d.toISOString().slice(0, 10); }
     function mondayOf(d) { var x = new Date(d); var day = x.getDay(); x.setDate(x.getDate() + ((day === 0) ? -6 : 1 - day)); x.setHours(0, 0, 0, 0); return x; }
@@ -11730,6 +11815,7 @@ function _renderOperatingSignals() {
 
 function renderHomeDashboard() {
   var today = new Date().toISOString().slice(0, 10);
+  var scheduleSessions = getScheduleSessions().filter(function(s) { return s.status !== 'cancelled' && s.status !== 'no_show'; });
 
   // ── ACTION QUEUE — lifecycle stage counts ──────────────────
   try {
@@ -11752,8 +11838,8 @@ function renderHomeDashboard() {
   // ── TODAY'S SESSIONS count + schedule ──────────────────────
   var todaySess = [];
   try {
-    if (typeof REA_DATA !== 'undefined') {
-      todaySess = REA_DATA.sessions.filter(function(s) {
+    if (scheduleSessions) {
+      todaySess = scheduleSessions.filter(function(s) {
         return (s.session_date || s.date || '') === today;
       });
       var sc = document.getElementById('homeStatSessions');
@@ -11778,9 +11864,9 @@ function renderHomeDashboard() {
 
   // ── SESSIONS THIS MONTH ────────────────────────────────────
   try {
-    if (typeof REA_DATA !== 'undefined') {
+    if (scheduleSessions) {
       var ym = today.slice(0, 7);
-      var monthCount = REA_DATA.sessions.filter(function(s) {
+      var monthCount = scheduleSessions.filter(function(s) {
         return (s.session_date || s.date || '').slice(0, 7) === ym;
       }).length;
       var smEl = document.getElementById('statSessionsMonth');
@@ -11801,7 +11887,7 @@ function renderHomeDashboard() {
   var actEl = document.getElementById('homeActivity');
   if (actEl) {
     try {
-      var allSess = typeof REA_DATA !== 'undefined' ? REA_DATA.sessions : [];
+      var allSess = scheduleSessions;
       var recSess = allSess.slice().sort(function(a, b) {
         return (b.session_date || b.date || '') > (a.session_date || a.date || '') ? 1 : -1;
       }).slice(0, 5);
@@ -11845,7 +11931,7 @@ function renderHomeDashboard() {
   if (flagsEl) {
     try {
       var lastSeen = {};
-      var allS = typeof REA_DATA !== 'undefined' ? REA_DATA.sessions : [];
+      var allS = scheduleSessions;
       allS.forEach(function(s) {
         var n = s.client || s.client_name; if (!n) return;
         var d = s.session_date || s.date || '';
@@ -12518,6 +12604,7 @@ function initDashboard() {
   try { renderPatterns(); } catch(e) { console.error('renderPatterns',e); }
   autoFetchToday(false); // async — runs in background
   try { renderHomeDashboard(); } catch(e) { console.error('renderHomeDashboard', e); }
+  refreshScheduleFromSupabase(false);
   // Init capacity input
   const inp = document.getElementById('capacityInput');
   if (inp) inp.value = getCapacity();
