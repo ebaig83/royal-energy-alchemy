@@ -88,7 +88,10 @@
 
   function fmtDate(d) {
     if (!d) return '—';
-    return new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    // Keep date-only database values on their calendar day. JavaScript parses
+    // YYYY-MM-DD as UTC, which otherwise displays one day early in US zones.
+    var dateOnly = /^\d{4}-\d{2}-\d{2}$/.test(String(d));
+    return new Date(dateOnly ? d + 'T12:00:00' : d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
   }
 
   function fmtDay(d) {

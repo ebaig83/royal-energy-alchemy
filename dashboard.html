@@ -10236,9 +10236,17 @@ function renderUpcoming() {
     const sourceLabel = a.source === 'square' ? 'Square' : a.source === 'website_form' ? 'Website Form' : '';
     const sourceTag   = sourceLabel ? `<span class="appt-source-tag">${sourceLabel}</span>` : '';
     const isSupabase = a.scheduleSource === 'supabase';
+    const jsId = JSON.stringify(String(a.id));
     const confirmBtn  = isPending && !isSupabase
       ? `<button class="action-btn approve" style="padding:5px 12px;font-size:10px;white-space:nowrap;background:#22c98a11;border-color:#22c98a44;color:#22c98acc" onclick="confirmPendingAppt(${a.id})">✓ Confirm</button>` : '';
-    const actionBtns = isSupabase ? '' : isCancelled
+    const actionBtns = isSupabase
+      ? (isCancelled
+        ? `<button class="action-btn approve" style="padding:5px 12px;font-size:10px;white-space:nowrap" onclick='restoreSupabaseAppt(${jsId})'>↩ Restore</button>`
+        : `<button class="action-btn view" style="padding:5px 12px;font-size:10px;white-space:nowrap" onclick='openSupabaseEditPanel(${jsId})'>✎ Edit</button>
+          <button class="action-btn approve" style="padding:5px 12px;font-size:10px;white-space:nowrap;background:#9b7fe811;border-color:#9b7fe844;color:#9b7fe8cc" onclick='openSupabaseReschedulePanel(${jsId})'>↺ Reschedule</button>
+          <button class="action-btn reject" style="padding:5px 12px;font-size:10px;white-space:nowrap" onclick='openSupabaseCancelPanel(${jsId})'>✕ Cancel</button>
+          <button class="action-btn view" style="padding:5px 12px;font-size:10px;white-space:nowrap;border-color:#6655aa55;color:#9988cc" onclick='sendSupabaseReminder(${jsId})'>📩 Reminder</button>`)
+      : isCancelled
       ? `<button class="action-btn approve" style="padding:5px 12px;font-size:10px;white-space:nowrap" onclick="restoreAppt(${a.id})">↩ Restore</button>`
       : `<button class="action-btn view" style="padding:5px 12px;font-size:10px;white-space:nowrap" onclick="openEditAppt(${a.id})">✎ Edit</button>
         <button class="action-btn view" style="padding:5px 12px;font-size:10px;white-space:nowrap;border-color:#9b7fe844;color:#9b7fe8cc" onclick="openVerificationFromAppt(${a.id})">👤 Client</button>
@@ -10275,6 +10283,110 @@ function renderUpcoming() {
   if (pastSection.length) html += `<div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:#e8b84b55;text-transform:uppercase;margin:16px 0 8px">Past</div>`+pastSection.slice().reverse().map(card).join('');
   if (cancelledSection.length) html += `<div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:#ee707077;text-transform:uppercase;margin:16px 0 8px">Cancelled</div>`+cancelledSection.map(card).join('');
   el.innerHTML = html || '<p style="color:#dddaeecc;font-style:italic">No appointments logged.</p>';
+}
+
+// Authenticated Supabase appointment actions. These intentionally use the
+// existing sessions API and never mirror records into localStorage.
+function _apptEsc(value) {
+  return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch) {
+    return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[ch];
+  });
+}
+function _supabaseAppt(id) {
+  return getScheduleSessions().find(function(a) { return String(a.id) === String(id); });
+}
+async function _supabaseSessionAction(id, body, successMessage) {
+  var token = sessionStorage.getItem('rea_api_token') || '';
+  if (!token) throw new Error('Dashboard authentication is required.');
+  var response = await fetch('/.netlify/functions/sessions?id=' + encodeURIComponent(id), {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', 'X-Dashboard-Token': token },
+    body: JSON.stringify(body || {})
+  });
+  var payload = await response.json().catch(function() { return {}; });
+  if (!response.ok) throw new Error(payload.error || ('HTTP ' + response.status));
+  await refreshScheduleFromSupabase(true);
+  if (successMessage) showToast(successMessage, '#44cc88');
+  return payload;
+}
+function _openSupabaseActionPanel(id, type, html) {
+  document.querySelectorAll('[id^="actionpanel_"]').forEach(function(panel) {
+    if (panel.id !== 'actionpanel_' + id) panel.style.display = 'none';
+  });
+  var el = document.getElementById('actionpanel_' + id);
+  if (!el) return null;
+  if (el.style.display === 'block' && el.dataset.type === type) {
+    el.style.display = 'none';
+    return null;
+  }
+  el.dataset.type = type;
+  el.style.display = 'block';
+  el.innerHTML = html;
+  return el;
+}
+function openSupabaseEditPanel(id) {
+  var a = _supabaseAppt(id);
+  if (!a) return;
+  _openSupabaseActionPanel(id, 'supabase-edit', `<div class="appt-action-panel">
+    <span class="lbl">Service</span><input class="appt-input" id="sbEditService_${id}" value="${_apptEsc(a.service)}">
+    <span class="lbl">Notes</span><textarea id="sbEditNotes_${id}">${_apptEsc(a.notes)}</textarea>
+    <div class="appt-action-btns"><button class="action-btn approve" onclick='saveSupabaseEdit(${JSON.stringify(String(id))})'>Save Changes</button>
+      <button class="action-btn reject" onclick="document.getElementById('actionpanel_${id}').style.display='none'">Close</button></div>
+  </div>`);
+}
+async function saveSupabaseEdit(id) {
+  try {
+    await _supabaseSessionAction(id, {
+      service: (document.getElementById('sbEditService_' + id) || {}).value || null,
+      seller_notes: (document.getElementById('sbEditNotes_' + id) || {}).value || null,
+      _context: 'Edited authenticated appointment from Booking dashboard'
+    }, 'Appointment updated ✓');
+  } catch (e) { alert('Appointment was not updated: ' + e.message); }
+}
+function openSupabaseCancelPanel(id) {
+  _openSupabaseActionPanel(id, 'supabase-cancel', `<div class="appt-action-panel cancel-panel">
+    <span class="lbl">Reason for Cancellation</span>
+    <select id="sbCancelReason_${id}">${CANCEL_REASONS.map(function(r) { return `<option value="${_apptEsc(r)}">${_apptEsc(r)}</option>`; }).join('')}</select>
+    <div class="appt-action-btns"><button class="btn-cancel-confirm" onclick='confirmSupabaseCancel(${JSON.stringify(String(id))})'>Confirm Cancellation</button>
+      <button class="action-btn reject" onclick="document.getElementById('actionpanel_${id}').style.display='none'">Close</button></div>
+  </div>`);
+}
+async function confirmSupabaseCancel(id) {
+  try {
+    var reason = (document.getElementById('sbCancelReason_' + id) || {}).value || 'Cancelled from dashboard';
+    await _supabaseSessionAction(id, { action: 'cancel', reason: reason }, 'Appointment cancelled ✓');
+  } catch (e) { alert('Appointment was not cancelled: ' + e.message); }
+}
+async function restoreSupabaseAppt(id) {
+  try { await _supabaseSessionAction(id, { action: 'restore' }, 'Appointment restored ✓'); }
+  catch (e) { alert('Appointment was not restored: ' + e.message); }
+}
+function openSupabaseReschedulePanel(id) {
+  var a = _supabaseAppt(id);
+  if (!a) return;
+  _openSupabaseActionPanel(id, 'supabase-reschedule', `<div class="appt-action-panel reschedule-panel">
+    <div class="row2">
+      <div><span class="lbl">New Date</span><input class="appt-input" id="sbReschedDate_${id}" type="date" value="${_apptEsc(a.date)}"></div>
+      <div><span class="lbl">New Time</span><input class="appt-input" id="sbReschedTime_${id}" type="time" value="${_apptEsc(a.time)}"></div>
+    </div>
+    <span class="lbl">Reason</span><input class="appt-input" id="sbReschedReason_${id}" value="Practitioner rescheduled">
+    <div class="appt-action-btns"><button class="action-btn approve" onclick='confirmSupabaseReschedule(${JSON.stringify(String(id))})'>Confirm Reschedule</button>
+      <button class="action-btn reject" onclick="document.getElementById('actionpanel_${id}').style.display='none'">Close</button></div>
+  </div>`);
+}
+async function confirmSupabaseReschedule(id) {
+  try {
+    var newDate = (document.getElementById('sbReschedDate_' + id) || {}).value || '';
+    var newTime = (document.getElementById('sbReschedTime_' + id) || {}).value || '';
+    if (!newDate || !newTime) throw new Error('New date and time are required.');
+    await _supabaseSessionAction(id, { action: 'reschedule', new_date: newDate, new_time: newTime,
+      reason: (document.getElementById('sbReschedReason_' + id) || {}).value || 'Practitioner rescheduled' }, 'Appointment rescheduled ✓');
+  } catch (e) { alert('Appointment was not rescheduled: ' + e.message); }
+}
+async function sendSupabaseReminder(id) {
+  if (!confirm('Send an appointment reminder now?')) return;
+  try { await _supabaseSessionAction(id, { action: 'reminder' }, 'Reminder sent ✓'); }
+  catch (e) { alert('Reminder was not sent: ' + e.message); }
 }
 
 // ── CANCELLATIONS ────────────────────────────────────────────────────────────
@@ -11406,11 +11518,11 @@ function renderScheduleView(view) {
         '<div class="ts-empty-msg">No appointments scheduled today.</div>' +
         '<div class="ts-suggest-label">Suggestions</div>' +
         '<div class="ts-tiles">' +
-          '<button type="button" class="ts-tile" onclick="showTab(\'booking\');setTimeout(function(){setIntakeFilter(\'intake_pending\',null)},200)">' +
+          '<button type="button" class="ts-tile" onclick="_dashOpenQueueTarget(\'booking\',\'intake_pending\')">' +
             '<span class="ts-tile-icon">▣</span><span class="ts-tile-title">Review</span><span class="ts-tile-desc">Review<br>intake forms</span></button>' +
-          '<button type="button" class="ts-tile" onclick="showTab(\'followups\')">' +
+          '<button type="button" class="ts-tile" onclick="_dashOpenQueueTarget(\'followups\')">' +
             '<span class="ts-tile-icon">▱</span><span class="ts-tile-title">Follow-Up</span><span class="ts-tile-desc">Complete<br>follow-ups</span></button>' +
-          '<button type="button" class="ts-tile" onclick="showTab(\'booking\');setTimeout(function(){setIntakeFilter(\'ready\',null)},200)">' +
+          '<button type="button" class="ts-tile" onclick="_dashOpenQueueTarget(\'booking\',\'ready\')">' +
             '<span class="ts-tile-icon">▦</span><span class="ts-tile-title">Scheduling</span><span class="ts-tile-desc">Schedule<br>new clients</span></button>' +
         '</div>' +
         '<div class="ts-actions">' +
@@ -11637,6 +11749,7 @@ function _dashSessionDeltaLine(sc) {
 function _dashOpenQueueTarget(tab, filter) {
   if (typeof showTab === 'function') showTab(tab);
   if (tab === 'booking' && filter && typeof setIntakeFilter === 'function') {
+    if (typeof showBookingWorkspace === 'function') showBookingWorkspace('requests');
     setTimeout(function() { setIntakeFilter(filter, null); }, 250);
   }
 }

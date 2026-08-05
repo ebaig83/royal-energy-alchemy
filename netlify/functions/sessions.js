@@ -135,6 +135,61 @@ exports.handler = async function(event) {
     try { body = JSON.parse(event.body || '{}'); } catch { return respond(400, { error: 'Invalid JSON.' }); }
 
     const { data: old } = await sb.from('sessions').select('*').eq('id', params.id).single();
+    if (!old) return respond(404, { error: 'Session not found.' });
+
+    if (body.action === 'cancel') {
+      if (old.status === 'cancelled') return respond(409, { error: 'Session is already cancelled.' });
+      if (old.status === 'completed') return respond(409, { error: 'Completed sessions cannot be cancelled.' });
+      await sb.from('availability_slots').update({ status: 'available', session_id: null }).eq('session_id', params.id);
+      const { data: cancelled, error: cancelErr } = await sb.from('sessions')
+        .update({ status: 'cancelled' }).eq('id', params.id).select().single();
+      if (cancelErr) return respond(500, { error: cancelErr.message });
+      await log({ actor: auth.user.email, action: 'session_cancelled', tableName: 'sessions', recordId: params.id,
+        oldData: old, newData: cancelled, context: `Cancelled session. Reason: ${body.reason || 'not specified'}`, ip });
+      return respond(200, { session: cancelled, cancelled: true });
+    }
+
+    if (body.action === 'restore') {
+      if (old.status !== 'cancelled') return respond(409, { error: 'Only cancelled sessions can be restored.' });
+      const timeNorm = old.session_time && old.session_time.length === 5 ? old.session_time + ':00' : old.session_time;
+      const { data: slot } = await sb.from('availability_slots').select('id,status,session_id')
+        .eq('slot_date', old.session_date).eq('slot_time', timeNorm).maybeSingle();
+      if (slot && slot.status === 'booked' && slot.session_id && slot.session_id !== params.id) {
+        return respond(409, { error: 'The original time is now booked. Reschedule instead of restoring.' });
+      }
+      if (slot) await sb.from('availability_slots').update({ status: 'booked', session_id: params.id }).eq('id', slot.id);
+      const { data: restored, error: restoreErr } = await sb.from('sessions')
+        .update({ status: 'confirmed' }).eq('id', params.id).select().single();
+      if (restoreErr) return respond(500, { error: restoreErr.message });
+      await log({ actor: auth.user.email, action: 'session_restored', tableName: 'sessions', recordId: params.id,
+        oldData: old, newData: restored, context: body.reason || 'Restored cancelled session from dashboard', ip });
+      return respond(200, { session: restored, restored: true });
+    }
+
+    if (body.action === 'reminder') {
+      if (old.status === 'cancelled' || old.status === 'completed') {
+        return respond(409, { error: 'Reminders can only be sent for active appointments.' });
+      }
+      let clientEmail = body.client_email || null;
+      if (!clientEmail && old.client_id) {
+        const { data: client } = await sb.from('clients').select('email').eq('id', old.client_id).single();
+        clientEmail = client?.email || null;
+      }
+      if (!clientEmail) return respond(409, { error: 'No client email is available for this appointment.' });
+      const result = await sendTransactional(sb, {
+        templateName: 'appointment_reminder', recipientEmail: clientEmail, clientId: old.client_id || null,
+        variables: { client_name: old.client_name || '', service: old.service || '',
+          session_date: old.session_date || '', session_time: old.session_time ? old.session_time.slice(0, 5) : '',
+          timezone: 'ET', manage_url: process.env.SITE_URL ? `${process.env.SITE_URL}/manage-appointment.html?session_id=${old.id}` : '',
+          contact_email: process.env.ADMIN_EMAIL || 'royalenergyalchemy@gmail.com' },
+        metadata: { trigger: 'dashboard_manual_reminder', session_id: old.id },
+      });
+      const { data: reminded } = await sb.from('sessions')
+        .update({ reminder_sent: true, reminder_sent_at: new Date().toISOString() }).eq('id', params.id).select().single();
+      await log({ actor: auth.user.email, action: 'session_reminder_sent', tableName: 'sessions', recordId: params.id,
+        oldData: old, newData: reminded, context: `Sent appointment reminder to ${clientEmail}`, ip });
+      return respond(200, { session: reminded, reminder_sent: true, result });
+    }
 
     // ── RESCHEDULE action — atomic slot swap ─────────────────────────
     if (body.action === 'reschedule') {
@@ -142,40 +197,47 @@ exports.handler = async function(event) {
         return respond(400, { error: 'new_date and new_time are required for reschedule.' });
       }
 
-      // 1. Release old slot (matched by session_id link)
-      await sb.from('availability_slots')
-        .update({ status: 'available', session_id: null })
-        .eq('session_id', params.id);
-
-      // 2. Reserve new slot — prefer explicit slot ID, fall back to date+time lookup
+      // Validate the destination before releasing the current slot. A rejected
+      // reschedule must not orphan the existing appointment.
       const timeNorm = body.new_time.length === 5 ? body.new_time + ':00' : body.new_time;
+      let destinationSlot = null;
       if (body.new_slot_id) {
-        const { data: newSlot } = await sb
+        const { data: newSlot, error: slotErr } = await sb
           .from('availability_slots').select('id,status').eq('id', body.new_slot_id).single();
+        if (slotErr || !newSlot) return respond(404, { error: 'The selected time slot was not found.' });
         if (newSlot && newSlot.status === 'booked') {
           return respond(409, { error: 'That slot is already booked. Choose a different time.' });
         }
-        await sb.from('availability_slots')
-          .update({ status: 'booked', session_id: params.id })
-          .eq('id', body.new_slot_id);
+        destinationSlot = newSlot;
       } else {
-        const { data: slotByTime } = await sb
+        const { data: slotByTime, error: slotErr } = await sb
           .from('availability_slots')
           .select('id,status')
           .eq('slot_date', body.new_date)
           .eq('slot_time', timeNorm)
           .maybeSingle();
+        if (slotErr) return respond(500, { error: slotErr.message });
         if (slotByTime) {
           if (slotByTime.status === 'booked') {
             return respond(409, { error: 'That time slot is already booked. Choose a different time.' });
           }
-          await sb.from('availability_slots')
-            .update({ status: 'booked', session_id: params.id })
-            .eq('id', slotByTime.id);
+          destinationSlot = slotByTime;
         }
       }
 
-      // 3. Update session record
+      // Destination is safe: release the old slot, then reserve the new one.
+      const { error: releaseErr } = await sb.from('availability_slots')
+        .update({ status: 'available', session_id: null })
+        .eq('session_id', params.id);
+      if (releaseErr) return respond(500, { error: releaseErr.message });
+      if (destinationSlot) {
+        const { error: reserveErr } = await sb.from('availability_slots')
+          .update({ status: 'booked', session_id: params.id })
+          .eq('id', destinationSlot.id);
+        if (reserveErr) return respond(500, { error: reserveErr.message });
+      }
+
+      // Update session record
       const reschedCount = (old?.reschedule_count || 0) + 1;
       const { data: rescheduled, error: rErr } = await sb.from('sessions')
         .update({
