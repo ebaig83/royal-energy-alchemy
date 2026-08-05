@@ -4,17 +4,151 @@ Status: review only. No planner record was inserted, updated, cancelled, or dele
 
 ## Method
 
-- Source: the supplied handwritten planner photographs covering July and August 2026.
+- Source: the supplied handwritten planner photographs covering June through August 2026. The two photographs of June 8–14 are alternate views of the same page and are reconciled as one source week.
 - Comparison source: the authenticated production `sessions` schedule reviewed during the Sprint 18L production gate. That schedule contained hydrated records through July 15; the handwritten appointments below were not present unless explicitly marked `Already exists`.
 - Match rule: calendar date, time, and client name. A row is not considered a match on name alone.
 - `Needs review` is used whenever the name, time, appointment meaning, or cancellation state cannot be read confidently. Those rows must not be imported.
 - Payment notes are transcribed for review only; they are not treated as proof of a database payment transaction.
 
+## Full-record additions: June 8 through July 14
+
+These earlier pages were supplied after the initial report. `Already exists` is used only where the prior authenticated production review established the same date, time, and client. All other rows remain `Needs review` until a fresh production query can determine whether they already exist; this avoids incorrectly labeling an existing historical appointment as missing.
+
+| Date | Time | Planner client / entry | Session / round | Payment note | Classification | Confidence / review note |
+|---|---:|---|---|---|---|---|
+| 2026-06-08 | 13:00 | Mom | Rescheduling | Paid / amount unclear | Needs review | Personal relationship label; full client identity required. |
+| 2026-06-08 | 15:00 | Hilda | Round 2 | Amount overwritten | Needs review | Time appears near 15:00; confirm amount. |
+| 2026-06-08 | 17:00 | Brandon | Round 2 | Unclear | Needs review | Time inferred from planner line and must be confirmed. |
+| 2026-06-08 | 19:00 | Daniel Voysey | — | $70 paid | Needs review | International number also written; excluded from report. |
+| 2026-06-08 | 21:00 | Nancy Brankins | — | $70 paid | Needs review | Confirm surname spelling. |
+| 2026-06-08 | 21:00 | Myrella / Sierra Nevada | Round 2 | $70 | Needs review | Same line/time area as prior entry; identity and time conflict. |
+| 2026-06-09 | 10:00 | Daryl Sobolik | — | $70 paid | Needs review | Confirm surname spelling. |
+| 2026-06-09 | 13:00 | Tori Vanderland | Notre Dame note | $70 paid | Needs review | Time appears 13:00; confirm spelling. |
+| 2026-06-09 | 15:00 | Leah Welch | — | $70 paid | Needs review | Confirm surname. |
+| 2026-06-09 | 17:00 | Tammy Mattre | — | $70 | Needs review | Surname and paid state unclear. |
+| 2026-06-09 | 19:00 | Cindy Brown | Brown / Cindy note | $70 | Needs review | Confirm identity structure. |
+| 2026-06-09 | 20:30 | Carol McClelland | 1/2 hour; crossed line | $50 paid | Needs review | Crossed-out/reschedule state must be confirmed before import. |
+| 2026-06-10 | 09:00 | Sahil | Round 2 | $70 paid | Needs review | Single name only. |
+| 2026-06-10 | 11:00 | Jared / Kasey Walker | — | $70 | Needs review | Unclear whether Jared is a note or second client. |
+| 2026-06-10 | 13:00 | Heather Anderson | — | $70 | Needs review | Paid state unclear. |
+| 2026-06-10 | 15:00 | Amber Silliman | Round 2 / text | $70 paid | Needs review | Confirm surname spelling. |
+| 2026-06-10 | 17:00 | Maureen Goodman | — | $70 paid | Needs review | High transcription confidence; production match still required. |
+| 2026-06-10 | 19:00 | Melissa Wisdom | — | $70 paid | Needs review | Confirm surname spelling. |
+| 2026-06-11 | 11:00 | Janet F. Unterkoefler | — | $70 paid | Needs review | Surname uncertain. |
+| 2026-06-11 | 13:00 | Patricia Kanes | — | $100 paid | Needs review | Confirm surname. |
+| 2026-06-11 | 15:00 | Cheryl Varner | — | $70 paid | Needs review | Confirm surname. |
+| 2026-06-11 | 17:00 | Valorie Strickland | Round 2 | $70 paid | Needs review | Confirm first-name spelling. |
+| 2026-06-11 | 19:00 | Kelly | Exchange | — | Needs review | Not clearly a billable appointment; single name only. |
+| 2026-06-12 | 11:00 | Taylore McManne | — | $70 paid | Needs review | Name spelling uncertain. |
+| 2026-06-12 | 13:00 | Myrtha Rodriguez | Round 2 | $140 paid | Needs review | Amount may represent multiple sessions. |
+| 2026-06-12 | 15:00 | Marjo Gunnison | Friend note | Unclear | Needs review | Payment note illegible. |
+| 2026-06-12 | 17:00 | Sunethra's sister | — | $65 paid | Needs review | Full client identity missing. |
+| 2026-06-12 | 19:00 | Tracy Silva | — | $100 paid | Needs review | Confirm surname. |
+| 2026-06-15 | 11:00 | Stephanie Elmal | — | $80 | Needs review | Surname uncertain. |
+| 2026-06-15 | 13:00 | Omar Albeytani | Round 4 | $70 paid | Needs review | Name spelling uncertain. |
+| 2026-06-15 | 15:00 | Tina Hartley / Cremo | — | $70 | Needs review | Client-name boundary unclear. |
+| 2026-06-15 | 17:00 | Remy | Personal / unknown note | $70 | Needs review | Single name and appointment meaning unclear. |
+| 2026-06-15 | 19:00 | Donna Ware / Wanda Hopp | Round 2 | $70 | Needs review | Unclear whether one or two clients. |
+| 2026-06-16 | 11:00 | Maria | Fire Soul note | $70 paid | Needs review | Single name only. |
+| 2026-06-16 | 13:00 | Fabian's daughter | — | $70 paid | Needs review | Full client identity missing. |
+| 2026-06-16 | 15:00 | Kimberly Benus | Round 2 | $70 | Needs review | Confirm surname spelling. |
+| 2026-06-16 | 17:00 | Angela Marshall | Round 2 | $70 paid | Needs review | High transcription confidence; production match required. |
+| 2026-06-16 | 19:00 | Sunethra's brother | — | $60 paid | Needs review | Full client identity missing. |
+| 2026-06-16 | 20:30 | Lori's granddaughter | — | $10 | Needs review | Full client identity and appointment type missing. |
+| 2026-06-17 | 11:00 | Jackie (JE Reiki) | WhatsApp | $80 paid | Needs review | Full identity uncertain. |
+| 2026-06-17 | 13:00 | Feng / Seallan Penny | — | $80 paid | Needs review | Client-name boundary uncertain. |
+| 2026-06-17 | 15:00 | Cyndi Powers | — | $70 paid | Needs review | High transcription confidence; production match required. |
+| 2026-06-17 | 17:00 | Linda Francis | Round 2 | $70 paid | Needs review | High transcription confidence; production match required. |
+| 2026-06-17 | 19:00 | Shawna Hensky | — | $80 paid | Needs review | Surname uncertain. |
+| 2026-06-18 | 13:00 | Sharon | WhatsApp | $80 | Needs review | Single name only; preceding note unclear. |
+| 2026-06-18 | 15:00 | Wanda Huff | — | $70 paid | Needs review | High transcription confidence; production match required. |
+| 2026-06-18 | 17:00 | Anne Collins | Round 3 | $70 | Needs review | Paid state unclear. |
+| 2026-06-18 | 19:00 | Angel Johnston | Round 3 | $70 paid | Needs review | High transcription confidence; production match required. |
+| 2026-06-19 | 11:00 | Tina Makris | Round 2 | $70 | Needs review | High transcription confidence; production match required. |
+| 2026-06-19 | 13:00 | Linda Edwards | Round 2 / tarot | $70 | Needs review | High transcription confidence; production match required. |
+| 2026-06-19 | 15:00 | Mathilde Temba | — | $70 | Needs review | Surname uncertain. |
+| 2026-06-19 | 17:00 | Michelle Hudson | Round 2 | Amount overwritten | Needs review | Confirm amount/payment state. |
+| 2026-06-19 | 19:00 | Patricia Savoy | WhatsApp / intentions | $70 | Needs review | High transcription confidence; production match required. |
+| 2026-06-22 | 10:00 | Michelle Soboy | Round 2 | $70 | Needs review | Surname uncertain. |
+| 2026-06-22 | 12:00 | David Therp | — | $80 paid | Needs review | Surname uncertain. |
+| 2026-06-22 | 14:00 | Michelle S. | Friend note | $70 | Needs review | Full identity unclear. |
+| 2026-06-22 | 16:00 | Susan Klimsky | Round 2 | $70 | Needs review | Surname uncertain. |
+| 2026-06-22 | 18:00 | Rose Rice | Call note | $100 paid | Needs review | Confirm name spelling. |
+| 2026-06-22 | 20:00 | Tammy's mom | In-person | $90 | Needs review | Full client identity missing. |
+| 2026-06-23 | 10:00 | Lindsay Vigliano | Round 2 | $70 | Needs review | Surname uncertain. |
+| 2026-06-23 | 12:00 | Arina Kelly | — | $70 | Needs review | Confirm first name. |
+| 2026-06-23 | 14:00 | Andrew Hall / Swarden | — | $80 | Needs review | Identity and surname unclear. |
+| 2026-06-23 | 16:00 | Suzette Pergande | Round 2 | $140 paid | Needs review | Amount may represent multiple rounds. |
+| 2026-06-23 | 18:00 | Victoria Whitcross | — | $70 | Needs review | Production match required. |
+| 2026-06-24 | 10:00 | Isidory Lyamaya | — | $80 paid | Needs review | Name spelling uncertain. |
+| 2026-06-24 | 12:00 | Aneta Nep | Round 2 | $70 | Needs review | Confirm surname. |
+| 2026-06-24 | 14:00 | Marjan C. | Universal call | $90 paid | Needs review | Full identity unclear. |
+| 2026-06-24 | 16:00 | Susan Snyder / Connant | In-person | $80 | Needs review | Surname/note boundary unclear. |
+| 2026-06-24 | 18:00 | Sarah | Viral / in-person | $50 | Needs review | Single name and service unclear. |
+| 2026-06-25 | 10:00 | Lisa R. | Lisa Brinkman note | $80 paid | Needs review | Full identity uncertain. |
+| 2026-06-25 | 12:00 | Kathleen Blair | Round 2 | $70 | Needs review | Production match required. |
+| 2026-06-25 | 14:00 | Jeanette / Steven | — | $70 | Needs review | Unclear whether one or two clients. |
+| 2026-06-25 | 16:00 | Gray Whitlock | No call | $80 | Needs review | Confirm whether this was a no-show and should be excluded/cancelled. |
+| 2026-06-25 | 18:00 | Joanne Dawson | — | $80 | Needs review | Production match required. |
+| 2026-06-26 | 10:00 | Rose Pierce | Round 2 | $70 paid | Needs review | Production match required. |
+| 2026-06-26 | 12:00 | Dorwita | Third time | $70 | Needs review | Single/uncertain name. |
+| 2026-06-26 | 14:00 | Andy Cogell | Reschedule | $70 paid | Needs review | Confirm whether appointment occurred on this date. |
+| 2026-06-26 | 16:00 | Kathleen Blair / Grandma Kelly | 15 minutes | $150 | Needs review | Identity, duration, and amount mapping require confirmation. |
+| 2026-06-26 | 18:00 | Sun + daughter | In house | Paid / amount unclear | Needs review | Full identities missing. |
+| 2026-06-29 | 10:00 | Elaine / James Gorman | — | $80 paid | Needs review | Unclear whether one or two clients. |
+| 2026-06-29 | 12:00 | Michelle Gorman | Round 2 | $90 paid | Needs review | Production match required. |
+| 2026-06-29 | 14:00 | Annette Changie | Daughter | $70 | Needs review | Surname uncertain. |
+| 2026-06-29 | 16:00 | Holly O. | Round 2 | $70 | Needs review | Full surname missing. |
+| 2026-06-29 | 18:00 | Cindy Cook | Round 2 | $70 | Needs review | Production match required. |
+| 2026-06-30 | 10:00 | Tedar / Deborah | Website note | $80 | Needs review | Identity and note unclear. |
+| 2026-06-30 | 12:00 | Cindy Belich | — | $70 | Needs review | Surname uncertain. |
+| 2026-06-30 | 14:00 | Marcella Albany | — | $70 | Needs review | Production match required. |
+| 2026-06-30 | 16:00 | Maria Luz | Round 2 | $70 paid | Needs review | Production match required. |
+| 2026-06-30 | 17:00 | Maria Luz's daughter / Hillary | 15 minute test | $40 paid | Needs review | Full identity and appointment type unclear. |
+| 2026-07-01 | 10:00 | Olivia Livingston / Erin | Round 2 | $70 paid | Needs review | Identity structure unclear. |
+| 2026-07-01 | 12:00 | Marcy Silva | — | $80 paid | Needs review | Confirm surname. |
+| 2026-07-01 | 14:00 | Marcella | Round 4 | $60 | Needs review | Full identity and paid state unclear. |
+| 2026-07-01 | 16:00 | Pat Hughes | — | $80 paid | Needs review | Production match required. |
+| 2026-07-01 | 18:00 | Kelly Sullivan | Round 2 | $70 | Needs review | Production match required. |
+| 2026-07-02 | 10:00 | Danielle | Round 4 | $70 | Needs review | Single name only. |
+| 2026-07-02 | 12:00 | Sarah Smelt | Round 2 | $70 | Needs review | Surname uncertain. |
+| 2026-07-02 | 14:00 | April Smith | Round 2 | $70 | Needs review | Production match required. |
+| 2026-07-02 | 16:00 | Anna Berry | — | $80 paid | Needs review | Production match required. |
+| 2026-07-02 | 18:00 | Tammy Pruitt | — | $60 paid | Needs review | Production match required. |
+| 2026-07-03 | 10:00 | Trinity | — | $70 | Needs review | Single name only. |
+| 2026-07-03 | 12:00 | Shea / Keti Cabell | — | $70 paid | Needs review | Identity structure unclear. |
+| 2026-07-03 | 14:00 | Sally Grandes | — | $70 | Needs review | Surname uncertain. |
+| 2026-07-03 | 16:00 | Mark Anthony | — | $60 paid | Needs review | Production match required. |
+| 2026-07-03 | Unclear | Tarot reading | — | $30 | Needs review | No client or reliable time. |
+| 2026-07-06 | 10:00 | Sandra / Joanne R. | — | $70 | Needs review | Identity structure and surname unclear. |
+| 2026-07-06 | 12:00 | Erika | You Can Save It note | $80 paid | Needs review | Single name and note meaning unclear. |
+| 2026-07-06 | 14:00 | Joanne Zar | Round 2 | $70 | Needs review | Surname uncertain. |
+| 2026-07-06 | 16:00 | Susan Marie / Brooke Shaw | Round 2 | $70 | Needs review | Identity structure unclear. |
+| 2026-07-06 | 18:00 | Kellie Killpack / Lindsey Fisher | Round 2 | $70 | Needs review | Unclear whether one or two clients. |
+| 2026-07-07 | 10:00 | Kelly Sobley | — | $80 | Needs review | Surname uncertain. |
+| 2026-07-07 | 12:00 | Dawn Yekrabs | Round 3 | $70 | Already exists | Production showed Dawn Yekrabs at 12:00. |
+| 2026-07-07 | 14:00 | Jayne Taylor | Round 2 / WhatsApp | $70 | Already exists | Production showed Jayne Taylor at 14:00. |
+| 2026-07-07 | 16:00 | Maria Padesis | Round 2 | $70 | Already exists | Production showed Maria Padesis at 16:00. |
+| 2026-07-07 | 18:00 | Sarah | Viral | $50 | Already exists | Production showed Sarah Viral at 18:00. |
+| 2026-07-08 | 10:00 | Dave Corath | — | $70 | Already exists | Production showed Dave Corath at 10:00. |
+| 2026-07-08 | 14:00 | Marcy Stahl | — | $100 | Already exists | Production showed Marcy Stahl at 14:00. |
+| 2026-07-08 | 16:00 | Debra West | — | $80 | Already exists | Production showed Debbie West at 16:00; spelling variant requires identity confirmation. |
+| 2026-07-08 | 18:00 | Courtney Bussarte | Round 2 | $80 | Already exists | Production showed Courtney Bussarte at 18:00. |
+| 2026-07-08 | 19:00 | Jeff | — | $70 | Already exists | Production showed Jeff at 19:00. |
+| 2026-07-09 | 12:00 | Karen Harder Clements | Round 2 | $70 | Already exists | Production showed Karen Harder Clements at 12:00. |
+| 2026-07-09 | 16:00 | Nancy McLennas | Round 2 | $70 | Already exists | Production showed Nancy McLennas at 16:00; planner time placement is somewhat unclear. |
+| 2026-07-09 | 17:30 | Amy Walding | — | $70 | Already exists | Production showed Amy Walding at 17:30. |
+| 2026-07-10 | 10:00 | Linda Hill | Round 2 | $70 | Already exists | Production showed Linda Hill at 10:00. |
+| 2026-07-10 | 12:00 | Tim Makers | Round 2 / call-back | $70 | Already exists | Production showed Tim Makers at 12:00. |
+| 2026-07-10 | 14:00 | Michelle Hudson | Round 3 | $70 | Already exists | Production showed Michelle Hudson at 14:00. |
+| 2026-07-10 | 19:00 | Shawna's birthday group | Group / deposit | $20 deposit; balance paid cash note | Already exists | Production showed Shawna B-Day Group at 19:00; payment mapping requires review. |
+| 2026-07-13 | 18:00 | Victoria Whitcross | — | $70 | Already exists | Production showed Victoria Whitcross at 18:00. |
+| 2026-07-15 | 18:00–19:30 | Hilda + Brandon | Two-person package | $120 | Already exists | Production showed Hilda and Brandon Two-Person at 18:00. |
+
 ## Confirmed comparison results
 
 | Date | Time | Planner client / entry | Session / round | Payment note | Classification | Confidence / review note |
 |---|---:|---|---|---|---|---|
-| 2026-07-15 | 18:00 | Hilda + Brandon | Two-person package | $120 | Already exists | High; production showed `Hilda and Brandon Two-Person` at 18:00. |
 | 2026-07-16 | 08:00 | Sue Ramsey | — | Unclear | Missing | High name/time; payment unclear. |
 | 2026-07-16 | 12:00 | Macy / Tremaini Baker | — | Unclear | Needs review | Name boundary is uncertain. |
 | 2026-07-16 | 14:00 | Cyndi Powers | Round 2 | Unclear | Missing | Medium-high. |
