@@ -11989,8 +11989,9 @@ function renderHomeDashboard() {
 
   // Schedule panel (Today / Week / Month)
   renderScheduleView('today');
-  // Week-at-a-glance summary panel
-  _renderWeekGlance();
+  // Preserve an open Week Agenda across home-dashboard refreshes.
+  if (_schedView === 'week') renderScheduleView('week');
+  else _renderWeekGlance();
   // Operating Signals — strategic, forward-looking (distinct from KPI strip)
   _renderOperatingSignals();
   // Incoming portal/business signals
