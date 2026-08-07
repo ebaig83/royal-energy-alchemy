@@ -29,11 +29,8 @@
       '<li><a href="/#assess">Assess</a></li>' +
       '<li class="rea-nav-dropdown"><a href="/training.html">Training</a>' +
         '<ul class="rea-nav-menu" aria-label="Training">' +
-          '<li><a href="/training.html#foundations">Level One - Foundations</a></li>' +
-          '<li><a href="/training.html#intermediate">Level Two - Practitioner Skills</a></li>' +
-          '<li><a href="/training.html#advanced">Level Three - Advanced Practice</a></li>' +
-          '<li><a href="/training.html#operations">Level Four - Running the Practice</a></li>' +
-          '<li><a href="/training.html#leadership">Level Five - Leadership &amp; Legacy</a></li>' +
+          '<li><a href="/training.html#foundations">Level One - Foundations of Energy</a></li>' +
+          '<li><a href="/training.html#intermediate">Level Two - Applied Energy Work</a></li>' +
         '</ul></li>' +
       '<li class="rea-nav-dropdown"><a href="/#faq">More</a>' +
         '<ul class="rea-nav-menu" aria-label="More">' +

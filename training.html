@@ -42,10 +42,6 @@ body{background:var(--bg);color:#f0ecff;font-family:'EB Garamond',serif;min-heig
 .tier-number{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.6em;text-transform:uppercase;margin-bottom:10px;display:block}
 .tier-number.foundations{color:var(--teal)}
 .tier-number.intermediate{color:var(--gold)}
-.tier-number.advanced{color:var(--purple)}
-.tier-number.operations{color:var(--copper)}
-.tier-number.legacy{color:var(--skyblue)}
-.tier-number.capstone{color:var(--gold)}
 .tier-title{font-family:'Cinzel',serif;font-size:clamp(24px,3vw,34px);letter-spacing:.08em;color:#fff;margin-bottom:12px}
 .tier-desc{font-size:17px;color:rgba(240,236,255,0.85);font-style:italic;line-height:1.75;max-width:580px;margin:0 auto}
 
@@ -71,7 +67,6 @@ body{background:var(--bg);color:#f0ecff;font-family:'EB Garamond',serif;min-heig
 }
 .course-card.foundations-card:hover{border-color:rgba(34,201,138,0.5);box-shadow:0 12px 40px rgba(0,0,0,0.55),0 0 20px rgba(34,201,138,0.08)}
 .course-card.intermediate-card:hover{border-color:rgba(232,184,75,0.5);box-shadow:0 12px 40px rgba(0,0,0,0.55),0 0 20px rgba(232,184,75,0.08)}
-.course-card.advanced-card:hover{border-color:rgba(155,127,232,0.5);box-shadow:0 12px 40px rgba(0,0,0,0.55),0 0 20px rgba(155,127,232,0.08)}
 
 /* ── CARD VISUAL ── */
 .card-visual{
@@ -82,7 +77,6 @@ body{background:var(--bg);color:#f0ecff;font-family:'EB Garamond',serif;min-heig
 }
 .foundations-card .card-visual{background:linear-gradient(135deg,rgba(34,201,138,0.18) 0%,rgba(4,2,14,0.7) 100%)}
 .intermediate-card .card-visual{background:linear-gradient(135deg,rgba(232,184,75,0.18) 0%,rgba(4,2,14,0.7) 100%)}
-.advanced-card .card-visual{background:linear-gradient(135deg,rgba(155,127,232,0.2) 0%,rgba(4,2,14,0.7) 100%)}
 .card-visual::before{
   content:'';position:absolute;inset:0;
   background:radial-gradient(ellipse at 50% 100%,rgba(0,0,0,0.5),transparent 70%);
@@ -95,16 +89,6 @@ body{background:var(--bg);color:#f0ecff;font-family:'EB Garamond',serif;min-heig
 }
 .foundations-card .card-level-badge{background:rgba(34,201,138,0.15);border:1px solid rgba(34,201,138,0.35);color:var(--teal)}
 .intermediate-card .card-level-badge{background:rgba(232,184,75,0.12);border:1px solid rgba(232,184,75,0.35);color:var(--gold)}
-.advanced-card .card-level-badge{background:rgba(155,127,232,0.15);border:1px solid rgba(155,127,232,0.35);color:var(--purple)}
-.operations-card .card-level-badge{background:rgba(224,145,91,0.15);border:1px solid rgba(224,145,91,0.35);color:var(--copper)}
-.legacy-card .card-level-badge{background:rgba(90,166,232,0.15);border:1px solid rgba(90,166,232,0.35);color:var(--skyblue)}
-.capstone-card .card-level-badge{background:rgba(232,184,75,0.14);border:1px solid rgba(232,184,75,0.4);color:var(--gold)}
-.course-card.operations-card:hover{border-color:rgba(224,145,91,0.5);box-shadow:0 12px 40px rgba(0,0,0,0.55),0 0 20px rgba(224,145,91,0.08)}
-.course-card.legacy-card:hover{border-color:rgba(90,166,232,0.5);box-shadow:0 12px 40px rgba(0,0,0,0.55),0 0 20px rgba(90,166,232,0.08)}
-.course-card.capstone-card:hover{border-color:rgba(232,184,75,0.55);box-shadow:0 12px 40px rgba(0,0,0,0.55),0 0 20px rgba(232,184,75,0.1)}
-.operations-card .card-visual{background:linear-gradient(135deg,rgba(224,145,91,0.18) 0%,rgba(4,2,14,0.7) 100%)}
-.legacy-card .card-visual{background:linear-gradient(135deg,rgba(90,166,232,0.18) 0%,rgba(4,2,14,0.7) 100%)}
-.capstone-card .card-visual{background:linear-gradient(135deg,rgba(232,184,75,0.2) 0%,rgba(4,2,14,0.7) 100%)}
 .course-coming{
   position:absolute;top:10px;right:10px;z-index:2;
   font-family:'Cinzel',serif;font-size:8px;letter-spacing:.3em;text-transform:uppercase;
@@ -161,10 +145,6 @@ body{background:var(--bg);color:#f0ecff;font-family:'EB Garamond',serif;min-heig
 .cm-level{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.5em;text-transform:uppercase;margin-bottom:10px;display:block}
 .cm-level.foundations{color:var(--teal)}
 .cm-level.intermediate{color:var(--gold)}
-.cm-level.advanced{color:var(--purple)}
-.cm-level.operations{color:var(--copper)}
-.cm-level.legacy{color:var(--skyblue)}
-.cm-level.capstone{color:var(--gold)}
 .cm-title{font-family:'Cinzel',serif;font-size:clamp(18px,3vw,26px);color:#fff;letter-spacing:.06em;margin-bottom:10px;line-height:1.3}
 .cm-meta{display:flex;gap:16px;flex-wrap:wrap}
 .cm-meta-pill{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:rgba(240,236,255,0.45);padding:4px 10px;border:1px solid rgba(255,255,255,0.07)}
@@ -330,7 +310,7 @@ footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;color:rgb
 }
 </style>
 <link rel="stylesheet" href="/site-nav.css">
-<script defer src="/site-nav.js"></script>
+<script defer src="/site-nav.js?v=20260807"></script>
 </head>
 <body>
 
@@ -347,11 +327,11 @@ footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;color:rgb
 <!-- HERO -->
 <section class="hero">
   <span class="hero-eyebrow">Royal Energy Alchemy · Training Program</span>
-  <h1>Learn The Work.<br><span>At Every Level.</span></h1>
-  <p>Daron Royal is building a structured training program for those called to understand and work with energy. From complete beginners to aspiring practitioners — there is a level for you.</p>
+  <h1>Learn The Work.<br><span>One Step At A Time.</span></h1>
+  <p>Daron Royal is building a focused training path for those called to understand and work with energy. Begin with strong foundations, then apply what you learn through practical energetic development.</p>
   <div class="hero-badges">
-    <span class="hero-badge">3 Levels</span>
-    <span class="hero-badge">13 Courses</span>
+    <span class="hero-badge">2 Levels</span>
+    <span class="hero-badge">8 Classes</span>
     <span class="hero-badge">Live & Recorded</span>
     <span class="hero-badge">Enrolling Soon</span>
   </div>
@@ -418,103 +398,103 @@ footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;color:rgb
   <div class="divider"><span class="divider-glyph">✦</span></div>
 </section>
 
-<!-- ── LEVEL 1: FOUNDATIONS ── -->
+<!-- LEVEL 1: FOUNDATIONS OF ENERGY -->
 <section class="tier" id="foundations">
   <div class="tier-header">
     <span class="tier-number foundations">Level One</span>
-    <h2 class="tier-title">Foundations</h2>
-    <p class="tier-desc">Where every journey begins. No prior experience needed — just a genuine calling to understand yourself and the energetic world around you.</p>
+    <h2 class="tier-title">Foundations of Energy</h2>
+    <p class="tier-desc">Build awareness, protection, and a strong energetic foundation before exploring deeper spiritual practices.</p>
   </div>
   <div class="course-grid">
 
-    <div class="course-card foundations-card" onclick="openCourse('empath-basics')">
+    <div class="course-card foundations-card" onclick="openCourse('energy-foundations')">
       <div class="card-visual">
         <span class="card-emoji">🌿</span>
         <span class="card-level-badge">Foundations</span>
         <span class="course-coming">Coming Soon</span>
       </div>
       <div class="course-body">
-        <div class="course-title">Empath Basics & Energy 101 Seminar</div>
-        <div class="course-hook">Understand what you're absorbing and why — and how to stop.</div>
+        <div class="course-title">Energy Foundations</div>
+        <div class="course-hook">Learn the fundamentals of energy and how it influences everyday life.</div>
         <ul class="course-topics">
-          <li>Energy 101 fundamentals</li>
+          <li>Energy 101</li>
           <li>Understanding empaths</li>
-          <li>Crystals & stones</li>
-          <li>Protection techniques</li>
-          <li>Grounding practices</li>
+          <li>Grounding</li>
+          <li>Protection basics</li>
+          <li>Spiritual hygiene</li>
         </ul>
         <div class="card-actions">
-          <button class="btn-details" onclick="event.stopPropagation();openCourse('empath-basics')">View Details</button>
-          <button class="btn-notify" id="notify-empath-basics" onclick="event.stopPropagation();registerInterest(this,'Empath Basics & Energy 101')">Notify Me</button>
+          <button class="btn-details" onclick="event.stopPropagation();openCourse('energy-foundations')">View Details</button>
+          <button class="btn-notify" id="notify-energy-foundations" onclick="event.stopPropagation();registerInterest(this,'Energy Foundations')">Notify Me</button>
         </div>
       </div>
     </div>
 
-    <div class="course-card foundations-card" onclick="openCourse('psychic-senses')">
+    <div class="course-card foundations-card" onclick="openCourse('psychic-senses-intuition')">
       <div class="card-visual">
         <span class="card-emoji">🔮</span>
         <span class="card-level-badge">Foundations</span>
         <span class="course-coming">Coming Soon</span>
       </div>
       <div class="course-body">
-        <div class="course-title">Psychic Senses & Clairs 101</div>
-        <div class="course-hook">Identify your gifts, trust what you perceive, and stop second-guessing.</div>
+        <div class="course-title">Psychic Senses & Intuition</div>
+        <div class="course-hook">Discover how you naturally receive spiritual information and strengthen your intuitive abilities.</div>
         <ul class="course-topics">
-          <li>Types of psychic gifts</li>
-          <li>Twelve chakra system</li>
-          <li>Trusting intuition</li>
-          <li>Seeing auras</li>
-          <li>Spiritual ego & protection</li>
+          <li>The Clairs</li>
+          <li>Intuition</li>
+          <li>Chakra system</li>
+          <li>Reading energy</li>
+          <li>Developing trust in your gifts</li>
         </ul>
         <div class="card-actions">
-          <button class="btn-details" onclick="event.stopPropagation();openCourse('psychic-senses')">View Details</button>
-          <button class="btn-notify" id="notify-psychic-senses" onclick="event.stopPropagation();registerInterest(this,'Psychic Senses & Clairs 101')">Notify Me</button>
+          <button class="btn-details" onclick="event.stopPropagation();openCourse('psychic-senses-intuition')">View Details</button>
+          <button class="btn-notify" id="notify-psychic-senses-intuition" onclick="event.stopPropagation();registerInterest(this,'Psychic Senses & Intuition')">Notify Me</button>
         </div>
       </div>
     </div>
 
-    <div class="course-card foundations-card" onclick="openCourse('protection-grounding')">
+    <div class="course-card foundations-card" onclick="openCourse('spiritual-protection-awakening')">
       <div class="card-visual">
         <span class="card-emoji">🛡️</span>
         <span class="card-level-badge">Foundations</span>
         <span class="course-coming">Coming Soon</span>
       </div>
       <div class="course-body">
-        <div class="course-title">Protection & Grounding</div>
-        <div class="course-hook">Feel stable and shielded even in energetically dense environments.</div>
+        <div class="course-title">Spiritual Protection & Awakening</div>
+        <div class="course-hook">Navigate spiritual growth with confidence, discernment, and practical protection techniques.</div>
         <ul class="course-topics">
-          <li>Energy shielding methods</li>
-          <li>Daily grounding rituals</li>
-          <li>Cord awareness</li>
-          <li>Space protection</li>
-          <li>Aftercare protocols</li>
+          <li>Protection techniques</li>
+          <li>Spiritual awakening</li>
+          <li>Discernment</li>
+          <li>Managing energetic shifts</li>
+          <li>Daily spiritual practices</li>
         </ul>
         <div class="card-actions">
-          <button class="btn-details" onclick="event.stopPropagation();openCourse('protection-grounding')">View Details</button>
-          <button class="btn-notify" id="notify-protection-grounding" onclick="event.stopPropagation();registerInterest(this,'Protection & Grounding')">Notify Me</button>
+          <button class="btn-details" onclick="event.stopPropagation();openCourse('spiritual-protection-awakening')">View Details</button>
+          <button class="btn-notify" id="notify-spiritual-protection-awakening" onclick="event.stopPropagation();registerInterest(this,'Spiritual Protection & Awakening')">Notify Me</button>
         </div>
       </div>
     </div>
 
-    <div class="course-card foundations-card" onclick="openCourse('awakening-survival')">
+    <div class="course-card foundations-card" onclick="openCourse('energy-healing-essentials')">
       <div class="card-visual">
-        <span class="card-emoji">⚡</span>
+        <span class="card-emoji">✨</span>
         <span class="card-level-badge">Foundations</span>
         <span class="course-coming">Coming Soon</span>
       </div>
       <div class="course-body">
-        <div class="course-title">Spiritual Awakening Survival Guide</div>
-        <div class="course-hook">Navigate your awakening with clarity, not fear.</div>
+        <div class="course-title">Energy Healing Essentials</div>
+        <div class="course-hook">Learn foundational healing techniques for personal wellness and energetic balance.</div>
         <ul class="course-topics">
-          <li>Signs of awakening</li>
-          <li>Physical symptoms</li>
-          <li>Stages of awakening</li>
-          <li>Psychic gifts emerging</li>
-          <li>How to get through</li>
+          <li>Self-healing practices</li>
+          <li>Balancing your energy field</li>
+          <li>Basic Reiki principles</li>
+          <li>Distance healing fundamentals</li>
+          <li>Creating a daily healing routine</li>
         </ul>
         <div class="card-actions">
-          <button class="btn-details" onclick="event.stopPropagation();openCourse('awakening-survival')">View Details</button>
-          <button class="btn-notify" id="notify-awakening-survival" onclick="event.stopPropagation();registerInterest(this,'Spiritual Awakening Survival Guide')">Notify Me</button>
+          <button class="btn-details" onclick="event.stopPropagation();openCourse('energy-healing-essentials')">View Details</button>
+          <button class="btn-notify" id="notify-energy-healing-essentials" onclick="event.stopPropagation();registerInterest(this,'Energy Healing Essentials')">Notify Me</button>
         </div>
       </div>
     </div>
@@ -524,103 +504,103 @@ footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;color:rgb
 
 <hr class="tier-line">
 
-<!-- ── LEVEL 2: INTERMEDIATE ── -->
+<!-- LEVEL 2: APPLIED ENERGY WORK -->
 <section class="tier" id="intermediate">
   <div class="tier-header">
     <span class="tier-number intermediate">Level Two</span>
-    <h2 class="tier-title">Practitioner Skills</h2>
-    <p class="tier-desc">The practical skills used during client sessions — assessment, scanning, cord and attachment work, protection, session structure, and client communication.</p>
+    <h2 class="tier-title">Applied Energy Work</h2>
+    <p class="tier-desc">Build confidence applying your knowledge through practical exercises and deeper energetic development.</p>
   </div>
   <div class="course-grid">
 
-    <div class="course-card intermediate-card" onclick="openCourse('energy-boundaries')">
-      <div class="card-visual">
-        <span class="card-emoji">🔒</span>
-        <span class="card-level-badge">Intermediate</span>
-        <span class="course-coming">Coming Soon</span>
-      </div>
-      <div class="course-body">
-        <div class="course-title">Energy Boundaries</div>
-        <div class="course-hook">Move from depleted and over-extended to grounded and energetically sovereign.</div>
-        <ul class="course-topics">
-          <li>Recognizing boundary violations</li>
-          <li>Energetic sovereignty</li>
-          <li>Holding your frequency</li>
-          <li>Relationships & energy exchange</li>
-          <li>Saying no without guilt</li>
-        </ul>
-        <div class="card-actions">
-          <button class="btn-details" onclick="event.stopPropagation();openCourse('energy-boundaries')">View Details</button>
-          <button class="btn-notify" id="notify-energy-boundaries" onclick="event.stopPropagation();registerInterest(this,'Energy Boundaries')">Notify Me</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="course-card intermediate-card" onclick="openCourse('cord-dynamics')">
+    <div class="course-card intermediate-card" onclick="openCourse('energy-boundaries-cords')">
       <div class="card-visual">
         <span class="card-emoji">🔗</span>
-        <span class="card-level-badge">Intermediate</span>
+        <span class="card-level-badge">Applied Energy Work</span>
         <span class="course-coming">Coming Soon</span>
       </div>
       <div class="course-body">
-        <div class="course-title">Cord Dynamics</div>
-        <div class="course-hook">Understand the invisible mechanics of your relationships — and clear them.</div>
+        <div class="course-title">Energy Boundaries & Cord Dynamics</div>
+        <div class="course-hook">Understand energetic relationships, healthy boundaries, and cord awareness.</div>
         <ul class="course-topics">
-          <li>What cords are and how they form</li>
-          <li>Identifying active cords</li>
-          <li>Cord removal principles</li>
-          <li>Relationship cord patterns</li>
-          <li>Preventing re-attachment</li>
+          <li>Healthy energetic boundaries</li>
+          <li>Cord awareness</li>
+          <li>Cord clearing principles</li>
+          <li>Preventing reattachment</li>
+          <li>Energetic sovereignty</li>
         </ul>
         <div class="card-actions">
-          <button class="btn-details" onclick="event.stopPropagation();openCourse('cord-dynamics')">View Details</button>
-          <button class="btn-notify" id="notify-cord-dynamics" onclick="event.stopPropagation();registerInterest(this,'Cord Dynamics')">Notify Me</button>
+          <button class="btn-details" onclick="event.stopPropagation();openCourse('energy-boundaries-cords')">View Details</button>
+          <button class="btn-notify" id="notify-energy-boundaries-cords" onclick="event.stopPropagation();registerInterest(this,'Energy Boundaries & Cord Dynamics')">Notify Me</button>
         </div>
       </div>
     </div>
 
-    <div class="course-card intermediate-card" onclick="openCourse('reading-patterns')">
+    <div class="course-card intermediate-card" onclick="openCourse('reading-clearing-energy')">
       <div class="card-visual">
         <span class="card-emoji">👁️</span>
-        <span class="card-level-badge">Intermediate</span>
+        <span class="card-level-badge">Applied Energy Work</span>
         <span class="course-coming">Coming Soon</span>
       </div>
       <div class="course-body">
-        <div class="course-title">Reading Energetic Patterns</div>
-        <div class="course-hook">Develop the foundational perception skill of all practitioner work.</div>
+        <div class="course-title">Reading & Clearing Energy</div>
+        <div class="course-hook">Develop confidence reading energetic patterns and clearing dense environments.</div>
         <ul class="course-topics">
-          <li>Pattern recognition in energy fields</li>
-          <li>Identifying recurring attachments</li>
-          <li>Behavioral energy signatures</li>
-          <li>Trauma & energy imprints</li>
-          <li>Practical scanning techniques</li>
+          <li>Reading energetic patterns</li>
+          <li>Space clearing</li>
+          <li>Clearing dense energy</li>
+          <li>Energy transmutation</li>
+          <li>Practical exercises</li>
         </ul>
         <div class="card-actions">
-          <button class="btn-details" onclick="event.stopPropagation();openCourse('reading-patterns')">View Details</button>
-          <button class="btn-notify" id="notify-reading-patterns" onclick="event.stopPropagation();registerInterest(this,'Reading Energetic Patterns')">Notify Me</button>
+          <button class="btn-details" onclick="event.stopPropagation();openCourse('reading-clearing-energy')">View Details</button>
+          <button class="btn-notify" id="notify-reading-clearing-energy" onclick="event.stopPropagation();registerInterest(this,'Reading & Clearing Energy')">Notify Me</button>
         </div>
       </div>
     </div>
 
-    <div class="course-card intermediate-card" onclick="openCourse('space-clearing')">
+    <div class="course-card intermediate-card" onclick="openCourse('energetically-aligned-life')">
       <div class="card-visual">
-        <span class="card-emoji">🏠</span>
-        <span class="card-level-badge">Intermediate</span>
+        <span class="card-emoji">🧭</span>
+        <span class="card-level-badge">Applied Energy Work</span>
         <span class="course-coming">Coming Soon</span>
       </div>
       <div class="course-body">
-        <div class="course-title">Space Clearing Fundamentals</div>
-        <div class="course-hook">Walk into any space and sense what it holds — then change it.</div>
+        <div class="course-title">Living an Energetically Aligned Life</div>
+        <div class="course-hook">Integrate everything you've learned into everyday life and long-term spiritual growth.</div>
         <ul class="course-topics">
-          <li>Reading a space's energy</li>
-          <li>Clearing by disturbance type</li>
-          <li>Entity vs. residual energy</li>
-          <li>Blessing & sealing protocols</li>
-          <li>Maintenance practices</li>
+          <li>Daily energetic practices</li>
+          <li>Working through energetic challenges</li>
+          <li>Long-term spiritual development</li>
+          <li>Building confidence</li>
+          <li>Continuing your journey</li>
         </ul>
         <div class="card-actions">
-          <button class="btn-details" onclick="event.stopPropagation();openCourse('space-clearing')">View Details</button>
-          <button class="btn-notify" id="notify-space-clearing" onclick="event.stopPropagation();registerInterest(this,'Space Clearing Fundamentals')">Notify Me</button>
+          <button class="btn-details" onclick="event.stopPropagation();openCourse('energetically-aligned-life')">View Details</button>
+          <button class="btn-notify" id="notify-energetically-aligned-life" onclick="event.stopPropagation();registerInterest(this,'Living an Energetically Aligned Life')">Notify Me</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="course-card intermediate-card" onclick="openCourse('advanced-spiritual-practices')">
+      <div class="card-visual">
+        <span class="card-emoji">🌟</span>
+        <span class="card-level-badge">Applied Energy Work</span>
+        <span class="course-coming">Coming Soon</span>
+      </div>
+      <div class="course-body">
+        <div class="course-title">Advanced Spiritual Practices</div>
+        <div class="course-hook">Deepen your connection through disciplined spiritual practice and continued energetic development.</div>
+        <ul class="course-topics">
+          <li>Advanced meditation</li>
+          <li>Strengthening intuition</li>
+          <li>Working with higher frequencies</li>
+          <li>Spiritual discipline</li>
+          <li>Lifelong energetic practice</li>
+        </ul>
+        <div class="card-actions">
+          <button class="btn-details" onclick="event.stopPropagation();openCourse('advanced-spiritual-practices')">View Details</button>
+          <button class="btn-notify" id="notify-advanced-spiritual-practices" onclick="event.stopPropagation();registerInterest(this,'Advanced Spiritual Practices')">Notify Me</button>
         </div>
       </div>
     </div>
@@ -629,371 +609,6 @@ footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;color:rgb
 </section>
 
 <hr class="tier-line">
-
-<!-- ── LEVEL 3: ADVANCED ── -->
-<section class="tier" id="advanced">
-  <div class="tier-header">
-    <span class="tier-number advanced">Level Three</span>
-    <h2 class="tier-title">Advanced Practice</h2>
-    <p class="tier-desc">Mastery of complex cases and advanced practitioner decision-making — advanced scanning, transmutation, working with resistance, boundaries, and long-term client support.</p>
-  </div>
-  <div class="course-grid">
-
-    <div class="course-card advanced-card" onclick="openCourse('practitioner-dev')">
-      <div class="card-visual">
-        <span class="card-emoji">⚗️</span>
-        <span class="card-level-badge">Advanced</span>
-        <span class="course-coming">Coming Soon</span>
-      </div>
-      <div class="course-body">
-        <div class="course-title">Practitioner Development</div>
-        <div class="course-hook">Build the systems, structure, and confidence to begin seeing clients professionally.</div>
-        <ul class="course-topics">
-          <li>Building your practice</li>
-          <li>Intake & assessment systems</li>
-          <li>Session structure & flow</li>
-          <li>Documentation & records</li>
-          <li>Working across distance</li>
-        </ul>
-        <div class="card-actions">
-          <button class="btn-details" onclick="event.stopPropagation();openCourse('practitioner-dev')">View Details</button>
-          <button class="btn-notify" id="notify-practitioner-dev" onclick="event.stopPropagation();registerInterest(this,'Practitioner Development')">Notify Me</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="course-card advanced-card" onclick="openCourse('case-studies')">
-      <div class="card-visual">
-        <span class="card-emoji">📋</span>
-        <span class="card-level-badge">Advanced</span>
-        <span class="course-coming">Coming Soon</span>
-      </div>
-      <div class="course-body">
-        <div class="course-title">Case Studies</div>
-        <div class="course-hook">Develop clinical-level judgment through real practitioner scenarios.</div>
-        <ul class="course-topics">
-          <li>Real client scenarios</li>
-          <li>Complex attachment cases</li>
-          <li>Multi-session treatment arcs</li>
-          <li>When to refer out</li>
-          <li>Tracking outcomes accurately</li>
-        </ul>
-        <div class="card-actions">
-          <button class="btn-details" onclick="event.stopPropagation();openCourse('case-studies')">View Details</button>
-          <button class="btn-notify" id="notify-case-studies" onclick="event.stopPropagation();registerInterest(this,'Case Studies')">Notify Me</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="course-card advanced-card" onclick="openCourse('ethics-bounds')">
-      <div class="card-visual">
-        <span class="card-emoji">⚖️</span>
-        <span class="card-level-badge">Advanced</span>
-        <span class="course-coming">Coming Soon</span>
-      </div>
-      <div class="course-body">
-        <div class="course-title">Ethics & Boundaries</div>
-        <div class="course-hook">Operate with the integrity that builds lasting trust with clients — and protects you.</div>
-        <ul class="course-topics">
-          <li>Practitioner ethics framework</li>
-          <li>Power dynamics with clients</li>
-          <li>Consent & transparency</li>
-          <li>Protecting your own energy</li>
-          <li>When & how to end work</li>
-        </ul>
-        <div class="card-actions">
-          <button class="btn-details" onclick="event.stopPropagation();openCourse('ethics-bounds')">View Details</button>
-          <button class="btn-notify" id="notify-ethics-bounds" onclick="event.stopPropagation();registerInterest(this,'Ethics & Boundaries')">Notify Me</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="course-card advanced-card" onclick="openCourse('working-clients')">
-      <div class="card-visual">
-        <span class="card-emoji">🤝</span>
-        <span class="card-level-badge">Advanced</span>
-        <span class="course-coming">Coming Soon</span>
-      </div>
-      <div class="course-body">
-        <div class="course-title">Working With Clients</div>
-        <div class="course-hook">Develop the real-world client skills that training alone cannot give you.</div>
-        <ul class="course-topics">
-          <li>First session protocols</li>
-          <li>Managing expectations</li>
-          <li>Difficult client dynamics</li>
-          <li>Aftercare & follow-up systems</li>
-          <li>Building long-term relationships</li>
-        </ul>
-        <div class="card-actions">
-          <button class="btn-details" onclick="event.stopPropagation();openCourse('working-clients')">View Details</button>
-          <button class="btn-notify" id="notify-working-clients" onclick="event.stopPropagation();registerInterest(this,'Working With Clients')">Notify Me</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="course-card advanced-card" onclick="openCourse('transmutation')">
-      <div class="card-visual">
-        <span class="card-emoji">🔥</span>
-        <span class="card-level-badge">Advanced</span>
-        <span class="course-coming">Coming Soon</span>
-      </div>
-      <div class="course-body">
-        <div class="course-title">Energy Transmutation</div>
-        <div class="course-hook">One of the rarest skills in energy work — convert dark to light.</div>
-        <ul class="course-topics">
-          <li>Converting dark energy to light</li>
-          <li>Transmuting emotional residue</li>
-          <li>Working with dense frequencies</li>
-          <li>Entity & cord transmutation</li>
-          <li>Field stabilization after clearing</li>
-        </ul>
-        <div class="card-actions">
-          <button class="btn-details" onclick="event.stopPropagation();openCourse('transmutation')">View Details</button>
-          <button class="btn-notify" id="notify-transmutation" onclick="event.stopPropagation();registerInterest(this,'Energy Transmutation')">Notify Me</button>
-        </div>
-      </div>
-    </div>
-
-  </div>
-</section>
-
-<hr class="tier-line">
-
-<!-- ── LEVEL 4: RUNNING THE PRACTICE ── -->
-<section class="tier" id="operations">
-  <div class="tier-header">
-    <span class="tier-number operations">Level Four</span>
-    <h2 class="tier-title">Running the Practice</h2>
-    <p class="tier-desc">Many practitioners master the work but never learn to run a practice. This level builds the systems, structure, and professional operations that make a practice sustainable.</p>
-  </div>
-  <div class="course-grid">
-
-    <div class="course-card operations-card">
-      <div class="card-visual"><span class="card-emoji">🤝</span><span class="card-level-badge">Level Four</span><span class="course-coming">Coming Soon</span></div>
-      <div class="course-body">
-        <div class="course-title">Client Management</div>
-        <div class="course-hook">Onboard, communicate with, and retain clients with confidence.</div>
-        <ul class="course-topics">
-          <li>Client onboarding</li>
-          <li>Client communication</li>
-          <li>Client records</li>
-          <li>Setting expectations</li>
-          <li>Managing difficult situations</li>
-        </ul>
-        <div class="card-actions"><button class="btn-notify" onclick="registerInterest(this,'Client Management')">Notify Me</button></div>
-      </div>
-    </div>
-
-    <div class="course-card operations-card">
-      <div class="card-visual"><span class="card-emoji">📅</span><span class="card-level-badge">Level Four</span><span class="course-coming">Coming Soon</span></div>
-      <div class="course-body">
-        <div class="course-title">Practice Operations</div>
-        <div class="course-hook">Run scheduling, booking, and payments like a real business.</div>
-        <ul class="course-topics">
-          <li>Scheduling systems</li>
-          <li>Booking workflows</li>
-          <li>Cancellation policies</li>
-          <li>Rescheduling procedures</li>
-          <li>Payment collection</li>
-          <li>Package management</li>
-        </ul>
-        <div class="card-actions"><button class="btn-notify" onclick="registerInterest(this,'Practice Operations')">Notify Me</button></div>
-      </div>
-    </div>
-
-    <div class="course-card operations-card">
-      <div class="card-visual"><span class="card-emoji">📋</span><span class="card-level-badge">Level Four</span><span class="course-coming">Coming Soon</span></div>
-      <div class="course-body">
-        <div class="course-title">Documentation</div>
-        <div class="course-hook">Capture every session in clean, professional records.</div>
-        <ul class="course-topics">
-          <li>Intake forms</li>
-          <li>Assessments</li>
-          <li>Consent processes</li>
-          <li>Waivers</li>
-          <li>Treatment plans</li>
-          <li>Follow-up systems</li>
-          <li>Session documentation</li>
-        </ul>
-        <div class="card-actions"><button class="btn-notify" onclick="registerInterest(this,'Documentation')">Notify Me</button></div>
-      </div>
-    </div>
-
-    <div class="course-card operations-card">
-      <div class="card-visual"><span class="card-emoji">⚖️</span><span class="card-level-badge">Level Four</span><span class="course-coming">Coming Soon</span></div>
-      <div class="course-body">
-        <div class="course-title">Professional Standards</div>
-        <div class="course-hook">Hold ethical, confidential, well-bounded professional conduct.</div>
-        <ul class="course-topics">
-          <li>Ethics in practice</li>
-          <li>Boundaries</li>
-          <li>Confidentiality</li>
-          <li>Professional conduct</li>
-          <li>Scope of practice</li>
-          <li>Referral procedures</li>
-        </ul>
-        <div class="card-actions"><button class="btn-notify" onclick="registerInterest(this,'Professional Standards')">Notify Me</button></div>
-      </div>
-    </div>
-
-    <div class="course-card operations-card">
-      <div class="card-visual"><span class="card-emoji">🗂️</span><span class="card-level-badge">Level Four</span><span class="course-coming">Coming Soon</span></div>
-      <div class="course-body">
-        <div class="course-title">Practice Organization</div>
-        <div class="course-hook">Keep the whole practice organized and measurable.</div>
-        <ul class="course-topics">
-          <li>Record keeping</li>
-          <li>Workflow management</li>
-          <li>Outcome tracking</li>
-          <li>Quality assurance</li>
-          <li>Operational systems</li>
-        </ul>
-        <div class="card-actions"><button class="btn-notify" onclick="registerInterest(this,'Practice Organization')">Notify Me</button></div>
-      </div>
-    </div>
-
-  </div>
-</section>
-
-<hr class="tier-line">
-
-<!-- ── LEVEL 5: LEADERSHIP, GROWTH & LEGACY ── -->
-<section class="tier" id="leadership">
-  <div class="tier-header">
-    <span class="tier-number legacy">Level Five</span>
-    <h2 class="tier-title">Leadership, Growth &amp; Legacy</h2>
-    <p class="tier-desc">Beyond growth — sustainability, influence, service, and creating something that outlives the practitioner. Five pillars of long-term impact.</p>
-  </div>
-  <div class="course-grid">
-
-    <div class="course-card legacy-card">
-      <div class="card-visual"><span class="card-emoji">🧭</span><span class="card-level-badge">Pillar 1</span><span class="course-coming">Coming Soon</span></div>
-      <div class="course-body">
-        <div class="course-title">Leadership</div>
-        <div class="course-hook">Lead and support others within your field.</div>
-        <ul class="course-topics">
-          <li>Mentoring practitioners</li>
-          <li>Supporting students</li>
-          <li>Community leadership</li>
-          <li>Building trust</li>
-          <li>Facilitating groups</li>
-          <li>Professional influence</li>
-          <li>Conflict resolution</li>
-        </ul>
-        <div class="card-actions"><button class="btn-notify" onclick="registerInterest(this,'Leadership')">Notify Me</button></div>
-      </div>
-    </div>
-
-    <div class="course-card legacy-card">
-      <div class="card-visual"><span class="card-emoji">📣</span><span class="card-level-badge">Pillar 2</span><span class="course-coming">Coming Soon</span></div>
-      <div class="course-body">
-        <div class="course-title">Practice Growth</div>
-        <div class="course-hook">Ethically attract, educate, and serve a larger audience.</div>
-        <ul class="course-topics">
-          <li>Ethical marketing</li>
-          <li>Building visibility</li>
-          <li>Social media strategy</li>
-          <li>Facebook &amp; YouTube growth</li>
-          <li>Content creation &amp; public education</li>
-          <li>Networking &amp; referral development</li>
-          <li>Personal branding &amp; credibility</li>
-        </ul>
-        <div class="card-actions"><button class="btn-notify" onclick="registerInterest(this,'Practice Growth')">Notify Me</button></div>
-      </div>
-    </div>
-
-    <div class="course-card legacy-card">
-      <div class="card-visual"><span class="card-emoji">♾️</span><span class="card-level-badge">Pillar 3</span><span class="course-coming">Coming Soon</span></div>
-      <div class="course-body">
-        <div class="course-title">Practice Sustainability</div>
-        <div class="course-hook">Build multiple aligned revenue streams.</div>
-        <ul class="course-topics">
-          <li>Revenue diversification</li>
-          <li>Service packages &amp; memberships</li>
-          <li>Workshops &amp; group sessions</li>
-          <li>Digital products &amp; courses</li>
-          <li>Certification programs</li>
-          <li>Books &amp; speaking</li>
-          <li>Events &amp; practitioner collaborations</li>
-        </ul>
-        <div class="card-actions"><button class="btn-notify" onclick="registerInterest(this,'Practice Sustainability')">Notify Me</button></div>
-      </div>
-    </div>
-
-    <div class="course-card legacy-card">
-      <div class="card-visual"><span class="card-emoji">🔬</span><span class="card-level-badge">Pillar 4</span><span class="course-coming">Coming Soon</span></div>
-      <div class="course-body">
-        <div class="course-title">Research &amp; Knowledge</div>
-        <div class="course-hook">Contribute to the growth and understanding of the field.</div>
-        <ul class="course-topics">
-          <li>Case studies</li>
-          <li>Documentation standards</li>
-          <li>Pattern identification</li>
-          <li>Research methods &amp; data collection</li>
-          <li>Outcome tracking</li>
-          <li>Knowledge management</li>
-          <li>Reference libraries &amp; educational resources</li>
-        </ul>
-        <div class="card-actions"><button class="btn-notify" onclick="registerInterest(this,'Research and Knowledge')">Notify Me</button></div>
-      </div>
-    </div>
-
-    <div class="course-card legacy-card">
-      <div class="card-visual"><span class="card-emoji">🏛️</span><span class="card-level-badge">Pillar 5</span><span class="course-coming">Coming Soon</span></div>
-      <div class="course-body">
-        <div class="course-title">Legacy</div>
-        <div class="course-hook">Create lasting value beyond individual sessions.</div>
-        <ul class="course-topics">
-          <li>Creating a body of work</li>
-          <li>Publishing</li>
-          <li>Training future practitioners</li>
-          <li>Building practitioner networks</li>
-          <li>Building systems &amp; preserving knowledge</li>
-          <li>Long-term impact</li>
-          <li>Succession planning</li>
-        </ul>
-        <div class="card-actions"><button class="btn-notify" onclick="registerInterest(this,'Legacy')">Notify Me</button></div>
-      </div>
-    </div>
-
-  </div>
-</section>
-
-<hr class="tier-line">
-
-<!-- ── CAPSTONE ── -->
-<section class="tier" id="capstone">
-  <div class="tier-header">
-    <span class="tier-number capstone">Capstone</span>
-    <h2 class="tier-title">Building Your Practice Ecosystem</h2>
-    <p class="tier-desc">Bring everything together into one complete framework for developing, operating, growing, and sustaining a professional practice.</p>
-  </div>
-  <div class="course-grid">
-
-    <div class="course-card capstone-card">
-      <div class="card-visual"><span class="card-emoji">🌐</span><span class="card-level-badge">Capstone</span><span class="course-coming">Coming Soon</span></div>
-      <div class="course-body">
-        <div class="course-title">Your Practice Ecosystem</div>
-        <div class="course-hook">Everything from all five levels, integrated into one practice.</div>
-        <ul class="course-topics">
-          <li>Website presence</li>
-          <li>Client journey design</li>
-          <li>Booking systems</li>
-          <li>Policies &amp; documentation</li>
-          <li>Client communication</li>
-          <li>Treatment planning &amp; follow-up systems</li>
-          <li>Training programs &amp; research initiatives</li>
-          <li>Community development &amp; content strategy</li>
-          <li>Long-term growth planning</li>
-        </ul>
-        <div class="card-actions"><button class="btn-notify" onclick="registerInterest(this,'Practice Ecosystem Capstone')">Notify Me</button></div>
-      </div>
-    </div>
-
-  </div>
-</section>
-
-<!-- ── WAITLIST ── -->
 <section class="waitlist-section">
   <h2>Get Notified When Training Launches</h2>
   <p>Join the waitlist and be first to know. Tell us which level interests you most so Daron knows where to begin.</p>
@@ -1008,10 +623,9 @@ footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;color:rgb
     <div style="text-align:left;margin-top:4px">
       <p style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:rgba(232,184,75,0.7);text-transform:uppercase;margin-bottom:12px">Which level(s) interest you?</p>
       <div class="interest-checkboxes">
-        <label class="interest-check"><input type="checkbox" name="level_interest" value="Foundations"> Foundations</label>
-        <label class="interest-check"><input type="checkbox" name="level_interest" value="Intermediate"> Intermediate</label>
-        <label class="interest-check"><input type="checkbox" name="level_interest" value="Advanced"> Advanced</label>
-        <label class="interest-check"><input type="checkbox" name="level_interest" value="All Levels"> All Levels</label>
+        <label class="interest-check"><input type="checkbox" name="level_interest" value="Foundations of Energy"> Foundations of Energy</label>
+        <label class="interest-check"><input type="checkbox" name="level_interest" value="Applied Energy Work"> Applied Energy Work</label>
+        <label class="interest-check"><input type="checkbox" name="level_interest" value="Both Levels"> Both Levels</label>
       </div>
     </div>
 
@@ -1065,7 +679,7 @@ footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;color:rgb
 
   <div class="faq-item">
     <div class="faq-q" onclick="toggleFaq(this)">Do I need to complete each level before moving to the next? <span>+</span></div>
-    <div class="faq-a">Foundations is strongly recommended before Intermediate, and Intermediate before Advanced. Each level builds on the one before it. That said, if you already have relevant experience Daron may assess readiness individually.</div>
+    <div class="faq-a">Foundations of Energy is strongly recommended before Applied Energy Work because the second level builds on the awareness, protection, and daily practices established in the first.</div>
   </div>
 
   <div class="faq-item">
@@ -1075,12 +689,12 @@ footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;color:rgb
 
   <div class="faq-item">
     <div class="faq-q" onclick="toggleFaq(this)">Is this training a certification program? <span>+</span></div>
-    <div class="faq-a">The Advanced level is designed with practitioner development in mind. Details on any completion recognition or certification structure will be announced closer to launch.</div>
+    <div class="faq-a">This is a focused learning path for personal and practical energetic development. Any completion recognition will be announced closer to launch.</div>
   </div>
 
   <div class="faq-item">
     <div class="faq-q" onclick="toggleFaq(this)">When does training launch? <span>+</span></div>
-    <div class="faq-a">No launch date has been set yet. Waitlist members will be the first to know. Foundations will launch before Intermediate or Advanced.</div>
+    <div class="faq-a">No launch date has been set yet. Waitlist members will be the first to know. Foundations of Energy will launch before Applied Energy Work.</div>
   </div>
 
   <div class="faq-item">
@@ -1139,388 +753,135 @@ footer p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;color:rgb
 <script>
 // ── COURSE DATA ──────────────────────────────────────────────────────────────
 const COURSE_DATA = {
-  'empath-basics': {
-    title: 'Empath Basics & Energy 101 Seminar',
+  'energy-foundations': {
+    title: 'Energy Foundations',
     level: 'Foundations', levelClass: 'foundations',
-    format: 'Live + Recorded', duration: '4 Weeks', coming: true,
-    forText: 'Complete beginners, newly awakening empaths, and people who absorb others\' energy without understanding why they feel drained, heavy, or emotionally overwhelmed.',
+    format: 'Live + Recorded', duration: 'Flexible Learning', coming: true,
+    forText: 'Learn the fundamentals of energy and how it influences everyday life.',
     learn: [
-      'What energy actually is and how it moves between people and spaces',
-      'Why empaths feel depleted after social interaction — and what to do about it',
-      'How crystals and stones support energetic hygiene',
-      'Protection techniques you can apply immediately, before and after interactions',
-      'Daily grounding practices for when you feel scattered, anxious, or absorbed by others'
+      'Energy 101',
+      'Understanding empaths',
+      'Grounding',
+      'Protection basics',
+      'Spiritual hygiene'
     ],
-    transform: 'You will stop feeling like an emotional sponge for other people\'s pain. You\'ll develop the awareness to distinguish what is yours versus what you\'ve absorbed — and the tools to release what doesn\'t belong to you.',
-    includes: ['Live Sessions with Daron', 'Course Workbook', 'Crystal Reference Guide', 'Recorded Replays', 'Q&A Access'],
-    ctaLabel: 'Notify Me When Available', ctaType: 'notify', notifyKey: 'Empath Basics & Energy 101', notifyId: 'notify-empath-basics'
+    transform: 'Learn the fundamentals of energy and how it influences everyday life.',
+    includes: ['Guided Instruction', 'Practical Exercises', 'Recorded Replays', 'Continued Practice'],
+    ctaLabel: 'Notify Me When Available', ctaType: 'notify', notifyKey: 'Energy Foundations', notifyId: 'notify-energy-foundations'
   },
-  'psychic-senses': {
-    title: 'Psychic Senses & Clairs 101',
+  'psychic-senses-intuition': {
+    title: 'Psychic Senses & Intuition',
     level: 'Foundations', levelClass: 'foundations',
-    format: 'Live + Recorded', duration: '4 Weeks', coming: true,
-    forText: 'People who sense things others don\'t, those experiencing unusual perceptions or gifts, and students who want to develop their abilities intentionally rather than by accident.',
+    format: 'Live + Recorded', duration: 'Flexible Learning', coming: true,
+    forText: 'Discover how you naturally receive spiritual information and strengthen your intuitive abilities.',
     learn: [
-      'The twelve chakra system and its relationship to psychic perception',
-      'How to identify your dominant clair sense (clairvoyance, clairsentience, claircognizance, clairaudience)',
-      'Practical techniques to trust your intuition without second-guessing every signal',
-      'How to see and begin reading auras in your environment',
-      'Understanding spiritual ego and why it is the most common trap for newly gifted practitioners'
+      'The Clairs',
+      'Intuition',
+      'Chakra system',
+      'Reading energy',
+      'Developing trust in your gifts'
     ],
-    transform: 'You\'ll move from confused and doubting your perceptions to confidently understanding your psychic gifts — and knowing how to work with them intentionally, safely, and without spiritual ego.',
-    includes: ['Live Sessions with Daron', 'Gift Assessment Guide', 'Aura Reading Exercises', 'Recorded Replays', 'Q&A Access'],
-    ctaLabel: 'Notify Me When Available', ctaType: 'notify', notifyKey: 'Psychic Senses & Clairs 101', notifyId: 'notify-psychic-senses'
+    transform: 'Discover how you naturally receive spiritual information and strengthen your intuitive abilities.',
+    includes: ['Guided Instruction', 'Practical Exercises', 'Recorded Replays', 'Continued Practice'],
+    ctaLabel: 'Notify Me When Available', ctaType: 'notify', notifyKey: 'Psychic Senses & Intuition', notifyId: 'notify-psychic-senses-intuition'
   },
-  'protection-grounding': {
-    title: 'Protection & Grounding',
+  'spiritual-protection-awakening': {
+    title: 'Spiritual Protection & Awakening',
     level: 'Foundations', levelClass: 'foundations',
-    format: 'Live + Recorded', duration: '3 Weeks', coming: true,
-    forText: 'Energy workers, empaths, anyone feeling spiritually unprotected or vulnerable, and people who repeatedly find themselves in draining or energetically heavy environments.',
+    format: 'Live + Recorded', duration: 'Flexible Learning', coming: true,
+    forText: 'Navigate spiritual growth with confidence, discernment, and practical protection techniques.',
     learn: [
-      'Effective energy shielding methods — layered and targeted by situation',
-      'Daily grounding rituals that actually anchor your field, not just calm your mind',
-      'How to recognize cord formation before it becomes a structural problem',
-      'Techniques for protecting your home, workspace, and personal space',
-      'Aftercare protocols for recovering your field after clearing or healing work'
+      'Protection techniques',
+      'Spiritual awakening',
+      'Discernment',
+      'Managing energetic shifts',
+      'Daily spiritual practices'
     ],
-    transform: 'You will feel stable, shielded, and grounded even in chaotic or energetically dense environments — in your relationships, your work, and every environment you enter.',
-    includes: ['Live Sessions with Daron', 'Shielding Technique Library', 'Grounding Protocol Cards', 'Space Protection Ritual Guide', 'Recorded Replays'],
-    ctaLabel: 'Notify Me When Available', ctaType: 'notify', notifyKey: 'Protection & Grounding', notifyId: 'notify-protection-grounding'
+    transform: 'Navigate spiritual growth with confidence, discernment, and practical protection techniques.',
+    includes: ['Guided Instruction', 'Practical Exercises', 'Recorded Replays', 'Continued Practice'],
+    ctaLabel: 'Notify Me When Available', ctaType: 'notify', notifyKey: 'Spiritual Protection & Awakening', notifyId: 'notify-spiritual-protection-awakening'
   },
-  'awakening-survival': {
-    title: 'Spiritual Awakening Survival Guide',
+  'energy-healing-essentials': {
+    title: 'Energy Healing Essentials',
     level: 'Foundations', levelClass: 'foundations',
-    format: 'Live + Recorded', duration: '3 Weeks', coming: true,
-    forText: 'People currently mid-awakening who feel lost, disoriented, or overwhelmed. Anyone who has had a sudden energetic or spiritual shift and doesn\'t understand what is happening to them.',
+    format: 'Live + Recorded', duration: 'Flexible Learning', coming: true,
+    forText: 'Learn foundational healing techniques for personal wellness and energetic balance.',
     learn: [
-      'How to recognize the signs that you are in a spiritual awakening — and confirm it',
-      'The physical symptoms of awakening and exactly why they occur',
-      'Major catalysts and triggers to watch for as the process accelerates',
-      'The stages of awakening and how to identify where you currently are',
-      'How psychic gifts emerge, surface, and develop during awakening',
-      'Practical steps to get through without losing your grounding or your mind'
+      'Self-healing practices',
+      'Balancing your energy field',
+      'Basic Reiki principles',
+      'Distance healing fundamentals',
+      'Creating a daily healing routine'
     ],
-    transform: 'You will understand what is happening to you, why it is happening, and how to navigate it with clarity and calm instead of confusion and fear.',
-    includes: ['Live Sessions with Daron', 'Awakening Stage Assessment', 'Support Protocol Guide', 'Recorded Replays'],
-    ctaLabel: 'Notify Me When Available', ctaType: 'notify', notifyKey: 'Spiritual Awakening Survival Guide', notifyId: 'notify-awakening-survival'
+    transform: 'Learn foundational healing techniques for personal wellness and energetic balance.',
+    includes: ['Guided Instruction', 'Practical Exercises', 'Recorded Replays', 'Continued Practice'],
+    ctaLabel: 'Notify Me When Available', ctaType: 'notify', notifyKey: 'Energy Healing Essentials', notifyId: 'notify-energy-healing-essentials'
   },
-  'energy-boundaries': {
-    title: 'Energy Boundaries',
-    level: 'Intermediate', levelClass: 'intermediate',
-    format: 'Live + Recorded', duration: '3 Weeks', coming: true,
-    forText: 'Empaths who struggle to say no, healers who get drained by their work, and people who constantly absorb others\' emotions, responsibilities, or energy without meaning to.',
+  'energy-boundaries-cords': {
+    title: 'Energy Boundaries & Cord Dynamics',
+    level: 'Applied Energy Work', levelClass: 'intermediate',
+    format: 'Live + Recorded', duration: 'Flexible Learning', coming: true,
+    forText: 'Understand energetic relationships, healthy boundaries, and cord awareness.',
     learn: [
-      'How to recognize when your energetic boundaries have been violated — before the depletion sets in',
-      'The mechanics of building energetic sovereignty without isolation or avoidance',
-      'How to hold your frequency in toxic or low-vibration environments',
-      'The energetics of relationships and what energy exchange actually means',
-      'Setting firm limits without guilt, over-explaining, or spiritual bypass'
+      'Healthy energetic boundaries',
+      'Cord awareness',
+      'Cord clearing principles',
+      'Preventing reattachment',
+      'Energetic sovereignty'
     ],
-    transform: 'You will move from constantly depleted and over-extended to grounded, boundaried, and energetically sovereign — with the ability to choose what you let in and what you release.',
-    includes: ['Live Sessions with Daron', 'Boundary Assessment Tool', 'Sovereignty Practices', 'Recorded Replays'],
-    ctaLabel: 'Notify Me When Available', ctaType: 'notify', notifyKey: 'Energy Boundaries', notifyId: 'notify-energy-boundaries'
+    transform: 'Understand energetic relationships, healthy boundaries, and cord awareness.',
+    includes: ['Guided Instruction', 'Practical Exercises', 'Recorded Replays', 'Continued Practice'],
+    ctaLabel: 'Notify Me When Available', ctaType: 'notify', notifyKey: 'Energy Boundaries & Cord Dynamics', notifyId: 'notify-energy-boundaries-cords'
   },
-  'cord-dynamics': {
-    title: 'Cord Dynamics',
-    level: 'Intermediate', levelClass: 'intermediate',
-    format: 'Live + Recorded', duration: '4 Weeks', coming: true,
-    forText: 'Students who have completed Protection & Grounding, people in difficult or recurring relationship dynamics, and those who feel pulled back to certain people or patterns no matter how many times they try to move on.',
+  'reading-clearing-energy': {
+    title: 'Reading & Clearing Energy',
+    level: 'Applied Energy Work', levelClass: 'intermediate',
+    format: 'Live + Recorded', duration: 'Flexible Learning', coming: true,
+    forText: 'Develop confidence reading energetic patterns and clearing dense environments.',
     learn: [
-      'What cords are at an energetic level and exactly how they form in real relationships',
-      'How to locate and identify active cords in your own field',
-      'The principles of cord removal — not just cutting, but dissolving the structural root',
-      'How relationship patterns create persistent cord structures that resist standard clearing',
-      'Practical methods to prevent re-attachment after removal is complete'
+      'Reading energetic patterns',
+      'Space clearing',
+      'Clearing dense energy',
+      'Energy transmutation',
+      'Practical exercises'
     ],
-    transform: 'You will understand the invisible energetic mechanics driving your relationships — and develop the skills to clear what is keeping you tethered to what no longer serves your growth.',
-    includes: ['Live Sessions with Daron', 'Cord Mapping Exercises', 'Removal Practice Guide', 'Recorded Replays'],
-    ctaLabel: 'Notify Me When Available', ctaType: 'notify', notifyKey: 'Cord Dynamics', notifyId: 'notify-cord-dynamics'
+    transform: 'Develop confidence reading energetic patterns and clearing dense environments.',
+    includes: ['Guided Instruction', 'Practical Exercises', 'Recorded Replays', 'Continued Practice'],
+    ctaLabel: 'Notify Me When Available', ctaType: 'notify', notifyKey: 'Reading & Clearing Energy', notifyId: 'notify-reading-clearing-energy'
   },
-  'reading-patterns': {
-    title: 'Reading Energetic Patterns',
-    level: 'Intermediate', levelClass: 'intermediate',
-    format: 'Live + Recorded', duration: '4 Weeks', coming: true,
-    forText: 'Intermediate students who are ready to scan and assess energy fields, and those developing practitioner-level perceptual skills.',
+  'energetically-aligned-life': {
+    title: 'Living an Energetically Aligned Life',
+    level: 'Applied Energy Work', levelClass: 'intermediate',
+    format: 'Live + Recorded', duration: 'Flexible Learning', coming: true,
+    forText: 'Integrate everything you\'ve learned into everyday life and long-term spiritual growth.',
     learn: [
-      'Pattern recognition techniques for identifying what is active in an energy field',
-      'How to spot recurring attachment signatures that keep returning to the same client',
-      'Behavioral energy patterns and what they indicate about the field beneath',
-      'How trauma creates persistent energy imprints and what they look and feel like',
-      'Practical field scanning methods you can use in sessions immediately'
+      'Daily energetic practices',
+      'Working through energetic challenges',
+      'Long-term spiritual development',
+      'Building confidence',
+      'Continuing your journey'
     ],
-    transform: 'You will develop the ability to perceive and interpret what is actually present in an energy field — the foundational perceptual skill required for all advanced practitioner work.',
-    includes: ['Live Sessions with Daron', 'Scanning Practice Exercises', 'Pattern Identification Guide', 'Recorded Replays'],
-    ctaLabel: 'Notify Me When Available', ctaType: 'notify', notifyKey: 'Reading Energetic Patterns', notifyId: 'notify-reading-patterns'
+    transform: 'Integrate everything you\'ve learned into everyday life and long-term spiritual growth.',
+    includes: ['Guided Instruction', 'Practical Exercises', 'Recorded Replays', 'Continued Practice'],
+    ctaLabel: 'Notify Me When Available', ctaType: 'notify', notifyKey: 'Living an Energetically Aligned Life', notifyId: 'notify-energetically-aligned-life'
   },
-  'space-clearing': {
-    title: 'Space Clearing Fundamentals',
-    level: 'Intermediate', levelClass: 'intermediate',
-    format: 'Live + Recorded', duration: '3 Weeks', coming: true,
-    forText: 'People who want to clear their home or workspace, healers who work in physical locations, and anyone whose environment feels heavy, stagnant, or energetically charged.',
+  'advanced-spiritual-practices': {
+    title: 'Advanced Spiritual Practices',
+    level: 'Applied Energy Work', levelClass: 'intermediate',
+    format: 'Live + Recorded', duration: 'Flexible Learning', coming: true,
+    forText: 'Deepen your connection through disciplined spiritual practice and continued energetic development.',
     learn: [
-      'How to read the energy signature of any space before beginning work',
-      'Clearing techniques matched to specific types of disturbance — not a one-size approach',
-      'The practical difference between entity presence and residual environmental energy',
-      'How to bless and energetically seal a space after clearing so it stays clear',
-      'Maintenance practices to keep spaces clear between active clearing sessions'
+      'Advanced meditation',
+      'Strengthening intuition',
+      'Working with higher frequencies',
+      'Spiritual discipline',
+      'Lifelong energetic practice'
     ],
-    transform: 'You will be able to walk into any space, sense what it holds, and know exactly how to shift it — transforming the energy of your environment and the environments of others.',
-    includes: ['Live Sessions with Daron', 'Space Assessment Protocol', 'Clearing Ritual Guide', 'Recorded Replays'],
-    ctaLabel: 'Notify Me When Available', ctaType: 'notify', notifyKey: 'Space Clearing Fundamentals', notifyId: 'notify-space-clearing'
-  },
-  'practitioner-dev': {
-    title: 'Practitioner Development',
-    level: 'Advanced', levelClass: 'advanced',
-    format: 'Live Intensive + Recorded', duration: '6 Weeks', coming: true,
-    forText: 'Serious students who have completed Foundations and Intermediate training and are preparing to work with clients professionally in the energy healing space.',
-    learn: [
-      'How to build a viable healing practice from the ground up — structure, systems, and positioning',
-      'Creating intake and client assessment systems that capture what you actually need to know',
-      'Session structure and the professional flow of a complete clearing from intake to close',
-      'Documentation, record-keeping, and how to track client progress across sessions',
-      'Working across distance with international clients — the full professional approach'
-    ],
-    transform: 'You will go from student to practitioner — with the systems, structure, professional confidence, and ethical foundation needed to begin seeing clients and being compensated for your work.',
-    includes: ['Live Intensive Sessions', 'Practitioner Intake Templates', 'Session Structure Guide', 'Business Setup Checklist', 'Recorded Replays', 'Direct Mentorship Access'],
-    ctaLabel: 'Request Training Info', ctaType: 'request', notifyKey: 'Practitioner Development', notifyId: 'notify-practitioner-dev'
-  },
-  'case-studies': {
-    title: 'Case Studies',
-    level: 'Advanced', levelClass: 'advanced',
-    format: 'Live Case Discussions + Recorded', duration: '4 Weeks', coming: true,
-    forText: 'Students with Foundations and Intermediate training who are ready to apply their skills to complex, real-world practitioner scenarios that require judgment, not just technique.',
-    learn: [
-      'How real client cases are assessed, opened, and approached with a treatment plan',
-      'Navigating complex multi-attachment presentations and layered clearing challenges',
-      'Building multi-session treatment arcs with clear milestones and checkpoints',
-      'Recognizing the signs that a case exceeds your scope and how to refer appropriately',
-      'How to read and track outcomes accurately over time with real client data'
-    ],
-    transform: 'You will develop clinical-level thinking about energy work — the judgment, discernment, and professional insight that cannot be learned from technique alone. You\'ll think like a practitioner, not a student.',
-    includes: ['Live Case Study Discussions', 'Case Library Access', 'Assessment Frameworks', 'Outcome Tracking Templates', 'Recorded Replays'],
-    ctaLabel: 'Request Training Info', ctaType: 'request', notifyKey: 'Case Studies', notifyId: 'notify-case-studies'
-  },
-  'ethics-bounds': {
-    title: 'Ethics & Boundaries',
-    level: 'Advanced', levelClass: 'advanced',
-    format: 'Live + Recorded', duration: '3 Weeks', coming: true,
-    forText: 'Developing practitioners and advanced students who are beginning or preparing to begin client work — and who want to operate with the integrity that builds lasting trust.',
-    learn: [
-      'The practitioner ethics framework for energy healing — boundaries, accountability, and responsibilities',
-      'How to navigate power dynamics with vulnerable clients without exploiting the relationship',
-      'Ensuring real consent and full transparency in all healing agreements',
-      'Protecting your own energy field while doing deep clearing work for others',
-      'When and how to close or professionally end a client relationship'
-    ],
-    transform: 'You will become a practitioner who operates with genuine integrity and ethical clarity — the kind that builds a lasting, trustworthy practice and protects both your clients and your own field.',
-    includes: ['Live Sessions with Daron', 'Ethics Framework Guide', 'Consent & Disclosure Templates', 'Recorded Replays'],
-    ctaLabel: 'Request Training Info', ctaType: 'request', notifyKey: 'Ethics & Boundaries', notifyId: 'notify-ethics-bounds'
-  },
-  'working-clients': {
-    title: 'Working With Clients',
-    level: 'Advanced', levelClass: 'advanced',
-    format: 'Live Practicum + Recorded', duration: '4 Weeks', coming: true,
-    forText: 'Practitioners who have completed development training and are actively beginning to see clients — and who need to develop the real interpersonal and communication skills the work demands.',
-    learn: [
-      'How to structure a first session from assessment intake to professional close',
-      'Setting and managing client expectations without overpromising or under-delivering',
-      'Navigating difficult, resistant, or emotionally complex client dynamics with skill',
-      'Building aftercare and follow-up systems that support clients between sessions',
-      'How to create long-term client relationships that support sustained healing and repeat engagement'
-    ],
-    transform: 'You will develop the real-world practitioner skills that no amount of solo training can give you — the communication, timing, emotional intelligence, and professional authority of a working healer.',
-    includes: ['Live Practicum Sessions', 'Client Communication Templates', 'Aftercare Protocol Guide', 'Recorded Replays', 'Peer Practicum Group'],
-    ctaLabel: 'Request Training Info', ctaType: 'request', notifyKey: 'Working With Clients', notifyId: 'notify-working-clients'
-  },
-  'transmutation': {
-    title: 'Energy Transmutation',
-    level: 'Advanced', levelClass: 'advanced',
-    format: 'Live Intensive + Recorded', duration: '4 Weeks', coming: true,
-    forText: 'Advanced practitioners who are ready to work with the densest forms of energetic material — and who want to develop one of the rarest skills available in energy work.',
-    learn: [
-      'The mechanics of converting dark energy to light through active transmutation',
-      'How to clear and transmute deep emotional residue that removal alone cannot touch',
-      'Safe protocols for working with dense, toxic, or highly negative frequencies',
-      'Entity and cord transmutation — not just removal, but alchemical transformation',
-      'Field stabilization techniques required after intense clearing and transmutation work'
-    ],
-    transform: 'You will develop one of the most powerful and rare skills in energetic healing — the ability to not just remove or clear what you encounter, but to alchemically transform it into something that can no longer cause harm.',
-    includes: ['Live Intensive Sessions', 'Transmutation Technique Library', 'Dense Frequency Safety Protocols', 'Recorded Replays', 'Direct Mentorship Access'],
-    ctaLabel: 'Request Training Info', ctaType: 'request', notifyKey: 'Energy Transmutation', notifyId: 'notify-transmutation'
-  },
-
-  // ── LEVEL 4 — RUNNING THE PRACTICE ──
-  'client-management': {
-    title: 'Client Management', level: 'Running the Practice', levelClass: 'operations',
-    format: 'Live + Recorded', duration: '2 Weeks', coming: true,
-    forText: 'Practitioners moving from doing the work to running a practice — who want clients to feel cared for from first contact through long-term relationship, without the chaos of ad-hoc communication.',
-    learn: [
-      'How to design a client onboarding flow that sets expectations and builds trust before the first session',
-      'Communication frameworks for boundaries, response times, and tone across email, text, and portal messages',
-      'What to record in a client file — and how to keep notes organized, retrievable, and confidential',
-      'How to set and reset expectations so clients understand what the work can and cannot do',
-      'De-escalation approaches and decision trees for refunds, complaints, and emotionally charged moments'
-    ],
-    transform: 'You will stop improvising every client interaction. You will have repeatable systems for onboarding, communication, and records that make clients feel held — and make your practice feel professional instead of chaotic.',
-    includes: ['Onboarding sequence templates','Client communication scripts','Record-keeping framework','Difficult-conversation playbook','Recorded Replays'],
-    ctaLabel: 'Notify Me When Available', ctaType: 'notify', notifyKey: 'Client Management', notifyId: 'notify-client-management'
-  },
-  'practice-operations': {
-    title: 'Practice Operations', level: 'Running the Practice', levelClass: 'operations',
-    format: 'Live + Recorded', duration: '2 Weeks', coming: true,
-    forText: 'Practitioners who keep losing time and money to manual scheduling, missed payments, and cancellation confusion — and want their back office to run on systems instead of memory.',
-    learn: [
-      'How to build a scheduling system that protects your energy and prevents double-booking',
-      'Booking workflows from first inquiry to confirmed session, including deposits and pre-session documents',
-      'Writing cancellation and rescheduling policies that are fair, clear, and actually enforceable',
-      'Payment collection options, and how to handle deposits, outstanding balances, and no-shows cleanly',
-      'Designing and managing session packages and membership offers without drowning in admin'
-    ],
-    transform: 'Your bookings, payments, and policies will run on predictable systems rather than goodwill and memory — freeing your attention for the actual work.',
-    includes: ['Booking workflow blueprint','Cancellation & payment policy templates','Package structure worksheets','Recorded Replays'],
-    ctaLabel: 'Notify Me When Available', ctaType: 'notify', notifyKey: 'Practice Operations', notifyId: 'notify-practice-operations'
-  },
-  'documentation': {
-    title: 'Documentation', level: 'Running the Practice', levelClass: 'operations',
-    format: 'Live + Recorded', duration: '2 Weeks', coming: true,
-    forText: 'Practitioners who want every session to leave behind a clean, professional, legally-sound record — and a client file that tells a coherent story over time.',
-    learn: [
-      'What belongs in an intake form versus an assessment, and how to keep them separate but connected',
-      'How to capture consent and waivers properly, and why they protect both you and the client',
-      'Writing treatment plans that are genuinely useful to you and meaningful to the client',
-      'Building follow-up systems so nothing falls through the cracks after a session ends',
-      'Session documentation standards that turn scattered notes into a real, reviewable client record'
-    ],
-    transform: 'Every client will have a complete, organized file — consent, intake, assessment, treatment plan, sessions, and follow-ups — that protects you legally and supports noticeably better care.',
-    includes: ['Intake & assessment templates','Consent & waiver templates','Treatment plan frameworks','Follow-up system guide','Recorded Replays'],
-    ctaLabel: 'Notify Me When Available', ctaType: 'notify', notifyKey: 'Documentation', notifyId: 'notify-documentation'
-  },
-  'professional-standards': {
-    title: 'Professional Standards', level: 'Running the Practice', levelClass: 'operations',
-    format: 'Live + Recorded', duration: '2 Weeks', coming: true,
-    forText: 'Practitioners beginning client work who want to operate with the ethics, boundaries, and confidentiality that build lasting trust and protect everyone involved.',
-    learn: [
-      'The practitioner ethics framework for energy work — responsibility, accountability, and power dynamics',
-      'How to hold firm boundaries with clients without coldness, and spot boundary erosion early',
-      'Confidentiality standards: what you protect, what you may disclose, and the real limits of confidentiality',
-      'Defining your scope of practice and recognizing when a case is beyond it',
-      'Building referral relationships and handing off cases responsibly when needed'
-    ],
-    transform: 'You will practice with the ethical clarity and professional boundaries that protect your clients, your field, and your reputation — the foundation every trustworthy practice is built on.',
-    includes: ['Ethics framework guide','Boundary & scope worksheets','Confidentiality standards','Referral templates','Recorded Replays'],
-    ctaLabel: 'Notify Me When Available', ctaType: 'notify', notifyKey: 'Professional Standards', notifyId: 'notify-professional-standards'
-  },
-  'practice-organization': {
-    title: 'Practice Organization', level: 'Running the Practice', levelClass: 'operations',
-    format: 'Live + Recorded', duration: '2 Weeks', coming: true,
-    forText: 'Practitioners ready to run the whole practice like a system — organized, measurable, and resilient as client volume grows.',
-    learn: [
-      'Record-keeping systems that stay organized as your client base grows from a handful to many',
-      'Workflow management: mapping every recurring process so it does not live only in your head',
-      'How to track outcomes over time and use real data to improve your work',
-      'Building simple quality-assurance checks into your routine so standards stay consistent',
-      'Operational systems that keep the practice running smoothly even on your hardest days'
-    ],
-    transform: 'Your practice will run on documented systems and tracked outcomes — organized enough to grow, and resilient enough to survive your busiest seasons.',
-    includes: ['Workflow system templates','Outcome tracking sheets','QA checklists','Operations playbook','Recorded Replays'],
-    ctaLabel: 'Notify Me When Available', ctaType: 'notify', notifyKey: 'Practice Organization', notifyId: 'notify-practice-organization'
-  },
-
-  // ── LEVEL 5 — LEADERSHIP, GROWTH & LEGACY ──
-  'leadership-pillar': {
-    title: 'Leadership', level: 'Leadership, Growth & Legacy', levelClass: 'legacy',
-    format: 'Live + Recorded', duration: '3 Weeks', coming: true,
-    forText: 'Experienced practitioners ready to grow beyond their own sessions — mentoring others, facilitating groups, and holding leadership in their community.',
-    learn: [
-      'How to mentor newer practitioners and support students without taking on their work for them',
-      'Facilitating groups and circles so the container stays safe, focused, and productive',
-      'Building trust and credibility as a leader in a largely unregulated field',
-      'Navigating conflict and disagreement within a community without losing the relationships',
-      'Developing your own leadership style and professional influence over time'
-    ],
-    transform: 'You will become someone others can learn from and rely on — capable of mentoring practitioners, facilitating groups, and holding genuine leadership in your community.',
-    includes: ['Mentorship frameworks','Group facilitation guide','Conflict-resolution playbook','Recorded Replays'],
-    ctaLabel: 'Notify Me When Available', ctaType: 'notify', notifyKey: 'Leadership', notifyId: 'notify-leadership-pillar'
-  },
-  'practice-growth': {
-    title: 'Practice Growth', level: 'Leadership, Growth & Legacy', levelClass: 'legacy',
-    format: 'Live + Recorded', duration: '4 Weeks', coming: true,
-    forText: 'Practitioners ready to reach more of the people who need their work — through ethical marketing, content, and visibility rather than hype or false promises.',
-    learn: [
-      'Ethical marketing principles for spiritual work — honesty, education, and never over-promising outcomes',
-      'Building visibility through content that teaches and serves rather than sells',
-      'Platform-specific strategy for Facebook and YouTube growth, drawn from Daron\'s own audience-building',
-      'A sustainable content-creation rhythm you can actually maintain alongside client work',
-      'Networking, referral development, and building real credibility and a personal brand'
-    ],
-    transform: 'You will grow your visibility and audience the right way — attracting the people who need your work by educating and serving them, not by manipulating them.',
-    includes: ['Ethical marketing guide','Content planning templates','Facebook/YouTube playbook','Personal brand worksheets','Recorded Replays'],
-    ctaLabel: 'Notify Me When Available', ctaType: 'notify', notifyKey: 'Practice Growth', notifyId: 'notify-practice-growth'
-  },
-  'practice-sustainability': {
-    title: 'Practice Sustainability', level: 'Leadership, Growth & Legacy', levelClass: 'legacy',
-    format: 'Live + Recorded', duration: '4 Weeks', coming: true,
-    forText: 'Practitioners who want their practice to support them financially for the long term — through multiple aligned offerings rather than session-by-session survival.',
-    learn: [
-      'How to diversify revenue without diluting your core work or burning yourself out',
-      'Designing service packages, memberships, and recurring offers that clients actually want',
-      'Running workshops and group sessions that serve more people per hour of your time',
-      'Creating digital products, courses, and certification programs from what you already know',
-      'Books, speaking, events, and practitioner collaborations as durable long-term income streams'
-    ],
-    transform: 'You will build several aligned income streams so your practice can sustain you for decades — not just cover this month\'s bills.',
-    includes: ['Offer & pricing templates','Revenue model worksheets','Product & course planning guide','Recorded Replays'],
-    ctaLabel: 'Notify Me When Available', ctaType: 'notify', notifyKey: 'Practice Sustainability', notifyId: 'notify-practice-sustainability'
-  },
-  'research-knowledge': {
-    title: 'Research & Knowledge', level: 'Leadership, Growth & Legacy', levelClass: 'legacy',
-    format: 'Live + Recorded', duration: '3 Weeks', coming: true,
-    forText: 'Practitioners who want to contribute to the credibility and growth of the field by documenting and studying their own work rigorously.',
-    learn: [
-      'How to structure case studies that are genuinely useful while respecting client confidentiality',
-      'Documentation standards that make your records analyzable, not just storable',
-      'Identifying patterns across clients and sessions that single sessions never reveal',
-      'Practical research methods and data-collection approaches realistic for a small practice',
-      'Building reference libraries and educational resources from your accumulated knowledge'
-    ],
-    transform: 'You will turn your day-to-day work into documented knowledge — case studies, patterns, and resources that advance both your own practice and the wider field.',
-    includes: ['Case study templates','Documentation standards','Data-collection frameworks','Knowledge-management guide','Recorded Replays'],
-    ctaLabel: 'Notify Me When Available', ctaType: 'notify', notifyKey: 'Research and Knowledge', notifyId: 'notify-research-knowledge'
-  },
-  'legacy-pillar': {
-    title: 'Legacy', level: 'Leadership, Growth & Legacy', levelClass: 'legacy',
-    format: 'Live + Recorded', duration: '3 Weeks', coming: true,
-    forText: 'Established practitioners thinking beyond themselves — who want to create something that trains others and outlives their own practice.',
-    learn: [
-      'How to shape a coherent body of work from years of sessions, teaching, and notes',
-      'Pathways to publishing — articles, guides, and books that carry your knowledge forward',
-      'Training future practitioners and building practitioner networks around your approach',
-      'Building systems and preserving knowledge so it is not lost when you step back',
-      'Succession planning and designing deliberately for long-term impact'
-    ],
-    transform: 'You will develop a clear vision and a plan for lasting impact — a body of work, trained practitioners, and systems that carry your contribution forward.',
-    includes: ['Body-of-work planning','Publishing roadmap','Network-building guide','Succession planning framework','Recorded Replays'],
-    ctaLabel: 'Notify Me When Available', ctaType: 'notify', notifyKey: 'Legacy', notifyId: 'notify-legacy-pillar'
-  },
-
-  // ── CAPSTONE ──
-  'practice-ecosystem': {
-    title: 'Building Your Practice Ecosystem', level: 'Capstone', levelClass: 'capstone',
-    format: 'Capstone Intensive', duration: '6 Weeks', coming: true,
-    forText: 'Practitioners completing the program, ready to integrate every level into one coherent, operating practice — from website to follow-up to long-term growth.',
-    learn: [
-      'How your website, client journey, and booking systems fit together as one seamless experience',
-      'Connecting policies, documentation, and treatment planning into a single living client record',
-      'Designing communication and follow-up systems that run without you having to remember them',
-      'Layering training programs, research, and community development onto a working practice',
-      'Building a content strategy and long-term growth plan that compounds over years'
-    ],
-    transform: 'You will leave with a complete, integrated blueprint — website, journey, documents, communication, follow-up, training, research, and growth — for a practice that operates and grows as one system, not a pile of disconnected parts.',
-    includes: ['Full practice blueprint','Ecosystem build checklist','Capstone mentorship','Long-term growth plan','Recorded Replays'],
-    ctaLabel: 'Notify Me When Available', ctaType: 'notify', notifyKey: 'Practice Ecosystem Capstone', notifyId: 'notify-practice-ecosystem'
+    transform: 'Deepen your connection through disciplined spiritual practice and continued energetic development.',
+    includes: ['Guided Instruction', 'Practical Exercises', 'Recorded Replays', 'Continued Practice'],
+    ctaLabel: 'Notify Me When Available', ctaType: 'notify', notifyKey: 'Advanced Spiritual Practices', notifyId: 'notify-advanced-spiritual-practices'
   }
 };
-
 // ── COURSE INTEREST TRACKING ─────────────────────────────────────────────────
 const INTEREST_KEY = 'rea_course_interests';
 
@@ -1686,39 +1047,6 @@ document.getElementById('waitlistForm').addEventListener('submit', function(e) {
       document.getElementById('waitlistSuccess').style.display = 'block';
     });
 });
-
-// ── Wire Level 4/5/Capstone cards to detail modals (same UX as other cards) ──
-(function() {
-  var MAP = {
-    'Client Management':'client-management','Practice Operations':'practice-operations',
-    'Documentation':'documentation','Professional Standards':'professional-standards',
-    'Practice Organization':'practice-organization','Leadership':'leadership-pillar',
-    'Practice Growth':'practice-growth','Practice Sustainability':'practice-sustainability',
-    'Research & Knowledge':'research-knowledge','Legacy':'legacy-pillar',
-    'Your Practice Ecosystem':'practice-ecosystem'
-  };
-  document.querySelectorAll('#operations .course-card, #leadership .course-card, #capstone .course-card').forEach(function(card) {
-    var titleEl = card.querySelector('.course-title');
-    if (!titleEl) return;
-    var id = MAP[titleEl.textContent.trim()];
-    if (!id) return;
-    var notify = card.querySelector('.btn-notify');
-    if (notify && !notify.id) notify.id = 'notify-' + id;
-    var actions = card.querySelector('.card-actions');
-    if (actions && !actions.querySelector('.btn-details')) {
-      var vd = document.createElement('button');
-      vd.className = 'btn-details';
-      vd.textContent = 'View Details';
-      vd.onclick = function(ev) { ev.stopPropagation(); openCourse(id); };
-      actions.insertBefore(vd, actions.firstChild);
-    }
-    card.style.cursor = 'pointer';
-    card.addEventListener('click', function(ev) {
-      if (ev.target.closest('button')) return;  // let the buttons handle their own clicks
-      openCourse(id);
-    });
-  });
-})();
 
 // ── FAQ ──────────────────────────────────────────────────────────────────────
 function toggleFaq(el) {
