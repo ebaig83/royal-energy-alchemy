@@ -5762,12 +5762,18 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
           <div><label>Client Name</label><input class="appt-input" id="apptClient" placeholder="Full name" /></div>
           <div><label>Date</label><input class="appt-input" id="apptDate" type="date" /></div>
           <div><label>Start Time</label><select class="appt-input" id="apptTime"><option value="">— Select time —</option>
+              <option value="08:00">8:00 AM</option>
               <option value="09:30">9:30 AM</option>
               <option value="10:00">10:00 AM</option>
+              <option value="11:00">11:00 AM</option>
               <option value="12:00">12:00 PM</option>
+              <option value="13:00">1:00 PM</option>
               <option value="14:00">2:00 PM</option>
+              <option value="15:00">3:00 PM</option>
               <option value="16:00">4:00 PM</option>
+              <option value="17:00">5:00 PM</option>
               <option value="18:00">6:00 PM</option>
+              <option value="19:00">7:00 PM</option>
               </select></div>
           <div><label>Duration</label>
             <select class="appt-input" id="apptDuration">
@@ -10601,7 +10607,7 @@ function openReschedulePanel(id) {
       </div>
       <div>
         <span class="lbl">New Time</span>
-        <select id="reschedTime_${id}" class="appt-input"><option value="">-- time --</option><option value="09:30">9:30 AM</option><option value="10:00">10:00 AM</option><option value="12:00">12:00 PM</option><option value="14:00">2:00 PM</option><option value="16:00">4:00 PM</option><option value="18:00">6:00 PM</option></select>
+        <select id="reschedTime_${id}" class="appt-input"><option value="">-- time --</option><option value="08:00">8:00 AM</option><option value="09:30">9:30 AM</option><option value="10:00">10:00 AM</option><option value="11:00">11:00 AM</option><option value="12:00">12:00 PM</option><option value="13:00">1:00 PM</option><option value="14:00">2:00 PM</option><option value="15:00">3:00 PM</option><option value="16:00">4:00 PM</option><option value="17:00">5:00 PM</option><option value="18:00">6:00 PM</option><option value="19:00">7:00 PM</option></select>
       </div>
     </div>
     <span class="lbl">Reason for Rescheduling</span>
@@ -14394,7 +14400,7 @@ async function saveQuickLog() {
 /* ── AVAILABLE BOOKING SLOTS — Calendar UI ── */
 var _slotCalYear=new Date().getFullYear(), _slotCalMonth=new Date().getMonth();
 var _slotPickerDate=null;
-var SLOT_TIMES=['9:30 AM','10:00 AM','12:00 PM','2:00 PM','4:00 PM','6:00 PM'];
+var SLOT_TIMES=['8:00 AM','9:30 AM','10:00 AM','11:00 AM','12:00 PM','1:00 PM','2:00 PM','3:00 PM','4:00 PM','5:00 PM','6:00 PM','7:00 PM'];
 
 // ── Slot management — Supabase-backed via availability API ───────────────────
 // _slotsCache is the in-memory/localStorage mirror; Supabase is source of truth.
