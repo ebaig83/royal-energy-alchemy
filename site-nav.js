@@ -33,7 +33,6 @@
           '<li><a href="/privacy-policy">Privacy Policy</a></li>' +
           '<li><a href="/terms">Terms of Service</a></li>' +
           '<li><a href="/data-retention">Data Retention</a></li>' +
-          '<li><a href="/provider-apply" style="color:#22c98a">Provider Application</a></li>' +
           '<li><a href="/community">Join the Fight</a></li>' +
         '</ul></li>' +
     '</ul>' +
