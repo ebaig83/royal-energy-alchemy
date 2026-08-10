@@ -4832,6 +4832,8 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
 .hd-table { width:100%; min-width:670px; border-collapse:collapse; }
 .hd-table th { color:#716a84; font:8px 'Cinzel',serif; letter-spacing:.15em; text-align:left; text-transform:uppercase; padding:11px 17px; }
 .hd-table td { color:#ded8ec; font:15px 'EB Garamond',serif; padding:13px 17px; border-top:1px solid rgba(176,158,248,.08); }
+.hd-notice { display:none; color:#dba866; font:12px 'EB Garamond',serif; padding:10px 18px; border-bottom:1px solid rgba(232,184,75,.12); background:rgba(232,184,75,.035); }
+.hd-notice a { color:#e8b84b; }
 @media(max-width:760px){
   .hd-heading{align-items:flex-start;flex-direction:column}.hd-stats{grid-template-columns:1fr}.hd-stat{display:flex;align-items:center;justify-content:space-between;gap:12px}.hd-stat-value{font-size:21px;margin:0}.hd-stat-note{display:none}.hd-next{grid-template-columns:auto 1fr}.hd-actions{grid-column:2;justify-content:flex-start}.hd-grid{grid-template-columns:1fr}.hd-week{grid-template-columns:repeat(4,1fr)}.hd-session{grid-template-columns:65px 1fr}.hd-paid{grid-column:2}.hd-title{font-size:20px}
 }
@@ -4974,11 +4976,13 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
       <div class="hd-grid">
         <section class="hd-panel">
           <div class="hd-panel-head"><div class="hd-panel-title">Today's Schedule</div><button type="button" class="hd-secondary" onclick="showTab('booking')">View Calendar</button></div>
+          <div class="hd-notice" id="hdScheduleNotice"></div>
           <div class="hd-day" id="hdTodayLabel"></div><div id="hdToday"></div>
           <div class="hd-panel-head"><div class="hd-panel-title">Week at a Glance</div></div><div class="hd-week" id="hdWeek"></div>
         </section>
         <section class="hd-panel"><div class="hd-panel-head"><div class="hd-panel-title">Recent Client Activity</div><button type="button" class="hd-secondary" onclick="showTab('clients')">View Clients</button></div><ul class="hd-activity" id="hdActivity"><li class="hd-empty">Loading recent activity…</li></ul></section>
       </div>
+      <section class="hd-panel" style="margin-top:15px"><div class="hd-panel-head"><div class="hd-panel-title">Clients Helped &amp; Scheduled</div><button type="button" class="hd-secondary" onclick="showTab('clients')">Full Directory</button></div><div class="hd-table-wrap"><table class="hd-table"><thead><tr><th>Client</th><th>Contact</th><th>Last Session</th><th>Next Session</th><th>Sessions</th></tr></thead><tbody id="hdDashboardClientBody"><tr><td colspan="5" class="hd-empty">Loading production clients…</td></tr></tbody></table></div></section>
     </section>
 
     <!-- ══ ROW 1: Executive KPI Strip ══ -->
@@ -9132,6 +9136,7 @@ async function refreshScheduleFromSupabase(force) {
     _scheduleStore.loaded = true;
     _scheduleStore.error = null;
     _refreshScheduleConsumers();
+    if (typeof window.refreshSquareForHandoff === 'function') window.refreshSquareForHandoff();
     return _scheduleStore.sessions;
   }).catch(function(err) {
     _scheduleStore.error = err;
@@ -9145,8 +9150,8 @@ async function refreshScheduleFromSupabase(force) {
 function isTestEntry(str){
   if(!str)return false;
   var s=str.toString().toLowerCase().trim();
-  return s==='test'||s.startsWith('test ')||s.endsWith(' test')||s.includes(' test ')||
-         s==='testing'||s.includes('testing')||s==='test test';
+  return /(^|[^a-z])(test|testing|qa|demo|seed)([^a-z]|$)/.test(s)||
+         /(^|[^a-z])(delete|sprint\s*\d+)([^a-z]|$)/.test(s);
 }
 function shouldSkipEntry(name,email){
   return isTestEntry(name)||isTestEntry(email)||
@@ -16429,6 +16434,7 @@ function _dashAnswerBusinessQuestion(q, ctx) {
   'use strict';
   var hdContacts = {};
   var hdRealClientRows = [];
+  var hdSquareLoading = null;
   function e(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
   function sessionWhen(s){var d=s.session_date||s.date||'',t=s.session_time||s.time||'00:00';return new Date(String(d).slice(0,10)+'T'+String(t).slice(0,5));}
   function key(v){return String(v||'').toLowerCase().trim();}
@@ -16436,7 +16442,7 @@ function _dashAnswerBusinessQuestion(q, ctx) {
     if(typeof _scheduleStore==='undefined'||!_scheduleStore.loaded)return [];
     return _scheduleStore.sessions.filter(function(s){
       var name=s.client_name||s.client||'',email=s.client_email||s.email||'',source=key(s.source),scheduleSource=key(s.scheduleSource);
-      return scheduleSource==='supabase'&&!shouldSkipEntry(name,email)&&s.is_test!==true&&source!=='test'&&source!=='demo'&&source!=='seed';
+      return (scheduleSource==='supabase'||scheduleSource==='live-square')&&!shouldSkipEntry(name,email)&&s.is_test!==true&&source!=='test'&&source!=='demo'&&source!=='seed';
     });
   }
   function money(v){return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(Number(v)||0);}
@@ -16444,26 +16450,28 @@ function _dashAnswerBusinessQuestion(q, ctx) {
   function paymentLabel(s){var paid=Number(s.amount_paid||0),due=Number(s.amount_due!=null?s.amount_due:(s.price||0));var status=String(s.payment_status||'').toLowerCase();return status==='paid'||(due>0&&paid>=due)?{text:'Paid',cls:'hd-paid'}:{text:'Payment due',cls:'hd-paid hd-due'};}
   function contactLinks(name){var c=hdContacts[key(name)]||{},out=[];if(c.email)out.push('<a href="mailto:'+e(c.email)+'">Email</a>');if(c.phone)out.push('<a href="tel:'+e(c.phone)+'">Call</a>');return out.join('');}
   function dateText(v){if(!v)return '—';var d=new Date(v);return isNaN(d)?'—':d.toLocaleDateString([],{month:'short',day:'numeric',year:'numeric'});}
+  function clientRowsHtml(rows,empty){return rows.length?rows.map(function(c){var contact=[];if(c.email)contact.push('<a href="mailto:'+e(c.email)+'" style="color:#cfc7e8">'+e(c.email)+'</a>');if(c.phone)contact.push('<a href="tel:'+e(c.phone)+'" style="color:#cfc7e8">'+e(c.phone)+'</a>');return '<tr><td>'+e(c.name)+'</td><td>'+(contact.join('<br>')||'—')+'</td><td>'+dateText(c.last)+'</td><td>'+dateText(c.next)+'</td><td>'+c.count+'</td></tr>';}).join(''):'<tr><td colspan="5" class="hd-empty">'+empty+'</td></tr>';}
   window.renderRealClients=function(){
     var body=document.getElementById('hdRealClientBody');if(!body)return;
     var q=key((document.getElementById('hdRealClientSearch')||{}).value||'');
     var rows=hdRealClientRows.filter(function(c){return !q||key([c.name,c.email,c.phone].join(' ')).includes(q);});
     var note=document.getElementById('hdRealClientNote');if(note)note.textContent=(q?rows.length+' matching':'Production')+' client record'+(rows.length===1?'':'s')+' with session history.';
-    body.innerHTML=rows.length?rows.map(function(c){var contact=[];if(c.email)contact.push('<a href="mailto:'+e(c.email)+'" style="color:#cfc7e8">'+e(c.email)+'</a>');if(c.phone)contact.push('<a href="tel:'+e(c.phone)+'" style="color:#cfc7e8">'+e(c.phone)+'</a>');return '<tr><td>'+e(c.name)+'</td><td>'+(contact.join('<br>')||'—')+'</td><td>'+dateText(c.last)+'</td><td>'+dateText(c.next)+'</td><td>'+c.count+'</td></tr>';}).join(''):'<tr><td colspan="5" class="hd-empty">'+(q?'No production clients match this search.':'No authenticated production clients with sessions were found.')+'</td></tr>';
+    body.innerHTML=clientRowsHtml(rows,q?'No production clients match this search.':'No authenticated production clients with sessions were found.');
   };
   function renderSchedule(sessions){
     var now=new Date(),todayKey=now.toISOString().slice(0,10),weekEnd=new Date(now);weekEnd.setDate(weekEnd.getDate()+7);
-    var upcoming=sessions.filter(function(s){var d=sessionWhen(s);return !isNaN(d)&&d>=now&&d<weekEnd&&!/cancel/i.test(s.status||'');}).sort(function(a,b){return sessionWhen(a)-sessionWhen(b);});
+    var allFuture=sessions.filter(function(s){var d=sessionWhen(s);return !isNaN(d)&&d>=now&&!/cancel|no_show/i.test(s.status||'');}).sort(function(a,b){return sessionWhen(a)-sessionWhen(b);});
+    var upcoming=allFuture.filter(function(s){return sessionWhen(s)<weekEnd;});
     var today=upcoming.filter(function(s){return String(s.session_date||s.date||'').slice(0,10)===todayKey;});
     var up=document.getElementById('hdUpcoming');if(up)up.textContent=upcoming.length;
     var label=document.getElementById('hdTodayLabel');if(label)label.textContent=now.toLocaleDateString([],{weekday:'long',month:'long',day:'numeric'});
     var list=document.getElementById('hdToday');if(list)list.innerHTML=today.length?today.map(function(s){var p=paymentLabel(s);return '<div class="hd-session"><div class="hd-time">'+e(time(sessionWhen(s)))+'</div><div><div class="hd-client">'+e(s.client_name||s.client||'Client')+'</div><div class="hd-service">'+e(s.service||s.service_type||'Session')+'</div></div><div class="'+p.cls+'">'+p.text+'</div></div>';}).join(''):'<div class="hd-empty">No sessions scheduled for today.</div>';
     var week=document.getElementById('hdWeek');if(week)week.innerHTML=Array.from({length:7},function(_,i){var d=new Date(now);d.setDate(d.getDate()+i);var dk=d.toISOString().slice(0,10),count=upcoming.filter(function(s){return String(s.session_date||s.date||'').slice(0,10)===dk;}).length;return '<div class="hd-week-day">'+e(d.toLocaleDateString([],{weekday:'short'}))+'<strong>'+count+'</strong></div>';}).join('');
-    var next=upcoming[0],name=document.getElementById('hdNextName'),meta=document.getElementById('hdNextMeta'),actions=document.getElementById('hdNextActions');
+    var next=allFuture[0],name=document.getElementById('hdNextName'),meta=document.getElementById('hdNextMeta'),actions=document.getElementById('hdNextActions');
     if(next){var n=next.client_name||next.client||'Client',when=sessionWhen(next);name.textContent=n;meta.textContent=when.toLocaleDateString([],{weekday:'short',month:'short',day:'numeric'})+' · '+time(when)+' · '+(next.service||next.service_type||'Session');var links=contactLinks(n);actions.innerHTML=(links?'<div class="hd-contact">'+links+'</div>':'')+'<button type="button" class="hd-secondary" onclick="showTab(\'booking\')">View Details</button>';}
     else if(actions)actions.innerHTML='<button type="button" class="hd-secondary" onclick="showTab(\'booking\')">View Calendar</button>';
   }
-  function renderActivity(sessions){var el=document.getElementById('hdActivity');if(!el)return;var rows=sessions.filter(function(s){return !isNaN(sessionWhen(s));}).sort(function(a,b){return sessionWhen(b)-sessionWhen(a);}).slice(0,5);el.innerHTML=rows.length?rows.map(function(s){var n=s.client_name||s.client||'Client',d=sessionWhen(s),past=d<new Date(),links=contactLinks(n);return '<li><div class="hd-activity-name">'+e(n)+'</div><div class="hd-activity-text">'+(past?'Completed ':'Booked ')+e(s.service||s.service_type||'a session')+'.</div><div class="hd-activity-time">'+e(d.toLocaleDateString([],{month:'short',day:'numeric',year:'numeric'}))+'</div>'+(links?'<div class="hd-contact">'+links+'</div>':'')+'</li>';}).join(''):'<li class="hd-empty">No recent client activity.</li>';}
+  function renderActivity(sessions){var el=document.getElementById('hdActivity');if(!el)return;var rows=sessions.filter(function(s){return !isNaN(sessionWhen(s))&&!/cancel|no_show/i.test(s.status||'');}).sort(function(a,b){return sessionWhen(b)-sessionWhen(a);}).slice(0,5);el.innerHTML=rows.length?rows.map(function(s){var n=s.client_name||s.client||'Client',d=sessionWhen(s),past=d<new Date(),links=contactLinks(n);return '<li><div class="hd-activity-name">'+e(n)+'</div><div class="hd-activity-text">'+(past?'Completed ':'Booked ')+e(s.service||s.service_type||'a session')+'.</div><div class="hd-activity-time">'+e(d.toLocaleDateString([],{month:'short',day:'numeric',year:'numeric'}))+'</div>'+(links?'<div class="hd-contact">'+links+'</div>':'')+'</li>';}).join(''):'<li class="hd-empty">No recent client activity.</li>';}
   async function loadClients(sessions){
     var token=sessionStorage.getItem('rea_api_token')||'',clients=[];
     var sessionNames={},sessionIds={};
@@ -16472,11 +16480,21 @@ function _dashAnswerBusinessQuestion(q, ctx) {
     hdContacts={};clients.forEach(function(c){var n=c.full_name||c.name||'';if(sessionIds[String(c.id)]||sessionNames[key(n)])hdContacts[key(n)]={email:c.email||'',phone:c.phone||''};});
     sessions.forEach(function(s){var n=s.client_name||s.client||'',k=key(n);if(k&&!hdContacts[k])hdContacts[k]={email:s.client_email||s.email||'',phone:s.client_phone||s.phone||''};});
     var now=new Date(),clientMap={};sessions.forEach(function(s){var n=s.client_name||s.client||'',k=key(n),d=sessionWhen(s);if(!k||isNaN(d))return;if(!clientMap[k])clientMap[k]={name:n,email:'',phone:'',last:null,next:null,count:0};var row=clientMap[k];row.count++;if(d<now&&(!row.last||d>row.last))row.last=d;if(d>=now&&(!row.next||d<row.next))row.next=d;});
-    Object.keys(clientMap).forEach(function(k){clientMap[k].email=(hdContacts[k]||{}).email||'';clientMap[k].phone=(hdContacts[k]||{}).phone||'';});hdRealClientRows=Object.values(clientMap).sort(function(a,b){if(a.next&&!b.next)return -1;if(!a.next&&b.next)return 1;return String(a.name).localeCompare(String(b.name));});renderRealClients();
+    Object.keys(clientMap).forEach(function(k){clientMap[k].email=(hdContacts[k]||{}).email||'';clientMap[k].phone=(hdContacts[k]||{}).phone||'';});hdRealClientRows=Object.values(clientMap).sort(function(a,b){if(a.next&&!b.next)return -1;if(!a.next&&b.next)return 1;return String(a.name).localeCompare(String(b.name));});renderRealClients();var dashBody=document.getElementById('hdDashboardClientBody');if(dashBody)dashBody.innerHTML=clientRowsHtml(hdRealClientRows.slice(0,10),'No authenticated production clients with sessions were found.');
     var el=document.getElementById('hdClients');if(el)el.textContent=Object.keys(sessionNames).length;
     renderSchedule(sessions);renderActivity(sessions);
   }
   async function loadRevenue(){var token=sessionStorage.getItem('rea_api_token')||'',el=document.getElementById('hdRevenue');try{if(!token)throw 0;var r=await fetch('/.netlify/functions/financial?section=ledger',{headers:{'X-Dashboard-Token':token}});if(!r.ok)throw 0;var entries=(await r.json()).entries||[],now=new Date(),total=entries.filter(function(x){var d=new Date(x.entry_date||x.created_at);return x.entry_type==='payment'&&!shouldSkipEntry(x.client_name||'',x.client_email||'')&&d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();}).reduce(function(sum,x){return sum+(Number(x.amount)||0);},0);el.textContent=money(total);}catch(x){if(el)el.textContent='—';}}
+  window.refreshSquareForHandoff=function(){
+    if(hdSquareLoading)return hdSquareLoading;
+    hdSquareLoading=fetch('/.netlify/functions/square-sync?days_back=90&days_forward=60').then(function(r){if(!r.ok)throw new Error('Square schedule unavailable');return r.json();}).then(function(data){
+      var notice=document.getElementById('hdScheduleNotice');if(notice){notice.style.display='none';notice.textContent='';}
+      var square=(data.bookings||[]).filter(function(b){return !shouldSkipEntry(b.client||'',b.email||'');}).map(function(b){return _normalizeScheduleSession(Object.assign({},b,{client_name:b.client,client_email:b.email||'',client_phone:b.phone||'',session_date:b.date,session_time:b.time,scheduleSource:'live-square'}));});
+      var base=(_scheduleStore.sessions||[]).filter(function(s){return key(s.scheduleSource)!=='live-square';}),seen={};base.forEach(function(s){var id=s.square_booking_id||s.squareBookingId;seen[id?('id:'+id):('slot:'+key(s.client_name||s.client)+'|'+(s.session_date||s.date)+'|'+(s.session_time||s.time))]=true;});
+      square.forEach(function(s){var id=s.square_booking_id||s.squareBookingId,k=id?('id:'+id):('slot:'+key(s.client_name||s.client)+'|'+(s.session_date||s.date)+'|'+(s.session_time||s.time));if(!seen[k]){seen[k]=true;base.push(s);}});
+      _scheduleStore.sessions=base;_refreshScheduleConsumers();return square;
+    }).catch(function(){var notice=document.getElementById('hdScheduleNotice');if(notice){notice.style.display='block';notice.innerHTML='Upcoming Square appointments cannot load because the Square production connection is not configured. <a href="https://squareup.com/dashboard/appointments" target="_blank" rel="noopener">Open Square Dashboard ↗</a>';}return [];}).finally(function(){hdSquareLoading=null;});return hdSquareLoading;
+  };
   window.renderHandoffDashboard=function(){var sessions=productionSessions();renderSchedule(sessions);renderActivity(sessions);loadClients(sessions);loadRevenue();};
   document.addEventListener('DOMContentLoaded',function(){var el=document.getElementById('hdTodayLabel'),now=new Date();if(el)el.textContent=now.toLocaleDateString([],{weekday:'long',month:'long',day:'numeric'});renderHandoffDashboard();});
 })();
