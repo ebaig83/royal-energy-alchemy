@@ -4780,6 +4780,7 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
 .ck-nav .ck-nav-divider, .ck-nav .ck-nav-section:not(:first-child), .ck-sidebar-footer,
 .ck-density, .ck-search-wrap, .ck-notif-wrap, .ck-freshness { display:none !important; }
 #tab-home > :not(#handoffDashboard) { display:none !important; }
+#tab-clients > :not(#hdRealClients) { display:none !important; }
 .hd-wrap { max-width:1180px; margin:0 auto; padding:2px 0 34px; }
 .hd-heading { display:flex; justify-content:space-between; align-items:flex-end; gap:18px; margin-bottom:18px; }
 .hd-eyebrow { font:9px 'Cinzel',serif; letter-spacing:.27em; color:#e8b84b; text-transform:uppercase; margin-bottom:7px; }
@@ -4824,6 +4825,13 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
 .hd-activity-time { color:#595369; font:11px 'EB Garamond',serif; margin-top:4px; }
 .hd-contact { display:flex; gap:10px; margin-top:6px; }
 .hd-contact a { color:#b99a55; font:9px 'Cinzel',serif; text-decoration:none; }
+.hd-client-toolbar { display:flex; justify-content:space-between; align-items:center; gap:14px; margin-bottom:16px; }
+.hd-client-search { width:300px; max-width:100%; background:#070511; border:1px solid rgba(176,158,248,.2); border-radius:5px; color:#eee9fb; padding:10px 12px; font:15px 'EB Garamond',serif; }
+.hd-client-search:focus { outline:none; border-color:rgba(232,184,75,.55); }
+.hd-table-wrap { overflow-x:auto; }
+.hd-table { width:100%; min-width:670px; border-collapse:collapse; }
+.hd-table th { color:#716a84; font:8px 'Cinzel',serif; letter-spacing:.15em; text-align:left; text-transform:uppercase; padding:11px 17px; }
+.hd-table td { color:#ded8ec; font:15px 'EB Garamond',serif; padding:13px 17px; border-top:1px solid rgba(176,158,248,.08); }
 @media(max-width:760px){
   .hd-heading{align-items:flex-start;flex-direction:column}.hd-stats{grid-template-columns:1fr}.hd-stat{display:flex;align-items:center;justify-content:space-between;gap:12px}.hd-stat-value{font-size:21px;margin:0}.hd-stat-note{display:none}.hd-next{grid-template-columns:auto 1fr}.hd-actions{grid-column:2;justify-content:flex-start}.hd-grid{grid-template-columns:1fr}.hd-week{grid-template-columns:repeat(4,1fr)}.hd-session{grid-template-columns:65px 1fr}.hd-paid{grid-column:2}.hd-title{font-size:20px}
 }
@@ -5313,6 +5321,10 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
 
   <!-- CLIENTS TAB -->
   <div class="tab-content" id="tab-clients">
+    <section id="hdRealClients" class="hd-wrap" aria-label="Production client directory">
+      <div class="hd-client-toolbar"><div><div class="hd-eyebrow">Client Directory</div><h1 class="hd-title">Clients Helped &amp; Scheduled</h1><p class="hd-sub" id="hdRealClientNote">Authenticated production records only.</p></div><input id="hdRealClientSearch" class="hd-client-search" type="search" placeholder="Search name, email, or phone…" aria-label="Search production clients" oninput="renderRealClients()"></div>
+      <div class="hd-panel"><div class="hd-table-wrap"><table class="hd-table"><thead><tr><th>Client</th><th>Contact</th><th>Last Session</th><th>Next Session</th><th>Sessions</th></tr></thead><tbody id="hdRealClientBody"><tr><td colspan="5" class="hd-empty">Loading production clients…</td></tr></tbody></table></div></div>
+    </section>
     <div class="section-title" style="justify-content:space-between">
       <span>Client Roster</span>
       <div style="display:flex;align-items:center;gap:12px">
@@ -6178,6 +6190,7 @@ function showTab(name) {
   if (tc) { tc.style.display='block'; tc.classList.add('active'); }
   // Tab-specific renders
   if (name === 'home')        { try { renderHomeDashboard(); } catch(e){ console.error('renderHomeDashboard', e); } try { renderHandoffDashboard(); } catch(e){ console.error('renderHandoffDashboard', e); } }
+  if (name === 'clients')     { try { renderRealClients(); } catch(e){ console.error('renderRealClients', e); } }
   if (name === 'environment') { try { renderTodayEnvCard(); } catch(e){} try { renderEnvLog(); } catch(e){} try { renderPatterns(); } catch(e){} }
   if (name === 'onboarding')  { try { loadOnboardingQueue(); } catch(e){ console.error('loadOnboardingQueue', e); } }
   if (name === 'booking')     { try { organizeBookingWorkspace(); renderCal(); renderUpcoming(); renderWaitlist(); updateCapacityStats(); renderCancellationLog(); renderBooking(); renderSyncLastRun(); loadCancelRequests(); updateBookingCommandKpis(); } catch(e){ console.error('booking tab',e); } }
@@ -16415,13 +16428,29 @@ function _dashAnswerBusinessQuestion(q, ctx) {
 (function(){
   'use strict';
   var hdContacts = {};
+  var hdRealClientRows = [];
   function e(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
   function sessionWhen(s){var d=s.session_date||s.date||'',t=s.session_time||s.time||'00:00';return new Date(String(d).slice(0,10)+'T'+String(t).slice(0,5));}
   function key(v){return String(v||'').toLowerCase().trim();}
+  function productionSessions(){
+    if(typeof _scheduleStore==='undefined'||!_scheduleStore.loaded)return [];
+    return _scheduleStore.sessions.filter(function(s){
+      var name=s.client_name||s.client||'',email=s.client_email||s.email||'',source=key(s.source),scheduleSource=key(s.scheduleSource);
+      return scheduleSource==='supabase'&&!shouldSkipEntry(name,email)&&s.is_test!==true&&source!=='test'&&source!=='demo'&&source!=='seed';
+    });
+  }
   function money(v){return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(Number(v)||0);}
   function time(v){return v.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});}
   function paymentLabel(s){var paid=Number(s.amount_paid||0),due=Number(s.amount_due!=null?s.amount_due:(s.price||0));var status=String(s.payment_status||'').toLowerCase();return status==='paid'||(due>0&&paid>=due)?{text:'Paid',cls:'hd-paid'}:{text:'Payment due',cls:'hd-paid hd-due'};}
   function contactLinks(name){var c=hdContacts[key(name)]||{},out=[];if(c.email)out.push('<a href="mailto:'+e(c.email)+'">Email</a>');if(c.phone)out.push('<a href="tel:'+e(c.phone)+'">Call</a>');return out.join('');}
+  function dateText(v){if(!v)return '—';var d=new Date(v);return isNaN(d)?'—':d.toLocaleDateString([],{month:'short',day:'numeric',year:'numeric'});}
+  window.renderRealClients=function(){
+    var body=document.getElementById('hdRealClientBody');if(!body)return;
+    var q=key((document.getElementById('hdRealClientSearch')||{}).value||'');
+    var rows=hdRealClientRows.filter(function(c){return !q||key([c.name,c.email,c.phone].join(' ')).includes(q);});
+    var note=document.getElementById('hdRealClientNote');if(note)note.textContent=(q?rows.length+' matching':'Production')+' client record'+(rows.length===1?'':'s')+' with session history.';
+    body.innerHTML=rows.length?rows.map(function(c){var contact=[];if(c.email)contact.push('<a href="mailto:'+e(c.email)+'" style="color:#cfc7e8">'+e(c.email)+'</a>');if(c.phone)contact.push('<a href="tel:'+e(c.phone)+'" style="color:#cfc7e8">'+e(c.phone)+'</a>');return '<tr><td>'+e(c.name)+'</td><td>'+(contact.join('<br>')||'—')+'</td><td>'+dateText(c.last)+'</td><td>'+dateText(c.next)+'</td><td>'+c.count+'</td></tr>';}).join(''):'<tr><td colspan="5" class="hd-empty">'+(q?'No production clients match this search.':'No authenticated production clients with sessions were found.')+'</td></tr>';
+  };
   function renderSchedule(sessions){
     var now=new Date(),todayKey=now.toISOString().slice(0,10),weekEnd=new Date(now);weekEnd.setDate(weekEnd.getDate()+7);
     var upcoming=sessions.filter(function(s){var d=sessionWhen(s);return !isNaN(d)&&d>=now&&d<weekEnd&&!/cancel/i.test(s.status||'');}).sort(function(a,b){return sessionWhen(a)-sessionWhen(b);});
@@ -16435,9 +16464,20 @@ function _dashAnswerBusinessQuestion(q, ctx) {
     else if(actions)actions.innerHTML='<button type="button" class="hd-secondary" onclick="showTab(\'booking\')">View Calendar</button>';
   }
   function renderActivity(sessions){var el=document.getElementById('hdActivity');if(!el)return;var rows=sessions.filter(function(s){return !isNaN(sessionWhen(s));}).sort(function(a,b){return sessionWhen(b)-sessionWhen(a);}).slice(0,5);el.innerHTML=rows.length?rows.map(function(s){var n=s.client_name||s.client||'Client',d=sessionWhen(s),past=d<new Date(),links=contactLinks(n);return '<li><div class="hd-activity-name">'+e(n)+'</div><div class="hd-activity-text">'+(past?'Completed ':'Booked ')+e(s.service||s.service_type||'a session')+'.</div><div class="hd-activity-time">'+e(d.toLocaleDateString([],{month:'short',day:'numeric',year:'numeric'}))+'</div>'+(links?'<div class="hd-contact">'+links+'</div>':'')+'</li>';}).join(''):'<li class="hd-empty">No recent client activity.</li>';}
-  async function loadClients(sessions){var token=sessionStorage.getItem('rea_api_token')||'',clients=[];try{if(!token)throw 0;var r=await fetch('/.netlify/functions/clients',{headers:{'X-Dashboard-Token':token}});if(!r.ok)throw 0;clients=(await r.json()).clients||[];}catch(x){var seen={};sessions.forEach(function(s){var n=s.client_name||s.client;if(n&&!seen[key(n)]){seen[key(n)]=1;clients.push({full_name:n,email:s.client_email||s.email||'',phone:s.client_phone||s.phone||''});}});}hdContacts={};clients.forEach(function(c){hdContacts[key(c.full_name||c.name)]={email:c.email||c.client_email||'',phone:c.phone||c.client_phone||''};});var el=document.getElementById('hdClients');if(el)el.textContent=clients.length;renderSchedule(sessions);renderActivity(sessions);}
-  async function loadRevenue(){var token=sessionStorage.getItem('rea_api_token')||'',el=document.getElementById('hdRevenue');try{if(!token)throw 0;var r=await fetch('/.netlify/functions/financial?section=ledger',{headers:{'X-Dashboard-Token':token}});if(!r.ok)throw 0;var entries=(await r.json()).entries||[],now=new Date(),total=entries.filter(function(x){var d=new Date(x.entry_date||x.created_at);return x.entry_type==='payment'&&d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();}).reduce(function(sum,x){return sum+(Number(x.amount)||0);},0);el.textContent=money(total);}catch(x){if(el)el.textContent='—';}}
-  window.renderHandoffDashboard=function(){var sessions=typeof getScheduleSessions==='function'?getScheduleSessions():[];renderSchedule(sessions);renderActivity(sessions);loadClients(sessions);loadRevenue();};
+  async function loadClients(sessions){
+    var token=sessionStorage.getItem('rea_api_token')||'',clients=[];
+    var sessionNames={},sessionIds={};
+    sessions.forEach(function(s){var n=s.client_name||s.client;if(n)sessionNames[key(n)]=n;if(s.client_id)sessionIds[String(s.client_id)]=true;});
+    try{if(!token)throw 0;var r=await fetch('/.netlify/functions/clients',{headers:{'X-Dashboard-Token':token}});if(!r.ok)throw 0;clients=(await r.json()).clients||[];}catch(x){clients=[];}
+    hdContacts={};clients.forEach(function(c){var n=c.full_name||c.name||'';if(sessionIds[String(c.id)]||sessionNames[key(n)])hdContacts[key(n)]={email:c.email||'',phone:c.phone||''};});
+    sessions.forEach(function(s){var n=s.client_name||s.client||'',k=key(n);if(k&&!hdContacts[k])hdContacts[k]={email:s.client_email||s.email||'',phone:s.client_phone||s.phone||''};});
+    var now=new Date(),clientMap={};sessions.forEach(function(s){var n=s.client_name||s.client||'',k=key(n),d=sessionWhen(s);if(!k||isNaN(d))return;if(!clientMap[k])clientMap[k]={name:n,email:'',phone:'',last:null,next:null,count:0};var row=clientMap[k];row.count++;if(d<now&&(!row.last||d>row.last))row.last=d;if(d>=now&&(!row.next||d<row.next))row.next=d;});
+    Object.keys(clientMap).forEach(function(k){clientMap[k].email=(hdContacts[k]||{}).email||'';clientMap[k].phone=(hdContacts[k]||{}).phone||'';});hdRealClientRows=Object.values(clientMap).sort(function(a,b){if(a.next&&!b.next)return -1;if(!a.next&&b.next)return 1;return String(a.name).localeCompare(String(b.name));});renderRealClients();
+    var el=document.getElementById('hdClients');if(el)el.textContent=Object.keys(sessionNames).length;
+    renderSchedule(sessions);renderActivity(sessions);
+  }
+  async function loadRevenue(){var token=sessionStorage.getItem('rea_api_token')||'',el=document.getElementById('hdRevenue');try{if(!token)throw 0;var r=await fetch('/.netlify/functions/financial?section=ledger',{headers:{'X-Dashboard-Token':token}});if(!r.ok)throw 0;var entries=(await r.json()).entries||[],now=new Date(),total=entries.filter(function(x){var d=new Date(x.entry_date||x.created_at);return x.entry_type==='payment'&&!shouldSkipEntry(x.client_name||'',x.client_email||'')&&d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();}).reduce(function(sum,x){return sum+(Number(x.amount)||0);},0);el.textContent=money(total);}catch(x){if(el)el.textContent='—';}}
+  window.renderHandoffDashboard=function(){var sessions=productionSessions();renderSchedule(sessions);renderActivity(sessions);loadClients(sessions);loadRevenue();};
   document.addEventListener('DOMContentLoaded',function(){var el=document.getElementById('hdTodayLabel'),now=new Date();if(el)el.textContent=now.toLocaleDateString([],{weekday:'long',month:'long',day:'numeric'});renderHandoffDashboard();});
 })();
 </script>
