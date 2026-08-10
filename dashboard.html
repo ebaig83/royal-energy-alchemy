@@ -4771,6 +4771,62 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
 .aichat-chip:hover { border-color: rgba(232,184,75,.55); color: #ffd977; background: rgba(232,184,75,.07); }
 .aichat-response { margin-top: 10px; background: rgba(232,184,75,.05); border: 1px solid rgba(232,184,75,.16); border-radius: 6px; padding: 11px 14px; font-family: 'EB Garamond', serif; font-size: 15px; color: #ece8ff; line-height: 1.6; }
 .aichat-thinking { color: rgba(232,184,75,.45); font-style: italic; font-size: 13px; }
+
+/* Streamlined handoff dashboard; legacy workspaces stay mounted for compatibility. */
+.ck-nav .ck-nav-item { display:none !important; }
+.ck-nav .ck-nav-item[onclick="showTab('home')"],
+.ck-nav .ck-nav-item[onclick="showTab('clients')"],
+.ck-nav .ck-nav-item[onclick="showTab('booking')"] { display:flex !important; }
+.ck-nav .ck-nav-divider, .ck-nav .ck-nav-section:not(:first-child), .ck-sidebar-footer,
+.ck-density, .ck-search-wrap, .ck-notif-wrap, .ck-freshness { display:none !important; }
+#tab-home > :not(#handoffDashboard) { display:none !important; }
+.hd-wrap { max-width:1180px; margin:0 auto; padding:2px 0 34px; }
+.hd-heading { display:flex; justify-content:space-between; align-items:flex-end; gap:18px; margin-bottom:18px; }
+.hd-eyebrow { font:9px 'Cinzel',serif; letter-spacing:.27em; color:#e8b84b; text-transform:uppercase; margin-bottom:7px; }
+.hd-title { margin:0; color:#f3efff; font:500 24px 'Cinzel',serif; }
+.hd-sub { margin:7px 0 0; color:#8a849e; font:15px 'EB Garamond',serif; }
+.hd-primary,.hd-secondary { border-radius:5px; padding:9px 13px; font:9px 'Cinzel',serif; letter-spacing:.12em; text-transform:uppercase; cursor:pointer; }
+.hd-primary { border:1px solid #e8b84b; background:#e8b84b; color:#090611; }
+.hd-secondary { border:1px solid rgba(232,184,75,.35); background:transparent; color:#e8b84b; }
+.hd-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin-bottom:15px; }
+.hd-stat,.hd-panel,.hd-next { background:rgba(10,7,22,.82); border:1px solid rgba(176,158,248,.14); border-radius:8px; }
+.hd-stat { padding:17px 19px; }
+.hd-stat-label { color:#77718f; font:9px 'Cinzel',serif; letter-spacing:.17em; text-transform:uppercase; }
+.hd-stat-value { color:#f2edff; font:26px 'Cinzel',serif; margin-top:7px; }
+.hd-stat-note { color:#6f6981; font:13px 'EB Garamond',serif; margin-top:4px; }
+.hd-next { display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:14px; align-items:center; padding:15px 18px; margin-bottom:15px; border-color:rgba(232,184,75,.32); background:rgba(232,184,75,.045); }
+.hd-next-icon { width:38px; height:38px; border:1px solid rgba(232,184,75,.42); border-radius:50%; display:grid; place-items:center; color:#e8b84b; }
+.hd-next-label { color:#b99546; font:8px 'Cinzel',serif; letter-spacing:.18em; text-transform:uppercase; }
+.hd-next-name { color:#f0ebfc; font:17px 'EB Garamond',serif; margin-top:4px; }
+.hd-next-meta { color:#817a92; font:13px 'EB Garamond',serif; margin-top:2px; }
+.hd-actions { display:flex; gap:7px; flex-wrap:wrap; justify-content:flex-end; }
+.hd-actions a { text-decoration:none; }
+.hd-grid { display:grid; grid-template-columns:minmax(0,1.35fr) minmax(285px,.75fr); gap:15px; align-items:start; }
+.hd-panel { overflow:hidden; }
+.hd-panel-head { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:16px 18px; border-bottom:1px solid rgba(176,158,248,.12); }
+.hd-panel-title { color:#e8b84b; font:9px 'Cinzel',serif; letter-spacing:.19em; text-transform:uppercase; }
+.hd-day { padding:13px 18px 7px; color:#77718f; font:9px 'Cinzel',serif; letter-spacing:.13em; text-transform:uppercase; }
+.hd-session { display:grid; grid-template-columns:76px minmax(0,1fr) auto; gap:12px; align-items:center; padding:12px 18px; border-top:1px solid rgba(176,158,248,.08); }
+.hd-time { color:#e8b84b; font:13px 'EB Garamond',serif; }
+.hd-client { color:#e9e4f6; font:15px 'EB Garamond',serif; }
+.hd-service { color:#756f88; font:12px 'EB Garamond',serif; margin-top:2px; }
+.hd-paid { color:#70cba6; font:8px 'Cinzel',serif; letter-spacing:.08em; white-space:nowrap; }
+.hd-due { color:#e3a862; }
+.hd-empty { color:#77718f; font:italic 15px 'EB Garamond',serif; padding:22px 18px; }
+.hd-week { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; padding:14px 18px 17px; }
+.hd-week-day { text-align:center; padding:8px 2px; background:rgba(176,158,248,.045); color:#716b83; font:8px 'Cinzel',serif; }
+.hd-week-day strong { display:block; color:#eee9fa; font:16px 'EB Garamond',serif; font-weight:400; margin-top:5px; }
+.hd-activity { list-style:none; padding:0; margin:0; }
+.hd-activity li { padding:13px 18px; border-top:1px solid rgba(176,158,248,.08); }
+.hd-activity li:first-child { border-top:0; }
+.hd-activity-name { color:#e9e4f6; font:14px 'EB Garamond',serif; }
+.hd-activity-text { color:#7c758e; font:12px 'EB Garamond',serif; margin-top:3px; }
+.hd-activity-time { color:#595369; font:11px 'EB Garamond',serif; margin-top:4px; }
+.hd-contact { display:flex; gap:10px; margin-top:6px; }
+.hd-contact a { color:#b99a55; font:9px 'Cinzel',serif; text-decoration:none; }
+@media(max-width:760px){
+  .hd-heading{align-items:flex-start;flex-direction:column}.hd-stats{grid-template-columns:1fr}.hd-stat{display:flex;align-items:center;justify-content:space-between;gap:12px}.hd-stat-value{font-size:21px;margin:0}.hd-stat-note{display:none}.hd-next{grid-template-columns:auto 1fr}.hd-actions{grid-column:2;justify-content:flex-start}.hd-grid{grid-template-columns:1fr}.hd-week{grid-template-columns:repeat(4,1fr)}.hd-session{grid-template-columns:65px 1fr}.hd-paid{grid-column:2}.hd-title{font-size:20px}
+}
 </style>
 </head>
 <body>
@@ -4803,7 +4859,7 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
     </div>
 
     <nav class="ck-nav">
-      <div class="ck-nav-section">Command</div>
+      <div class="ck-nav-section">Practice</div>
       <button class="tab ck-nav-item active" onclick="showTab('home')">
         <span class="nav-icon">⌂</span><span class="nav-text">Dashboard</span>
       </button>
@@ -4895,6 +4951,27 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
 
   <!-- HOME TAB — command-center information architecture -->
   <div class="tab-content active" id="tab-home" style="display:block">
+
+    <section id="handoffDashboard" class="hd-wrap" aria-label="Practice dashboard">
+      <div class="hd-heading">
+        <div><div class="hd-eyebrow">Practitioner Dashboard</div><h1 class="hd-title">Today at a Glance</h1><p class="hd-sub">A clear view of your practice and schedule.</p></div>
+        <button type="button" class="hd-primary" onclick="showTab('booking')">+ New Appointment</button>
+      </div>
+      <div class="hd-stats">
+        <div class="hd-stat"><div><div class="hd-stat-label">Revenue</div><div class="hd-stat-note">Month to date</div></div><div class="hd-stat-value" id="hdRevenue">—</div></div>
+        <div class="hd-stat"><div><div class="hd-stat-label">Upcoming Sessions</div><div class="hd-stat-note">Today and this week</div></div><div class="hd-stat-value" id="hdUpcoming">—</div></div>
+        <div class="hd-stat"><div><div class="hd-stat-label">Total Clients</div><div class="hd-stat-note">Client directory</div></div><div class="hd-stat-value" id="hdClients">—</div></div>
+      </div>
+      <section class="hd-next" id="hdNext" aria-label="Next appointment"><div class="hd-next-icon">✦</div><div><div class="hd-next-label">Next Appointment</div><div class="hd-next-name" id="hdNextName">No upcoming appointment</div><div class="hd-next-meta" id="hdNextMeta">Your schedule is clear.</div></div><div class="hd-actions" id="hdNextActions"><button type="button" class="hd-secondary" onclick="showTab('booking')">View Calendar</button></div></section>
+      <div class="hd-grid">
+        <section class="hd-panel">
+          <div class="hd-panel-head"><div class="hd-panel-title">Today's Schedule</div><button type="button" class="hd-secondary" onclick="showTab('booking')">View Calendar</button></div>
+          <div class="hd-day" id="hdTodayLabel"></div><div id="hdToday"></div>
+          <div class="hd-panel-head"><div class="hd-panel-title">Week at a Glance</div></div><div class="hd-week" id="hdWeek"></div>
+        </section>
+        <section class="hd-panel"><div class="hd-panel-head"><div class="hd-panel-title">Recent Client Activity</div><button type="button" class="hd-secondary" onclick="showTab('clients')">View Clients</button></div><ul class="hd-activity" id="hdActivity"><li class="hd-empty">Loading recent activity…</li></ul></section>
+      </div>
+    </section>
 
     <!-- ══ ROW 1: Executive KPI Strip ══ -->
     <div class="cc-ops">
@@ -6100,7 +6177,7 @@ function showTab(name) {
   var tc = document.getElementById('tab-' + name);
   if (tc) { tc.style.display='block'; tc.classList.add('active'); }
   // Tab-specific renders
-  if (name === 'home')        { try { renderHomeDashboard(); } catch(e){ console.error('renderHomeDashboard', e); } }
+  if (name === 'home')        { try { renderHomeDashboard(); } catch(e){ console.error('renderHomeDashboard', e); } try { renderHandoffDashboard(); } catch(e){ console.error('renderHandoffDashboard', e); } }
   if (name === 'environment') { try { renderTodayEnvCard(); } catch(e){} try { renderEnvLog(); } catch(e){} try { renderPatterns(); } catch(e){} }
   if (name === 'onboarding')  { try { loadOnboardingQueue(); } catch(e){ console.error('loadOnboardingQueue', e); } }
   if (name === 'booking')     { try { organizeBookingWorkspace(); renderCal(); renderUpcoming(); renderWaitlist(); updateCapacityStats(); renderCancellationLog(); renderBooking(); renderSyncLastRun(); loadCancelRequests(); updateBookingCommandKpis(); } catch(e){ console.error('booking tab',e); } }
@@ -9021,6 +9098,7 @@ function getScheduleSessions() {
 }
 function _refreshScheduleConsumers() {
   try { renderHomeDashboard(); } catch(e) {}
+  try { renderHandoffDashboard(); } catch(e) {}
   try { renderCal(); } catch(e) {}
   try { renderUpcoming(); } catch(e) {}
   try { renderBooking(); } catch(e) {}
@@ -16331,6 +16409,38 @@ function _dashAnswerBusinessQuestion(q, ctx) {
     <p style="font-family:'EB Garamond',serif;font-size:12px;color:#3a3860;margin-top:16px;margin-bottom:0;text-align:center">This creates a Supabase session record and reserves the slot automatically.</p>
   </div>
 </div>
+
+<script>
+// Read-only handoff dashboard powered by existing sessions, clients, and ledger data.
+(function(){
+  'use strict';
+  var hdContacts = {};
+  function e(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function sessionWhen(s){var d=s.session_date||s.date||'',t=s.session_time||s.time||'00:00';return new Date(String(d).slice(0,10)+'T'+String(t).slice(0,5));}
+  function key(v){return String(v||'').toLowerCase().trim();}
+  function money(v){return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(Number(v)||0);}
+  function time(v){return v.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});}
+  function paymentLabel(s){var paid=Number(s.amount_paid||0),due=Number(s.amount_due!=null?s.amount_due:(s.price||0));var status=String(s.payment_status||'').toLowerCase();return status==='paid'||(due>0&&paid>=due)?{text:'Paid',cls:'hd-paid'}:{text:'Payment due',cls:'hd-paid hd-due'};}
+  function contactLinks(name){var c=hdContacts[key(name)]||{},out=[];if(c.email)out.push('<a href="mailto:'+e(c.email)+'">Email</a>');if(c.phone)out.push('<a href="tel:'+e(c.phone)+'">Call</a>');return out.join('');}
+  function renderSchedule(sessions){
+    var now=new Date(),todayKey=now.toISOString().slice(0,10),weekEnd=new Date(now);weekEnd.setDate(weekEnd.getDate()+7);
+    var upcoming=sessions.filter(function(s){var d=sessionWhen(s);return !isNaN(d)&&d>=now&&d<weekEnd&&!/cancel/i.test(s.status||'');}).sort(function(a,b){return sessionWhen(a)-sessionWhen(b);});
+    var today=upcoming.filter(function(s){return String(s.session_date||s.date||'').slice(0,10)===todayKey;});
+    var up=document.getElementById('hdUpcoming');if(up)up.textContent=upcoming.length;
+    var label=document.getElementById('hdTodayLabel');if(label)label.textContent=now.toLocaleDateString([],{weekday:'long',month:'long',day:'numeric'});
+    var list=document.getElementById('hdToday');if(list)list.innerHTML=today.length?today.map(function(s){var p=paymentLabel(s);return '<div class="hd-session"><div class="hd-time">'+e(time(sessionWhen(s)))+'</div><div><div class="hd-client">'+e(s.client_name||s.client||'Client')+'</div><div class="hd-service">'+e(s.service||s.service_type||'Session')+'</div></div><div class="'+p.cls+'">'+p.text+'</div></div>';}).join(''):'<div class="hd-empty">No sessions scheduled for today.</div>';
+    var week=document.getElementById('hdWeek');if(week)week.innerHTML=Array.from({length:7},function(_,i){var d=new Date(now);d.setDate(d.getDate()+i);var dk=d.toISOString().slice(0,10),count=upcoming.filter(function(s){return String(s.session_date||s.date||'').slice(0,10)===dk;}).length;return '<div class="hd-week-day">'+e(d.toLocaleDateString([],{weekday:'short'}))+'<strong>'+count+'</strong></div>';}).join('');
+    var next=upcoming[0],name=document.getElementById('hdNextName'),meta=document.getElementById('hdNextMeta'),actions=document.getElementById('hdNextActions');
+    if(next){var n=next.client_name||next.client||'Client',when=sessionWhen(next);name.textContent=n;meta.textContent=when.toLocaleDateString([],{weekday:'short',month:'short',day:'numeric'})+' · '+time(when)+' · '+(next.service||next.service_type||'Session');var links=contactLinks(n);actions.innerHTML=(links?'<div class="hd-contact">'+links+'</div>':'')+'<button type="button" class="hd-secondary" onclick="showTab(\'booking\')">View Details</button>';}
+    else if(actions)actions.innerHTML='<button type="button" class="hd-secondary" onclick="showTab(\'booking\')">View Calendar</button>';
+  }
+  function renderActivity(sessions){var el=document.getElementById('hdActivity');if(!el)return;var rows=sessions.filter(function(s){return !isNaN(sessionWhen(s));}).sort(function(a,b){return sessionWhen(b)-sessionWhen(a);}).slice(0,5);el.innerHTML=rows.length?rows.map(function(s){var n=s.client_name||s.client||'Client',d=sessionWhen(s),past=d<new Date(),links=contactLinks(n);return '<li><div class="hd-activity-name">'+e(n)+'</div><div class="hd-activity-text">'+(past?'Completed ':'Booked ')+e(s.service||s.service_type||'a session')+'.</div><div class="hd-activity-time">'+e(d.toLocaleDateString([],{month:'short',day:'numeric',year:'numeric'}))+'</div>'+(links?'<div class="hd-contact">'+links+'</div>':'')+'</li>';}).join(''):'<li class="hd-empty">No recent client activity.</li>';}
+  async function loadClients(sessions){var token=sessionStorage.getItem('rea_api_token')||'',clients=[];try{if(!token)throw 0;var r=await fetch('/.netlify/functions/clients',{headers:{'X-Dashboard-Token':token}});if(!r.ok)throw 0;clients=(await r.json()).clients||[];}catch(x){var seen={};sessions.forEach(function(s){var n=s.client_name||s.client;if(n&&!seen[key(n)]){seen[key(n)]=1;clients.push({full_name:n,email:s.client_email||s.email||'',phone:s.client_phone||s.phone||''});}});}hdContacts={};clients.forEach(function(c){hdContacts[key(c.full_name||c.name)]={email:c.email||c.client_email||'',phone:c.phone||c.client_phone||''};});var el=document.getElementById('hdClients');if(el)el.textContent=clients.length;renderSchedule(sessions);renderActivity(sessions);}
+  async function loadRevenue(){var token=sessionStorage.getItem('rea_api_token')||'',el=document.getElementById('hdRevenue');try{if(!token)throw 0;var r=await fetch('/.netlify/functions/financial?section=ledger',{headers:{'X-Dashboard-Token':token}});if(!r.ok)throw 0;var entries=(await r.json()).entries||[],now=new Date(),total=entries.filter(function(x){var d=new Date(x.entry_date||x.created_at);return x.entry_type==='payment'&&d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();}).reduce(function(sum,x){return sum+(Number(x.amount)||0);},0);el.textContent=money(total);}catch(x){if(el)el.textContent='—';}}
+  window.renderHandoffDashboard=function(){var sessions=typeof getScheduleSessions==='function'?getScheduleSessions():[];renderSchedule(sessions);renderActivity(sessions);loadClients(sessions);loadRevenue();};
+  document.addEventListener('DOMContentLoaded',function(){var el=document.getElementById('hdTodayLabel'),now=new Date();if(el)el.textContent=now.toLocaleDateString([],{weekday:'long',month:'long',day:'numeric'});renderHandoffDashboard();});
+})();
+</script>
 
 </body>
 </html>
