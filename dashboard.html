@@ -16454,10 +16454,10 @@ function _dashAnswerBusinessQuestion(q, ctx) {
   function localDateKey(d){var y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');return y+'-'+m+'-'+day;}
   function key(v){return String(v||'').toLowerCase().trim();}
   function productionSessions(){
-    if(typeof _scheduleStore==='undefined'||!_scheduleStore.loaded)return [];
-    return _scheduleStore.sessions.filter(function(s){
+    var source=(typeof _scheduleStore!=='undefined'&&_scheduleStore.loaded)?_scheduleStore.sessions:((typeof getScheduleSessions==='function')?getScheduleSessions():[]);
+    return source.filter(function(s){
       var name=s.client_name||s.client||'',email=s.client_email||s.email||'',source=key(s.source),scheduleSource=key(s.scheduleSource);
-      return (scheduleSource==='supabase'||scheduleSource==='live-square')&&!shouldSkipEntry(name,email)&&s.is_test!==true&&source!=='test'&&source!=='demo'&&source!=='seed';
+      return (!scheduleSource||scheduleSource==='supabase'||scheduleSource==='live-square'||scheduleSource==='manual'||scheduleSource==='local')&&!shouldSkipEntry(name,email)&&s.is_test!==true&&source!=='test'&&source!=='demo'&&source!=='seed';
     });
   }
   function money(v){return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(Number(v)||0);}
@@ -16470,8 +16470,8 @@ function _dashAnswerBusinessQuestion(q, ctx) {
     var body=document.getElementById('hdRealClientBody');if(!body)return;
     var q=key((document.getElementById('hdRealClientSearch')||{}).value||'');
     var rows=hdRealClientRows.filter(function(c){return !q||key([c.name,c.email,c.phone].join(' ')).includes(q);});
-    var note=document.getElementById('hdRealClientNote');if(note)note.textContent=(q?rows.length+' matching':'Production')+' client record'+(rows.length===1?'':'s')+' with session history.';
-    body.innerHTML=clientRowsHtml(rows,q?'No production clients match this search.':'No authenticated production clients with sessions were found.');
+    var note=document.getElementById('hdRealClientNote');if(note)note.textContent=(q?rows.length+' matching':'Production')+' client record'+(rows.length===1?'':'s')+' with session history where available.';
+    body.innerHTML=clientRowsHtml(rows,q?'No production clients match this search.':'No active production clients were found.');
   };
   function renderSchedule(sessions){
     var now=new Date(),todayKey=localDateKey(now),weekEnd=new Date(now);weekEnd.setDate(weekEnd.getDate()+7);
@@ -16488,15 +16488,16 @@ function _dashAnswerBusinessQuestion(q, ctx) {
   }
   function renderActivity(sessions){var el=document.getElementById('hdActivity');if(!el)return;var rows=sessions.filter(function(s){return !isNaN(sessionWhen(s))&&!/cancel|no_show/i.test(s.status||'');}).sort(function(a,b){return sessionWhen(b)-sessionWhen(a);}).slice(0,5);el.innerHTML=rows.length?rows.map(function(s){var n=s.client_name||s.client||'Client',d=sessionWhen(s),past=d<new Date(),links=contactLinks(n);return '<li><div class="hd-activity-name">'+e(n)+'</div><div class="hd-activity-text">'+(past?'Completed ':'Booked ')+e(s.service||s.service_type||'a session')+'.</div><div class="hd-activity-time">'+e(d.toLocaleDateString([],{month:'short',day:'numeric',year:'numeric'}))+'</div>'+(links?'<div class="hd-contact">'+links+'</div>':'')+'</li>';}).join(''):'<li class="hd-empty">No recent client activity.</li>';}
   async function loadClients(sessions){
-    var token=sessionStorage.getItem('rea_api_token')||'',clients=[];
+    var token=sessionStorage.getItem('rea_api_token')||'',clients=[],clientFetchOk=false;
     var sessionNames={},sessionIds={};
     sessions.forEach(function(s){var n=s.client_name||s.client;if(n)sessionNames[key(n)]=n;if(s.client_id)sessionIds[String(s.client_id)]=true;});
-    try{if(!token)throw 0;var r=await fetch('/.netlify/functions/clients',{headers:{'X-Dashboard-Token':token}});if(!r.ok)throw 0;clients=(await r.json()).clients||[];}catch(x){clients=[];}
-    hdContacts={};clients.forEach(function(c){var n=c.full_name||c.name||'';if(sessionIds[String(c.id)]||sessionNames[key(n)])hdContacts[key(n)]={email:c.email||'',phone:c.phone||''};});
+    try{if(!token)throw 0;var r=await fetch('/.netlify/functions/clients',{headers:{'X-Dashboard-Token':token}});if(!r.ok)throw 0;clients=(await r.json()).clients||[];clientFetchOk=true;}catch(x){clients=[];}
+    hdContacts={};clients.forEach(function(c){var n=c.full_name||c.name||'';if(n&&!shouldSkipEntry(n,c.email||''))hdContacts[key(n)]={email:c.email||'',phone:c.phone||''};});
     sessions.forEach(function(s){var n=s.client_name||s.client||'',k=key(n);if(k&&!hdContacts[k])hdContacts[k]={email:s.client_email||s.email||'',phone:s.client_phone||s.phone||''};});
     var now=new Date(),clientMap={};sessions.forEach(function(s){var n=s.client_name||s.client||'',k=key(n),d=sessionWhen(s);if(!k||isNaN(d))return;if(!clientMap[k])clientMap[k]={name:n,email:'',phone:'',last:null,next:null,count:0};var row=clientMap[k];row.count++;if(d<now&&(!row.last||d>row.last))row.last=d;if(d>=now&&(!row.next||d<row.next))row.next=d;});
-    Object.keys(clientMap).forEach(function(k){clientMap[k].email=(hdContacts[k]||{}).email||'';clientMap[k].phone=(hdContacts[k]||{}).phone||'';});hdRealClientRows=Object.values(clientMap).sort(function(a,b){if(a.next&&!b.next)return -1;if(!a.next&&b.next)return 1;return String(a.name).localeCompare(String(b.name));});renderRealClients();var dashBody=document.getElementById('hdDashboardClientBody');if(dashBody)dashBody.innerHTML=clientRowsHtml(hdRealClientRows.slice(0,10),'No authenticated production clients with sessions were found.');
-    var el=document.getElementById('hdClients');if(el)el.textContent=Object.keys(sessionNames).length;
+    clients.forEach(function(c){var n=c.full_name||c.name||'',k=key(n);if(!k||shouldSkipEntry(n,c.email||''))return;if(!clientMap[k])clientMap[k]={name:n,email:c.email||'',phone:c.phone||'',last:null,next:null,count:0,created:c.created_at||''};else{clientMap[k].email=clientMap[k].email||c.email||'';clientMap[k].phone=clientMap[k].phone||c.phone||'';clientMap[k].created=clientMap[k].created||c.created_at||'';}});
+    Object.keys(clientMap).forEach(function(k){clientMap[k].email=clientMap[k].email||(hdContacts[k]||{}).email||'';clientMap[k].phone=clientMap[k].phone||(hdContacts[k]||{}).phone||'';});hdRealClientRows=Object.values(clientMap).sort(function(a,b){if(a.next&&!b.next)return -1;if(!a.next&&b.next)return 1;if(a.last&&!b.last)return -1;if(!a.last&&b.last)return 1;if(a.created||b.created)return String(b.created||'').localeCompare(String(a.created||''));return String(a.name).localeCompare(String(b.name));});renderRealClients();var dashBody=document.getElementById('hdDashboardClientBody'),emptyMsg=!token?'Unlock the dashboard to load production clients.':(clientFetchOk?'No active production clients were found.':'Client records could not load. Session-linked clients are shown when available.');if(dashBody)dashBody.innerHTML=clientRowsHtml(hdRealClientRows.slice(0,10),emptyMsg);
+    var el=document.getElementById('hdClients');if(el)el.textContent=clientFetchOk?clients.length:Object.keys(sessionNames).length;
     renderSchedule(sessions);renderActivity(sessions);
   }
   async function loadRevenue(){var token=sessionStorage.getItem('rea_api_token')||'',el=document.getElementById('hdRevenue');try{if(!token)throw 0;var r=await fetch('/.netlify/functions/financial?section=ledger',{headers:{'X-Dashboard-Token':token}});if(!r.ok)throw 0;var entries=(await r.json()).entries||[],now=new Date(),total=entries.filter(function(x){var d=new Date(x.entry_date||x.created_at);return x.entry_type==='payment'&&!shouldSkipEntry(x.client_name||'',x.client_email||'')&&d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();}).reduce(function(sum,x){return sum+(Number(x.amount)||0);},0);el.textContent=money(total);}catch(x){if(el)el.textContent='—';}}
