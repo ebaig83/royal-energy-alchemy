@@ -5179,7 +5179,7 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
         <div class="card-head">
           <div>
             <div class="card-name">Sarah M. <span class="badge pending">Pending</span></div>
-            <div class="card-time">Energetic Parasite Session · Just now</div>
+            <div class="card-time">Implant/Parasite Removal · Just now</div>
           </div>
           <div class="stars s5">★★★★★</div>
         </div>
@@ -5194,7 +5194,7 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
         <div class="card-head">
           <div>
             <div class="card-name">Marcus T. <span class="badge pending">Pending</span></div>
-            <div class="card-time">Extended Session · 2 hours ago</div>
+            <div class="card-time">Heavy Duty Removal · 2 hours ago</div>
           </div>
           <div class="stars s4">★★★★☆</div>
         </div>
@@ -5229,7 +5229,7 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
       <div class="card-head">
         <div>
           <div class="card-name">Client: Jordan L. <span class="badge checkin">72-Hour</span></div>
-          <div class="card-time">Energetic Parasite Session · Today</div>
+          <div class="card-time">Implant/Parasite Removal · Today</div>
         </div>
       </div>
       <div class="checkin-detail">
@@ -5792,14 +5792,15 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
           </div>
           <div><label>Service</label><select class="appt-input" id="apptService">
               <option value="">— Select service —</option>
-              <option>Initial Session — $90</option>
-              <option>15-Minute Consultation — $50</option>
-              <option>Extended Session — $110</option>
-              <option>House Clearing — $80</option>
-              <option>Emergency Removal — $120</option>
-              <option>Coaching — $50</option>
-              <option>Follow-Up Session — $80</option>
-              <option>Energetic Parasite Session — $75</option>
+              <option>Implant/Parasite Removal — $100</option>
+              <option>Follow-Up Session — $80 each</option>
+              <option>Heavy Duty Removal, Exorcism or Emergency Removal Session — $120</option>
+              <option>Distance Energy Session — $70</option>
+              <option>15 Minute Energy Session — $50 (15 yrs + up)</option>
+              <option>15 Minute Energy Session — $40 (10 - 14 yrs)</option>
+              <option>10 Minute Energy Session — $30 (9 yrs + down)</option>
+              <option>Spiritual Coaching — $75/Hour</option>
+              <option>House Cleansing/Blessing In-Person — $80</option>
               <option>Custom / Other</option>
             </select></div>
           <div><label>Client Email</label><input class="appt-input" id="apptEmail" type="email" placeholder="For reminders &amp; confirmation" /></div>
@@ -13001,16 +13002,16 @@ function saveClientProfile_form(id) {
       </div>
       <div class="ql-field">
         <label class="ql-lbl">Service</label>
-        <input class="ql-input" id="qlService" list="qlServiceList" placeholder="Distance Reiki, House Clearing…" autocomplete="off">
+        <input class="ql-input" id="qlService" list="qlServiceList" placeholder="Distance Energy, House Cleansing…" autocomplete="off">
         <datalist id="qlServiceList">
-          <option value="Initial Session">
-          <option value="15-Minute Consultation">
-          <option value="Extended Session">
-          <option value="House Clearing">
-          <option value="Emergency Removal">
-          <option value="Coaching">
+          <option value="Implant/Parasite Removal">
           <option value="Follow-Up Session">
-          <option value="Energetic Parasite Session">
+          <option value="Heavy Duty Removal, Exorcism or Emergency Removal Session">
+          <option value="Distance Energy Session">
+          <option value="15 Minute Energy Session">
+          <option value="10 Minute Energy Session">
+          <option value="Spiritual Coaching">
+          <option value="House Cleansing/Blessing In-Person">
         </datalist>
       </div>
       <div class="ql-field">
@@ -14722,15 +14723,15 @@ renderSlotMetrics();
 
 /* ====== PAYMENT LINKS ====== */
 var PAY_SERVICES = [
-  "Initial Session — $90",
-  "15-Minute Consultation — $50",
-  "Extended Session — $110",
-  "House Clearing — $80",
-  "Emergency Removal — $120",
-  "Coaching — $50",
-  "Follow-Up Session — $80",
-  "Energetic Parasite Session — $75",
-  "Youth Sessions (Ages 9–14) — $20–$30",
+  "Implant/Parasite Removal — $100",
+  "Follow-Up Session — $80 each",
+  "Heavy Duty Removal, Exorcism or Emergency Removal Session — $120",
+  "Distance Energy Session — $70",
+  "15 Minute Energy Session — $50 (15 yrs + up)",
+  "15 Minute Energy Session — $40 (10 - 14 yrs)",
+  "10 Minute Energy Session — $30 (9 yrs + down)",
+  "Spiritual Coaching — $75/Hour",
+  "House Cleansing/Blessing In-Person — $80",
   "Not sure — need assessment first"
 ];
 function getPayLinks(){return JSON.parse(localStorage.getItem('rea_pay_links')||'{}');}

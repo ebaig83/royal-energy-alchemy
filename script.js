@@ -649,12 +649,12 @@ function selectedIntakeSymptoms() {
 }
 
 function serviceRecommendation(concern, score) {
-  if (/distance/i.test(concern)) return "Extended Session - $110";
-  if (/house|room/i.test(concern)) return "House Clearing - $80";
-  if (/cord|person|place/i.test(concern)) return score >= 11 ? "Follow-Up Session - $80 after initial assessment" : "15-Minute Consultation - $50";
-  if (/entity|intrusive/i.test(concern)) return score >= 16 ? "Initial Session - $90 or Emergency Removal - $120 after review" : "Initial Session - $90";
-  if (/parasite|attachment/i.test(concern)) return score >= 16 ? "Treatment plan plus Energetic Parasite Session - $75" : "Energetic Parasite Session - $75";
-  return score >= 11 ? "Initial Session followed by a treatment plan if needed" : "Initial Session - $90 or Coaching - $50";
+  if (/distance/i.test(concern)) return "Distance Energy Session - $70";
+  if (/house|room/i.test(concern)) return "House Cleansing/Blessing In-Person - $80";
+  if (/cord|person|place/i.test(concern)) return score >= 11 ? "Follow-Up Session - $80 after initial assessment" : "15 Minute Energy Session - $50";
+  if (/entity|intrusive/i.test(concern)) return score >= 16 ? "Heavy Duty Removal, Exorcism or Emergency Removal Session - $120 after review" : "Heavy Duty Removal, Exorcism or Emergency Removal Session - $120";
+  if (/parasite|attachment/i.test(concern)) return score >= 16 ? "Treatment plan plus Implant/Parasite Removal - $100" : "Implant/Parasite Removal - $100";
+  return score >= 11 ? "Heavy Duty Removal, Exorcism or Emergency Removal Session followed by a treatment plan if needed" : "15 Minute Energy Session - $50 or Spiritual Coaching - $75/Hour";
 }
 
 function assessIntake() {
