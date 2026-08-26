@@ -3,7 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#04020e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Daron Dashboard">
 <title>Royal Energy Alchemy — Dashboard</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32.png">
+<link rel="shortcut icon" href="/favicon.ico">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -4841,6 +4850,8 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
 .hd-table td { color:#ded8ec; font:15px 'EB Garamond',serif; padding:13px 17px; border-top:1px solid rgba(176,158,248,.08); }
 .hd-notice { display:none; color:#dba866; font:12px 'EB Garamond',serif; padding:10px 18px; border-bottom:1px solid rgba(232,184,75,.12); background:rgba(232,184,75,.035); }
 .hd-notice a { color:#e8b84b; }
+.pwa-install-btn{border:1px solid rgba(232,184,75,.42);background:rgba(232,184,75,.08);color:#e8b84b;border-radius:5px;padding:9px 12px;font:9px 'Cinzel',serif;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;white-space:nowrap}
+.pwa-install-btn:hover{background:rgba(232,184,75,.16);color:#fff}.pwa-install-btn:disabled{opacity:.55;cursor:wait}.pwa-install-btn[hidden]{display:none!important}
 @media(max-width:760px){
   .hd-heading{align-items:flex-start;flex-direction:column}.hd-stats{grid-template-columns:1fr}.hd-stat{display:flex;align-items:center;justify-content:space-between;gap:12px}.hd-stat-value{font-size:21px;margin:0}.hd-stat-note{display:none}.hd-next{grid-template-columns:auto 1fr}.hd-actions{grid-column:2;justify-content:flex-start}.hd-grid{grid-template-columns:1fr}.hd-week{grid-template-columns:repeat(2,minmax(0,1fr))}.hd-session{grid-template-columns:65px 1fr}.hd-paid{grid-column:2}.hd-title{font-size:20px}
 }
@@ -4935,6 +4946,7 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
         </div>
       </div>
       <div class="ck-header-right">
+        <button type="button" id="installDashboardBtn" class="pwa-install-btn" hidden>Install Dashboard</button>
         <div class="ck-density" title="Information density — applies across the dashboard">
           <button class="dn-btn" data-density="compact" onclick="setDensity('compact')">Compact</button>
           <button class="dn-btn" data-density="standard" onclick="setDensity('standard')">Standard</button>
@@ -16299,6 +16311,7 @@ function _dashAnswerBusinessQuestion(q, ctx) {
 <script src="communications-module.js"></script>
 <script src="docs-module.js"></script>
 <script src="pin-lock.js"></script>
+<script src="pwa-install.js"></script>
 <!-- ====== OUTCOME RECORDING MODAL ====== -->
 <div id="outcomeModal" style="display:none;position:fixed;inset:0;background:#00000099;z-index:9500;align-items:center;justify-content:center">
   <div style="background:#0d0b1e;border:1px solid #4488cc55;border-radius:14px;padding:30px 32px;width:92%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 0 60px #4488cc14">
