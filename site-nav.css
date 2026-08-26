@@ -74,20 +74,33 @@
 .rea-nav-book{
   flex-shrink:0;
   font-family:'Cinzel',serif;
-  font-size:10px;
-  letter-spacing:.3em;
-  color:#e8b84b;
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.28em;
+  color:#090612 !important;
   text-transform:uppercase;
   text-decoration:none;
-  border:1px solid rgba(232,184,75,.35);
-  padding:10px 18px;
-  transition:background .2s,border-color .2s;
+  border:1px solid rgba(255,225,132,.92) !important;
+  padding:13px 24px;
+  background:linear-gradient(135deg,#fff0a8 0%,#e8b84b 54%,#b57a18 100%) !important;
+  box-shadow:0 0 0 1px rgba(255,255,255,.12) inset,0 0 28px rgba(232,184,75,.34),0 12px 30px rgba(0,0,0,.36) !important;
+  text-shadow:0 1px 0 rgba(255,255,255,.35);
+  transform:translateY(0);
+  animation:reaBookPulse 2.8s ease-in-out infinite;
+  transition:transform .2s,box-shadow .2s,filter .2s,border-color .2s;
 }
 .rea-nav-book:hover,.rea-nav-book:focus{
-  color:#f8e090;
-  border-color:#e8b84b;
-  background:rgba(232,184,75,.08);
+  color:#090612 !important;
+  border-color:#fff3b8 !important;
+  background:linear-gradient(135deg,#fff6bf 0%,#f1c75b 54%,#c78b23 100%) !important;
+  box-shadow:0 0 0 1px rgba(255,255,255,.18) inset,0 0 38px rgba(232,184,75,.58),0 16px 38px rgba(0,0,0,.42) !important;
+  filter:brightness(1.08);
+  transform:translateY(-1px);
   outline:none;
+}
+@keyframes reaBookPulse{
+  0%,100%{box-shadow:0 0 0 1px rgba(255,255,255,.12) inset,0 0 24px rgba(232,184,75,.26),0 12px 30px rgba(0,0,0,.36)}
+  50%{box-shadow:0 0 0 1px rgba(255,255,255,.16) inset,0 0 40px rgba(232,184,75,.52),0 12px 30px rgba(0,0,0,.36)}
 }
 body.rea-shared-nav-added{padding-top:68px}
 
@@ -100,7 +113,7 @@ body.rea-shared-nav-added{padding-top:68px}
   .rea-site-nav{position:relative;display:block;padding:12px 14px;overflow:visible}
   .rea-nav-links{overflow-x:auto;padding:4px 0 10px;gap:18px;scrollbar-width:none}
   .rea-nav-links::-webkit-scrollbar{display:none}
-  .rea-nav-book{display:block;width:max-content;margin:0 auto}
+  .rea-nav-book{display:block;width:min(100%,320px);margin:2px auto 0;text-align:center;padding:14px 22px}
   .rea-nav-menu{position:fixed;top:58px;left:12px;right:12px;width:auto;transform:translateY(-8px)}
   .rea-nav-dropdown:hover .rea-nav-menu,
   .rea-nav-dropdown:focus-within .rea-nav-menu{transform:translateY(0)}
