@@ -81,6 +81,11 @@ body{background:var(--bg);color:var(--text);font-family:'EB Garamond',serif;min-
 .success-screen h2{font-family:'Cinzel',serif;font-size:24px;color:var(--gold);margin-bottom:16px}
 .success-screen p{font-size:16px;color:#d8d4f0b3;line-height:1.9;margin-bottom:12px}
 .success-link{display:inline-block;margin-top:20px;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;text-transform:uppercase;color:var(--gold);text-decoration:none;border:1px solid #e8b84b33;padding:10px 24px}
+.success-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;max-width:560px;margin:26px auto 0}
+.success-action{font-family:'Cinzel',serif;font-size:11px;font-weight:700;letter-spacing:.25em;text-transform:uppercase;text-decoration:none;padding:14px 18px;border:1px solid #e8b84b66}
+.success-action.primary{color:#090612;background:linear-gradient(135deg,#fff0a8,#e8b84b 58%,#b57a18);border-color:#fff0a8;box-shadow:0 0 24px rgba(232,184,75,.32)}
+.success-action.secondary{color:#f8e090;background:#e8b84b12}
+.success-required{font-family:'Cinzel',serif!important;font-size:10px!important;letter-spacing:.22em;text-transform:uppercase;color:#e8b84b99!important;margin-top:18px!important}
 
 /* Section labels */
 .section-title{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.45em;text-transform:uppercase;color:#e8b84b55;margin-bottom:20px}
@@ -163,7 +168,12 @@ body{background:var(--bg);color:var(--text);font-family:'EB Garamond',serif;min-
   <div class="success-screen" id="successScreen">
     <h2>✦ Session Booked</h2>
     <p id="successMsg">Your session is confirmed. Daron will be in touch shortly.</p>
-    <p style="font-size:14px;color:#c8c4e055;margin-top:8px">Check your email for your intake form and session details.</p>
+    <p style="font-size:14px;color:#c8c4e055;margin-top:8px">Before your appointment is finalized, please complete the waiver and submit payment for your session.</p>
+    <div class="success-actions">
+      <a href="/waiver-esign.html" class="success-action primary">Complete Waiver →</a>
+      <a href="/pay.html" class="success-action secondary">Pay for Session →</a>
+    </div>
+    <p class="success-required">Waiver + payment are required before the appointment is finalized.</p>
     <a id="manageLink" href="#" class="success-link">Manage Your Appointment →</a>
   </div>
 </div>
@@ -364,7 +374,7 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
 
     // Success
     document.getElementById('successMsg').textContent =
-      `Your ${res.service} session is confirmed for ${new Date(state.slotDate + 'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})} at ${easternLabel(state.slotTime)}. Check your email for your intake form and confirmation.`;
+      `Your ${res.service} booking request was received for ${new Date(state.slotDate + 'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})} at ${easternLabel(state.slotTime)}. Complete the waiver and payment next so Daron can finalize your appointment.`;
     if (res.manage_url) document.getElementById('manageLink').href = res.manage_url;
     document.getElementById('panel4').style.display = 'none';
     document.getElementById('successScreen').classList.add('show');

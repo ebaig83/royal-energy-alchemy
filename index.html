@@ -4221,19 +4221,24 @@ function showBookingConfirmation(method,sent){
   var form=document.getElementById('bookingForm');
   if(!form)return;
   var msgs={
-    paypal:'Daron will verify your PayPal payment and send a confirmation.',
-    cashapp:'Daron will verify your Cash App payment and send a confirmation.',
-    venmo:'Daron will verify your Venmo payment and send a confirmation.',
-    zelle:'Daron will verify your Zelle payment and send a confirmation.',
-    cash:'Payment will be collected at your session. Daron will confirm your appointment shortly.',
-    square:'Daron will confirm your appointment shortly.'
+    paypal:'Daron will verify your PayPal payment after it is sent.',
+    cashapp:'Daron will verify your Cash App payment after it is sent.',
+    venmo:'Daron will verify your Venmo payment after it is sent.',
+    zelle:'Daron will verify your Zelle payment after it is sent.',
+    cash:'Cash may be collected at an in-person session, but your waiver still needs to be completed before your appointment.',
+    square:'Please complete your waiver and payment so Daron can finalize your appointment.'
   };
   var conf=document.createElement('div');
-  conf.style.cssText='text-align:center;padding:28px 20px;font-family:EB Garamond,serif;font-size:17px;color:#66cc88;margin-top:16px;border:1px solid #66cc8833;border-radius:8px;background:#0d1a12';
+  conf.style.cssText='text-align:center;padding:30px 22px;font-family:EB Garamond,serif;font-size:17px;color:#66cc88;margin-top:16px;border:1px solid #66cc8833;border-radius:8px;background:#0d1a12';
   conf.innerHTML='<div style="font-size:26px;margin-bottom:10px">✓</div>'+
     '<div style="font-size:20px;margin-bottom:8px;font-family:Cinzel,serif;font-size:14px;letter-spacing:.2em">BOOKING REQUEST RECEIVED</div>'+
-    '<p style="color:#d0cce8;font-size:16px;margin:8px 0">'+( msgs[method]||'Daron will be in touch shortly.')+'</p>'+
-    '<p style="color:#aaa8cc;font-size:14px;margin-top:6px">Check your email or phone for your appointment confirmation and session details.</p>';
+    '<p style="color:#d0cce8;font-size:16px;margin:8px auto;max-width:620px;line-height:1.7">Your request has been sent. To complete the booking process, please sign the waiver and submit payment for your session.</p>'+
+    '<p style="color:#aaa8cc;font-size:14px;margin:6px auto 18px;max-width:620px;line-height:1.7">'+( msgs[method]||'Daron will be in touch shortly.')+' Check your email or phone for your appointment confirmation and session details.</p>'+
+    '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;max-width:560px;margin:20px auto 0">'+
+      '<a href="/waiver-esign.html" style="font-family:Cinzel,serif;font-size:11px;font-weight:700;letter-spacing:.25em;text-transform:uppercase;text-decoration:none;color:#090612;background:linear-gradient(135deg,#fff0a8,#e8b84b 58%,#b57a18);border:1px solid #fff0a8;padding:14px 18px;box-shadow:0 0 24px rgba(232,184,75,.32)">Complete Waiver →</a>'+
+      '<a href="/pay.html" style="font-family:Cinzel,serif;font-size:11px;font-weight:700;letter-spacing:.25em;text-transform:uppercase;text-decoration:none;color:#f8e090;background:#e8b84b12;border:1px solid #e8b84b66;padding:14px 18px">Pay for Session →</a>'+
+    '</div>'+
+    '<p style="color:#e8b84b99;font-family:Cinzel,serif;font-size:10px;letter-spacing:.22em;text-transform:uppercase;margin:18px 0 0;line-height:1.7">Waiver + payment are required before the appointment is finalized.</p>';
   form.parentNode.insertBefore(conf,form.nextSibling);
   form.style.display='none';
 }
