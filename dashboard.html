@@ -8128,6 +8128,7 @@ function renderBooking() {
   const issuesEl = document.getElementById('bk-issues');
   if (issuesEl) {
     const resolved = getResolvedIssues();
+    let resolvedChanged = false;
     const dayMs = 1000 * 60 * 60 * 24;
     const todayMs = new Date(today + 'T12:00:00').getTime();
 
@@ -8226,7 +8227,10 @@ function renderBooking() {
       const clientKey = s.client.toLowerCase().trim().replace(/\s+/g,'_');
       const k = 'waiver_' + crmKey(s.client) + '_' + s.date;
       if (ageDays > 60) {
-        if (!resolved[k]) resolveIssue(k, 'auto-expired');
+        if (!resolved[k]) {
+          resolved[k] = { resolvedAt: today, resolution: 'auto-expired' };
+          resolvedChanged = true;
+        }
         return;
       }
       // Check new rea_waiver_* key first; fall back to legacy rea_intake_name_*
@@ -8269,7 +8273,10 @@ function renderBooking() {
       const k = 'contact_' + crmKey(s.client) + '_' + s.date;
       // Auto-resolve if >60 days old
       if (ageDays > 60) {
-        if (!resolved[k]) resolveIssue(k, 'auto-expired');
+        if (!resolved[k]) {
+          resolved[k] = { resolvedAt: today, resolution: 'auto-expired' };
+          resolvedChanged = true;
+        }
         return;
       }
       const crec = getCRMClient(s.client);
@@ -8286,6 +8293,8 @@ function renderBooking() {
         }
       }
     });
+
+    if (resolvedChanged) saveResolvedIssues(resolved);
 
     // ── Render groups ──
     function renderGroup(gKey, group) {

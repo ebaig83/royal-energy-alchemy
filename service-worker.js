@@ -20,7 +20,3 @@ self.addEventListener('activate', function (event) {
     })
   );
 });
-
-self.addEventListener('fetch', function () {
-  // No fetch interception: authenticated dashboard and API traffic stay live.
-});
