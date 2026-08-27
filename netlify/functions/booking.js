@@ -14,6 +14,7 @@ const { respond }              = require('./lib/auth');
 const { getClient }            = require('./lib/supabase');
 const { sendWithPreferences }  = require('./lib/comms');
 const { bookingFailure, emailFailure } = require('./lib/ops-alert');
+const { SERVICES, findService } = require('./lib/services');
 const crypto                   = require('crypto');
 
 const SITE_URL = process.env.SITE_URL || 'https://royal-energy-alchemy.netlify.app';
@@ -21,18 +22,6 @@ const SITE_URL = process.env.SITE_URL || 'https://royal-energy-alchemy.netlify.a
 // Secure, URL-safe portal token (48 hex chars) — gives the client token-based
 // access to their document hub without a dashboard login.
 function newPortalToken() { return crypto.randomBytes(24).toString('hex'); }
-
-const SERVICES = [
-  { id: 'implant-parasite-removal', label: 'Implant/Parasite Removal',           price: 100, duration: 60 },
-  { id: 'follow-up-session',        label: 'Follow-Up Session',                  price: 80,  priceNote: 'each', duration: 60 },
-  { id: 'heavy-duty-removal',       label: 'Heavy Duty Removal, Exorcism or Emergency Removal Session', price: 120, duration: 60 },
-  { id: 'distance-energy-session',  label: 'Distance Energy Session',            price: 70,  duration: 60 },
-  { id: 'energy-session-15-adult',  label: '15 Minute Energy Session (15 yrs + up)', price: 50, duration: 15 },
-  { id: 'energy-session-15-youth',  label: '15 Minute Energy Session (10 - 14 yrs)', price: 40, duration: 15 },
-  { id: 'energy-session-10-child',  label: '10 Minute Energy Session (9 yrs + down)', price: 30, duration: 10 },
-  { id: 'spiritual-coaching',       label: 'Spiritual Coaching',                 price: 75,  duration: 60 },
-  { id: 'house-cleansing-blessing', label: 'House Cleansing/Blessing In-Person',  price: 80,  duration: 60 },
-];
 
 exports.handler = async function(event) {
   if (event.httpMethod === 'OPTIONS') return respond(200, {});
@@ -93,7 +82,11 @@ exports.handler = async function(event) {
 
   const sessionDate = slot.slot_date;
   const sessionTime = slot.slot_time ? slot.slot_time.slice(0, 5) : '';
-  const serviceInfo = SERVICES.find(s => s.id === service) || { label: service, duration: 60 };
+  const serviceInfo = findService(service);
+  if (!serviceInfo || serviceInfo.price == null) {
+    await sb.from('availability_slots').update({ status: 'available', session_id: null }).eq('id', slot_id);
+    return respond(400, { error: 'Selected service price could not be verified. Please choose a service again.' });
+  }
 
   // ── Step 2: Upsert client record (match by email) ─────────────────────────
   let clientId = null;
@@ -164,10 +157,14 @@ exports.handler = async function(event) {
         duration_minutes: serviceInfo.duration,
         location_type:    'distance',
         status:           'pending',
-        payment_status:   'unpaid',
+        payment_status:   'pending',
+        amount_due:       serviceInfo.price,
+        amount_paid:      0,
         source:           body.source  || 'online',
         intake_status:    'pending',
         waiver_status:    'pending',
+        waiver_completed: false,
+        booking_status:   'booking_received',
       })
       .select('id')
       .single();
@@ -212,7 +209,7 @@ exports.handler = async function(event) {
   // ── Step 6: Build client-facing URLs ──────────────────────────────────────
   const manageUrl = `${SITE_URL}/manage-appointment.html?session_id=${sessionId}`;
   const intakeUrl = `${SITE_URL}/full-intake.html?session_id=${sessionId}&name=${encodeURIComponent(client_name.trim())}&email=${encodeURIComponent(client_email.trim())}`;
-  const waiverUrl = `${SITE_URL}/waiver-esign.html?session_id=${sessionId}&email=${encodeURIComponent(client_email.trim())}`;
+  const waiverUrl = `${SITE_URL}/waiver-esign.html?session_id=${sessionId}&name=${encodeURIComponent(client_name.trim())}&email=${encodeURIComponent(client_email.trim())}&phone=${encodeURIComponent(client_phone || '')}`;
   const cancelUrl = `${SITE_URL}/cancel-session.html?session_id=${sessionId}`;
   // ── Step 7: Transactional emails (fire-and-forget) ────────────────────────
   const emailVars = {
@@ -271,5 +268,8 @@ exports.handler = async function(event) {
       label: slot.label,
     },
     service:    serviceInfo.label,
+    amount_due: serviceInfo.price,
+    payment_status: 'pending',
+    waiver_status: 'pending',
   });
 };

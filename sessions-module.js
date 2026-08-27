@@ -32,6 +32,7 @@
   // ── Config (local copies — this is a separate IIFE from clients-module) ───
   var STATUS_CFG = {
     pending:    ['Pending',    '#f8a84b'],
+    ready:      ['Ready',      '#22c98a'],
     confirmed:  ['Confirmed',  '#66b5f8'],
     completed:  ['Completed',  '#22c98a'],
     cancelled:  ['Cancelled',  '#f07070'],
@@ -41,7 +42,10 @@
 
   var PAY_CFG = {
     unpaid:   ['Unpaid',   '#f07070'],
+    pending:  ['Pending',  '#f8a84b'],
     paid:     ['Paid',     '#22c98a'],
+    failed:   ['Failed',   '#f07070'],
+    refunded: ['Refunded', '#b09ef8'],
     partial:  ['Partial',  '#f8a84b'],
     exchange: ['Exchange', '#9b7fe8'],
     waived:   ['Waived',   '#888888'],
@@ -73,6 +77,12 @@
   function payBadge(status) {
     var cfg = PAY_CFG[status] || ['Unknown', '#888888'];
     return badge(cfg[0], cfg[1]);
+  }
+
+  function waiverBadge(s) {
+    var done = s.waiver_completed === true ||
+      ['complete', 'completed', 'signed'].includes(String(s.waiver_status || '').toLowerCase());
+    return badge(done ? 'Waiver Complete' : 'Waiver Needed', done ? '#22c98a' : '#f8a84b');
   }
 
   function snCompBadge(label, color) {
@@ -168,7 +178,7 @@
       if (filter === 'completed') list = list.filter(function(s) { return s.status === 'completed'; });
       if (filter === 'pending')   list = list.filter(function(s) { return s.status === 'pending'; });
       if (filter === 'upcoming')  list = list.filter(function(s) {
-        return s.session_date >= todayISO() && (s.status === 'pending' || s.status === 'confirmed');
+        return s.session_date >= todayISO() && (s.status === 'pending' || s.status === 'ready' || s.status === 'confirmed');
       });
 
       if (countEl) countEl.textContent = list.length + ' session' + (list.length !== 1 ? 's' : '');
@@ -188,7 +198,7 @@
   function buildSessionCard(s) {
     var id     = s.id;
     var name   = s.client_name || '(unnamed client)';
-    var status = s.status || 'pending';
+    var status = (s.booking_status === 'ready' && !['confirmed','completed','cancelled','no_show'].includes(s.status)) ? 'ready' : (s.status || 'pending');
     var pay    = s.payment_status || 'unpaid';
     var dim    = (status === 'cancelled' || status === 'no_show') ? 'opacity:.6;' : '';
 
@@ -207,7 +217,7 @@
         '<div style="flex:1;min-width:0">' +
           '<div style="font-family:\'Cinzel\',serif;font-size:18px;letter-spacing:.05em;' +
             'color:#fff;font-weight:600;display:flex;align-items:center;gap:10px;flex-wrap:wrap">' +
-            name + ' ' + statusBadge(status) + ' ' + payBadge(pay) +
+            name + ' ' + statusBadge(status) + ' ' + waiverBadge(s) + ' ' + payBadge(pay) +
           '</div>' +
           '<div style="font-family:\'EB Garamond\',serif;font-size:17px;color:#e8b84b;margin-top:7px">' +
             (s.session_date ? fmtDate(s.session_date) + ' · ' + fmtDay(s.session_date) : '(no date)') +

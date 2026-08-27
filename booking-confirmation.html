@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Booking Confirmation - Royal Energy Alchemy</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--gold:#e8b84b;--gold-light:#f8e090;--teal:#22c98a;--red:#f07070;--deep:#05020f;--panel:#0e0a20;--text:#f0ecff}
+body{min-height:100vh;background:radial-gradient(circle at top,#15102b 0,#05020f 46%,#020008 100%);color:var(--text);font-family:'EB Garamond',serif}
+.wrap{max-width:820px;margin:0 auto;padding:72px 22px}
+.card{border:1px solid #e8b84b33;background:rgba(10,6,24,.88);box-shadow:0 28px 90px rgba(0,0,0,.35);padding:42px 34px;text-align:center}
+.eyebrow{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.5em;color:#e8b84b88;text-transform:uppercase;margin-bottom:16px}
+h1{font-family:'Cinzel',serif;font-size:clamp(24px,5vw,42px);letter-spacing:.06em;color:#fff;margin-bottom:18px}
+.status-icon{width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:34px;border:1px solid #22c98a66;color:var(--teal);background:#22c98a12}
+.status-icon.warn{border-color:#e8b84b66;color:var(--gold);background:#e8b84b12}
+.status-icon.err{border-color:#f0707066;color:var(--red);background:#f0707012}
+p{font-size:18px;line-height:1.8;color:#d8d4f0c9;max-width:620px;margin:0 auto 14px}
+.details{margin:28px auto 0;border:1px solid #e8b84b22;max-width:560px;text-align:left;background:#05020f66}
+.row{display:flex;justify-content:space-between;gap:18px;padding:13px 16px;border-bottom:1px solid #e8b84b10}
+.row:last-child{border-bottom:none}
+.label{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.28em;color:#e8b84b88;text-transform:uppercase}
+.value{font-size:16px;color:#fff;text-align:right}
+.badges{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:24px 0 6px}
+.badge{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.24em;text-transform:uppercase;padding:7px 12px;border:1px solid #e8b84b44;color:#e8b84b;background:#e8b84b0d}
+.badge.ok{border-color:#22c98a66;color:#22c98a;background:#22c98a12}
+.badge.bad{border-color:#f0707066;color:#f07070;background:#f0707012}
+.actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:30px}
+.btn{font-family:'Cinzel',serif;font-size:11px;font-weight:700;letter-spacing:.32em;text-transform:uppercase;text-decoration:none;padding:15px 24px;border:1px solid #e8b84b55;cursor:pointer}
+.btn.primary{color:#100800;background:linear-gradient(135deg,var(--gold-light),var(--gold));border-color:#fff0a8}
+.btn.secondary{color:#f8e090;background:#e8b84b0d}
+.btn:disabled{opacity:.5;cursor:wait}
+.note{font-size:14px;color:#c8c4e077;margin-top:26px}
+@media(max-width:600px){.wrap{padding:48px 14px}.card{padding:32px 18px}.row{display:block}.value{text-align:left;margin-top:4px}.btn{width:100%;text-align:center}}
+</style>
+<link rel="stylesheet" href="/site-nav.css">
+<script defer src="/site-nav.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <section class="card">
+    <div class="eyebrow">Royal Energy Alchemy</div>
+    <div class="status-icon warn" id="statusIcon">...</div>
+    <h1 id="title">Checking Booking</h1>
+    <p id="message">We are checking your waiver and payment status.</p>
+    <div class="badges" id="badges"></div>
+    <div class="details" id="details" style="display:none"></div>
+    <div class="actions" id="actions"></div>
+    <p class="note">If you completed payment but this page has not updated yet, wait a moment and refresh. Stripe also confirms payment server-side.</p>
+  </section>
+</main>
+
+<script>
+'use strict';
+
+const params = new URLSearchParams(window.location.search);
+const sessionId = params.get('session_id') || params.get('id') || '';
+const payment = params.get('payment') || '';
+
+function fmtDate(date) {
+  if (!date) return 'Date not set';
+  return new Date(date + 'T12:00:00').toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
+}
+function fmtTime(time) {
+  if (!time) return 'Time not set';
+  const parts = String(time).slice(0, 5).split(':');
+  const h = Number(parts[0]);
+  const m = parts[1] || '00';
+  const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+  return h12 + ':' + m + ' ' + (h >= 12 ? 'PM' : 'AM');
+}
+function isWaiverDone(session) {
+  return session.waiver_completed === true || ['complete','completed','signed'].includes(String(session.waiver_status || '').toLowerCase());
+}
+function badge(label, ok) {
+  return '<span class="badge ' + (ok ? 'ok' : 'bad') + '">' + label + '</span>';
+}
+function setState(kind, title, message) {
+  const icon = document.getElementById('statusIcon');
+  icon.className = 'status-icon ' + (kind === 'ok' ? '' : kind === 'err' ? 'err' : 'warn');
+  icon.textContent = kind === 'ok' ? '✓' : kind === 'err' ? '!' : '•';
+  document.getElementById('title').textContent = title;
+  document.getElementById('message').textContent = message;
+}
+async function beginPayment(btn) {
+  if (!sessionId) return;
+  btn.disabled = true;
+  btn.textContent = 'Opening Secure Checkout...';
+  try {
+    const res = await fetch('/.netlify/functions/create-stripe-checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_id: sessionId }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.url) throw new Error(data.error || 'Checkout could not be opened.');
+    window.location.href = data.url;
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = 'Pay Now';
+    alert(e.message || 'Payment could not be started. Please contact Daron.');
+  }
+}
+async function load() {
+  if (!sessionId) {
+    setState('err', 'Booking Not Found', 'This confirmation link is missing a booking ID.');
+    return;
+  }
+  try {
+    const res = await fetch('/.netlify/functions/manage-appointment?session_id=' + encodeURIComponent(sessionId));
+    const data = await res.json();
+    if (!res.ok || !data.session) throw new Error(data.error || 'Booking was not found.');
+    const s = data.session;
+    const waiverDone = isWaiverDone(s);
+    const paymentStatus = String(s.payment_status || '').toLowerCase();
+    const paid = paymentStatus === 'paid';
+    const refunded = paymentStatus === 'refunded';
+    const failed = ['failed','expired'].includes(paymentStatus);
+
+    document.getElementById('badges').innerHTML = [
+      badge(waiverDone ? 'Waiver Complete' : 'Waiver Incomplete', waiverDone),
+      badge(paid ? 'Payment Paid' : refunded ? 'Payment Refunded' : failed ? 'Payment Failed' : 'Payment Processing', paid),
+    ].join('');
+    document.getElementById('details').style.display = 'block';
+    document.getElementById('details').innerHTML = [
+      ['Client', s.client_name || 'Client'],
+      ['Service', s.service || 'Session'],
+      ['Date', fmtDate(s.session_date)],
+      ['Time', fmtTime(s.session_time)],
+      ['Amount', s.amount_due ? '$' + Number(s.amount_due).toFixed(2) : 'Amount not set'],
+    ].map(row => '<div class="row"><span class="label">' + row[0] + '</span><span class="value">' + row[1] + '</span></div>').join('');
+
+    const actions = [];
+    if (!waiverDone) actions.push('<a class="btn primary" href="/waiver-esign.html?session_id=' + encodeURIComponent(sessionId) + '">Complete Waiver</a>');
+    if (waiverDone && !paid && !refunded) actions.push('<button class="btn primary" onclick="beginPayment(this)">Pay Now</button>');
+    actions.push('<a class="btn secondary" href="/manage-appointment.html?session_id=' + encodeURIComponent(sessionId) + '">Manage Appointment</a>');
+    document.getElementById('actions').innerHTML = actions.join('');
+
+    if (paid && waiverDone) {
+      setState('ok', 'PAYMENT RECEIVED', 'Your booking request, waiver, and payment have been received. Daron will confirm your appointment shortly. Please check your email or phone for appointment confirmation and session details.');
+    } else if (refunded) {
+      setState('warn', 'Payment Refunded', 'Stripe reports that this payment was refunded. Please contact Daron if you have questions.');
+    } else if (failed) {
+      setState('err', 'Payment Failed', 'The payment was not completed. You can safely try payment again.');
+    } else if (payment === 'cancelled') {
+      setState('warn', 'Payment Still Pending', 'Your booking and waiver were preserved, but payment was not completed. Please finish payment so Daron can finalize your appointment.');
+    } else if (paid && !waiverDone) {
+      setState('warn', 'Payment Received', 'Your payment was received. Please complete the waiver before the appointment can be considered ready.');
+    } else if (waiverDone && !paid) {
+      setState('warn', 'Waiver Received', 'Your waiver was received. Please complete secure payment so Daron can finalize your appointment.');
+    } else {
+      setState('warn', 'Action Needed', 'Please complete your waiver and secure payment before the appointment can be finalized.');
+    }
+  } catch (e) {
+    setState('err', 'Unable To Confirm', e.message || 'We could not load this booking. Please contact Daron.');
+  }
+}
+load();
+</script>
+</body>
+</html>

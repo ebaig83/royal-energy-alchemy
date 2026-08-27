@@ -161,14 +161,14 @@ body{background:var(--bg);color:var(--text);font-family:'EB Garamond',serif;min-
     <p style="font-size:14px;color:#c8c4e055;font-style:italic;margin-bottom:20px;line-height:1.7">
       By submitting, you agree that energy work is a complementary wellness offering and not a substitute for medical, legal, or psychological advice. You will receive an email with your intake form and session details.
     </p>
-    <button class="btn-primary" id="submitBtn">Confirm & Book Session →</button>
+    <button class="btn-primary" id="submitBtn">Book Session & Continue to Waiver →</button>
   </div>
 
   <!-- Success -->
   <div class="success-screen" id="successScreen">
     <h2>✦ Session Booked</h2>
     <p id="successMsg">Your session is confirmed. Daron will be in touch shortly.</p>
-    <p style="font-size:14px;color:#c8c4e055;margin-top:8px">Before your appointment is finalized, please complete the waiver and submit payment for your session.</p>
+    <p style="font-size:14px;color:#c8c4e055;margin-top:8px">Before your appointment is finalized, please complete the waiver and secure payment for your session.</p>
     <div class="success-actions">
       <a href="/waiver-esign.html" class="success-action primary">Complete Waiver →</a>
       <a href="/pay.html" class="success-action secondary">Pay for Session →</a>
@@ -344,7 +344,7 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
   clearError();
   const btn   = document.getElementById('submitBtn');
   btn.disabled = true;
-  btn.textContent = 'Booking...';
+  btn.textContent = 'Creating Booking...';
 
   const payload = {
     slot_id:           state.slotId,
@@ -368,23 +368,23 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
     if (!r.ok || !res.booked) {
       showError(res.error || 'Booking failed. Please try again or contact us directly.');
       btn.disabled = false;
-      btn.textContent = 'Confirm & Book Session →';
+      btn.textContent = 'Book Session & Continue to Waiver →';
       return;
     }
 
-    // Success
-    document.getElementById('successMsg').textContent =
-      `Your ${res.service} booking request was received for ${new Date(state.slotDate + 'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})} at ${easternLabel(state.slotTime)}. Complete the waiver and payment next so Daron can finalize your appointment.`;
-    if (res.manage_url) document.getElementById('manageLink').href = res.manage_url;
-    document.getElementById('panel4').style.display = 'none';
-    document.getElementById('successScreen').classList.add('show');
-    document.querySelector('.steps').style.display = 'none';
-    window.scrollTo(0, 0);
+    try {
+      sessionStorage.setItem('rea_prefill_name', payload.client_name);
+      sessionStorage.setItem('rea_prefill_email', payload.client_email);
+      sessionStorage.setItem('rea_prefill_phone', payload.client_phone || '');
+      sessionStorage.setItem('rea_booking_session_id', res.session_id || '');
+    } catch (err) {}
+
+    window.location.href = res.waiver_url || ('/waiver-esign.html?session_id=' + encodeURIComponent(res.session_id || ''));
 
   } catch (e) {
     showError('Connection error. Please check your internet and try again.');
     btn.disabled = false;
-    btn.textContent = 'Confirm & Book Session →';
+    btn.textContent = 'Book Session & Continue to Waiver →';
   }
 });
 </script>

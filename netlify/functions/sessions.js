@@ -48,7 +48,7 @@ exports.handler = async function(event) {
       query = query
         .gte('session_date', today)
         .lte('session_date', in30days)
-        .in('status', ['pending', 'confirmed'])
+        .in('status', ['pending', 'ready', 'confirmed'])
         .order('session_date', { ascending: true });
     } else {
       const since = new Date(Date.now() - 90 * 86400000).toISOString().slice(0, 10);
@@ -268,7 +268,7 @@ exports.handler = async function(event) {
     }
 
     // ── Generic field update ─────────────────────────────────────────
-    const allowed = ['status','payment_status','amount_due','amount_paid','session_date','session_time','service','location_type','seller_notes','square_booking_id','state_before','state_after'];
+    const allowed = ['status','booking_status','payment_status','amount_due','amount_paid','payment_paid_at','waiver_status','waiver_completed','waiver_completed_at','session_date','session_time','service','location_type','seller_notes','square_booking_id','stripe_checkout_session_id','stripe_payment_intent_id','stripe_payment_status','state_before','state_after'];
     const updates = {};
     allowed.forEach(k => { if (body[k] !== undefined) updates[k] = body[k]; });
 

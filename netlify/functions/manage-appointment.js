@@ -53,7 +53,7 @@ exports.handler = async (event) => {
 
     const { data, error } = await sb
       .from('sessions')
-      .select('id, service, session_date, session_time, duration_minutes, status, payment_status, client_name, amount_due, location_type')
+      .select('id, service, session_date, session_time, duration_minutes, status, booking_status, payment_status, waiver_status, waiver_completed, waiver_completed_at, client_name, amount_due, amount_paid, location_type')
       .eq('id', sessionId)
       .single();
 
@@ -67,9 +67,14 @@ exports.handler = async (event) => {
         session_time:     data.session_time,
         duration_minutes: data.duration_minutes,
         status:           data.status,
+        booking_status:   data.booking_status,
         payment_status:   data.payment_status,
+        waiver_status:    data.waiver_status,
+        waiver_completed: data.waiver_completed,
+        waiver_completed_at: data.waiver_completed_at,
         client_name:      data.client_name,
         amount_due:       data.amount_due,
+        amount_paid:      data.amount_paid,
         location_type:    data.location_type,
       }
     });

@@ -127,13 +127,13 @@ footer .pa-disclaimer{font-family:'EB Garamond',serif;font-size:15px;font-style:
 
 <!-- ── Flow bar ── -->
 <div class="flow-bar" style="padding-top:72px">
-  <div class="flow-step done">Step 1 · Assessment ✓</div>
+  <div class="flow-step done">Step 1 · Booking ✓</div>
   <div class="flow-arrow">→</div>
   <div class="flow-step active">Step 2 · Waiver</div>
   <div class="flow-arrow">→</div>
-  <div class="flow-step">Step 3 · Booking</div>
+  <div class="flow-step">Step 3 · Secure Payment</div>
   <div class="flow-arrow">→</div>
-  <div class="flow-step">Step 4 · Full Intake</div>
+  <div class="flow-step">Step 4 · Confirmation</div>
 </div>
 
 <div class="wrap">
@@ -142,7 +142,7 @@ footer .pa-disclaimer{font-family:'EB Garamond',serif;font-size:15px;font-style:
     <span class="step-tag">Step 2 of 4</span>
     <h1>Royal Energy Alchemy LLC</h1>
     <span class="doc-sub">Client Waiver &amp; Consent Agreement</span>
-    <p>A legal consent document. Read each section and check the boxes to acknowledge understanding. This is not a health history form — that is your Full Intake, completed after booking.</p>
+    <p>A legal consent document. Read each section and check the boxes to acknowledge understanding. After this waiver, you will continue to secure payment for your selected session.</p>
     <span class="time-tag">Approx. 3–4 minutes</span>
   </div>
 
@@ -340,7 +340,7 @@ footer .pa-disclaimer{font-family:'EB Garamond',serif;font-size:15px;font-style:
       </div>
     </div>
 
-    <button type="submit" class="submit-btn" id="submitBtn">Submit Signed Waiver → Continue to Booking</button>
+    <button type="submit" class="submit-btn" id="submitBtn">Submit Signed Waiver → Secure Payment</button>
     <p class="legal-note">This form is submitted securely. A copy will be sent to royalenergyalchemy@gmail.com and to your email address.</p>
 
   </form>
@@ -354,8 +354,8 @@ footer .pa-disclaimer{font-family:'EB Garamond',serif;font-size:15px;font-style:
       <p style="font-size:14px;color:#c8c4e088;font-style:italic;margin-top:8px">Save this for your records.</p>
     </div>
     <p style="font-size:15px;color:#e8b84b99;font-family:'Cinzel',serif;letter-spacing:.2em;text-transform:uppercase;margin-top:4px">Next Step</p>
-    <p>Book your session, then complete the Full Intake before your appointment.</p>
-    <a href="https://book.squareup.com/appointments/gcevwnjduxlw9u/location/LA19CVXRF3KDC/services" target="_blank" rel="noopener" class="next-btn">Book Your Session →</a>
+    <p id="successNextText">Your waiver is complete. Continue to secure payment so Daron can finalize your appointment.</p>
+    <a href="/book.html" class="next-btn" id="successNextBtn">Continue →</a>
     <p style="margin-top:20px;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#e8b84b60;text-transform:uppercase">Royal Energy Alchemy LLC · Erie, Pennsylvania</p>
     <button onclick="window.print()" style="margin-top:16px;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;text-transform:uppercase;padding:10px 24px;cursor:pointer;border:1px solid #e8b84b44;background:transparent;color:#e8b84b88;transition:all .2s" onmouseover="this.style.background='#e8b84b0d'" onmouseout="this.style.background='transparent'">Print / Save as PDF ↓</button>
   </div>
@@ -373,16 +373,19 @@ footer .pa-disclaimer{font-family:'EB Garamond',serif;font-size:15px;font-style:
 const today = new Date().toISOString().split('T')[0];
 document.getElementById('signDate').value = today;
 document.getElementById('sigTimestamp').textContent = 'Signed: ' + new Date().toLocaleString();
+const WAIVER_PARAMS = new URLSearchParams(window.location.search);
+const WAIVER_SESSION_ID = WAIVER_PARAMS.get('session_id') || WAIVER_PARAMS.get('booking_id') || '';
 
 // Pre-fill from assessment sessionStorage
 (function() {
   try {
-    var n = sessionStorage.getItem('rea_prefill_name');
-    var e = sessionStorage.getItem('rea_prefill_email');
-    var p = sessionStorage.getItem('rea_prefill_phone');
+    var n = WAIVER_PARAMS.get('name') || sessionStorage.getItem('rea_prefill_name');
+    var e = WAIVER_PARAMS.get('email') || sessionStorage.getItem('rea_prefill_email');
+    var p = WAIVER_PARAMS.get('phone') || sessionStorage.getItem('rea_prefill_phone');
     if (n) document.getElementById('fullName').value = n;
     if (e) document.getElementById('email').value = e;
     if (p) document.getElementById('phone').value = p;
+    if (n) document.getElementById('printedName').value = n;
   } catch(err) {}
 })();
 
@@ -435,8 +438,30 @@ function getOrCreateClientId(email) {
 const provisionalClientId = getOrCreateClientId(null);
 document.getElementById('client_id').value = provisionalClientId;
 
+async function beginStripeCheckout(sessionId, email) {
+  const res = await fetch('/.netlify/functions/create-stripe-checkout', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ session_id: sessionId, client_email: email }),
+  });
+  const data = await res.json();
+  if (!res.ok || !data.url) throw new Error(data.error || 'Secure payment could not be started.');
+  window.location.href = data.url;
+}
+
+function showWaiverSuccess(clientId, sessionId, text, btnText, btnHref) {
+  document.getElementById('waiverForm').style.display = 'none';
+  document.getElementById('successMsg').style.display = 'block';
+  document.getElementById('displayClientId').textContent = clientId;
+  document.getElementById('successNextText').textContent = text;
+  const btn = document.getElementById('successNextBtn');
+  btn.textContent = btnText;
+  btn.href = btnHref;
+  window.scrollTo(0, 0);
+}
+
 // Form submission
-document.getElementById('waiverForm').addEventListener('submit', function(e) {
+document.getElementById('waiverForm').addEventListener('submit', async function(e) {
   e.preventDefault();
 
   const required = ['fullName','dob','phone','email','printedName',
@@ -471,6 +496,7 @@ document.getElementById('waiverForm').addEventListener('submit', function(e) {
 
   const email = document.getElementById('email').value.trim();
   const name  = document.getElementById('fullName').value.trim();
+  const phone = document.getElementById('phone').value.trim();
   const clientId = getOrCreateClientId(email);
   try {
     localStorage.setItem('rea_client_id_' + email.toLowerCase().trim(), clientId);
@@ -484,7 +510,7 @@ document.getElementById('waiverForm').addEventListener('submit', function(e) {
     clientId: clientId,
     name: name,
     email: email,
-    phone: document.getElementById('phone').value.trim(),
+    phone: phone,
     dob: document.getElementById('dob').value,
     timestamp: new Date().toISOString(),
     signed: true,
@@ -500,9 +526,56 @@ document.getElementById('waiverForm').addEventListener('submit', function(e) {
     localStorage.setItem('rea_intake_' + clientId, JSON.stringify(legacySnap));
   } catch(err) {}
 
-  document.getElementById('waiverForm').style.display = 'none';
-  document.getElementById('successMsg').style.display = 'block';
-  window.scrollTo(0, 0);
+  if (!WAIVER_SESSION_ID) {
+    showWaiverSuccess(
+      clientId,
+      '',
+      'Your waiver is complete. Book your session next if you have not already scheduled.',
+      'Book Your Session →',
+      '/book.html'
+    );
+    return;
+  }
+
+  const submitBtn = document.getElementById('submitBtn');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Saving Waiver...';
+
+  const sigModeFinal = document.querySelector('.sig-tab.active').textContent.trim().toLowerCase();
+  const signature = sigModeFinal === 'type' ? document.getElementById('sigTypeInput').value.trim() : canvas.toDataURL('image/png');
+  try {
+    const res = await fetch('/.netlify/functions/booking-waiver', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        session_id: WAIVER_SESSION_ID,
+        client_reference: clientId,
+        name,
+        email,
+        phone,
+        signature,
+        consents: {
+          recording: document.getElementById('recordConsent').checked,
+          media_internal: document.getElementById('relA').checked,
+          media_educational: document.getElementById('relB').checked,
+          media_full: document.getElementById('relC').checked,
+        },
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.saved) throw new Error(data.error || 'Waiver could not be saved to your booking.');
+
+    submitBtn.textContent = 'Opening Secure Payment...';
+    await beginStripeCheckout(WAIVER_SESSION_ID, email);
+  } catch (err) {
+    showWaiverSuccess(
+      clientId,
+      WAIVER_SESSION_ID,
+      (err.message || 'Your waiver was saved locally, but secure payment could not be opened.') + ' Please use the payment button to continue.',
+      'Continue to Payment →',
+      '/booking-confirmation.html?session_id=' + encodeURIComponent(WAIVER_SESSION_ID) + '&payment=pending'
+    );
+  }
 });
 </script>
 </body>
