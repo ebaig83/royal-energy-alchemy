@@ -32,6 +32,31 @@ exports.handler = async function(event) {
       return respond(200, { sessions: data });
     }
 
+    if (params.all) {
+      const limit = Math.min(Math.max(parseInt(params.limit, 10) || 200, 1), 500);
+      const { data: payments, error } = await sb
+        .from('payments')
+        .select('*')
+        .order('paid_at', { ascending: false })
+        .limit(limit);
+      if (error) return respond(500, { error: error.message });
+
+      const sessionIds = [...new Set((payments || []).map(p => p.session_id).filter(Boolean))];
+      let sessions = [];
+      if (sessionIds.length) {
+        const result = await sb
+          .from('sessions')
+          .select('id, client_name, service, session_date, payment_status')
+          .in('id', sessionIds);
+        if (result.error) return respond(500, { error: result.error.message });
+        sessions = result.data || [];
+      }
+      const bySession = Object.fromEntries(sessions.map(s => [s.id, s]));
+      return respond(200, {
+        payments: (payments || []).map(p => Object.assign({}, p, { session: bySession[p.session_id] || null }))
+      });
+    }
+
     let query = sb.from('payments').select('*');
     if (params.session_id) {
       query = query.eq('session_id', params.session_id);

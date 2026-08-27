@@ -6275,6 +6275,8 @@ function showBookingWorkspace(section) {
     panel.style.display = isActive ? 'block' : 'none';
     panel.classList.toggle('active', isActive);
   });
+  if (active === 'requests') renderStripeBookingQueue();
+  if (active === 'payments') renderStripePayments();
   updateBookingCommandKpis();
 }
 
@@ -6328,7 +6330,79 @@ function organizeBookingWorkspace() {
     var panel = document.getElementById('booking-panel-' + target);
     if (panel) panel.appendChild(section);
   });
+  var requestsPanel = document.getElementById('booking-panel-requests');
+  if (requestsPanel) {
+    var liveBookings = document.createElement('section');
+    liveBookings.className = 'booking-section';
+    liveBookings.innerHTML = '<div class="section-title" style="color:#66ddaa">Stripe &amp; Website Bookings</div><p style="font-family:EB Garamond,serif;color:#aaa8cc;margin:0 0 12px">Live Supabase bookings, including waiver and payment status.</p><div id="stripeBookingQueue"><p style="color:#6662aa;font-family:EB Garamond,serif">Loading live bookings…</p></div>';
+    requestsPanel.insertBefore(liveBookings, requestsPanel.firstChild);
+  }
+  var paymentsPanel = document.getElementById('booking-panel-payments');
+  if (paymentsPanel) {
+    var livePayments = document.createElement('section');
+    livePayments.className = 'booking-section';
+    livePayments.innerHTML = '<div class="section-title" style="color:#66ddaa">Payment Transactions</div><p style="font-family:EB Garamond,serif;color:#aaa8cc;margin:0 0 12px">Live payment ledger. References are shortened for safe display.</p><div id="stripePaymentLedger"><p style="color:#6662aa;font-family:EB Garamond,serif">Loading transactions…</p></div>';
+    paymentsPanel.insertBefore(livePayments, paymentsPanel.firstChild);
+  }
   host.dataset.bookingOrganized = 'true';
+  renderStripeBookingQueue();
+}
+
+function _bookingEscape(value) {
+  return String(value == null ? '' : value).replace(/[&<>"']/g, function(c) {
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+function _stripeSessionRows() {
+  var rows = (typeof _scheduleStore !== 'undefined' && _scheduleStore.loaded) ? _scheduleStore.sessions : [];
+  return rows.filter(function(s) {
+    var source = String(s.source || '').toLowerCase();
+    return !!s.stripe_checkout_session_id || !!s.stripe_payment_intent_id || source === 'online' || source === 'booking';
+  }).sort(function(a,b) {
+    return String(b.created_at || b.session_date || '').localeCompare(String(a.created_at || a.session_date || ''));
+  });
+}
+function renderStripeBookingQueue() {
+  var el = document.getElementById('stripeBookingQueue');
+  if (!el) return;
+  var rows = _stripeSessionRows();
+  if (!rows.length) {
+    el.innerHTML = '<p style="color:#6662aa;font-family:EB Garamond,serif;font-style:italic">No live Stripe or website bookings yet.</p>';
+    return;
+  }
+  el.innerHTML = rows.map(function(s) {
+    var paid = String(s.payment_status || '').toLowerCase() === 'paid';
+    var waived = s.waiver_completed === true || /complete|signed/i.test(s.waiver_status || '');
+    var ready = String(s.booking_status || '').toLowerCase() === 'ready';
+    var when = [String(s.session_date || '').slice(0,10), String(s.session_time || '').slice(0,5)].filter(Boolean).join(' · ');
+    return '<div style="padding:14px 16px;margin-bottom:9px;background:#0d0b1e;border:1px solid '+(ready?'#44cc8866':'#2a2856')+';border-radius:8px">'+
+      '<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><strong style="font-family:Cinzel,serif;color:#e0ddf8">'+_bookingEscape(s.client_name || 'Client')+'</strong><span style="font-family:Cinzel,serif;font-size:10px;color:'+(ready?'#44cc88':'#e8b84b')+'">'+_bookingEscape(ready?'READY':(s.booking_status || s.status || 'PENDING').toUpperCase())+'</span></div>'+
+      '<div style="font-family:EB Garamond,serif;color:#aaa8cc;margin-top:5px">'+_bookingEscape(s.service || 'Session')+' · '+_bookingEscape(when)+'</div>'+
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><span style="color:'+(paid?'#44cc88':'#cc6677')+'">'+(paid?'✓ Paid':'Payment '+_bookingEscape(s.payment_status || 'pending'))+'</span><span style="color:'+(waived?'#44cc88':'#cc6677')+'">'+(waived?'✓ Waiver complete':'Waiver pending')+'</span></div></div>';
+  }).join('');
+}
+async function renderStripePayments() {
+  var el = document.getElementById('stripePaymentLedger');
+  if (!el || el.dataset.loading === 'true') return;
+  el.dataset.loading = 'true';
+  try {
+    var token = sessionStorage.getItem('rea_api_token') || '';
+    var response = await fetch('/.netlify/functions/payments?all=1&limit=200', { headers: { 'X-Dashboard-Token': token } });
+    if (!response.ok) throw new Error('Payment ledger request failed');
+    var rows = (await response.json()).payments || [];
+    el.innerHTML = rows.length ? rows.map(function(p) {
+      var s = p.session || {};
+      var ref = String(p.reference_id || '');
+      var safeRef = ref ? ref.slice(0,7)+'…'+ref.slice(-4) : '—';
+      var date = p.paid_at ? new Date(p.paid_at).toLocaleDateString() : '—';
+      return '<div style="display:grid;grid-template-columns:minmax(150px,1.3fr) minmax(140px,1fr) 90px 100px minmax(95px,1fr);gap:10px;padding:11px 12px;border-bottom:1px solid #2a2856;font-family:EB Garamond,serif;color:#c0bde0">'+
+        '<span>'+_bookingEscape(p.client_name || s.client_name || 'Client')+'</span><span>'+_bookingEscape(s.service || p.notes || 'Payment')+'</span><strong style="color:#44cc88">$'+Number(p.amount || 0).toFixed(2)+'</strong><span>'+_bookingEscape(p.status || 'received')+'</span><span title="Stripe reference">'+_bookingEscape(date)+' · '+_bookingEscape(safeRef)+'</span></div>';
+    }).join('') : '<p style="color:#6662aa;font-family:EB Garamond,serif;font-style:italic">No payment transactions recorded.</p>';
+  } catch (err) {
+    el.innerHTML = '<p style="color:#cc6677;font-family:EB Garamond,serif">Payment transactions could not load.</p>';
+  } finally {
+    el.dataset.loading = 'false';
+  }
 }
 
 function updateBookingCommandKpis() {
@@ -9155,6 +9229,7 @@ function _refreshScheduleConsumers() {
   try { renderCal(); } catch(e) {}
   try { renderUpcoming(); } catch(e) {}
   try { renderBooking(); } catch(e) {}
+  try { renderStripeBookingQueue(); } catch(e) {}
   try { updateCapacityStats(); } catch(e) {}
   try { updateBookingCommandKpis(); } catch(e) {}
 }

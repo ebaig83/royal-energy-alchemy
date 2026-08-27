@@ -79,22 +79,70 @@ async function markPayment(sb, sessionId, event, checkout) {
   const { error: updateErr } = await sb.from('sessions').update(updates).eq('id', sessionId);
   if (updateErr) throw updateErr;
 
-  try {
-    const { error: paymentErr } = await sb.from('payments').upsert({
-      session_id: sessionId,
-      client_id: session.client_id || null,
-      client_name: session.client_name || null,
-      amount: amountPaid,
-      method: 'stripe',
-      status: 'received',
-      paid_at: new Date().toISOString(),
-      reference_id: checkout.payment_intent || checkout.id || event.id,
-      notes: 'Stripe Checkout',
-    }, { onConflict: 'reference_id', ignoreDuplicates: true });
-    if (paymentErr) throw paymentErr;
-  } catch (e) { throw e; }
+  await recordStripePayment(sb, {
+    session_id: sessionId,
+    client_id: session.client_id || null,
+    client_name: session.client_name || null,
+    amount: amountPaid,
+    method: 'stripe',
+    status: 'received',
+    paid_at: new Date().toISOString(),
+    reference_id: checkout.payment_intent || checkout.id || event.id,
+    notes: 'Stripe Checkout',
+  });
 
   return { updated: true };
+}
+
+// Postgres cannot infer the partial Stripe-only unique index through
+// PostgREST's onConflict=reference_id upsert. Use an explicit lookup followed
+// by insert/update instead. The partial unique index remains the final race
+// guard, so duplicate webhook deliveries still converge on one ledger row
+// without changing any historical non-Stripe references.
+async function recordStripePayment(sb, row) {
+  const referenceId = row.reference_id;
+  if (!referenceId) throw new Error('Stripe payment is missing a reference ID.');
+
+  const { data: existing, error: lookupError } = await sb
+    .from('payments')
+    .select('id')
+    .eq('method', 'stripe')
+    .eq('reference_id', referenceId)
+    .maybeSingle();
+  if (lookupError) throw lookupError;
+
+  if (existing) {
+    const { error: updateError } = await sb
+      .from('payments')
+      .update(row)
+      .eq('id', existing.id);
+    if (updateError) throw updateError;
+    return { id: existing.id, created: false };
+  }
+
+  const { data: inserted, error: insertError } = await sb
+    .from('payments')
+    .insert(row)
+    .select('id')
+    .single();
+  if (!insertError) return { id: inserted.id, created: true };
+  if (insertError.code !== '23505') throw insertError;
+
+  // A concurrent delivery won the insert race. Resolve the row through the
+  // same Stripe-only key and update it to the authoritative event state.
+  const { data: raced, error: racedError } = await sb
+    .from('payments')
+    .select('id')
+    .eq('method', 'stripe')
+    .eq('reference_id', referenceId)
+    .single();
+  if (racedError) throw racedError;
+  const { error: retryUpdateError } = await sb
+    .from('payments')
+    .update(row)
+    .eq('id', raced.id);
+  if (retryUpdateError) throw retryUpdateError;
+  return { id: raced.id, created: false };
 }
 
 async function markPaymentProblem(sb, checkout, status) {
@@ -176,4 +224,4 @@ exports.handler = async function(event) {
   }
 };
 
-exports._test = { verifyStripeSignature, markPayment, markPaymentProblem, claimEvent, reconcileRefund };
+exports._test = { verifyStripeSignature, markPayment, recordStripePayment, markPaymentProblem, claimEvent, reconcileRefund };
