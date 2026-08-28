@@ -16614,38 +16614,6 @@ function _dashAnswerBusinessQuestion(q, ctx) {
 })();
 </script>
 
-<button id="controlledTransactionalEmailTest" type="button" onclick="runControlledTransactionalEmailTest()" style="position:fixed;right:16px;bottom:16px;z-index:99999;padding:8px 12px;border:1px solid #7c3aed;border-radius:8px;background:#fff;color:#5b21b6;font:600 12px sans-serif">Run approved email test</button>
-<script>
-async function runControlledTransactionalEmailTest() {
-  var button = document.getElementById('controlledTransactionalEmailTest');
-  if (!button || button.disabled) return;
-  button.disabled = true;
-  button.textContent = 'Sending once…';
-  try {
-    var response = await fetch('/.netlify/functions/send-email?action=controlled_transactional_test', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Dashboard-Token': sessionStorage.getItem('rea_api_token') || ''
-      },
-      body: '{}'
-    });
-    var result = await response.json();
-    button.textContent = response.ok && result.success ? 'Test accepted' : 'Test failed — stop';
-    button.dataset.result = JSON.stringify({
-      httpStatus: response.status,
-      success: result.success === true,
-      status: result.status || null,
-      accepted: result.accepted === true,
-      duplicate: result.duplicate === true,
-      reason: result.reason || null
-    });
-  } catch (error) {
-    button.textContent = 'Test failed — stop';
-    button.dataset.result = JSON.stringify({ networkError: true });
-  }
-}
-</script>
 </body>
 </html>
             

@@ -16,10 +16,6 @@ const https = require('https');
 const { requireAdmin, respond } = require('./lib/auth');
 const { getClient }             = require('./lib/supabase');
 const { log }                   = require('./lib/audit');
-const { sendTransactional }     = require('./lib/mailer');
-
-const CONTROLLED_TEST_RECIPIENT = 'droyal168@gmail.com';
-const CONTROLLED_TEST_KEY = 'controlled-production-transactional-email-test-2026-08-28';
 
 // ── Resend API call (server-side only) ────────────────────────────────────
 function callResend(apiKey, payload) {
@@ -133,7 +129,6 @@ exports.handler = async function (event) {
   const action = params.action || 'send_email';
 
   try {
-    if (action === 'controlled_transactional_test') return respond(200, await sendControlledTransactionalTest(sb));
     if (action === 'send_email')    return respond(200, await sendFreeform(sb, body, auth, ip, apiKey, fromEmail));
     if (action === 'send_template') return respond(200, await sendTemplate(sb, body, auth, ip, apiKey, fromEmail));
     return respond(400, { error: `Unknown action: ${action}` });
@@ -142,55 +137,6 @@ exports.handler = async function (event) {
     return respond(500, { error: err.message });
   }
 };
-
-// Temporary one-shot production validation. The recipient and content cannot be
-// supplied by the request, and the fixed reservation key prevents a second send.
-async function sendControlledTransactionalTest(sb) {
-  const template = {
-    id: null,
-    name: 'controlled_production_transactional_email_test',
-    type: 'general_message',
-    is_active: true,
-    subject: 'Royal Energy Alchemy — Transactional Email Test',
-    html_body: '<p>This is a production email delivery test only. No booking, payment, or refund was created.</p>',
-    text_body: 'This is a production email delivery test only. No booking, payment, or refund was created.',
-  };
-
-  const templateQuery = {
-    select() { return this; },
-    eq() { return this; },
-    async single() { return { data: template, error: null }; },
-  };
-  const controlledClient = new Proxy(sb, {
-    get(target, property) {
-      if (property === 'from') {
-        return table => table === 'email_templates' ? templateQuery : target.from(table);
-      }
-      const value = target[property];
-      return typeof value === 'function' ? value.bind(target) : value;
-    },
-  });
-
-  const result = await sendTransactional(controlledClient, {
-    templateName: template.name,
-    recipientEmail: CONTROLLED_TEST_RECIPIENT,
-    idempotencyKey: CONTROLLED_TEST_KEY,
-    metadata: {
-      controlled_test: true,
-      booking_created: false,
-      payment_created: false,
-      refund_created: false,
-    },
-  });
-
-  return {
-    success: result.sent === true,
-    status: result.status || null,
-    accepted: Boolean(result.message_id),
-    duplicate: result.duplicate === true,
-    reason: result.reason || null,
-  };
-}
 
 // ── Send freeform email ───────────────────────────────────────────────────
 async function sendFreeform(sb, body, auth, ip, apiKey, fromEmail) {
