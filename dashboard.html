@@ -5650,10 +5650,10 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
     <!-- PAYMENT LINKS -->
     <div class="booking-section" style="border:1px solid #4a4a8855;margin-bottom:24px">
       <div class="booking-section-header">
-        <div class="section-title" style="color:#e8b84b">💳 Square Payment Links</div>
+        <div class="section-title" style="color:#e8b84b">💳 Legacy / Manual Payment Links</div>
         <button class="action-btn approve" onclick="togglePayForm()">+ Edit Links</button>
       </div>
-      <p style="font-family:'EB Garamond',serif;font-size:14px;color:#aaa8cc;padding:0 0 10px 0;margin:0">Paste your Square payment link for each service. Clients are redirected here after booking to complete payment.</p>
+      <p style="font-family:'EB Garamond',serif;font-size:14px;color:#aaa8cc;padding:0 0 10px 0;margin:0">Historical Square links remain available for manually arranged payments only. Do not use this panel for Stripe Checkout bookings; those reconcile automatically.</p>
       <div id="payFormWrap" style="display:none;margin-bottom:10px">
         <div id="payLinkFields"></div>
         <div style="display:flex;gap:10px;margin-top:14px">
@@ -5680,7 +5680,7 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
         <div class="section-title" style="color:#66cc88">📬 Pending Bookings</div>
         <button class="action-btn" onclick="clearPendingBookings()" style="border-color:#cc445588;color:#cc4455">Clear All</button>
       </div>
-      <p style="font-family:'EB Garamond',serif;font-size:14px;color:#aaa8cc;padding:0 0 10px 0;margin:0">Booking requests submitted on the website. Confirm once Square payment is received.</p>
+      <p style="font-family:'EB Garamond',serif;font-size:14px;color:#aaa8cc;padding:0 0 10px 0;margin:0">Legacy website requests and historical manual payments. Stripe Checkout bookings reconcile automatically and must not be marked paid here.</p>
       <div style="margin-bottom:12px"><button class="action-btn approve" onclick="pullNetlifySubmissions()" style="font-size:11px">🔄 Pull from Netlify</button> <span id="netlify-pull-status" style="font-family:EB Garamond,serif;font-size:13px;color:#aaa8cc"></span></div>
       <div id="pendingBookingsList"></div>
     </div>
@@ -14932,8 +14932,8 @@ function renderPendingBookings(){
 function confirmPayment(i){
   var arr;try{arr=JSON.parse(localStorage.getItem('rea_pending_bookings')||'[]');}catch(ex){arr=[];}
   var b=arr[i];if(!b)return;
-  var methods=['Square/Card','PayPal','Cash App','Venmo','Zelle','Cash'];
-  var chosen=prompt('Confirm payment received via:\n'+methods.map(function(m,j){return (j+1)+'. '+m;}).join('\n')+'\n\nEnter number (1-6):');
+    var methods=['Square (historical)','PayPal','Cash App (external/manual)','Venmo','Zelle','Cash'];
+    var chosen=prompt('Legacy / manual payment only. Do not use for Stripe Checkout bookings.\n\nConfirm payment received via:\n'+methods.map(function(m,j){return (j+1)+'. '+m;}).join('\n')+'\n\nEnter number (1-6):');
   if(!chosen)return;
   b.payConfirmed=true;b.payConfirmedMethod=methods[(parseInt(chosen)||1)-1]||'Unknown';b.payConfirmedAt=new Date().toISOString();
   localStorage.setItem('rea_pending_bookings',JSON.stringify(arr));
@@ -15137,7 +15137,7 @@ function advancePayment(id,action){
   if(action==='request'){lc.stage='payment_requested';}
   else if(action==='pending'){lc.payment_status='pending';}
   else if(action==='confirm'){
-    var m=prompt('Payment method? (Square / Cash App / Venmo / Zelle / PayPal / Cash)')||'Unknown';
+    var m=prompt('Legacy / manual payment method? Do not use for Stripe Checkout bookings.\n(Square / external Cash App / Venmo / Zelle / PayPal / Cash)')||'Unknown';
     var ref=prompt('Reference / confirmation # (optional):')||'';
     lc.payment_status='paid';lc.payment_method=m;lc.payment_ref=ref;lc.payment_at=new Date().toISOString();
   }else if(action==='waive'){

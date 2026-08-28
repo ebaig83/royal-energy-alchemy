@@ -61,6 +61,11 @@ body{background:var(--bg);color:var(--text);font-family:'EB Garamond',serif;min-
 .btn-primary{width:100%;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.4em;color:#000;text-transform:uppercase;background:linear-gradient(135deg,var(--gold-light),var(--gold));padding:16px;cursor:pointer;border:none;transition:all .3s;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);margin-top:8px}
 .btn-primary:hover{filter:brightness(1.1)}
 .btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.payment-methods{margin:18px 0 0;padding:16px 18px;border:1px solid #e8b84b22;background:#e8b84b08;text-align:center}
+.payment-methods strong{display:block;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold-light);margin-bottom:8px}
+.payment-methods p{font-size:14px;line-height:1.6;color:#d8d4f099;margin:0}
+.payment-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:7px;margin:12px auto 10px}
+.payment-chip{display:inline-flex;align-items:center;min-height:27px;padding:4px 9px;border:1px solid #e8b84b2b;background:#04020e99;border-radius:999px;font-family:'Cinzel',serif;font-size:9px;letter-spacing:.08em;color:#f0ecff}
 .btn-back{background:transparent;border:1px solid #e8b84b22;color:#e8b84b66;font-family:'Cinzel',serif;font-size:10px;letter-spacing:.35em;text-transform:uppercase;padding:10px 20px;cursor:pointer;margin-bottom:24px;transition:all .2s}
 .btn-back:hover{border-color:#e8b84b44;color:#e8b84bcc}
 
@@ -162,6 +167,13 @@ body{background:var(--bg);color:var(--text);font-family:'EB Garamond',serif;min-
       By submitting, you agree that energy work is a complementary wellness offering and not a substitute for medical, legal, or psychological advice. You will receive an email with your intake form and session details.
     </p>
     <button class="btn-primary" id="submitBtn">Book Session & Continue to Waiver →</button>
+    <div class="payment-methods" aria-label="Secure online payment methods">
+      <strong>Secure online payment</strong>
+      <div class="payment-chips">
+        <span class="payment-chip">Visa</span><span class="payment-chip">Mastercard</span><span class="payment-chip">American Express</span><span class="payment-chip">Discover</span><span class="payment-chip">Apple Pay</span><span class="payment-chip">Google Pay</span><span class="payment-chip">Link</span><span class="payment-chip">Cash App Pay</span><span class="payment-chip">Amazon Pay</span>
+      </div>
+      <p>After completing your waiver, you’ll be redirected to our secure payment page. Available methods may vary by device, location, and eligibility.</p>
+    </div>
   </div>
 
   <!-- Success -->
@@ -170,8 +182,7 @@ body{background:var(--bg);color:var(--text);font-family:'EB Garamond',serif;min-
     <p id="successMsg">Your session is confirmed. Daron will be in touch shortly.</p>
     <p style="font-size:14px;color:#c8c4e055;margin-top:8px">Before your appointment is finalized, please complete the waiver and secure payment for your session.</p>
     <div class="success-actions">
-      <a href="/waiver-esign.html" class="success-action primary">Complete Waiver →</a>
-      <a href="/pay.html" class="success-action secondary">Pay for Session →</a>
+      <a href="/waiver-esign.html" class="success-action primary">Complete Waiver &amp; Continue →</a>
     </div>
     <p class="success-required">Waiver + payment are required before the appointment is finalized.</p>
     <a id="manageLink" href="#" class="success-link">Manage Your Appointment →</a>

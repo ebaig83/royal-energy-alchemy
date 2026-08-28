@@ -180,12 +180,15 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
             <label for="c-payment">Payment Method Used</label>
             <select id="c-payment" name="payment_method">
               <option value="">Select if applicable</option>
-              <option value="square">Square / Card</option>
-              <option value="paypal">PayPal</option>
-              <option value="cash_app">Cash App</option>
-              <option value="venmo">Venmo</option>
-              <option value="zelle">Zelle</option>
-              <option value="cash">Cash</option>
+              <option value="stripe">Stripe / Card or wallet</option>
+              <optgroup label="Previous or manually arranged payment">
+                <option value="square">Square (historical)</option>
+                <option value="paypal">PayPal</option>
+                <option value="cash_app">Cash App (external/manual)</option>
+                <option value="venmo">Venmo</option>
+                <option value="zelle">Zelle</option>
+                <option value="cash">Cash</option>
+              </optgroup>
               <option value="none">No payment made yet</option>
             </select>
           </div>
