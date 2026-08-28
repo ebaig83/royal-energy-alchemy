@@ -3955,23 +3955,7 @@ function checkPolicy(e){
   return false;
 }
 
-var _selectedPayMethod='square';
-function selectPayMethod(m){
-  _selectedPayMethod=m;
-  document.querySelectorAll('.pay-method-btn').forEach(function(b){b.classList.toggle('active',b.dataset.method===m);});
-  var box=document.getElementById('payHandleBox');
-  var txt=document.getElementById('payHandleText');
-  if(m==='square'){box.style.display='none';return;}
-  box.style.display='block';
-  var handles={};
-  try{handles=JSON.parse(localStorage.getItem('rea_pay_handles')||'{}');}catch(ex){}
-  var labels={paypal:'PayPal',cashapp:'Cash App',venmo:'Venmo',zelle:'Zelle',cash:'Cash (only if Daron approved)'};
-  var handle=handles[m]||'';
-  if(m==='cash'){txt.innerHTML='<em>Use cash only when Daron has approved it directly. Online bookings should be paid through secure checkout.</em>';return;}
-  txt.innerHTML=handle
-    ?'Send payment to: <strong style="color:#e8b84b">'+handle+'</strong>'
-    :'Payment handle not set yet — Daron will send you details after confirming your booking.';
-}
+var _selectedPayMethod='stripe';
 
 /* Mark selected slot(s) as booked in GitHub slots.json */
 function markSlotsBooked(label1, label2){
@@ -4068,7 +4052,7 @@ function handleBookingSubmit(e){
   var window2=(document.getElementById('cf-window2')||{}).value||'';
   var payRef=(document.getElementById('cf-pay-ref')||{}).value||'';
   var paySent=!!(document.getElementById('cf-pay-sent')&&document.getElementById('cf-pay-sent').checked);
-  var payMethod=_selectedPayMethod||'square';
+  var payMethod='stripe';
 
   if(!fname||!email||!phone||!service){
     alert('Please fill in: First Name, Email Address, Phone Number, and Service.');
@@ -4159,17 +4143,6 @@ function handleBookingSubmit(e){
     payMethod:payMethod,payRef:payRef,paySent:paySent,ts:Date.now(),status:'pending'});
   localStorage.setItem('rea_pending_bookings',JSON.stringify(pending));
 
-  // ── Square redirect if applicable
-  if(payMethod==='square'){
-    var links={};try{links=JSON.parse(localStorage.getItem('rea_pay_links')||'{}');}catch(ex){}
-    var payUrl=links[service]||'';
-    if(payUrl){
-      if(btn)btn.textContent='Redirecting to payment...';
-      setTimeout(function(){window.location.href=payUrl;},800);
-      return false;
-    }
-  }
-
   /* mark slot as booked in cache so calendar updates immediately */
   markSlotsBooked(window1, window2);
   showBookingConfirmation(payMethod,paySent);
@@ -4181,12 +4154,8 @@ function showBookingConfirmation(method,sent){
   var form=document.getElementById('bookingForm');
   if(!form)return;
   var msgs={
-    paypal:'Daron will verify your PayPal payment after it is sent.',
-    cashapp:'Daron will verify your Cash App payment after it is sent.',
-    venmo:'Daron will verify your Venmo payment after it is sent.',
-    zelle:'Daron will verify your Zelle payment after it is sent.',
     cash:'If Daron approved an in-person cash arrangement, your waiver must still be completed before your appointment.',
-    square:'Please complete your waiver and payment so Daron can finalize your appointment.'
+    stripe:'You’ll be redirected to secure Stripe Checkout after completing your waiver.'
   };
   var conf=document.createElement('div');
   conf.style.cssText='text-align:center;padding:30px 22px;font-family:EB Garamond,serif;font-size:17px;color:#66cc88;margin-top:16px;border:1px solid #66cc8833;border-radius:8px;background:#0d1a12';
@@ -4218,7 +4187,7 @@ function showOnboardingConfirmation(method){
     '<p style="color:#d0cce8;font-size:16px;margin:8px 0">'+msg+'</p>'+
     '<div style="margin:14px auto;max-width:460px;padding:14px 18px;border:1px solid #e8b84b44;background:#e8b84b08;border-radius:8px;text-align:left">'+
       '<div style="font-family:Cinzel,serif;font-size:10px;letter-spacing:.25em;color:#e8b84b;margin-bottom:6px">PAYMENT</div>'+
-      '<p style="font-family:\'EB Garamond\',serif;font-size:15px;color:#d0cce8;margin:0;line-height:1.5">Payment is due before your session. Daron will send payment details when confirming your appointment. You can also pay early via Cash App, PayPal, Venmo, or Zelle.</p>'+
+      '<p style="font-family:\'EB Garamond\',serif;font-size:15px;color:#d0cce8;margin:0;line-height:1.5">Payment is completed securely through Stripe Checkout after your waiver is submitted.</p>'+
     '</div>'+
     '<p style="color:#aaa8cc;font-size:14px;margin-top:6px">You will receive a follow-up by email or phone with next steps.</p>';
   form.parentNode.insertBefore(conf,form.nextSibling);

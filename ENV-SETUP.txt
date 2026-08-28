@@ -36,8 +36,6 @@ ANTHROPIC_API_KEY
 ALREADY SET (existing)
 ──────────────────────────────────────────────────────────────────
 NETLIFY_ACCESS_TOKEN   — for netlify-forms-sync.js
-SQUARE_ACCESS_TOKEN    — for square-sync.js
-SQUARE_LOCATION_ID     — for square-sync.js (optional)
 
 ──────────────────────────────────────────────────────────────────
 SUPABASE SETUP STEPS

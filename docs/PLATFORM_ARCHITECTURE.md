@@ -1346,7 +1346,7 @@ OUTPUT: {
 | `clients-data.js` | `website/clients-data.js` | Static client data file — likely seed/demo data or an early prototype artifact. |
 | `booking-check.js` / `script.js` | `website/` | General-purpose scripts whose current role is unclear. |
 | `netlify-forms-sync.js` | `netlify/functions/` | Netlify Forms integration — role unclear given intake.js handles form submissions. May be a legacy webhook. |
-| `square-sync.js` | `netlify/functions/` | Square payment integration — not referenced in dashboard or QA. Potential dead code or future feature. |
+| `square-sync.js` | Retired | Active Square sync was removed; historical Square IDs and manual payment values remain supported by the existing records schema. |
 | `health-check-functions.js` | `netlify/functions/` | Separate from `operations-health.js`. Potential duplication. |
 | `audit_logs` not exposed via API | `financial.js` schema validator | Schema validation WARNs on audit_logs because the table isn't queryable via the schema_validation endpoint. Minor — by design (security). |
 

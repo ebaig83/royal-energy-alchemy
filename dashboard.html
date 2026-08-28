@@ -5850,23 +5850,9 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
         <div class="section-title" style="margin:0">Sync Appointments</div>
         <span id="syncLastRun" style="font-size:12px;color:#dddaee44;font-style:italic"></span>
       </div>
-      <p style="font-size:14px;color:#dddaee66;font-style:italic;margin-bottom:18px;line-height:1.7">Pull live appointments from Square and booking requests from your website directly into the dashboard. Existing records are never duplicated — only new entries are added.</p>
+      <p style="font-size:14px;color:#dddaee66;font-style:italic;margin-bottom:18px;line-height:1.7">Pull booking requests from your website directly into the dashboard. Existing records are never duplicated — only new entries are added.</p>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:8px" class="sync-grid">
-
-        <!-- Square sync card -->
-        <div class="sync-card" id="syncCardSquare">
-          <div class="sync-card-header">
-            <span class="sync-card-icon">◈</span>
-            <span class="sync-card-title">Square Appointments</span>
-          </div>
-          <p class="sync-card-desc">Pulls confirmed, pending, and cancelled bookings from your Square Appointments account. Requires <code>SQUARE_ACCESS_TOKEN</code> in Netlify env vars.</p>
-          <div id="syncStatusSquare" class="sync-status"></div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
-            <button class="action-btn approve" onclick="syncSquare()" id="syncBtnSquare" style="padding:9px 22px">⟳ Sync from Square</button>
-            <a href="https://squareup.com/dashboard/appointments" target="_blank" class="action-btn view" style="text-decoration:none;display:inline-block;padding:9px 18px;font-size:10px">Open Square ↗</a>
-          </div>
-        </div>
 
         <!-- Website forms sync card -->
         <div class="sync-card" id="syncCardForms">
@@ -5893,11 +5879,10 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
           <p style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#e8b84b99;text-transform:uppercase;margin-bottom:12px">One-Time Setup — Netlify Environment Variables</p>
           <p>Go to <strong style="color:#f0ecff">Netlify → royal-energy-alchemy → Site Settings → Environment Variables</strong> and add:</p>
           <table style="width:100%;border-collapse:collapse;margin:14px 0">
-            <tr><td style="padding:6px 12px;border:1px solid #e8b84b14;font-family:monospace;color:#e8b84b">SQUARE_ACCESS_TOKEN</td><td style="padding:6px 12px;border:1px solid #e8b84b14;color:#dddaee">Square Developer → Your App → Production → Access Token</td></tr>
             <tr><td style="padding:6px 12px;border:1px solid #e8b84b14;font-family:monospace;color:#22c98a">NETLIFY_ACCESS_TOKEN</td><td style="padding:6px 12px;border:1px solid #e8b84b14;color:#dddaee">Netlify → User Settings → Applications → Personal Access Tokens → New token</td></tr>
           </table>
           <p style="color:#dddaee88;font-size:13px">After adding env vars, redeploy the site once. Tokens are stored server-side only — never visible in the browser.</p>
-          <p style="margin-top:10px"><a href="https://developer.squareup.com/apps" target="_blank" style="color:#e8b84bcc">Square Developer Portal ↗</a> &nbsp;·&nbsp; <a href="https://app.netlify.com/user/applications" target="_blank" style="color:#22c98acc">Netlify Access Tokens ↗</a></p>
+          <p style="margin-top:10px"><a href="https://app.netlify.com/user/applications" target="_blank" style="color:#22c98acc">Netlify Access Tokens ↗</a></p>
         </div>
       </div>
 
@@ -5905,12 +5890,6 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
 
     <!-- BOOKING SYSTEM STATS -->
     <div class="booking-section">
-      <!-- Square links always visible -->
-      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:28px">
-        <a href="https://book.squareup.com/appointments/gcevwnjduxlw9u/location/LA19CVXRF3KDC/services" target="_blank" class="action-btn view" style="text-decoration:none;display:inline-block;padding:10px 28px">Open Booking Page ↗</a>
-        <a href="https://squareup.com/dashboard/appointments" target="_blank" class="action-btn approve" style="text-decoration:none;display:inline-block;padding:10px 28px">Square Dashboard ↗</a>
-      </div>
-
       <!-- ① THIS WEEK AT A GLANCE -->
       <div id="bk-week-glance"></div>
 
@@ -8096,9 +8075,7 @@ function paymentNotice(clientName, email, date, amount) {
     'Thank you for your energy session on ' + date + '.\n\n' +
     'If you haven\'t already, please submit your payment' +
     (amount ? ' of $' + amount : '') + ' at your earliest convenience.\n\n' +
-    'You can pay via:\n' +
-    '• Square: https://book.squareup.com/appointments/gcevwnjduxlw9u\n' +
-    '• Or reply to this email to arrange payment.\n\n' +
+    'Please complete payment through the secure Stripe Checkout link in your booking flow, or reply to this email to arrange a historical/manual payment.\n\n' +
     'Thank you,\nDaron Royal\nRoyal Energy Alchemy'
   );
   window.open('mailto:' + email + '?subject=' + subject + '&body=' + body, '_blank');
@@ -8381,7 +8358,7 @@ function renderBooking() {
         const actionBtns = (item.actions || []).map(act => {
           if (act === 'resolve')  return `<button class="bi-act-resolve"  onclick="resolveIssue('${item.key}','resolved')">✓ Resolved</button>`;
           if (act === 'dismiss')  return `<button class="bi-act-dismiss"  onclick="dismissIssue('${item.key}')">Leave for Now</button>`;
-          if (act === 'payment')  return `<a class="bi-act-payment" href="mailto:${item.email}?subject=${encodeURIComponent('Payment for Your Energy Session — '+item.date)}&body=${encodeURIComponent('Hi '+item.client+',\n\nThank you for your energy session on '+item.date+'.\n\nPlease submit your payment at your earliest convenience.\n\nYou can pay via:\n• Square: https://book.squareup.com/appointments/gcevwnjduxlw9u\n• Or reply to this email.\n\nThank you,\nDaron Royal\nRoyal Energy Alchemy')}" target="_blank">✉ Send Notice</a>`;
+          if (act === 'payment')  return `<a class="bi-act-payment" href="mailto:${item.email}?subject=${encodeURIComponent('Payment for Your Energy Session — '+item.date)}&body=${encodeURIComponent('Hi '+item.client+',\n\nThank you for your energy session on '+item.date+'.\n\nPlease complete payment through the secure Stripe Checkout link in your booking flow, or reply to this email to arrange a historical/manual payment.\n\nThank you,\nDaron Royal\nRoyal Energy Alchemy')}" target="_blank">✉ Send Notice</a>`;
           return '';
         }).join('');
         return `<div class="bi-issue">
@@ -9247,7 +9224,6 @@ async function refreshScheduleFromSupabase(force) {
     _scheduleStore.loaded = true;
     _scheduleStore.error = null;
     _refreshScheduleConsumers();
-    if (typeof window.refreshSquareForHandoff === 'function') window.refreshSquareForHandoff();
     return _scheduleStore.sessions;
   }).catch(function(err) {
     _scheduleStore.error = err;
@@ -9316,8 +9292,8 @@ function blockSharedSlotForAppointment(appt) {
 }
 
 // ── SYNC ENGINE ──────────────────────────────────────────────────────────────
-// Pulls appointments from Square and website forms into rea_appointments.
-// Deduplicates by squareBookingId / netlifySubmissionId.
+// Pulls website form submissions into the local appointment view.
+// Deduplicates by netlifySubmissionId while retaining legacy record IDs.
 // Never deletes existing records.
 
 const SYNC_META_KEY = 'rea_sync_meta';
@@ -9350,12 +9326,11 @@ function renderSyncLastRun() {
   const el = document.getElementById('syncLastRun');
   if (!el) return;
   const parts = [];
-  if (meta.squareLastSync) parts.push('Square: ' + meta.squareLastSync.slice(0,16).replace('T',' '));
   if (meta.formsLastSync)  parts.push('Forms: '  + meta.formsLastSync.slice(0,16).replace('T',' '));
   el.textContent = parts.length ? 'Last sync — ' + parts.join(' · ') : '';
 }
 
-// Import a single appointment record (from Square or Forms) into localStorage.
+// Import a single appointment record (from website forms or legacy records) into localStorage.
 // Returns 'added' | 'updated' | 'skipped'
 function importAppointment(rec) {
   const appts = getAppts();
@@ -9364,7 +9339,7 @@ function importAppointment(rec) {
   if (rec.squareBookingId) {
     const existing = appts.find(a => a.squareBookingId === rec.squareBookingId);
     if (existing) {
-      // Update status if Square changed it (e.g. cancelled)
+      // Preserve legacy status updates (e.g. cancelled)
       if (existing.status !== rec.status && rec.status === 'cancelled') {
         existing.status = 'cancelled';
         saveAppts(appts);
@@ -9419,7 +9394,7 @@ function importAppointment(rec) {
     }
   }
 
-  const sourceLabel = rec.source === 'square' ? 'Square' : 'website form';
+  const sourceLabel = rec.source === 'square' ? 'legacy Square record' : 'website form';
   addTimelineEvent(appt.client, {
     type:        'booking',
     date:        appt.date || new Date().toISOString().slice(0,10),
@@ -9428,56 +9403,6 @@ function importAppointment(rec) {
   });
 
   return 'added';
-}
-
-// ── Square sync ──────────────────────────────────────────────
-async function syncSquare() {
-  setSyncBtn('Square', true);
-  setSyncStatus('Square', 'Connecting to Square…', 'loading');
-  const log = document.getElementById('syncResultLog');
-  if (log) { log.style.display = 'none'; log.innerHTML = ''; }
-
-  try {
-    const res  = await fetch('/.netlify/functions/square-sync?days_back=90&days_forward=60');
-    const data = await res.json();
-
-    if (!res.ok || !data.success) {
-      const msg = data.error || 'Unknown error';
-      setSyncStatus('Square', '✕ ' + msg, 'err');
-      if (log) { log.style.display = 'block'; log.innerHTML = `<strong style="color:#ee7070">Square Error:</strong> ${msg}${data.detail ? '<br><span style="color:#dddaee55;font-size:12px">' + JSON.stringify(data.detail) + '</span>' : ''}`; }
-      setSyncBtn('Square', false);
-      return;
-    }
-
-    let added = 0, updated = 0, skipped = 0;
-    (data.bookings || []).forEach(b => {
-      const r = importAppointment(b);
-      if (r === 'added')   added++;
-      else if (r === 'updated') updated++;
-      else skipped++;
-    });
-
-    const meta = getSyncMeta();
-    meta.squareLastSync = new Date().toISOString();
-    saveSyncMeta(meta);
-    renderSyncLastRun();
-
-    setSyncStatus('Square', `✓ ${added} new · ${updated} updated · ${skipped} already synced`, 'ok');
-    showSyncLog([
-      `<strong style="color:#e8b84b">Square Sync Complete</strong>`,
-      `Fetched ${data.count} bookings from Square`,
-      added   ? `<span style="color:#22c98a">+ ${added} new appointment${added!==1?'s':''} added</span>` : '',
-      updated ? `<span style="color:#9b7fe8">↺ ${updated} status update${updated!==1?'s':''}</span>` : '',
-      skipped ? `<span style="color:#dddaee44">${skipped} already existed — skipped</span>` : '',
-    ].filter(Boolean));
-
-    renderUpcoming(); renderCal(); renderBooking();
-
-  } catch(err) {
-    setSyncStatus('Square', '✕ Network error — is the site deployed with the function?', 'err');
-    if (log) { log.style.display = 'block'; log.innerHTML = `<strong style="color:#ee7070">Error:</strong> ${err.message}`; }
-  }
-  setSyncBtn('Square', false);
 }
 
 // ── Netlify Forms sync ───────────────────────────────────────
@@ -10370,7 +10295,7 @@ function saveEditAppt(id) {
   renderUpcoming(); updateCapacityStats(); renderCal();
 }
 
-// Confirm a pending (website form / Square unconfirmed) appointment
+// Confirm a pending website appointment
 function confirmPendingAppt(id) {
   const appts = getAppts();
   const idx = appts.findIndex(x => x.id === id);
@@ -16546,7 +16471,6 @@ function _dashAnswerBusinessQuestion(q, ctx) {
   'use strict';
   var hdContacts = {};
   var hdRealClientRows = [];
-  var hdSquareLoading = null;
   function e(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
   function sessionWhen(s){var d=s.session_date||s.date||'',t=s.session_time||s.time||'00:00';return new Date(String(d).slice(0,10)+'T'+String(t).slice(0,5));}
   function localDateKey(d){var y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');return y+'-'+m+'-'+day;}
@@ -16555,7 +16479,7 @@ function _dashAnswerBusinessQuestion(q, ctx) {
     var source=(typeof _scheduleStore!=='undefined'&&_scheduleStore.loaded)?_scheduleStore.sessions:((typeof getScheduleSessions==='function')?getScheduleSessions():[]);
     return source.filter(function(s){
       var name=s.client_name||s.client||'',email=s.client_email||s.email||'',source=key(s.source),scheduleSource=key(s.scheduleSource);
-      return (!scheduleSource||scheduleSource==='supabase'||scheduleSource==='live-square'||scheduleSource==='manual'||scheduleSource==='local')&&!shouldSkipEntry(name,email)&&s.is_test!==true&&source!=='test'&&source!=='demo'&&source!=='seed';
+      return (!scheduleSource||scheduleSource==='supabase'||scheduleSource==='manual'||scheduleSource==='local')&&!shouldSkipEntry(name,email)&&s.is_test!==true&&source!=='test'&&source!=='demo'&&source!=='seed';
     });
   }
   function money(v){return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(Number(v)||0);}
@@ -16599,16 +16523,6 @@ function _dashAnswerBusinessQuestion(q, ctx) {
     renderSchedule(sessions);renderActivity(sessions);
   }
   async function loadRevenue(){var token=sessionStorage.getItem('rea_api_token')||'',el=document.getElementById('hdRevenue');try{if(!token)throw 0;var r=await fetch('/.netlify/functions/financial?section=ledger',{headers:{'X-Dashboard-Token':token}});if(!r.ok)throw 0;var entries=(await r.json()).entries||[],now=new Date(),total=entries.filter(function(x){var d=new Date(x.entry_date||x.created_at);return x.entry_type==='payment'&&!shouldSkipEntry(x.client_name||'',x.client_email||'')&&d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();}).reduce(function(sum,x){return sum+(Number(x.amount)||0);},0);el.textContent=money(total);}catch(x){if(el)el.textContent='—';}}
-  window.refreshSquareForHandoff=function(){
-    if(hdSquareLoading)return hdSquareLoading;
-    hdSquareLoading=fetch('/.netlify/functions/square-sync?days_back=90&days_forward=60').then(function(r){if(!r.ok)throw new Error('Square schedule unavailable');return r.json();}).then(function(data){
-      var notice=document.getElementById('hdScheduleNotice');if(notice){notice.style.display='none';notice.textContent='';}
-      var square=(data.bookings||[]).filter(function(b){return !shouldSkipEntry(b.client||'',b.email||'');}).map(function(b){return _normalizeScheduleSession(Object.assign({},b,{client_name:b.client,client_email:b.email||'',client_phone:b.phone||'',session_date:b.date,session_time:b.time,scheduleSource:'live-square'}));});
-      var base=(_scheduleStore.sessions||[]).filter(function(s){return key(s.scheduleSource)!=='live-square';}),seen={};base.forEach(function(s){var id=s.square_booking_id||s.squareBookingId;seen[id?('id:'+id):('slot:'+key(s.client_name||s.client)+'|'+(s.session_date||s.date)+'|'+(s.session_time||s.time))]=true;});
-      square.forEach(function(s){var id=s.square_booking_id||s.squareBookingId,k=id?('id:'+id):('slot:'+key(s.client_name||s.client)+'|'+(s.session_date||s.date)+'|'+(s.session_time||s.time));if(!seen[k]){seen[k]=true;base.push(s);}});
-      _scheduleStore.sessions=base;_refreshScheduleConsumers();return square;
-    }).catch(function(){var notice=document.getElementById('hdScheduleNotice');if(notice){notice.style.display='block';notice.innerHTML='Upcoming Square appointments cannot load because the Square production connection is not configured. <a href="https://squareup.com/dashboard/appointments" target="_blank" rel="noopener">Open Square Dashboard ↗</a>';}return [];}).finally(function(){hdSquareLoading=null;});return hdSquareLoading;
-  };
   window.renderHandoffDashboard=function(){var sessions=productionSessions();renderSchedule(sessions);renderActivity(sessions);loadClients(sessions);loadRevenue();};
   document.addEventListener('DOMContentLoaded',function(){var el=document.getElementById('hdTodayLabel'),now=new Date();if(el)el.textContent=now.toLocaleDateString([],{weekday:'long',month:'long',day:'numeric'});renderHandoffDashboard();});
 })();
