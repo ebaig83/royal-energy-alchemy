@@ -4,6 +4,10 @@ const crypto        = require('crypto');
 const { respond }   = require('./lib/auth');
 const { getClient } = require('./lib/supabase');
 const { findService } = require('./lib/services');
+const { sendWithPreferences } = require('./lib/comms');
+const { sendTransactional } = require('./lib/mailer');
+
+const SITE_URL = process.env.SITE_URL || 'https://www.daronroyal.com';
 
 function rawBody(event) {
   if (!event.body) return '';
@@ -47,7 +51,7 @@ function isWaiverDone(session) {
 async function markPayment(sb, sessionId, event, checkout) {
   const { data: session, error } = await sb
     .from('sessions')
-    .select('id, status, service, waiver_status, waiver_completed, client_id, client_name, amount_due, amount_paid, payment_status')
+    .select('id, status, service, session_date, session_time, waiver_status, waiver_completed, client_id, client_name, amount_due, amount_paid, payment_status')
     .eq('id', sessionId)
     .single();
 
@@ -91,7 +95,7 @@ async function markPayment(sb, sessionId, event, checkout) {
     notes: 'Stripe Checkout',
   });
 
-  return { updated: true };
+  return { ...session, amount_paid: amountPaid, payment_reference: checkout.payment_intent || checkout.id || event.id };
 }
 
 // Postgres cannot infer the partial Stripe-only unique index through
@@ -160,6 +164,13 @@ async function markPaymentProblem(sb, checkout, status) {
   Object.keys(updates).forEach(key => updates[key] === undefined && delete updates[key]);
   const { error } = await sb.from('sessions').update(updates).eq('id', sessionId);
   if (error) throw error;
+  const { data: session, error: sessionError } = await sb
+    .from('sessions')
+    .select('id,client_id,client_name,service,session_date,session_time,amount_due')
+    .eq('id', sessionId)
+    .single();
+  if (sessionError) throw sessionError;
+  return session;
 }
 
 async function claimEvent(sb, stripeEvent) {
@@ -178,6 +189,12 @@ async function claimEvent(sb, stripeEvent) {
 
 async function reconcileRefund(sb, charge) {
   if (!charge.payment_intent) throw new Error('Refunded charge is missing its PaymentIntent.');
+  const { data: session, error: sessionLookupError } = await sb
+    .from('sessions')
+    .select('id,client_id,client_name,service,session_date,session_time,amount_paid')
+    .eq('stripe_payment_intent_id', charge.payment_intent)
+    .single();
+  if (sessionLookupError || !session) throw sessionLookupError || new Error('Refunded booking was not found.');
   const full = Number(charge.amount || 0) > 0 && Number(charge.amount_refunded || 0) >= Number(charge.amount);
   const now = new Date().toISOString();
   const refundId = charge.refunds?.data?.[0]?.id || null;
@@ -187,6 +204,79 @@ async function reconcileRefund(sb, charge) {
   if (error) throw error;
   const { error: paymentError } = await sb.from('payments').update({ refunded_amount: updates.refunded_amount, refund_status: updates.refund_status, refunded_at: now, stripe_charge_id: charge.id || null, stripe_refund_id: refundId }).eq('reference_id', charge.payment_intent);
   if (paymentError) throw paymentError;
+  return { ...session, refunded_amount: updates.refunded_amount, refund_reference: refundId || charge.id };
+}
+
+async function clientEmail(sb, session) {
+  if (!session?.client_id) return null;
+  const { data } = await sb.from('clients').select('email').eq('id', session.client_id).single();
+  return data?.email || null;
+}
+
+function notificationKey(eventId, type, recipient) {
+  return [eventId, type, String(recipient || '').trim().toLowerCase()].join(':');
+}
+
+async function sendStripeNotification(sb, { eventId, type, templateName, recipientEmail, session, variables, practitioner = false, transport }) {
+  if (!recipientEmail) return { skipped: true, reason: 'no_recipient' };
+  const metadata = { stripe_event_id: eventId, notification_type: type, session_id: session.id };
+  const opts = {
+    templateName,
+    recipientEmail,
+    clientId: practitioner ? null : session.client_id,
+    sessionId: session.id,
+    variables,
+    metadata,
+    idempotencyKey: notificationKey(eventId, type, recipientEmail),
+    transport,
+  };
+  return practitioner ? sendTransactional(sb, opts) : sendWithPreferences(sb, opts);
+}
+
+async function notifyPaymentSuccess(sb, eventId, session, transport) {
+  const email = await clientEmail(sb, session);
+  const admin = process.env.ADMIN_EMAIL;
+  const common = {
+    client_name: session.client_name || '', service: session.service || '',
+    session_date: session.session_date || '', session_time: String(session.session_time || '').slice(0, 5),
+    timezone: 'ET', amount_paid: Number(session.amount_paid || 0).toFixed(2),
+    session_reference: session.id, payment_reference: session.payment_reference || '',
+    manage_url: `${SITE_URL}/manage-appointment.html?session_id=${encodeURIComponent(session.id)}`,
+    dashboard_url: `${SITE_URL}/dashboard.html`,
+  };
+  return Promise.all([
+    sendStripeNotification(sb, { eventId, type: 'client_payment_confirmed', templateName: 'stripe_payment_confirmed_client', recipientEmail: email, session, variables: common, transport }),
+    sendStripeNotification(sb, { eventId, type: 'practitioner_paid_booking', templateName: 'stripe_payment_confirmed_practitioner', recipientEmail: admin, session, variables: common, practitioner: true, transport }),
+  ]);
+}
+
+async function notifyRefund(sb, eventId, session, transport) {
+  const email = await clientEmail(sb, session);
+  const admin = process.env.ADMIN_EMAIL;
+  const common = {
+    client_name: session.client_name || '', service: session.service || '',
+    session_date: session.session_date || '', session_time: String(session.session_time || '').slice(0, 5),
+    refunded_amount: Number(session.refunded_amount || 0).toFixed(2), session_reference: session.id,
+    refund_reference: session.refund_reference || '',
+  };
+  return Promise.all([
+    sendStripeNotification(sb, { eventId, type: 'client_refund_confirmed', templateName: 'stripe_refund_confirmed_client', recipientEmail: email, session, variables: common, transport }),
+    sendStripeNotification(sb, { eventId, type: 'practitioner_refund_confirmed', templateName: 'stripe_refund_confirmed_practitioner', recipientEmail: admin, session, variables: common, practitioner: true, transport }),
+  ]);
+}
+
+async function notifyPaymentFailure(sb, eventId, session, transport) {
+  const email = await clientEmail(sb, session);
+  return sendStripeNotification(sb, {
+    eventId, type: 'client_payment_failed', templateName: 'stripe_payment_failed_client', recipientEmail: email,
+    session, transport,
+    variables: {
+      client_name: session.client_name || '', service: session.service || '',
+      session_date: session.session_date || '', session_time: String(session.session_time || '').slice(0, 5),
+      session_reference: session.id,
+      retry_url: `${SITE_URL}/waiver-esign.html?session_id=${encodeURIComponent(session.id)}`,
+    },
+  });
 }
 
 exports.handler = async function(event) {
@@ -208,12 +298,27 @@ exports.handler = async function(event) {
   try {
     if (!await claimEvent(sb, stripeEvent)) return respond(200, { received: true, duplicate: true });
     const object = stripeEvent.data?.object || {};
-    if (stripeEvent.type === 'checkout.session.completed' && object.payment_status === 'paid') await markPayment(sb, object.metadata?.session_id || object.metadata?.booking_id || object.client_reference_id, stripeEvent, object);
-    if (stripeEvent.type === 'checkout.session.async_payment_succeeded') await markPayment(sb, object.metadata?.session_id || object.metadata?.booking_id || object.client_reference_id, stripeEvent, object);
-    if (stripeEvent.type === 'checkout.session.async_payment_failed') await markPaymentProblem(sb, object, 'failed');
+    if (stripeEvent.type === 'checkout.session.completed' && object.payment_status === 'paid') {
+      const session = await markPayment(sb, object.metadata?.session_id || object.metadata?.booking_id || object.client_reference_id, stripeEvent, object);
+      await notifyPaymentSuccess(sb, eventId, session);
+    }
+    if (stripeEvent.type === 'checkout.session.async_payment_succeeded') {
+      const session = await markPayment(sb, object.metadata?.session_id || object.metadata?.booking_id || object.client_reference_id, stripeEvent, object);
+      await notifyPaymentSuccess(sb, eventId, session);
+    }
+    if (stripeEvent.type === 'checkout.session.async_payment_failed') {
+      const session = await markPaymentProblem(sb, object, 'failed');
+      await notifyPaymentFailure(sb, eventId, session);
+    }
     if (stripeEvent.type === 'checkout.session.expired') await markPaymentProblem(sb, object, 'expired');
-    if (stripeEvent.type === 'payment_intent.payment_failed') await markPaymentProblem(sb, object, 'failed');
-    if (stripeEvent.type === 'charge.refunded') await reconcileRefund(sb, object);
+    if (stripeEvent.type === 'payment_intent.payment_failed') {
+      const session = await markPaymentProblem(sb, object, 'failed');
+      await notifyPaymentFailure(sb, eventId, session);
+    }
+    if (stripeEvent.type === 'charge.refunded') {
+      const session = await reconcileRefund(sb, object);
+      await notifyRefund(sb, eventId, session);
+    }
     const { error: doneError } = await sb.from('stripe_webhook_events').update({ state: 'processed', processed_at: new Date().toISOString(), processing_error: null }).eq('id', eventId);
     if (doneError) throw doneError;
     return respond(200, { received: true });
@@ -224,4 +329,4 @@ exports.handler = async function(event) {
   }
 };
 
-exports._test = { verifyStripeSignature, markPayment, recordStripePayment, markPaymentProblem, claimEvent, reconcileRefund };
+exports._test = { verifyStripeSignature, markPayment, recordStripePayment, markPaymentProblem, claimEvent, reconcileRefund, notificationKey, sendStripeNotification, notifyPaymentSuccess, notifyRefund, notifyPaymentFailure };

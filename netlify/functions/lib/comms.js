@@ -81,7 +81,15 @@ async function sendWithPreferences(sb, opts) {
     return { skipped: true, reason: 'email_consent_off', preferred_contact: prefs.preferred_contact };
   }
 
-  return sendTransactional(sb, { templateName, recipientEmail, clientId, variables, metadata });
+  return sendTransactional(sb, {
+    templateName,
+    recipientEmail,
+    clientId,
+    variables,
+    metadata,
+    idempotencyKey: opts.idempotencyKey,
+    transport: opts.transport,
+  });
 }
 
 module.exports = { getPreferences, canEmail, logManualOutreachNeeded, sendWithPreferences };

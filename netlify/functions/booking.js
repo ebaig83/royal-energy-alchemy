@@ -223,20 +223,22 @@ exports.handler = async function(event) {
     intake_url:   intakeUrl,
     waiver_url:   waiverUrl,
     cancel_url:   cancelUrl,
+    session_reference: sessionId,
     documents_message: 'Please complete your required client documents before your appointment.',
     contact_email: process.env.ADMIN_EMAIL || 'royalenergyalchemy@gmail.com',
   };
 
-  // Booking confirmation
+  // Receipt only: payment has not happened yet, so this must not imply that
+  // the appointment is confirmed. Final confirmation comes from Stripe webhook.
   sendWithPreferences(sb, {
-    templateName:   'appointment_confirmation',
+    templateName:   'booking_received_pending_payment',
     recipientEmail: client_email.trim(),
     clientId,
     sessionId,
     variables:      emailVars,
-    metadata:       { trigger: 'online_booking', session_id: sessionId },
+    metadata:       { trigger: 'online_booking_pending_payment', session_id: sessionId },
   }).catch(async e => {
-    await emailFailure(sb, { templateName: 'appointment_confirmation', clientId, sessionId, error: e });
+    await emailFailure(sb, { templateName: 'booking_received_pending_payment', clientId, sessionId, error: e });
   });
 
   // Intake invitation
