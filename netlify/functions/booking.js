@@ -21,6 +21,15 @@ const crypto                   = require('crypto');
 
 const SITE_URL = process.env.SITE_URL || 'https://royal-energy-alchemy.netlify.app';
 
+function controlledTestAuthorized(event, body, serviceInfo) {
+  const secret = process.env.GOOGLE_MEET_TEST_AUTH;
+  const expiresAt = Date.parse(process.env.GOOGLE_MEET_TEST_EXPIRES_AT || '');
+  const supplied = event.headers?.['x-google-meet-test-auth'] || event.headers?.['X-Google-Meet-Test-Auth'] || '';
+  if (!secret || !supplied || !Number.isFinite(expiresAt) || Date.now() >= expiresAt) return false;
+  if (supplied.length !== secret.length || !crypto.timingSafeEqual(Buffer.from(supplied), Buffer.from(secret))) return false;
+  return String(body.client_name || '').trim().toLowerCase() === 'google meet test' && String(body.client_email || '').trim().toLowerCase() === 'droyal168@gmail.com' && serviceInfo?.id === 'distance-energy-session';
+}
+
 // Secure, URL-safe portal token (48 hex chars) — gives the client token-based
 // access to their document hub without a dashboard login.
 function newPortalToken() { return crypto.randomBytes(24).toString('hex'); }
@@ -59,6 +68,11 @@ exports.handler = async function(event) {
   const serviceInfo = findService(service);
   if (!serviceInfo || serviceInfo.price == null) {
     return respond(400, { error: 'Selected service price could not be verified. Please choose a service again.' });
+  }
+  const controlledTest = controlledTestAuthorized(event, body, serviceInfo);
+  if (controlledTest) {
+    const { count: priorTests } = await sb.from('audit_logs').select('id', { count: 'exact', head: true }).eq('action', 'controlled_google_meet_test_booking');
+    if (priorTests > 0) return respond(409, { error: 'The controlled Google Meet test authorization has already been used.' });
   }
 
   // ── Rate limiting (5 bookings per IP per hour) ────────────────────────────
@@ -180,15 +194,15 @@ exports.handler = async function(event) {
         session_time:     sessionTime.length === 5 ? sessionTime + ':00' : sessionTime,
         duration_minutes: serviceInfo.duration,
         location_type:    'distance',
-        status:           'pending',
-        payment_status:   'pending',
+        status:           controlledTest ? 'confirmed' : 'pending',
+        payment_status:   controlledTest ? 'paid' : 'pending',
         amount_due:       serviceInfo.price,
-        amount_paid:      0,
-        source:           body.source  || 'online',
+        amount_paid:      controlledTest ? serviceInfo.price : 0,
+        source:           controlledTest ? 'controlled_google_meet_test' : (body.source || 'online'),
         intake_status:    'pending',
-        waiver_status:    'pending',
-        waiver_completed: false,
-        booking_status:   'booking_received',
+        waiver_status:    controlledTest ? 'signed' : 'pending',
+        waiver_completed: controlledTest,
+        booking_status:   controlledTest ? 'ready' : 'booking_received',
         google_calendar_status: serviceInfo.id === 'house-cleansing-blessing' ? 'not_requested' : 'pending',
       })
       .select('id')
@@ -231,6 +245,10 @@ exports.handler = async function(event) {
     });
   } catch { /* non-fatal */ }
 
+  if (controlledTest) {
+    await sb.from('audit_logs').insert({ action: 'controlled_google_meet_test_booking', table_name: 'sessions', record_id: sessionId, actor: 'system-test', ip_address: ip, new_data: { session_id: sessionId, purpose: 'one-time Google Meet lifecycle test' } });
+  }
+
   // ── Step 6: Build client-facing URLs ──────────────────────────────────────
   const manageUrl = `${SITE_URL}/manage-appointment.html?session_id=${sessionId}`;
   const intakeUrl = `${SITE_URL}/full-intake.html?session_id=${sessionId}&name=${encodeURIComponent(client_name.trim())}&email=${encodeURIComponent(client_email.trim())}`;
@@ -255,7 +273,7 @@ exports.handler = async function(event) {
 
   // Receipt only: payment has not happened yet, so this must not imply that
   // the appointment is confirmed. Final confirmation comes from Stripe webhook.
-  sendWithPreferences(sb, {
+  if (!controlledTest) sendWithPreferences(sb, {
     templateName:   'booking_received_pending_payment',
     recipientEmail: client_email.trim(),
     clientId,
@@ -267,7 +285,7 @@ exports.handler = async function(event) {
   });
 
   // Intake invitation
-  sendWithPreferences(sb, {
+  if (!controlledTest) sendWithPreferences(sb, {
     templateName:   'intake_received',
     recipientEmail: client_email.trim(),
     clientId,
@@ -296,7 +314,8 @@ exports.handler = async function(event) {
     },
     service:    serviceInfo.label,
     amount_due: serviceInfo.price,
-    payment_status: 'pending',
-    waiver_status: 'pending',
+    payment_status: controlledTest ? 'paid' : 'pending',
+    controlled_test: controlledTest,
+    waiver_status: controlledTest ? 'signed' : 'pending',
   });
 };
