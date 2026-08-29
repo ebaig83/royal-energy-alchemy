@@ -704,7 +704,7 @@ footer a:hover,footer a:focus-visible{color:#fff0b8 !important;border-bottom-col
       </ul>
     </li>
   </ul>
-  <a href="/book.html" class="nav-book">Book Session</a>
+  <a href="#contact" class="nav-book">Book Session</a>
 </nav>
 
 <!-- ═══ HERO ═══ -->
@@ -722,7 +722,7 @@ footer a:hover,footer a:focus-visible{color:#fff0b8 !important;border-bottom-col
     <div class="hero-div"><span>Daron Royal · Erie PA</span></div>
     <p class="hero-body">Before your session, Daron needs to understand what you're experiencing. This assessment feeds directly into your treatment plan and every follow-up after.</p>
     <div class="hero-ctas">
-      <a href="/book.html" class="btn-gold btn-book-session">Book Session →</a>
+      <a href="#contact" class="btn-gold btn-book-session">Book Session →</a>
       <a href="#assess" class="btn-gold">Start Assessment →</a>
       <a href="#services" class="btn-outline">View Services</a>
     </div>
@@ -1487,7 +1487,7 @@ footer a:hover,footer a:focus-visible{color:#fff0b8 !important;border-bottom-col
 
     <!-- ── CTA ── -->
     <div class="reveal dist-cta-wrap">
-      <a href="/book.html" class="dist-cta">
+      <a href="#contact" class="dist-cta">
         <span class="dist-cta-inner">Book a Distance Session</span>
         <span class="dist-cta-arrow">→</span>
       </a>
@@ -2791,7 +2791,7 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&modal.clas
       <div class="plan-modal-title" id="pmTitle"></div>
     </div>
     <div class="plan-modal-body" id="pmBody"></div>
-    <a href="/book.html" class="plan-modal-cta" onclick="closePlanModal()">Book a Consultation</a>
+    <a href="#contact" class="plan-modal-cta" onclick="closePlanModal()">Book a Consultation</a>
   </div>
 </div>
 
@@ -3119,7 +3119,7 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&modal.clas
     <span class="sec-label">Secure Online Payment</span>
     <h2 class="sec-title">Reserve Your Session Securely</h2>
     <p class="sec-body">Choose your service and appointment time, complete the waiver, and continue to Stripe’s secure Checkout. Available payment methods are shown there based on device, location, and eligibility.</p>
-    <a class='btn-gold' href='/book.html' style='font-size:11px;margin-top:10px'>Start Secure Booking →</a>
+    <a class='btn-gold' href='#contact' style='font-size:11px;margin-top:10px'>Start Secure Booking →</a>
   </div>
 </section>
 
@@ -3131,7 +3131,7 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&modal.clas
     <span style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.5em;color:#e8b84b80;text-transform:uppercase;display:block;margin-bottom:12px">Live Availability</span>
     <h2 style="font-family:'Cinzel',serif;font-size:clamp(18px,2.4vw,28px);color:#fff;letter-spacing:.08em;margin-bottom:10px">Select a Time</h2>
     <p style="font-family:'EB Garamond',serif;font-size:17px;font-style:italic;color:#d8d4f099;line-height:1.8;margin-bottom:32px">Choose a service, select an open time, complete the waiver, and submit secure payment before Daron finalizes your appointment.</p>
-    <a href="/book.html" style="display:inline-block;font-family:'Cinzel',serif;font-size:12px;letter-spacing:.4em;color:#000;text-transform:uppercase;text-decoration:none;background:linear-gradient(135deg,#f8e090,#e8b84b);padding:18px 52px;clip-path:polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%);transition:all .3s;margin-bottom:18px" onmouseover="this.style.filter='brightness(1.1)';this.style.transform='translateY(-2px)'" onmouseout="this.style.filter='brightness(1)';this.style.transform='translateY(0)'">Book a Session</a>
+    <a href="#contact" style="display:inline-block;font-family:'Cinzel',serif;font-size:12px;letter-spacing:.4em;color:#000;text-transform:uppercase;text-decoration:none;background:linear-gradient(135deg,#f8e090,#e8b84b);padding:18px 52px;clip-path:polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%);transition:all .3s;margin-bottom:18px" onmouseover="this.style.filter='brightness(1.1)';this.style.transform='translateY(-2px)'" onmouseout="this.style.filter='brightness(1)';this.style.transform='translateY(0)'">Book a Session</a>
     <p style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:#e8b84baa;text-transform:uppercase;margin-top:8px">Secure booking · waiver · payment</p>
   </div>
 </section>
@@ -3839,7 +3839,7 @@ document.querySelectorAll('.faq2-trigger').forEach(function(btn){
     Wherever you are on the journey,<br>there is a place to begin.
   </p>
   <div class="bridge-paths">
-    <a href="#assess" class="bridge-path primary">Book a Session</a>
+    <a href="#contact" class="bridge-path primary">Book a Session</a>
     <span class="bridge-sep">·</span>
     <a href="community.html" class="bridge-path">Join the Community</a>
   </div>
@@ -4060,12 +4060,71 @@ function handleBookingSubmit(e){
   }
 
   if(service!=='onboarding'&&service!=='✦ Initial Client Onboarding Package (New Clients)'){
+    if(service==='Not sure — need assessment first'){
+      window.location.href='/#assess';
+      return false;
+    }
+    if(!_clientSlot1||!_clientSlot1.id){
+      alert('Please select an available appointment time.');
+      var slots=document.getElementById('slotsSection');
+      if(slots)slots.scrollIntoView({behavior:'smooth',block:'start'});
+      return false;
+    }
     try{
       sessionStorage.setItem('rea_prefill_name',name);
       sessionStorage.setItem('rea_prefill_email',email);
       sessionStorage.setItem('rea_prefill_phone',phone);
     }catch(ex){}
-    window.location.href='/book.html';
+
+    var bookingBtn=document.getElementById('book-submit-btn');
+    if(bookingBtn){bookingBtn.textContent='Creating Booking...';bookingBtn.disabled=true;}
+
+    fetch('/.netlify/functions/booking',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        slot_id:_clientSlot1.id,
+        service:service,
+        client_name:name,
+        client_email:email,
+        client_phone:phone,
+        preferred_contact:'email',
+        source:'online',
+        bot_field:''
+      })
+    }).then(function(r){
+      return r.json().catch(function(){return {};}).then(function(data){return {ok:r.ok,data:data};});
+    }).then(function(result){
+      if(!result.ok||!result.data.booked){
+        throw new Error(result.data.error||'Booking failed. Please try again or contact us directly.');
+      }
+
+      /* Preserve the existing read-only dashboard inquiry signal. */
+      var formData=new URLSearchParams({
+        'form-name':'booking',
+        'first-name':fname,'last-name':lname,
+        'email':email,'phone':phone,
+        'service':service,'message':message,
+        'window-1':window1,'window-2':window2,
+        'payment-method':payMethod,'payment-ref':payRef,
+        'payment-sent':paySent?'yes':'no'
+      });
+      fetch('/',{
+        method:'POST',
+        headers:{'Content-Type':'application/x-www-form-urlencoded'},
+        body:formData.toString(),
+        keepalive:true
+      }).catch(function(){});
+
+      try{
+        sessionStorage.setItem('rea_booking_session_id',result.data.session_id||'');
+      }catch(ex){}
+      window.location.href=result.data.waiver_url||('/waiver-esign.html?session_id='+encodeURIComponent(result.data.session_id||''));
+    }).catch(function(error){
+      if(bookingBtn){bookingBtn.textContent='Continue to Secure Booking →';bookingBtn.disabled=false;}
+      alert(error.message||'Connection error. Please check your internet and try again.');
+      loadBookingSlots();
+    });
     return false;
   }
 

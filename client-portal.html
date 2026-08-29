@@ -199,10 +199,10 @@ footer p{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.22em;color:rg
     function apptRow(a){ return '<div class="appt-row"><div><div class="svc">'+esc(a.service||'Session')+'</div><div class="meta">'+(fmtDate(a.session_date+'T00:00:00')||'—')+(a.session_time?' · '+esc(a.session_time)+' ET':'')+' · '+esc(a.status||'')+'</div></div>'+(a.manage_url?'<a class="c-action ghost" href="'+esc(a.manage_url)+'">Manage</a>':'')+'</div>'; }
     $('sec-appointments').innerHTML =
       '<h2 style="font-family:\'Cinzel\',serif;font-size:14px;letter-spacing:.2em;text-transform:uppercase;color:#e8b84b;margin-bottom:12px">Upcoming</h2>'+
-      (up.length?up.map(apptRow).join(''):'<div class="placeholder">No upcoming appointments. <a href="/book.html" style="color:#e8b84b">Book a session</a>.</div>')+
+      (up.length?up.map(apptRow).join(''):'<div class="placeholder">No upcoming appointments. <a href="/#contact" style="color:#e8b84b">Book a session</a>.</div>')+
       '<h2 style="font-family:\'Cinzel\',serif;font-size:14px;letter-spacing:.2em;text-transform:uppercase;color:#e8b84b;margin:24px 0 12px">Previous</h2>'+
       (prev.length?prev.map(apptRow).join(''):'<div class="placeholder">No previous appointments yet.</div>')+
-      '<div style="text-align:center;margin-top:22px"><a class="c-action" style="display:inline-block" href="/book.html">Book Another Session</a></div>';
+      '<div style="text-align:center;margin-top:22px"><a class="c-action" style="display:inline-block" href="/#contact">Book Another Session</a></div>';
 
     // PROGRESS
     $('sec-progress').innerHTML = '<div class="stat-grid">'+

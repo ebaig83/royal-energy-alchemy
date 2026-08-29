@@ -33,7 +33,7 @@
           '<li><a href="/community">Join the Fight</a></li>' +
         '</ul></li>' +
     '</ul>' +
-    '<a href="/book.html" class="rea-nav-book">Book Session</a>';
+    '<a href="/#contact" class="rea-nav-book">Book Session</a>';
 
   if(existingNav){
     existingNav.replaceWith(nav);

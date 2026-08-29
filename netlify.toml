@@ -5,3 +5,15 @@
 
 [functions]
   node_bundler = "esbuild"
+
+# Keep legacy booking links working while the homepage form is the single
+# public booking experience.
+[[redirects]]
+  from = "/book"
+  to = "/#contact"
+  status = 301
+
+[[redirects]]
+  from = "/book.html"
+  to = "/#contact"
+  status = 301
