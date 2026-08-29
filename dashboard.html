@@ -385,6 +385,7 @@ input::placeholder,textarea::placeholder{color:#dddaee55}
 .cancel-log-meta{font-family:'EB Garamond',serif;font-size:16px;color:#dddaeecc;line-height:1.55}
 .cancel-log-reason{font-family:'EB Garamond',serif;font-size:16px;color:#ee7070cc;font-style:italic;margin-top:5px}
 .reschedule-tag{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.22em;color:#b09ef8;background:#9b7fe81a;border:1px solid #9b7fe855;padding:3px 10px;display:inline-block;margin-top:6px;text-transform:uppercase}
+.dash-schedule-picker{grid-column:1/-1;border:1px solid #e8b84b33;background:#08051a;padding:16px;margin-bottom:4px}.dash-picker-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.dash-picker-head button,.dash-time-chip{font-family:'Cinzel',serif;letter-spacing:.12em;background:#0e0c22;border:1px solid #e8b84b55;color:#e8b84bcc;cursor:pointer;border-radius:3px}.dash-picker-head button{padding:7px 12px}.dash-month-title{font-family:'Cinzel',serif;letter-spacing:.18em;color:#e8b84b;font-size:12px}.dash-cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}.dash-cal-grid span{font:10px Cinzel,serif;color:#aaa8cc;text-align:center;padding:4px}.dash-day{min-height:36px;border:1px solid #e8b84b22;background:#0b0820;color:#dddaee;cursor:pointer;border-radius:3px}.dash-day:hover,.dash-day:focus-visible{border-color:#e8b84b;color:#fff;outline:2px solid #e8b84b66}.dash-day.today{box-shadow:inset 0 0 0 1px #22c98a}.dash-day.selected{background:#e8b84b22;border-color:#e8b84b;color:#f8d77e}.dash-day.has-appt::after{content:' •';color:#e8b84b}.dash-time-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.dash-time-chip{padding:10px 14px;min-width:105px}.dash-time-chip.available{border-color:#22c98a88;color:#22c98a}.dash-time-chip.occupied{border-color:#cc445588;color:#dd8888;cursor:not-allowed;opacity:.72}.dash-time-chip.selected{background:#e8b84b22;border-color:#e8b84b;color:#f8d77e}.dash-other-time{display:none;margin-top:10px}.dash-selected-summary{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.14em;color:#22c98a;margin:10px 0 0;text-transform:uppercase}
 /* Sync panel */
 .sync-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @media(max-width:640px){.sync-grid{grid-template-columns:1fr}}
@@ -5779,21 +5780,14 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
       <div id="apptFormWrap" style="display:none" class="appt-form-wrap">
         <div class="appt-form-grid">
           <div><label>Client Name</label><input class="appt-input" id="apptClient" placeholder="Full name" /></div>
-          <div><label>Date</label><input class="appt-input" id="apptDate" type="date" /></div>
-          <div><label>Start Time</label><select class="appt-input" id="apptTime"><option value="">— Select time —</option>
-              <option value="08:00">8:00 AM</option>
-              <option value="09:30">9:30 AM</option>
-              <option value="10:00">10:00 AM</option>
-              <option value="11:00">11:00 AM</option>
-              <option value="12:00">12:00 PM</option>
-              <option value="13:00">1:00 PM</option>
-              <option value="14:00">2:00 PM</option>
-              <option value="15:00">3:00 PM</option>
-              <option value="16:00">4:00 PM</option>
-              <option value="17:00">5:00 PM</option>
-              <option value="18:00">6:00 PM</option>
-              <option value="19:00">7:00 PM</option>
-              </select></div>
+          <div class="dash-schedule-picker" id="dashSchedulePicker" aria-label="Choose appointment date and time">
+            <div class="dash-picker-head"><button type="button" onclick="dashPickerPrev()" aria-label="Previous month">‹</button><span class="dash-month-title" id="dashPickerMonth"></span><button type="button" onclick="dashPickerNext()" aria-label="Next month">›</button></div>
+            <div class="dash-cal-grid" id="dashPickerGrid"></div>
+            <div class="dash-selected-summary" id="dashPickerSummary">Choose a date, then a time</div>
+            <div class="dash-time-row" id="dashPickerTimes" aria-live="polite"></div>
+            <div class="dash-other-time" id="dashOtherTime"><label for="dashOtherTimeInput">Other time</label><input class="appt-input" id="dashOtherTimeInput" type="time" onchange="dashPickerOtherTime(this.value)"></div>
+          </div>
+          <input id="apptDate" type="hidden"><input id="apptTime" type="hidden">
           <div><label>Duration</label>
             <select class="appt-input" id="apptDuration">
               <option value="30">30 min</option>
@@ -9162,9 +9156,27 @@ function closeIntakeModal(e) {
 }
 
 // ── APPOINTMENTS ─────────────────────────────────────────────
+var _dashPickerDate = '', _dashPickerMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+function dashPickerFmt(t){ var p=t.split(':').map(Number), h=p[0]%12||12; return h+':'+String(p[1]).padStart(2,'0')+' '+(p[0]>=12?'PM':'AM'); }
+function dashPickerSessions(){ return getScheduleSessions().filter(function(s){return s.status!=='cancelled'&&s.status!=='no_show';}); }
+function dashPickerRender(){
+  var m=document.getElementById('dashPickerMonth'), g=document.getElementById('dashPickerGrid'); if(!m||!g)return;
+  var names=['January','February','March','April','May','June','July','August','September','October','November','December']; m.textContent=names[_dashPickerMonth.getMonth()]+' '+_dashPickerMonth.getFullYear();
+  var y=_dashPickerMonth.getFullYear(), mo=_dashPickerMonth.getMonth(), first=new Date(y,mo,1).getDay(), days=new Date(y,mo+1,0).getDate(), today=new Date().toISOString().slice(0,10), map={}; dashPickerSessions().forEach(function(s){map[s.date]=1});
+  var h=['Su','Mo','Tu','We','Th','Fr','Sa'].map(function(x){return '<span>'+x+'</span>';}).join(''); for(var i=0;i<first;i++)h+='<span></span>'; for(var d=1;d<=days;d++){var ds=y+'-'+String(mo+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');h+='<button type="button" class="dash-day '+(ds===today?'today ':'')+(ds===_dashPickerDate?'selected ':'')+(map[ds]?'has-appt':'')+'" onclick="dashPickerSelectDate(\''+ds+'\')">'+d+'</button>';} g.innerHTML=h;
+  dashPickerRenderTimes();
+}
+function dashPickerRenderTimes(){var row=document.getElementById('dashPickerTimes'),sum=document.getElementById('dashPickerSummary'); if(!row||!sum)return; if(!_dashPickerDate){row.innerHTML='';sum.textContent='Choose a date, then a time';return;} var standard=['10:00','12:00','14:00','16:00','18:00'], sessions=dashPickerSessions().filter(function(s){return s.date===_dashPickerDate;}); function occupied(t){return sessions.some(function(s){var a=(s.time||'00:00').split(':').map(Number),b=t.split(':').map(Number), sa=a[0]*60+a[1], sb=b[0]*60+b[1]; return sb>=sa&&sb<sa+(Number(s.dur)||60)||sa<sb+60&&sa>=sb;});} row.innerHTML=standard.map(function(t){var o=occupied(t);return '<button type="button" class="dash-time-chip '+(o?'occupied':'available')+'" '+(o?'disabled':'')+' onclick="dashPickerSelectTime(\''+t+'\')">'+dashPickerFmt(t)+(o?' · BOOKED':'')+'</button>';}).join('')+'<button type="button" class="dash-time-chip" onclick="dashPickerShowOther()">+ Other time</button>'; sum.textContent=new Date(_dashPickerDate+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'})+(_dashPickerDate&&document.getElementById('apptTime').value?' · '+dashPickerFmt(document.getElementById('apptTime').value):''); }
+function dashPickerSelectDate(ds){_dashPickerDate=ds;document.getElementById('apptDate').value=ds;document.getElementById('apptTime').value='';dashPickerRender();}
+function dashPickerSelectTime(t){document.getElementById('apptTime').value=t;document.getElementById('dashOtherTime').style.display='none';dashPickerRender();}
+function dashPickerShowOther(){document.getElementById('dashOtherTime').style.display='block';document.getElementById('dashOtherTimeInput').focus();}
+function dashPickerOtherTime(t){if(!t)return;var sessions=dashPickerSessions().filter(function(s){return s.date===_dashPickerDate;});var p=t.split(':').map(Number), start=p[0]*60+p[1], conflict=sessions.some(function(s){var q=(s.time||'00:00').split(':').map(Number), ss=q[0]*60+q[1], dur=Number(s.dur)||60;return start<ss+dur&&ss<start+Number(document.getElementById('apptDuration').value||60);});if(conflict){alert('That time overlaps an existing active appointment.');document.getElementById('dashOtherTimeInput').value='';return;}document.getElementById('apptTime').value=t;dashPickerRender();}
+function dashPickerPrev(){_dashPickerMonth=new Date(_dashPickerMonth.getFullYear(),_dashPickerMonth.getMonth()-1,1);dashPickerRender();}
+function dashPickerNext(){_dashPickerMonth=new Date(_dashPickerMonth.getFullYear(),_dashPickerMonth.getMonth()+1,1);dashPickerRender();}
 function toggleApptForm() {
   const w = document.getElementById('apptFormWrap');
   w.style.display = w.style.display === 'none' ? 'block' : 'none';
+  if (w.style.display === 'block') { _dashPickerDate=document.getElementById('apptDate').value||''; _dashPickerMonth=_dashPickerDate?new Date(_dashPickerDate+'T12:00:00'):new Date(new Date().getFullYear(),new Date().getMonth(),1); dashPickerRender(); }
 }
 function getAppts() {
   try { return JSON.parse(localStorage.getItem('rea_appointments') || '[]'); } catch(e) { return []; }
@@ -10233,10 +10245,11 @@ function calDeleteAppt(id, dateStr) {
 function calAddApptOnDay(dateStr) {
   // Pre-fill the Add Appointment form with the selected date and scroll to it
   var dateInput = document.getElementById('apptDate');
-  if (dateInput) { dateInput.value = dateStr; }
+  if (dateInput) { dateInput.value = dateStr; _dashPickerDate = dateStr; _dashPickerMonth = new Date(dateStr+'T12:00:00'); }
   var wrap = document.getElementById('apptFormWrap');
   if (wrap) {
     wrap.style.display = 'block';
+    dashPickerRender();
     wrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 }
