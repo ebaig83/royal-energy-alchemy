@@ -16,6 +16,7 @@ const { sendWithPreferences }  = require('./lib/comms');
 const { bookingFailure, emailFailure } = require('./lib/ops-alert');
 const { SERVICES, findService } = require('./lib/services');
 const { findSessionConflicts }  = require('./lib/session-overlap');
+const { isWithinPublicHorizon } = require('./lib/scheduling-horizon');
 const crypto                   = require('crypto');
 
 const SITE_URL = process.env.SITE_URL || 'https://royal-energy-alchemy.netlify.app';
@@ -87,6 +88,12 @@ exports.handler = async function(event) {
 
   const sessionDate = slot.slot_date;
   const sessionTime = slot.slot_time ? slot.slot_time.slice(0, 5) : '';
+
+  const today = new Date().toISOString().slice(0, 10);
+  if (!isWithinPublicHorizon(sessionDate, today)) {
+    await sb.from('availability_slots').update({ status: 'available', session_id: null }).eq('id', slot_id);
+    return respond(400, { error: 'This time is outside the public booking horizon.' });
+  }
 
   // The slot row prevents two public requests from claiming the same slot.
   // Sessions are independently authoritative for occupancy, including manual

@@ -2,8 +2,8 @@
 //
 // PUBLIC  GET  (no auth)  — fetch available slots for the booking calendar
 //   ?date=YYYY-MM-DD        — slots for one date
-//   ?from=YYYY-MM-DD        — slots from date onwards (default: today, 60 days)
-//   (no params)             — all future available slots
+//   ?from=YYYY-MM-DD        — slots from date onwards (default: today)
+//   (no params)             — availability through six calendar months
 //
 // ADMIN   POST (auth)     — create one or more slots
 // ADMIN   PATCH ?id=uuid  — update a slot status (booked/blocked/available/cancelled)
@@ -13,6 +13,7 @@ const { requireAdmin, respond } = require('./lib/auth');
 const { getClient }             = require('./lib/supabase');
 const { log }                   = require('./lib/audit');
 const { filterSlotsAgainstSessions } = require('./lib/session-overlap');
+const { publicHorizonDate, ensureRollingAvailability } = require('./lib/scheduling-horizon');
 
 const ALLOWED_SLOT_TIMES = new Set(['10:00', '12:00', '14:00', '16:00', '18:00']);
 
@@ -51,17 +52,22 @@ exports.handler = async function(event) {
   // ── PUBLIC GET ────────────────────────────────────────────────────────────
   if (event.httpMethod === 'GET') {
     const today = new Date().toISOString().slice(0, 10);
+    const horizon = publicHorizonDate(today);
+    const maintenance = await ensureRollingAvailability(sb, today, horizon);
+    if (maintenance.error) console.error('[availability] Rolling horizon maintenance failed:', maintenance.error.message);
     let query   = sb.from('availability_slots').select('id,slot_date,slot_time,label,display_time,status,session_id');
 
     let from;
     let to;
     if (params.date) {
+      if (params.date > horizon) return respond(400, { error: 'Date is outside the public booking horizon.' });
       from = params.date;
       to = params.date;
       query = query.eq('slot_date', params.date);
     } else {
       from = params.from || today;
-      to   = new Date(Date.now() + 60 * 86400000).toISOString().slice(0, 10);
+      if (from > horizon) return respond(200, { slots: [], horizon });
+      to   = horizon;
       query      = query.gte('slot_date', from).lte('slot_date', to);
     }
 
@@ -91,7 +97,7 @@ exports.handler = async function(event) {
       booked:      row.status !== 'available',
     }));
 
-    return respond(200, { slots });
+    return respond(200, { slots, horizon });
   }
 
   // ── ADMIN WRITE — require token ───────────────────────────────────────────

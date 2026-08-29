@@ -3330,9 +3330,9 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&modal.clas
 
           <!-- Calendar nav -->
           <div class="rea-cal-nav">
-            <button type="button" class="rea-cal-nav-btn" onclick="clientCalPrev()">&#8249;</button>
+            <button type="button" class="rea-cal-nav-btn" id="clientCalPrevBtn" aria-label="Previous month" onclick="clientCalPrev()">&#8249;</button>
             <div class="rea-cal-month" id="clientCalTitle"></div>
-            <button type="button" class="rea-cal-nav-btn" onclick="clientCalNext()">&#8250;</button>
+            <button type="button" class="rea-cal-nav-btn" id="clientCalNextBtn" aria-label="Next month" onclick="clientCalNext()">&#8250;</button>
           </div>
 
           <!-- Day-of-week headers -->
@@ -4335,6 +4335,21 @@ var _publicSlotsCache=null;   /* available slots only — used for booking logic
 var _allSlotsRaw=[];           /* all slots from API — used for calendar display */
 var _publicSlotsFetched=false;
 
+function clientCalendarHorizon(){
+  var today=new Date();today.setHours(0,0,0,0);
+  var targetMonth=new Date(today.getFullYear(),today.getMonth()+6,1);
+  var lastDay=new Date(targetMonth.getFullYear(),targetMonth.getMonth()+1,0).getDate();
+  return new Date(targetMonth.getFullYear(),targetMonth.getMonth(),Math.min(today.getDate(),lastDay));
+}
+function clientCalMonthIndex(year,month){return year*12+month;}
+function updateClientCalNav(){
+  var current=new Date(), horizon=clientCalendarHorizon();
+  var shown=clientCalMonthIndex(_clientCalYear,_clientCalMonth);
+  var prev=document.getElementById('clientCalPrevBtn'),next=document.getElementById('clientCalNextBtn');
+  if(prev){prev.disabled=shown<=clientCalMonthIndex(current.getFullYear(),current.getMonth());prev.style.opacity=prev.disabled?'.3':'1';}
+  if(next){next.disabled=shown>=clientCalMonthIndex(horizon.getFullYear(),horizon.getMonth());next.style.opacity=next.disabled?'.3':'1';}
+}
+
 function getPublicSlots(){
   return (_publicSlotsCache||[]).filter(function(s){
     var d=new Date(s.date+'T12:00');
@@ -4380,6 +4395,8 @@ function easternSlotLabel(value){
 }
 
 function clientCalPrev(){
+  var current=new Date();
+  if(clientCalMonthIndex(_clientCalYear,_clientCalMonth)<=clientCalMonthIndex(current.getFullYear(),current.getMonth()))return;
   _clientCalMonth--;
   if(_clientCalMonth<0){_clientCalMonth=11;_clientCalYear--;}
   _clientSelectedDate=null;
@@ -4388,6 +4405,8 @@ function clientCalPrev(){
   updateCalBanner();
 }
 function clientCalNext(){
+  var horizon=clientCalendarHorizon();
+  if(clientCalMonthIndex(_clientCalYear,_clientCalMonth)>=clientCalMonthIndex(horizon.getFullYear(),horizon.getMonth()))return;
   _clientCalMonth++;
   if(_clientCalMonth>11){_clientCalMonth=0;_clientCalYear++;}
   _clientSelectedDate=null;
@@ -4425,6 +4444,8 @@ function renderClientCal(){
   var grid=document.getElementById('clientCalGrid');
   if(!grid)return;
   var today=new Date();today.setHours(0,0,0,0);
+  var horizon=clientCalendarHorizon();horizon.setHours(23,59,59,999);
+  updateClientCalNav();
   var firstDay=new Date(_clientCalYear,_clientCalMonth,1).getDay();
   var daysInMonth=new Date(_clientCalYear,_clientCalMonth+1,0).getDate();
   grid.innerHTML='';
@@ -4436,13 +4457,14 @@ function renderClientCal(){
     var dateStr=_clientCalYear+'-'+String(_clientCalMonth+1).padStart(2,'0')+'-'+String(day).padStart(2,'0');
     var cellDate=new Date(_clientCalYear,_clientCalMonth,day);cellDate.setHours(0,0,0,0);
     var isPast=cellDate<today;
+    var isBeyond=cellDate>horizon;
     var isToday=cellDate.getTime()===today.getTime();
     var isSelected=_clientSelectedDate===dateStr;
 
     var cell=document.createElement('div');
     var todayRing=isToday?' style="outline:2px solid #e8b84b;outline-offset:-2px;border-radius:10px"':'';
 
-    if(isPast){
+    if(isPast||isBeyond){
       cell.className='rea-day day-past';
       if(isToday)cell.className='rea-day day-past day-selected';
       cell.innerHTML='<div class="rea-day-num" style="color:#4a4880">'+day+'</div>';
