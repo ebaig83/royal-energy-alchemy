@@ -11939,14 +11939,14 @@ function _fetchHomeSignals() {
     fetch('/.netlify/functions/training-interest', { headers: { 'X-Dashboard-Token': key } })
       .then(function(r) { return r.ok ? r.json() : { leads: [] }; })
       .catch(function() { return { leads: [] }; }),
-    fetch('/.netlify/functions/forms?kind=inquiry', { headers: { 'X-Dashboard-Token': key } })
-      .then(function(r) { return r.ok ? r.json() : { inquiries: [] }; })
-      .catch(function() { return { inquiries: [] }; })
+    fetch('/.netlify/functions/netlify-forms-sync?per_page=100', { headers: { 'X-Dashboard-Token': key } })
+      .then(function(r) { return r.ok ? r.json() : { submissions: [] }; })
+      .catch(function() { return { submissions: [] }; })
   ]).then(function(results) {
     var q = results[0] || {};
     var t = results[1] || {};
     var i = results[2] || {};
-    _renderHomeSignalsState(q.questions || [], t.leads || [], i.inquiries || i.forms || i.submissions || []);
+    _renderHomeSignalsState(q.questions || [], t.leads || [], i.submissions || []);
   }).catch(function() {
     _renderHomeSignalsState([], [], []);
   });
