@@ -62,8 +62,8 @@ check('public booking links use the canonical destination',
   /\/#contact/.test(nav));
 
 check('legacy booking URLs redirect to the canonical destination',
-  /from = "\/book"[\s\S]*?to = "\/#contact"[\s\S]*?status = 301/.test(redirects) &&
-  /from = "\/book\.html"[\s\S]*?to = "\/#contact"[\s\S]*?status = 301/.test(redirects));
+  /from = "\/book"[\s\S]*?to = "\/#contact"[\s\S]*?status = 301[\s\S]*?force = true/.test(redirects) &&
+  /from = "\/book\.html"[\s\S]*?to = "\/#contact"[\s\S]*?status = 301[\s\S]*?force = true/.test(redirects));
 
 if (failures.length) process.exit(1);
 console.log('Unified booking contract: all checks passed.');
