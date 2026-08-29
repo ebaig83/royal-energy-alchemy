@@ -1,0 +1,7 @@
+-- Prepared for review; do not apply automatically.
+-- Adds the two templates consumed by authenticated practitioner actions.
+INSERT INTO public.email_templates (name,type,subject,html_body,text_body,variables,is_active)
+VALUES
+('practitioner_waiver_link','general_message','Your Royal Energy Alchemy waiver is ready','<p>Hi {{client_name}},</p><p>Please complete your waiver for your upcoming session.</p><p><a href="{{waiver_url}}">Complete waiver</a></p><p>{{session_date}} {{session_time}} · {{service}}</p>','Hi {{client_name}}, complete your waiver: {{waiver_url}}\n{{session_date}} {{session_time}} · {{service}}',ARRAY['client_name','waiver_url','session_date','session_time','service'],true),
+('practitioner_payment_link','general_message','Your Royal Energy Alchemy payment link is ready','<p>Hi {{client_name}},</p><p>Your secure payment link for your upcoming session is ready.</p><p><a href="{{payment_url}}">Complete payment</a></p><p>{{session_date}} {{session_time}} · {{service}}</p><p>Payment is securely processed through Stripe.</p>','Hi {{client_name}}, your secure payment link is ready: {{payment_url}}\n{{session_date}} {{session_time}} · {{service}}\nPayment is securely processed through Stripe.',ARRAY['client_name','payment_url','session_date','session_time','service'],true)
+ON CONFLICT (name) DO UPDATE SET type=EXCLUDED.type,subject=EXCLUDED.subject,html_body=EXCLUDED.html_body,text_body=EXCLUDED.text_body,variables=EXCLUDED.variables,is_active=true;

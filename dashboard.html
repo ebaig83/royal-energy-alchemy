@@ -10382,6 +10382,9 @@ function renderUpcoming() {
     const sourceTag   = sourceLabel ? `<span class="appt-source-tag">${sourceLabel}</span>` : '';
     const isSupabase = a.scheduleSource === 'supabase';
     const jsId = JSON.stringify(String(a.id));
+    const waiverDone = a.waiver_completed === true || /complete|completed|signed/i.test(a.waiver_status || '');
+    const paymentDone = String(a.payment_status || '').toLowerCase() === 'paid' || Number(a.amount_paid || 0) > 0;
+    const workflowBtns = isSupabase && !isCancelled ? `<div class="appt-workflow-actions" style="display:flex;gap:5px;flex-wrap:wrap;margin-top:6px"><span style="font-size:10px;color:${waiverDone?'#22c98a':'#e8b84b'}">WAIVER: ${waiverDone?'COMPLETE':'REQUIRED'}</span>${waiverDone?'':'<button class="action-btn view" style="font-size:10px;padding:4px 8px" onclick=\'sendDashboardAction("waiver",${jsId},this)\'>Send Waiver</button>'}<span style="font-size:10px;color:${paymentDone?'#22c98a':'#e8b84b'}">PAYMENT: ${paymentDone?'PAID':waiverDone?'PENDING':'WAIVER REQUIRED'}</span>${!paymentDone&&waiverDone?'<button class="action-btn view" style="font-size:10px;padding:4px 8px" onclick=\'sendDashboardAction("payment",${jsId},this)\'>Send Payment Link</button>':''}</div>` : '';
     const confirmBtn  = isPending && !isSupabase
       ? `<button class="action-btn approve" style="padding:5px 12px;font-size:10px;white-space:nowrap;background:#22c98a11;border-color:#22c98a44;color:#22c98acc" onclick="confirmPendingAppt(${a.id})">✓ Confirm</button>` : '';
     const actionBtns = isSupabase
@@ -10411,6 +10414,7 @@ function renderUpcoming() {
         ${a.notes ? `<div style="font-family:'EB Garamond',serif;font-size:14px;color:#dddaeecc;font-style:italic;margin-top:4px">${a.notes}</div>` : ''}
         ${isConflict ? '<div class="conflict-tag">⚠ Time Conflict</div>' : ''}
         ${reschedTag}${pendingTag}${sourceTag}
+        ${workflowBtns}
         ${origDate}
         ${cancelledBadge}
         <div id="edit_${a.id}"></div>
@@ -10510,15 +10514,23 @@ function openSupabaseReschedulePanel(id) {
   var a = _supabaseAppt(id);
   if (!a) return;
   _openSupabaseActionPanel(id, 'supabase-reschedule', `<div class="appt-action-panel reschedule-panel">
-    <div class="row2">
-      <div><span class="lbl">New Date</span><input class="appt-input" id="sbReschedDate_${id}" type="date" value="${_apptEsc(a.date)}"></div>
-      <div><span class="lbl">New Time</span><input class="appt-input" id="sbReschedTime_${id}" type="time" value="${_apptEsc(a.time)}"></div>
-    </div>
+    <div class="dash-selected-summary">CURRENT APPOINTMENT · ${_apptEsc(a.date)} ${_apptEsc((a.time||'').slice(0,5))}</div>
+    <div class="dash-schedule-picker" id="sbPicker_${id}"><div class="dash-picker-head"><button type="button" onclick="sbPickerMove(${JSON.stringify(String(id))},-1)" aria-label="Previous month">‹</button><span class="dash-month-title" id="sbPickerMonth_${id}"></span><button type="button" onclick="sbPickerMove(${JSON.stringify(String(id))},1)" aria-label="Next month">›</button></div><div class="dash-cal-grid" id="sbPickerGrid_${id}"></div><div class="dash-selected-summary" id="sbPickerSummary_${id}"></div><div class="dash-time-row" id="sbPickerTimes_${id}"></div><div class="dash-other-time" id="sbOtherWrap_${id}"><label for="sbOtherTime_${id}">Other time</label><input class="appt-input" id="sbOtherTime_${id}" type="time" onchange="sbPickerOther(${JSON.stringify(String(id))},this.value)"></div></div>
+    <input type="hidden" id="sbReschedDate_${id}" value="${_apptEsc(a.date)}"><input type="hidden" id="sbReschedTime_${id}" value="${_apptEsc((a.time||'').slice(0,5))}">
+    <div class="dash-selected-summary" id="sbReschedSummary_${id}"></div>
     <span class="lbl">Reason</span><input class="appt-input" id="sbReschedReason_${id}" value="Practitioner rescheduled">
     <div class="appt-action-btns"><button class="action-btn approve" onclick='confirmSupabaseReschedule(${JSON.stringify(String(id))})'>Confirm Reschedule</button>
       <button class="action-btn reject" onclick="document.getElementById('actionpanel_${id}').style.display='none'">Close</button></div>
   </div>`);
+  window._sbPickers = window._sbPickers || {}; window._sbPickers[String(id)] = { date:a.date, month:new Date(a.date+'T12:00:00') }; sbPickerRender(String(id));
 }
+function sbPickerSessions(exclude){ return getScheduleSessions().filter(function(s){return String(s.id)!==String(exclude)&&s.status!=='cancelled'&&s.status!=='no_show';}); }
+function sbPickerRender(id){ var st=(window._sbPickers||{})[id], m=document.getElementById('sbPickerMonth_'+id),g=document.getElementById('sbPickerGrid_'+id); if(!st||!m||!g)return; var names=['January','February','March','April','May','June','July','August','September','October','November','December'],y=st.month.getFullYear(),mo=st.month.getMonth();m.textContent=names[mo]+' '+y;var first=new Date(y,mo,1).getDay(),days=new Date(y,mo+1,0).getDate(),today=new Date().toISOString().slice(0,10),map={};sbPickerSessions(id).forEach(function(s){map[s.date]=1});var h=['Su','Mo','Tu','We','Th','Fr','Sa'].map(function(x){return '<span>'+x+'</span>';}).join('');for(var i=0;i<first;i++)h+='<span></span>';for(var d=1;d<=days;d++){var ds=y+'-'+String(mo+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');h+='<button type="button" class="dash-day '+(ds===today?'today ':'')+(ds===st.date?'selected ':'')+(map[ds]?'has-appt':'')+'" onclick="sbPickerDate(\''+id+'\',\''+ds+'\')">'+d+'</button>';}g.innerHTML=h;sbPickerTimes(id); }
+function sbPickerMove(id,dir){var st=window._sbPickers[id];st.month=new Date(st.month.getFullYear(),st.month.getMonth()+dir,1);sbPickerRender(id);}
+function sbPickerDate(id,ds){window._sbPickers[id].date=ds;document.getElementById('sbReschedDate_'+id).value=ds;document.getElementById('sbReschedTime_'+id).value='';sbPickerRender(id);}
+function sbPickerTimes(id){var st=window._sbPickers[id],row=document.getElementById('sbPickerTimes_'+id),sum=document.getElementById('sbPickerSummary_'+id),out=document.getElementById('sbReschedSummary_'+id);if(!st||!row)return;var standard=['10:00','12:00','14:00','16:00','18:00'],sessions=sbPickerSessions(id).filter(function(s){return s.date===st.date});function occ(t){var p=t.split(':').map(Number),start=p[0]*60+p[1];return sessions.some(function(s){var q=(s.time||'00:00').split(':').map(Number),ss=q[0]*60+q[1],dur=Number(s.dur)||60;return start<ss+dur&&ss<start+60;});}row.innerHTML=standard.map(function(t){var o=occ(t);return '<button type="button" class="dash-time-chip '+(o?'occupied':'available')+'" '+(o?'disabled':'')+' onclick="sbPickerTime(\''+id+'\',\''+t+'\')">'+dashPickerFmt(t)+(o?' · BOOKED':'')+'</button>';}).join('')+'<button type="button" class="dash-time-chip" onclick="document.getElementById(\'sbOtherWrap_'+id+'\').style.display=\'block\'">+ Other time</button>';var dateLabel=new Date(st.date+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'}),t=document.getElementById('sbReschedTime_'+id).value;sum.textContent=dateLabel+(t?' · '+dashPickerFmt(t):'');if(out)out.textContent=t?'FROM '+(document.getElementById('sbPicker_'+id).querySelector('.dash-selected-summary')?.textContent||'')+' → TO '+dateLabel+' '+dashPickerFmt(t):'Select a new date and time';}
+function sbPickerTime(id,t){document.getElementById('sbReschedTime_'+id).value=t;document.getElementById('sbOtherWrap_'+id).style.display='none';sbPickerTimes(id);}
+function sbPickerOther(id,t){if(!t)return;var st=window._sbPickers[id],p=t.split(':').map(Number),start=p[0]*60+p[1],conf=sbPickerSessions(id).filter(function(s){return s.date===st.date}).some(function(s){var q=(s.time||'00:00').split(':').map(Number),ss=q[0]*60+q[1],dur=Number(s.dur)||60;return start<ss+dur&&ss<start+Number((_supabaseAppt(id)||{}).dur||60);});if(conf){alert('That time overlaps an existing active appointment.');document.getElementById('sbOtherTime_'+id).value='';return;}sbPickerTime(id,t);}
 async function confirmSupabaseReschedule(id) {
   try {
     var newDate = (document.getElementById('sbReschedDate_' + id) || {}).value || '';
@@ -10532,6 +10544,12 @@ async function sendSupabaseReminder(id) {
   if (!confirm('Send an appointment reminder now?')) return;
   try { await _supabaseSessionAction(id, { action: 'reminder' }, 'Reminder sent ✓'); }
   catch (e) { alert('Reminder was not sent: ' + e.message); }
+}
+async function sendDashboardAction(kind, id, btn) {
+  if (!btn || btn.disabled) return;
+  var token = sessionStorage.getItem('rea_api_token') || ''; if (!token) { alert('Dashboard authentication required.'); return; }
+  btn.disabled = true; var old = btn.textContent; btn.textContent = 'Sending…';
+  try { var r = await fetch('/.netlify/functions/send-' + (kind === 'waiver' ? 'waiver' : 'payment-link'), { method:'POST', headers:{'Content-Type':'application/json','X-Dashboard-Token':token}, body:JSON.stringify({session_id:String(id)}) }); var d=await r.json(); if(!r.ok) throw new Error(d.error || 'Request failed.'); alert(kind === 'waiver' ? (d.waiver_complete ? 'Waiver already complete.' : 'Waiver link sent.') : (d.already_paid ? 'Payment already completed.' : 'Payment link sent.')); } catch(e) { alert(e.message); btn.disabled=false; btn.textContent=old; }
 }
 
 // ── CANCELLATIONS ────────────────────────────────────────────────────────────
