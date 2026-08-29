@@ -1,0 +1,6 @@
+'use strict';
+const assert=require('assert');const {SupabaseWorkflowAdapter,loadConfig}=require('./workflow-supabase-adapter');
+function response(status,data){return{ok:status>=200&&status<300,status,text:async()=>data===null?'':JSON.stringify(data)}}
+(async()=>{let calls=[];const fake=async(url,o)=>{calls.push({url,o});if(o.method==='GET')return response(200,url.includes('gone')?[]:[{id:'x',client_id:'qa'}]);if(o.method==='POST')return response(201,[{id:'x'}]);if(o.method==='PATCH')return response(200,[{id:'x'}]);if(o.method==='DELETE')return response(200,[]);};const a=new SupabaseWorkflowAdapter({url:'https://qa.invalid',key:'secret',fetchImpl:fake});
+assert.strictEqual((await a.get('sessions','x')).id,'x');await a.create('sessions',{});await a.update('sessions','x',{status:'pending'});assert(await a.remove('sessions','gone'));assert(calls.every(c=>c.url.includes('/rest/v1/')&&!c.url.includes('/.netlify/functions/')));await assert.rejects(()=>a.get('payments','x'));assert.throws(()=>loadConfig({}));assert(calls.every(c=>!JSON.stringify(c).includes('Stripe')&&!JSON.stringify(c).includes('Resend')));console.log('workflow Supabase adapter tests: 8/8 passed');
+})().catch(e=>{console.error(e);process.exitCode=1});

@@ -1,0 +1,3 @@
+'use strict';
+const assert=require('assert'); const {MemoryWorkflowAdapter,assertSafeBoundary}=require('./workflow-data-adapter');
+(async()=>{const a=new MemoryWorkflowAdapter();const c=await a.create('clients',{name:'[QA] fake'});assert(c.id);const s=await a.create('sessions',{client_id:c.id});await a.update('sessions',s.id,{state_after:4});assert.strictEqual((await a.get('sessions',s.id)).state_after,4);assert(await a.remove('sessions',s.id));assert.throws(()=>assertSafeBoundary('email'));console.log('workflow data adapter tests: 5/5 passed')})().catch(e=>{console.error(e);process.exitCode=1});

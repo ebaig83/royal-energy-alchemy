@@ -21,3 +21,6 @@ chk_*.js
 qa-results.txt
 qa/*-report.txt
 qa/data-quality-report.txt
+
+qa/.workflow-runs/
+qa/workflow-fixture-manifest.json
