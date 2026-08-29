@@ -13,7 +13,7 @@ async function processDue({ sb, now = new Date(), send = sendWithPreferences } =
   const from = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const to = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const { data: sessions, error } = await sb.from('sessions')
-    .select('id, client_id, client_name, service, session_date, session_time, duration_minutes, status')
+    .select('id, client_id, client_name, service, session_date, session_time, duration_minutes, status, google_meet_url')
     .gte('session_date', from).lte('session_date', to);
   if (error) throw error;
   const sent = [], skipped = [], failed = [];
@@ -32,6 +32,7 @@ async function processDue({ sb, now = new Date(), send = sendWithPreferences } =
     const { data: existing } = await sb.from('communications').select('id').eq('message_type', messageType).contains('metadata', { session_id: session.id, automation: templateName }).limit(1);
     if (existing?.length) { skipped.push({ id: session.id, reason: 'already_sent', kind }); continue; }
     let vars = { client_name: session.client_name || '', service: session.service || '', session_date: session.session_date, session_time: String(session.session_time || '').slice(0, 5), timezone: 'ET', contact_email: process.env.ADMIN_EMAIL || 'royalenergyalchemy@gmail.com' };
+    if (reminder && /^https:\/\/meet\.google\.com\//i.test(session.google_meet_url || '')) vars.google_meet_url = session.google_meet_url;
     if (followup) {
       const { data: existingFollowup } = await sb.from('aftercare').select('id, status, followup_template_used').eq('session_id', session.id).eq('followup_type', '72hr').limit(1);
       if (existingFollowup?.length && existingFollowup[0].status === 'completed') {
@@ -43,7 +44,7 @@ async function processDue({ sb, now = new Date(), send = sendWithPreferences } =
       if (!row?.id) throw new Error('Unable to create follow-up record');
       vars = { ...vars, followup_url: followupUrl(row.id, template), followup_type: '72hr' };
     }
-    await send(sb, { templateName, recipientEmail: client.email, clientId: session.client_id, sessionId: session.id, messageType, variables: vars, metadata: { session_id: session.id, automation: templateName } });
+    await send(sb, { templateName, recipientEmail: client.email, clientId: session.client_id, sessionId: session.id, messageType, variables: vars, metadata: { session_id: session.id, automation: templateName, notification_type: messageType }, idempotencyKey: `${templateName}:${session.id}:${session.session_date}:${String(session.session_time || '').slice(0, 5)}` });
     sent.push({ id: session.id, kind });
     } catch (error) {
       // Log only the session identifier and sanitized error message; never PII, tokens, or payloads.

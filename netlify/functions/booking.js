@@ -189,6 +189,7 @@ exports.handler = async function(event) {
         waiver_status:    'pending',
         waiver_completed: false,
         booking_status:   'booking_received',
+        google_calendar_status: serviceInfo.id === 'house-cleansing-blessing' ? 'not_requested' : 'pending',
       })
       .select('id')
       .single();

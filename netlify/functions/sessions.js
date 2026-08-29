@@ -83,6 +83,7 @@ exports.handler = async function(event) {
       seller_notes:      body.seller_notes       || null,
       state_before:      body.state_before       || null,
       state_after:       body.state_after        || null,
+      google_calendar_status: ['in_person', 'in-person', 'house-cleansing-blessing'].includes(String(body.location_type || 'distance').toLowerCase()) ? 'not_requested' : 'pending',
     };
 
     const { data, error } = await sb.from('sessions').insert(insert).select().single();
@@ -142,7 +143,7 @@ exports.handler = async function(event) {
       if (old.status === 'completed') return respond(409, { error: 'Completed sessions cannot be cancelled.' });
       await sb.from('availability_slots').update({ status: 'available', session_id: null }).eq('session_id', params.id);
       const { data: cancelled, error: cancelErr } = await sb.from('sessions')
-        .update({ status: 'cancelled' }).eq('id', params.id).select().single();
+        .update({ status: 'cancelled', google_calendar_status: old.google_calendar_event_id ? 'cancel_pending' : 'cancelled', google_calendar_error: null }).eq('id', params.id).select().single();
       if (cancelErr) return respond(500, { error: cancelErr.message });
       await log({ actor: auth.user.email, action: 'session_cancelled', tableName: 'sessions', recordId: params.id,
         oldData: old, newData: cancelled, context: `Cancelled session. Reason: ${body.reason || 'not specified'}`, ip });
@@ -159,7 +160,7 @@ exports.handler = async function(event) {
       }
       if (slot) await sb.from('availability_slots').update({ status: 'booked', session_id: params.id }).eq('id', slot.id);
       const { data: restored, error: restoreErr } = await sb.from('sessions')
-        .update({ status: 'confirmed' }).eq('id', params.id).select().single();
+        .update({ status: 'confirmed', google_calendar_status: 'pending', google_calendar_error: null }).eq('id', params.id).select().single();
       if (restoreErr) return respond(500, { error: restoreErr.message });
       await log({ actor: auth.user.email, action: 'session_restored', tableName: 'sessions', recordId: params.id,
         oldData: old, newData: restored, context: body.reason || 'Restored cancelled session from dashboard', ip });
@@ -181,8 +182,10 @@ exports.handler = async function(event) {
         variables: { client_name: old.client_name || '', service: old.service || '',
           session_date: old.session_date || '', session_time: old.session_time ? old.session_time.slice(0, 5) : '',
           timezone: 'ET', manage_url: process.env.SITE_URL ? `${process.env.SITE_URL}/manage-appointment.html?session_id=${old.id}` : '',
-          contact_email: process.env.ADMIN_EMAIL || 'royalenergyalchemy@gmail.com' },
+          contact_email: process.env.ADMIN_EMAIL || 'royalenergyalchemy@gmail.com',
+          ...(/^https:\/\/meet\.google\.com\//i.test(old.google_meet_url || '') ? { google_meet_url: old.google_meet_url } : {}) },
         metadata: { trigger: 'dashboard_manual_reminder', session_id: old.id },
+        idempotencyKey: `dashboard-manual-reminder:${old.id}:${old.session_date}:${String(old.session_time || '').slice(0, 5)}`,
       });
       const { data: reminded } = await sb.from('sessions')
         .update({ reminder_sent: true, reminder_sent_at: new Date().toISOString() }).eq('id', params.id).select().single();
@@ -250,6 +253,8 @@ exports.handler = async function(event) {
           last_rescheduled_by:   body.requested_by === 'client'
                                    ? (old?.client_name || 'client')
                                    : auth.user.email,
+          google_calendar_status: old?.google_calendar_event_id ? 'reschedule_pending' : 'pending',
+          google_calendar_error:  null,
         })
         .eq('id', params.id)
         .select().single();
@@ -267,10 +272,30 @@ exports.handler = async function(event) {
       return respond(200, { session: rescheduled, rescheduled: true, reschedule_count: reschedCount });
     }
 
+    if (body.action === 'retry_google_sync') {
+      if (old.status === 'cancelled' && !old.google_calendar_event_id) return respond(409, { error: 'There is no Google Calendar event to cancel.' });
+      const nextStatus = old.status === 'cancelled' ? 'cancel_pending' : (old.google_calendar_event_id ? 'reschedule_pending' : 'pending');
+      const { data: retried, error: retryErr } = await sb.from('sessions')
+        .update({ google_calendar_status: nextStatus, google_calendar_error: null }).eq('id', params.id).select().single();
+      if (retryErr) return respond(500, { error: retryErr.message });
+      await log({ actor: auth.user.email, action: 'google_calendar_retry_requested', tableName: 'sessions', recordId: params.id, oldData: old, newData: retried, context: 'Requested Google Calendar synchronization retry', ip });
+      return respond(200, { session: retried, google_retry_requested: true });
+    }
+
     // ── Generic field update ─────────────────────────────────────────
     const allowed = ['status','booking_status','payment_status','amount_due','amount_paid','payment_paid_at','waiver_status','waiver_completed','waiver_completed_at','session_date','session_time','service','location_type','seller_notes','square_booking_id','stripe_checkout_session_id','stripe_payment_intent_id','stripe_payment_status','state_before','state_after'];
     const updates = {};
     allowed.forEach(k => { if (body[k] !== undefined) updates[k] = body[k]; });
+    const calendarRelevantChange = ['session_date','session_time','service','location_type'].some(k => body[k] !== undefined && body[k] !== old[k]);
+    const nextLocation = String(body.location_type !== undefined ? body.location_type : old.location_type || '').toLowerCase();
+    const nextStatus = String(body.status !== undefined ? body.status : old.status || '').toLowerCase();
+    if (nextStatus === 'cancelled' || (calendarRelevantChange && ['in_person','in-person','house-cleansing-blessing'].includes(nextLocation))) {
+      updates.google_calendar_status = old.google_calendar_event_id ? 'cancel_pending' : (nextStatus === 'cancelled' ? 'cancelled' : 'not_requested');
+      updates.google_calendar_error = null;
+    } else if (calendarRelevantChange) {
+      updates.google_calendar_status = old.google_calendar_event_id ? 'reschedule_pending' : 'pending';
+      updates.google_calendar_error = null;
+    }
 
     const { data, error } = await sb.from('sessions').update(updates).eq('id', params.id).select().single();
     if (error) return respond(500, { error: error.message });

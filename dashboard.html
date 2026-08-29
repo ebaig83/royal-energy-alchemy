@@ -9201,6 +9201,9 @@ function _normalizeScheduleSession(s) {
     service: s.service || s.service_type || '',
     price: amount,
     notes: s.seller_notes || s.notes || '',
+    video: s.video || s.video_link || s.meeting_link || '',
+    google_meet_url: s.google_meet_url || '',
+    google_calendar_status: s.google_calendar_status || 'not_requested',
     scheduleSource: s.scheduleSource || 'supabase'
   });
 }
@@ -10361,6 +10364,8 @@ function renderUpcoming() {
     const timeLabel  = a.time ? ` · ${a.time}` : '';
     const durLabel   = a.dur  ? ` · ${a.dur} min` : '';
     const gcalSynced = a.gcalId ? '<span style="color:#22c98a77;font-size:11px;margin-left:8px">✓ Google Cal</span>' : '';
+    const meetStatus = a.google_calendar_status === 'ready' ? 'MEET READY' : /pending|retryable_error/.test(a.google_calendar_status || '') ? 'MEET PENDING' : a.google_calendar_status === 'failed' ? 'MEET SYNC FAILED' : a.google_calendar_status === 'cancel_pending' ? 'MEET CANCELLATION PENDING' : '';
+    const meetBtn = /^https:\/\/meet\.google\.com\//i.test(a.google_meet_url || '') ? `<a href="${a.google_meet_url}" target="_blank" rel="noopener" style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.15em;padding:5px 11px;border:1px solid #22c98a99;color:#22c98a;border-radius:4px;text-decoration:none;margin-left:6px">JOIN GOOGLE MEET</a>` : '';
     const videoBtn = a.video||getSettings().video
       ? `<a href="${a.video||getSettings().video||''}" target="_blank" style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:.15em;padding:4px 10px;border:1px solid #4488cc66;color:#88bbee;border-radius:4px;text-decoration:none;margin-left:6px">🔗 VIDEO LINK</a>` : '';
     const reminderBtns = !isCancelled && !isPast
@@ -10382,6 +10387,7 @@ function renderUpcoming() {
     const sourceTag   = sourceLabel ? `<span class="appt-source-tag">${sourceLabel}</span>` : '';
     const isSupabase = a.scheduleSource === 'supabase';
     const jsId = JSON.stringify(String(a.id));
+    const meetRetry = isSupabase && /failed|retryable_error/.test(a.google_calendar_status || '') ? `<button class="action-btn view" style="padding:5px 12px;font-size:10px;white-space:nowrap;border-color:#e8b84b66;color:#e8b84b" onclick='retryGoogleSync(${jsId},this)'>↻ RETRY GOOGLE SYNC</button>` : '';
     const waiverDone = a.waiver_completed === true || /complete|completed|signed/i.test(a.waiver_status || '');
     const paymentDone = String(a.payment_status || '').toLowerCase() === 'paid' || Number(a.amount_paid || 0) > 0;
     const workflowBtns = isSupabase && !isCancelled ? `<div class="appt-workflow-actions" style="display:flex;gap:5px;flex-wrap:wrap;margin-top:6px"><span style="font-size:10px;color:${waiverDone?'#22c98a':'#e8b84b'}">WAIVER: ${waiverDone?'COMPLETE':'REQUIRED'}</span>${waiverDone?'':'<button class="action-btn view" style="font-size:10px;padding:4px 8px" onclick=\'sendDashboardAction("waiver",${jsId},this)\'>Send Waiver</button>'}<span style="font-size:10px;color:${paymentDone?'#22c98a':'#e8b84b'}">PAYMENT: ${paymentDone?'PAID':waiverDone?'PENDING':'WAIVER REQUIRED'}</span>${!paymentDone&&waiverDone?'<button class="action-btn view" style="font-size:10px;padding:4px 8px" onclick=\'sendDashboardAction("payment",${jsId},this)\'>Send Payment Link</button>':''}</div>` : '';
@@ -10408,7 +10414,7 @@ function renderUpcoming() {
         </span>`;
     return `<div class="appt-card ${cls}${isPending?' pending':''}" id="apptcard_${a.id}" style="${isPending?'border-left-color:#e8b84b88;':''}">
       <div style="flex:1">
-        <div class="appt-date">${a.date}${timeLabel}${durLabel}${isToday?' · <span style="color:#22c98acc">Today</span>':''}${gcalSynced}</div>
+        <div class="appt-date">${a.date}${timeLabel}${durLabel}${isToday?' · <span style="color:#22c98acc">Today</span>':''}${gcalSynced}${meetStatus ? `<span style="margin-left:8px;color:#e8b84b">${meetStatus}</span>` : ''}${meetBtn}</div>
         <div class="appt-client">${a.client}</div>
         <div class="appt-meta">${a.service||''}</div>
         ${a.notes ? `<div style="font-family:'EB Garamond',serif;font-size:14px;color:#dddaeecc;font-style:italic;margin-top:4px">${a.notes}</div>` : ''}
@@ -10421,6 +10427,7 @@ function renderUpcoming() {
       </div>
       <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;flex-shrink:0">
         ${confirmBtn}
+        ${meetRetry}
         ${actionBtns}
       </div>
     </div>
@@ -10457,6 +10464,11 @@ async function _supabaseSessionAction(id, body, successMessage) {
   await refreshScheduleFromSupabase(true);
   if (successMessage) showToast(successMessage, '#44cc88');
   return payload;
+}
+async function retryGoogleSync(id, btn) {
+  if (btn) { btn.disabled = true; btn.textContent = 'RETRYING…'; }
+  try { await _supabaseSessionAction(id, { action: 'retry_google_sync' }, 'Google synchronization queued.'); }
+  catch (error) { showToast(error.message || 'Could not queue Google synchronization.', '#ee7070'); if (btn) { btn.disabled = false; btn.textContent = '↻ RETRY GOOGLE SYNC'; } }
 }
 function _openSupabaseActionPanel(id, type, html) {
   document.querySelectorAll('[id^="actionpanel_"]').forEach(function(panel) {
@@ -10824,125 +10836,18 @@ function renderCancellationLog() {
 }
 
 // ── GOOGLE CALENDAR ──────────────────────────────────────────────────────────
-// Uses Google Identity Services + Calendar API (no backend needed)
-// Daron needs to authorize once; token stored in sessionStorage
-
-const GCAL_CLIENT_ID = ''; // ← Daron's Google OAuth Client ID goes here
-const GCAL_SCOPES    = 'https://www.googleapis.com/auth/calendar.events';
-let gcalToken = null;
-
-function gcalConnect() {
-  if (!GCAL_CLIENT_ID) {
-    gcalSetStatus('⚠ Google Client ID not configured — see setup instructions below', false);
-    document.getElementById('gcalSetupNote').style.display = 'block';
-    return;
-  }
-  // Load Google Identity Services
-  if (typeof google === 'undefined') {
-    var s = document.createElement('script');
-    s.src = 'https://accounts.google.com/gsi/client';
-    s.onload = function() { gcalDoAuth(); };
-    document.head.appendChild(s);
-  } else {
-    gcalDoAuth();
-  }
-}
-
-function gcalDoAuth() {
-  const client = google.accounts.oauth2.initTokenClient({
-    client_id: GCAL_CLIENT_ID,
-    scope: GCAL_SCOPES,
-    callback: function(resp) {
-      if (resp.error) { gcalSetStatus('⚠ Authorization failed: ' + resp.error, false); return; }
-      gcalToken = resp.access_token;
-      gcalSetStatus('✓ Google Calendar connected — you can now push appointments', true);
-      document.getElementById('gcalBtn').textContent = '✓ Google Calendar Connected';
-      document.getElementById('gcalBtn').classList.add('approve');
-      document.getElementById('gcalBtn').classList.remove('view');
-      renderUpcoming();
-    }
-  });
-  client.requestAccessToken();
-}
+// Calendar writes are server-only. The legacy browser OAuth/write path is
+// intentionally disabled so Supabase sessions remain authoritative.
+function gcalConnect() { gcalSetStatus('Google Calendar is connected securely on the server.', true); }
+function gcalDoAuth() { gcalConnect(); }
 
 function gcalSetStatus(msg, ok) {
   const el = document.getElementById('gcalStatus');
   if (el) { el.textContent = msg; el.style.color = ok ? '#22c98a88' : '#ee707099'; }
 }
 
-function gcalPushOne(id) {
-  const a = getAppts().find(x => x.id === id);
-  if (!a) return;
-  if (!gcalToken) {
-    gcalSetStatus('Connect Google Calendar first using the button above.', false);
-    return;
-  }
-  if (!a.date || !a.time) { alert('This appointment needs a date and time before pushing to Google Calendar.'); return; }
-
-  const [h, m] = a.time.split(':').map(Number);
-  const durMins = a.dur || 60;
-  const start = new Date(a.date + 'T' + a.time + ':00');
-  const end   = new Date(start.getTime() + durMins * 60000);
-
-  const event = {
-    summary: (a.service || 'Energy Session') + ' — ' + a.client,
-    description: [
-      'Client: ' + a.client,
-      a.service ? 'Service: ' + a.service : '',
-      a.notes   ? 'Notes: '   + a.notes   : '',
-    ].filter(Boolean).join('\n'),
-    start: { dateTime: start.toISOString(), timeZone: 'America/New_York' },
-    end:   { dateTime: end.toISOString(),   timeZone: 'America/New_York' },
-    reminders: { useDefault: false, overrides: [
-      { method: 'popup',  minutes: 60 },
-      { method: 'popup',  minutes: 15 }
-    ]}
-  };
-
-  // If it already has a gcalId, update; otherwise insert
-  const method = a.gcalId ? 'PUT' : 'POST';
-  const url    = a.gcalId
-    ? 'https://www.googleapis.com/calendar/v3/calendars/primary/events/' + a.gcalId
-    : 'https://www.googleapis.com/calendar/v3/calendars/primary/events';
-
-  fetch(url, {
-    method,
-    headers: { 'Authorization': 'Bearer ' + gcalToken, 'Content-Type': 'application/json' },
-    body: JSON.stringify(event)
-  })
-  .then(function(r) { return r.json(); })
-  .then(function(data) {
-    if (data.id) {
-      // Save the gcalId back to the appointment
-      const appts = getAppts();
-      const idx   = appts.findIndex(x => x.id === id);
-      if (idx >= 0) { appts[idx].gcalId = data.id; saveAppts(appts); }
-      gcalSetStatus('✓ Pushed to Google Calendar: ' + a.client + ' on ' + a.date, true);
-      renderUpcoming();
-    } else {
-      gcalSetStatus('⚠ Calendar API error: ' + (data.error && data.error.message || JSON.stringify(data)), false);
-    }
-  })
-  .catch(function(err) {
-    gcalSetStatus('⚠ Network error: ' + err.message, false);
-  });
-}
-
-function gcalPushAll() {
-  const upcoming = getAppts().filter(function(a) {
-    return a.date >= new Date().toISOString().slice(0,10);
-  });
-  if (!upcoming.length) { gcalSetStatus('No upcoming appointments to push.', false); return; }
-  if (!gcalToken) { gcalSetStatus('Connect Google Calendar first.', false); return; }
-  var i = 0;
-  function next() {
-    if (i >= upcoming.length) { gcalSetStatus('✓ All ' + upcoming.length + ' upcoming appointments pushed to Google Calendar', true); renderUpcoming(); return; }
-    gcalPushOne(upcoming[i].id);
-    i++;
-    setTimeout(next, 350); // slight delay to avoid rate limit
-  }
-  next();
-}
+function gcalPushOne() { gcalSetStatus('Calendar synchronization runs automatically from the authoritative session record.', true); }
+function gcalPushAll() { gcalSetStatus('Bulk browser writes are disabled. Server synchronization runs automatically.', true); }
 
 // ── AUTO ENV FETCH ───────────────────────────────────────────
 

@@ -1,0 +1,16 @@
+'use strict';
+const fs = require('fs');
+const assert = require('assert');
+const source = fs.readFileSync(require.resolve('../scripts/google-calendar-authorize.js'), 'utf8');
+assert(source.includes('access_type: \'offline\''));
+assert(source.includes('prompt: \'consent\''));
+assert(source.includes('https://www.googleapis.com/auth/calendar.events'));
+assert(source.includes("127.0.0.1"));
+assert(source.includes("const CALLBACK_PORT = 53682"));
+assert(source.includes("const REDIRECT_URI = 'http://127.0.0.1:53682/oauth2callback'"));
+assert(source.includes("server.listen(CALLBACK_PORT, CALLBACK_HOST"));
+assert(source.includes("error.code === 'EADDRINUSE'"));
+assert(!source.includes('server.listen(0'));
+assert(!source.includes('console.log(refreshToken)'));
+assert(source.includes('clearClipboard'));
+console.log('google-calendar-authorize-contract-test: 11/11 passed');
