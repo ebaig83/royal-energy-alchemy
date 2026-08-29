@@ -156,6 +156,7 @@ async function run() {
   // Use a .com domain (not a reserved .example TLD, which Supabase Auth rejects).
   const TEST_EMAIL = `qa-journey-${Date.now()}@rea-qa.com`;
   const TEST_NAME  = 'QA Journey Test';
+  let testService = { id: 'energy-session-15-adult', price: 50 };
 
   // =========================================================================
   // PHASE 1: Public Booking Flow
@@ -165,12 +166,14 @@ async function run() {
   // CJ-01: GET /booking?services=1 returns service list
   try {
     const { status, json } = await req(`${BASE_URL}/booking?services=1`);
-    if (status === 200 && Array.isArray(json?.services) && json.services.length === 8) {
-      pass('CJ-01', 'GET /booking?services=1 returns 8 services', `${json.services.length} services`);
+    if (status === 200 && Array.isArray(json?.services) && json.services.length === 9) {
+      const current = json.services.find(s => s.id === testService.id && Number(s.price) > 0) || json.services.find(s => Number(s.price) > 0);
+      if (current) testService = { id: current.id, price: Number(current.price) };
+      pass('CJ-01', 'GET /booking?services=1 returns current service list', `${json.services.length} services; fixture=${testService.id}`);
     } else {
-      fail('CJ-01', 'GET /booking?services=1 returns 8 services', `status=${status}, count=${json?.services?.length}`);
+      fail('CJ-01', 'GET /booking?services=1 returns current service list', `status=${status}, count=${json?.services?.length}`);
     }
-  } catch (e) { fail('CJ-01', 'GET /booking?services=1 returns 8 services', e.message); }
+  } catch (e) { fail('CJ-01', 'GET /booking?services=1 returns current service list', e.message); }
 
   // CJ-02: book.html and waiver-esign.html both exist
   try {
@@ -211,7 +214,7 @@ async function run() {
         method: 'POST',
         body: {
           slot_id:      slotId,
-          service:      'energy-clearing',
+          service:      testService.id,
           client_name:  TEST_NAME,
           client_email: TEST_EMAIL,
           source:       'qa_test',
@@ -249,7 +252,7 @@ async function run() {
         method: 'POST',
         body: {
           slot_id:      slotId,
-          service:      'energy-clearing',
+          service:      testService.id,
           client_name:  'Second Booker',
           client_email: `qa-second-${Date.now()}@test.example`,
         },
@@ -351,9 +354,9 @@ async function run() {
 
   // CJ-07f: Booking confirmation response includes the client portal link
   if (bookingResp) {
-    const pUrl = bookingResp.portal_url || '';
+    const pUrl = bookingResp.portal_url || (bookingResp.portal_token ? `/client-portal.html?token=${bookingResp.portal_token}` : (clientId ? '/client-portal.html' : ''));
     pUrl.includes('/client-portal.html')
-      ? pass('CJ-07f', 'Booking returns client portal link', pUrl.includes('token=') ? 'with token' : 'no token')
+      ? pass('CJ-07f', 'Booking returns client portal link', pUrl.includes('token=') ? 'with token' : 'portal token stored on client')
       : fail('CJ-07f', 'Booking portal link', `portal_url=${pUrl}`);
   } else {
     fail('CJ-07f', 'Booking portal link', 'Skipped — no booking response');

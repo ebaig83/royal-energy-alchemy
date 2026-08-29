@@ -48,7 +48,8 @@ async function run() {
   // ── Find test client ─────────────────────────────────────────────────
   const clist    = await req('GET', '/.netlify/functions/clients');
   const allClients = clist.body.clients || [];
-  const testClient = allClients.find(c => c.name && c.name.includes('[QA]')) || allClients[0];
+  const testClient = allClients.find(c => c.name && c.name.includes('[QA]'));
+  if (!testClient) { console.error('SAFE-STOP: no explicitly marked [QA] client found; refusing write-based validation.'); process.exit(2); }
   info('Test client: ' + testClient?.name + ' id=' + testClient?.id);
 
   // ══════════════════════════════════════════════════════════════════
