@@ -15,6 +15,7 @@ const { getClient }            = require('./lib/supabase');
 const { sendWithPreferences }  = require('./lib/comms');
 const { bookingFailure, emailFailure } = require('./lib/ops-alert');
 const { SERVICES, findService } = require('./lib/services');
+const { findSessionConflicts }  = require('./lib/session-overlap');
 const crypto                   = require('crypto');
 
 const SITE_URL = process.env.SITE_URL || 'https://royal-energy-alchemy.netlify.app';
@@ -54,6 +55,10 @@ exports.handler = async function(event) {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(client_email)) {
     return respond(400, { error: 'Please enter a valid email address.' });
   }
+  const serviceInfo = findService(service);
+  if (!serviceInfo || serviceInfo.price == null) {
+    return respond(400, { error: 'Selected service price could not be verified. Please choose a service again.' });
+  }
 
   // ── Rate limiting (5 bookings per IP per hour) ────────────────────────────
   try {
@@ -82,10 +87,22 @@ exports.handler = async function(event) {
 
   const sessionDate = slot.slot_date;
   const sessionTime = slot.slot_time ? slot.slot_time.slice(0, 5) : '';
-  const serviceInfo = findService(service);
-  if (!serviceInfo || serviceInfo.price == null) {
+
+  // The slot row prevents two public requests from claiming the same slot.
+  // Sessions are independently authoritative for occupancy, including manual
+  // and off-grid appointments that have no availability_slots row.
+  const { data: occupiedSessions, error: occupancyError } = await sb
+    .from('sessions')
+    .select('id,session_date,session_time,duration_minutes,status')
+    .eq('session_date', sessionDate);
+
+  if (occupancyError || findSessionConflicts(occupiedSessions || [], {
+    date: sessionDate,
+    time: sessionTime,
+    duration_minutes: serviceInfo.duration,
+  }).length) {
     await sb.from('availability_slots').update({ status: 'available', session_id: null }).eq('id', slot_id);
-    return respond(400, { error: 'Selected service price could not be verified. Please choose a service again.' });
+    return respond(409, { error: 'This time is no longer available. Please select another time.' });
   }
 
   // ── Step 2: Upsert client record (match by email) ─────────────────────────

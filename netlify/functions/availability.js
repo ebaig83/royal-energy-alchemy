@@ -12,6 +12,7 @@
 const { requireAdmin, respond } = require('./lib/auth');
 const { getClient }             = require('./lib/supabase');
 const { log }                   = require('./lib/audit');
+const { filterSlotsAgainstSessions } = require('./lib/session-overlap');
 
 const ALLOWED_SLOT_TIMES = new Set(['10:00', '12:00', '14:00', '16:00', '18:00']);
 
@@ -52,21 +53,35 @@ exports.handler = async function(event) {
     const today = new Date().toISOString().slice(0, 10);
     let query   = sb.from('availability_slots').select('id,slot_date,slot_time,label,display_time,status,session_id');
 
+    let from;
+    let to;
     if (params.date) {
+      from = params.date;
+      to = params.date;
       query = query.eq('slot_date', params.date);
     } else {
-      const from = params.from || today;
-      const to   = new Date(Date.now() + 60 * 86400000).toISOString().slice(0, 10);
+      from = params.from || today;
+      to   = new Date(Date.now() + 60 * 86400000).toISOString().slice(0, 10);
       query      = query.gte('slot_date', from).lte('slot_date', to);
     }
 
     query = query.order('slot_date', { ascending: true }).order('slot_time', { ascending: true });
 
-    const { data, error } = await query;
+    const [{ data, error }, { data: sessions, error: sessionsError }] = await Promise.all([
+      query,
+      sb.from('sessions')
+        .select('id,session_date,session_time,duration_minutes,status')
+        .gte('session_date', from)
+        .lte('session_date', to),
+    ]);
     if (error) return respond(500, { error: error.message });
+    // Fail closed if occupancy cannot be checked: never advertise a possibly
+    // occupied appointment time.
+    if (sessionsError) return respond(503, { error: 'Availability is temporarily unavailable.' });
 
     // Shape into the same format the booking calendar expects
-    const slots = (data || []).filter(row => ALLOWED_SLOT_TIMES.has((row.slot_time || '').slice(0, 5))).map(row => ({
+    const visibleRows = filterSlotsAgainstSessions(data || [], sessions || []);
+    const slots = visibleRows.filter(row => ALLOWED_SLOT_TIMES.has((row.slot_time || '').slice(0, 5))).map(row => ({
       id:          row.id,
       date:        row.slot_date,
       time:        row.slot_time ? row.slot_time.slice(0, 5) : '',
