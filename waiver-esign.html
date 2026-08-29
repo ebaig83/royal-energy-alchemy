@@ -372,7 +372,6 @@ footer .pa-disclaimer{font-family:'EB Garamond',serif;font-size:15px;font-style:
 // Set today's date
 const today = new Date().toISOString().split('T')[0];
 document.getElementById('signDate').value = today;
-document.getElementById('sigTimestamp').textContent = 'Signed: ' + new Date().toLocaleString();
 const WAIVER_PARAMS = new URLSearchParams(window.location.search);
 const WAIVER_SESSION_ID = WAIVER_PARAMS.get('session_id') || WAIVER_PARAMS.get('booking_id') || '';
 
@@ -450,6 +449,7 @@ async function beginStripeCheckout(sessionId, email) {
 }
 
 function showWaiverSuccess(clientId, sessionId, text, btnText, btnHref) {
+  document.getElementById('sigTimestamp').textContent = 'Signed: ' + new Date().toLocaleString();
   document.getElementById('waiverForm').style.display = 'none';
   document.getElementById('successMsg').style.display = 'block';
   document.getElementById('displayClientId').textContent = clientId;
