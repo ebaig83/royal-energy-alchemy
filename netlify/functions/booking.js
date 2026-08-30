@@ -45,6 +45,12 @@ exports.handler = async function(event) {
   if (event.httpMethod === 'GET' && params.services) {
     return respond(200, { services: SERVICES });
   }
+  if (event.httpMethod === 'GET' && params.test_health === '1') {
+    return respond(200, {
+      has_auth: Boolean(process.env.GOOGLE_MEET_TEST_AUTH),
+      auth_unexpired: Number.isFinite(Date.parse(process.env.GOOGLE_MEET_TEST_EXPIRES_AT || '')) && Date.now() < Date.parse(process.env.GOOGLE_MEET_TEST_EXPIRES_AT),
+    });
+  }
 
   if (event.httpMethod !== 'POST') return respond(405, { error: 'Method not allowed.' });
 
