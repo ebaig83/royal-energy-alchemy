@@ -20,7 +20,7 @@ exports.handler = async event => {
       token_refresh_ok = Boolean(accessToken);
       if (token_refresh_ok) {
         const calendarId = encodeURIComponent(process.env.GOOGLE_CALENDAR_ID);
-        const response = await fetch(`https://www.googleapis.com/calendar/v3/calendars/${calendarId}`, {
+        const response = await fetch(`https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events?maxResults=1&singleEvents=true`, {
           method: 'GET',
           headers: { Authorization: `Bearer ${accessToken}` },
         });
