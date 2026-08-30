@@ -8,7 +8,8 @@ exports.handler = async event => {
   }
 
   const required = ['GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET', 'GOOGLE_REFRESH_TOKEN', 'GOOGLE_CALENDAR_ID'];
-  const credentials_complete = required.every(name => Boolean(process.env[name]));
+  const present = Object.fromEntries(required.map(name => [name.toLowerCase().replace(/^google_/, 'has_'), Boolean(process.env[name])]));
+  const credentials_complete = Object.values(present).every(Boolean);
   let token_refresh_ok = false;
   let calendar_read_ok = false;
   let failure_stage = null;
@@ -36,6 +37,6 @@ exports.handler = async event => {
   return {
     statusCode: 200,
     headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
-    body: JSON.stringify({ credentials_complete, token_refresh_ok, calendar_read_ok, failure_stage }),
+    body: JSON.stringify({ ...present, credentials_complete, token_refresh_ok, calendar_read_ok, failure_stage }),
   };
 };
