@@ -13,16 +13,41 @@ const { log }                   = require('./lib/audit');
 const { scheduleAftercare }     = require('./agents/aftercare-agent');
 const { sendTransactional }     = require('./lib/mailer');
 const { emailFailure }          = require('./lib/ops-alert');
+const crypto                    = require('crypto');
 
 function calendarEligible(session) {
   return String(session?.payment_status || '').toLowerCase() === 'paid' || session?.source === 'controlled_google_meet_test';
 }
 
+function controlledSecretValid(event) {
+  const expected = process.env.GOOGLE_MEET_TEST_AUTH || '';
+  const supplied = event.headers?.['x-google-meet-test-auth'] || event.headers?.['X-Google-Meet-Test-Auth'] || '';
+  const expires = Date.parse(process.env.GOOGLE_MEET_TEST_EXPIRES_AT || '');
+  if (!expected || !supplied || !Number.isFinite(expires) || Date.now() >= expires) return false;
+  const a = Buffer.from(expected), b = Buffer.from(supplied);
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+
+async function authorizeControlledLifecycle(sb, event, body, session) {
+  if (!controlledSecretValid(event) || !['reschedule', 'cancel'].includes(body.action)) return null;
+  const allowed = body.action === 'reschedule'
+    ? new Set(['action', 'new_date', 'new_time', 'new_slot_id', 'reason', 'requested_by'])
+    : new Set(['action', 'reason']);
+  if (Object.keys(body).some(key => !allowed.has(key))) return null;
+  if (session.source !== 'controlled_google_meet_test' || String(session.client_name || '').trim().toLowerCase() !== 'google meet test' || session.service !== 'Distance Energy Session') return null;
+  const [{ data: client }, { count: markerCount }] = await Promise.all([
+    sb.from('clients').select('email').eq('id', session.client_id).single(),
+    sb.from('audit_logs').select('id', { count: 'exact', head: true }).eq('action', 'controlled_google_meet_test_booking').eq('record_id', session.id),
+  ]);
+  if (String(client?.email || '').trim().toLowerCase() !== 'droyal168@gmail.com' || markerCount !== 1) return null;
+  return { user: { email: 'controlled-google-meet-test' }, controlled: true };
+}
+
 exports.handler = async function(event) {
   if (event.httpMethod === 'OPTIONS') return respond(200, {});
 
-  const auth = await requireAdmin(event);
-  if (auth.error) return auth.error;
+  let auth = await requireAdmin(event);
+  if (auth.error && event.httpMethod !== 'PATCH') return auth.error;
 
   const sb     = getClient();
   const params = event.queryStringParameters || {};
@@ -142,6 +167,11 @@ exports.handler = async function(event) {
     const { data: old } = await sb.from('sessions').select('*').eq('id', params.id).single();
     if (!old) return respond(404, { error: 'Session not found.' });
 
+    if (auth.error) {
+      auth = await authorizeControlledLifecycle(sb, event, body, old);
+      if (!auth) return respond(401, { error: 'Unauthorized.' });
+    }
+
     if (body.action === 'cancel') {
       if (old.status === 'cancelled') return respond(409, { error: 'Session is already cancelled.' });
       if (old.status === 'completed') return respond(409, { error: 'Completed sessions cannot be cancelled.' });
@@ -151,6 +181,7 @@ exports.handler = async function(event) {
       if (cancelErr) return respond(500, { error: cancelErr.message });
       await log({ actor: auth.user.email, action: 'session_cancelled', tableName: 'sessions', recordId: params.id,
         oldData: old, newData: cancelled, context: `Cancelled session. Reason: ${body.reason || 'not specified'}`, ip });
+      if (auth.controlled) await log({ actor: auth.user.email, action: 'controlled_google_meet_test_cancelled', tableName: 'sessions', recordId: params.id, oldData: old, newData: cancelled, context: 'Controlled Google Meet lifecycle cancellation', ip });
       return respond(200, { session: cancelled, cancelled: true });
     }
 
@@ -272,6 +303,7 @@ exports.handler = async function(event) {
         context: `Session rescheduled ${old?.session_date} → ${body.new_date}. Reason: ${body.reason || 'not specified'}`,
         ip,
       });
+      if (auth.controlled) await log({ actor: auth.user.email, action: 'controlled_google_meet_test_rescheduled', tableName: 'sessions', recordId: params.id, oldData: old, newData: rescheduled, context: 'Controlled Google Meet lifecycle reschedule', ip });
 
       return respond(200, { session: rescheduled, rescheduled: true, reschedule_count: reschedCount });
     }
