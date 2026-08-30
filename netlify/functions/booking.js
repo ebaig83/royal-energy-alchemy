@@ -49,6 +49,7 @@ exports.handler = async function(event) {
     return respond(200, {
       has_auth: Boolean(process.env.GOOGLE_MEET_TEST_AUTH),
       auth_unexpired: Number.isFinite(Date.parse(process.env.GOOGLE_MEET_TEST_EXPIRES_AT || '')) && Date.now() < Date.parse(process.env.GOOGLE_MEET_TEST_EXPIRES_AT),
+      env_probe: process.env.GOOGLE_MEET_ENV_PROBE === 'enabled',
     });
   }
 
