@@ -14,6 +14,10 @@ const { scheduleAftercare }     = require('./agents/aftercare-agent');
 const { sendTransactional }     = require('./lib/mailer');
 const { emailFailure }          = require('./lib/ops-alert');
 
+function calendarEligible(session) {
+  return String(session?.payment_status || '').toLowerCase() === 'paid' || session?.source === 'controlled_google_meet_test';
+}
+
 exports.handler = async function(event) {
   if (event.httpMethod === 'OPTIONS') return respond(200, {});
 
@@ -83,7 +87,7 @@ exports.handler = async function(event) {
       seller_notes:      body.seller_notes       || null,
       state_before:      body.state_before       || null,
       state_after:       body.state_after        || null,
-      google_calendar_status: ['in_person', 'in-person', 'house-cleansing-blessing'].includes(String(body.location_type || 'distance').toLowerCase()) ? 'not_requested' : 'pending',
+      google_calendar_status: String(body.payment_status || 'unpaid').toLowerCase() === 'paid' && !['in_person', 'in-person', 'house-cleansing-blessing'].includes(String(body.location_type || 'distance').toLowerCase()) ? 'pending' : 'not_requested',
     };
 
     const { data, error } = await sb.from('sessions').insert(insert).select().single();
@@ -160,7 +164,7 @@ exports.handler = async function(event) {
       }
       if (slot) await sb.from('availability_slots').update({ status: 'booked', session_id: params.id }).eq('id', slot.id);
       const { data: restored, error: restoreErr } = await sb.from('sessions')
-        .update({ status: 'confirmed', google_calendar_status: 'pending', google_calendar_error: null }).eq('id', params.id).select().single();
+        .update({ status: 'confirmed', google_calendar_status: calendarEligible(old) ? 'pending' : 'not_requested', google_calendar_error: null }).eq('id', params.id).select().single();
       if (restoreErr) return respond(500, { error: restoreErr.message });
       await log({ actor: auth.user.email, action: 'session_restored', tableName: 'sessions', recordId: params.id,
         oldData: old, newData: restored, context: body.reason || 'Restored cancelled session from dashboard', ip });
@@ -253,7 +257,7 @@ exports.handler = async function(event) {
           last_rescheduled_by:   body.requested_by === 'client'
                                    ? (old?.client_name || 'client')
                                    : auth.user.email,
-          google_calendar_status: old?.google_calendar_event_id ? 'reschedule_pending' : 'pending',
+          google_calendar_status: old?.google_calendar_event_id ? 'reschedule_pending' : (calendarEligible(old) ? 'pending' : 'not_requested'),
           google_calendar_error:  null,
         })
         .eq('id', params.id)
@@ -274,7 +278,7 @@ exports.handler = async function(event) {
 
     if (body.action === 'retry_google_sync') {
       if (old.status === 'cancelled' && !old.google_calendar_event_id) return respond(409, { error: 'There is no Google Calendar event to cancel.' });
-      const nextStatus = old.status === 'cancelled' ? 'cancel_pending' : (old.google_calendar_event_id ? 'reschedule_pending' : 'pending');
+      const nextStatus = old.status === 'cancelled' ? 'cancel_pending' : (old.google_calendar_event_id ? 'reschedule_pending' : (calendarEligible(old) ? 'pending' : 'not_requested'));
       const { data: retried, error: retryErr } = await sb.from('sessions')
         .update({ google_calendar_status: nextStatus, google_calendar_error: null }).eq('id', params.id).select().single();
       if (retryErr) return respond(500, { error: retryErr.message });
@@ -293,7 +297,7 @@ exports.handler = async function(event) {
       updates.google_calendar_status = old.google_calendar_event_id ? 'cancel_pending' : (nextStatus === 'cancelled' ? 'cancelled' : 'not_requested');
       updates.google_calendar_error = null;
     } else if (calendarRelevantChange) {
-      updates.google_calendar_status = old.google_calendar_event_id ? 'reschedule_pending' : 'pending';
+      updates.google_calendar_status = old.google_calendar_event_id ? 'reschedule_pending' : (calendarEligible({ ...old, ...updates }) ? 'pending' : 'not_requested');
       updates.google_calendar_error = null;
     }
 

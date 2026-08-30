@@ -51,7 +51,7 @@ function isWaiverDone(session) {
 async function markPayment(sb, sessionId, event, checkout) {
   const { data: session, error } = await sb
     .from('sessions')
-    .select('id, status, service, session_date, session_time, waiver_status, waiver_completed, client_id, client_name, amount_due, amount_paid, payment_status')
+    .select('id, status, service, location_type, session_date, session_time, waiver_status, waiver_completed, client_id, client_name, amount_due, amount_paid, payment_status, google_calendar_status')
     .eq('id', sessionId)
     .single();
 
@@ -76,6 +76,7 @@ async function markPayment(sb, sessionId, event, checkout) {
     stripe_checkout_session_id: checkout.id || null,
     stripe_payment_intent_id: checkout.payment_intent || null,
     stripe_payment_status: checkout.payment_status || 'paid',
+    google_calendar_status: session.service === 'Distance Energy Session' ? 'pending' : (session.google_calendar_status || 'not_requested'),
     booking_status: waiverDone ? 'ready' : 'payment_paid',
     updated_at: new Date().toISOString(),
   };

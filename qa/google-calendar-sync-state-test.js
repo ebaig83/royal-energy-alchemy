@@ -3,9 +3,9 @@ const assert = require('assert');
 const { processPending } = require('../netlify/functions/session-calendar-sync');
 
 const rows = [
-  { id: 'A', client_id: 'ca', client_name: 'A', session_date: '2026-09-01', session_time: '10:00', service: 'Remote', status: 'confirmed', location_type: 'distance', google_calendar_status: 'pending' },
-  { id: 'B', client_id: 'cb', client_name: 'B', session_date: '2026-09-01', session_time: '11:00', service: 'Remote', status: 'confirmed', location_type: 'distance', google_calendar_status: 'pending' },
-  { id: 'C', client_id: 'cc', client_name: 'C', session_date: '2026-09-01', session_time: '12:00', service: 'Remote', status: 'cancelled', location_type: 'distance', google_calendar_event_id: 'event-c', google_calendar_status: 'cancel_pending' },
+  { id: 'A', client_id: 'ca', client_name: 'A', session_date: '2026-09-01', session_time: '10:00', service: 'Remote', status: 'confirmed', payment_status: 'paid', location_type: 'distance', google_calendar_status: 'pending' },
+  { id: 'B', client_id: 'cb', client_name: 'B', session_date: '2026-09-01', session_time: '11:00', service: 'Remote', status: 'confirmed', payment_status: 'paid', location_type: 'distance', google_calendar_status: 'pending' },
+  { id: 'C', client_id: 'cc', client_name: 'C', session_date: '2026-09-01', session_time: '12:00', service: 'Remote', status: 'cancelled', payment_status: 'paid', location_type: 'distance', google_calendar_event_id: 'event-c', google_calendar_status: 'cancel_pending' },
 ];
 class Query {
   constructor(table) { this.table = table; this.filters = {}; this.patch = null; }

@@ -210,7 +210,9 @@ exports.handler = async function(event) {
         waiver_status:    controlledTest ? 'signed' : 'pending',
         waiver_completed: controlledTest,
         booking_status:   controlledTest ? 'ready' : 'booking_received',
-        google_calendar_status: serviceInfo.id === 'house-cleansing-blessing' ? 'not_requested' : 'pending',
+        // Public bookings are not Calendar-eligible until payment is finalized.
+        // The one-time controlled test is already finalized server-side.
+        google_calendar_status: controlledTest ? 'pending' : 'not_requested',
       })
       .select('id')
       .single();
