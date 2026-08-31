@@ -299,6 +299,9 @@ async function createProductionAdapters() {
 
 async function runCli(argv, runtime = {}) {
   const write = runtime.write || (()=>{});
+  // The one production lifecycle is complete and its endpoints are retired.
+  // Preserve injected local tests, but never create another production booking.
+  if (!runtime.createAdapters && !runtime.runProbeCycle) throw new Error('Production controlled lifecycle is retired; only injected local tests are allowed.');
   if (argv.includes('--probe-cycle')) { const result=await (runtime.runProbeCycle||runProbeCycle)();write({ok:true,mode:'probe-cycle',result});return 0; }
   if (!argv.includes('--controlled-production') || !argv.includes('--confirm-single-production-lifecycle')) throw new Error('Controlled production mode requires both explicit safety flags.');
   const factory=runtime.createAdapters||createProductionAdapters;

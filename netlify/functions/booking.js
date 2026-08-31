@@ -21,15 +21,6 @@ const crypto                   = require('crypto');
 
 const SITE_URL = process.env.SITE_URL || 'https://royal-energy-alchemy.netlify.app';
 
-function controlledTestAuthorized(event, body, serviceInfo) {
-  const secret = process.env.GOOGLE_MEET_TEST_AUTH;
-  const expiresAt = Date.parse(process.env.GOOGLE_MEET_TEST_EXPIRES_AT || '');
-  const supplied = event.headers?.['x-google-meet-test-auth'] || event.headers?.['X-Google-Meet-Test-Auth'] || '';
-  if (!secret || !supplied || !Number.isFinite(expiresAt) || Date.now() >= expiresAt) return false;
-  if (supplied.length !== secret.length || !crypto.timingSafeEqual(Buffer.from(supplied), Buffer.from(secret))) return false;
-  return String(body.client_name || '').trim().toLowerCase() === 'google meet test' && String(body.client_email || '').trim().toLowerCase() === 'droyal168@gmail.com' && serviceInfo?.id === 'distance-energy-session';
-}
-
 // Secure, URL-safe portal token (48 hex chars) — gives the client token-based
 // access to their document hub without a dashboard login.
 function newPortalToken() { return crypto.randomBytes(24).toString('hex'); }
@@ -44,13 +35,6 @@ exports.handler = async function(event) {
   // ── GET ?services=1 — public service list ────────────────────────────────
   if (event.httpMethod === 'GET' && params.services) {
     return respond(200, { services: SERVICES });
-  }
-  if (event.httpMethod === 'GET' && params.test_health === '1') {
-    return respond(200, {
-      has_auth: Boolean(process.env.GOOGLE_MEET_TEST_AUTH),
-      auth_unexpired: Number.isFinite(Date.parse(process.env.GOOGLE_MEET_TEST_EXPIRES_AT || '')) && Date.now() < Date.parse(process.env.GOOGLE_MEET_TEST_EXPIRES_AT),
-      env_probe: process.env.GOOGLE_MEET_ENV_PROBE === 'enabled',
-    });
   }
 
   if (event.httpMethod !== 'POST') return respond(405, { error: 'Method not allowed.' });
@@ -75,11 +59,6 @@ exports.handler = async function(event) {
   const serviceInfo = findService(service);
   if (!serviceInfo || serviceInfo.price == null) {
     return respond(400, { error: 'Selected service price could not be verified. Please choose a service again.' });
-  }
-  const controlledTest = controlledTestAuthorized(event, body, serviceInfo);
-  if (controlledTest) {
-    const { count: priorTests } = await sb.from('audit_logs').select('id', { count: 'exact', head: true }).eq('action', 'controlled_google_meet_test_booking');
-    if (priorTests > 0) return respond(409, { error: 'The controlled Google Meet test authorization has already been used.' });
   }
 
   // ── Rate limiting (5 bookings per IP per hour) ────────────────────────────
@@ -201,18 +180,17 @@ exports.handler = async function(event) {
         session_time:     sessionTime.length === 5 ? sessionTime + ':00' : sessionTime,
         duration_minutes: serviceInfo.duration,
         location_type:    'distance',
-        status:           controlledTest ? 'confirmed' : 'pending',
-        payment_status:   controlledTest ? 'paid' : 'pending',
+        status:           'pending',
+        payment_status:   'pending',
         amount_due:       serviceInfo.price,
-        amount_paid:      controlledTest ? serviceInfo.price : 0,
-        source:           controlledTest ? 'controlled_google_meet_test' : (body.source || 'online'),
+        amount_paid:      0,
+        source:           body.source || 'online',
         intake_status:    'pending',
-        waiver_status:    controlledTest ? 'signed' : 'pending',
-        waiver_completed: controlledTest,
-        booking_status:   controlledTest ? 'ready' : 'booking_received',
-        // Public bookings are not Calendar-eligible until payment is finalized.
-        // The one-time controlled test is already finalized server-side.
-        google_calendar_status: controlledTest ? 'pending' : 'not_requested',
+        waiver_status:    'pending',
+        waiver_completed: false,
+        booking_status:   'booking_received',
+        // Public bookings are never eligible for sync before payment finalization.
+        google_calendar_status: 'not_requested',
       })
       .select('id')
       .single();
@@ -254,9 +232,6 @@ exports.handler = async function(event) {
     });
   } catch { /* non-fatal */ }
 
-  if (controlledTest) {
-    await sb.from('audit_logs').insert({ action: 'controlled_google_meet_test_booking', table_name: 'sessions', record_id: sessionId, actor: 'system-test', ip_address: ip, new_data: { session_id: sessionId, purpose: 'one-time Google Meet lifecycle test' } });
-  }
 
   // ── Step 6: Build client-facing URLs ──────────────────────────────────────
   const manageUrl = `${SITE_URL}/manage-appointment.html?session_id=${sessionId}`;
@@ -282,7 +257,7 @@ exports.handler = async function(event) {
 
   // Receipt only: payment has not happened yet, so this must not imply that
   // the appointment is confirmed. Final confirmation comes from Stripe webhook.
-  if (!controlledTest) sendWithPreferences(sb, {
+  sendWithPreferences(sb, {
     templateName:   'booking_received_pending_payment',
     recipientEmail: client_email.trim(),
     clientId,
@@ -294,7 +269,7 @@ exports.handler = async function(event) {
   });
 
   // Intake invitation
-  if (!controlledTest) sendWithPreferences(sb, {
+  sendWithPreferences(sb, {
     templateName:   'intake_received',
     recipientEmail: client_email.trim(),
     clientId,
@@ -323,8 +298,7 @@ exports.handler = async function(event) {
     },
     service:    serviceInfo.label,
     amount_due: serviceInfo.price,
-    payment_status: controlledTest ? 'paid' : 'pending',
-    controlled_test: controlledTest,
-    waiver_status: controlledTest ? 'signed' : 'pending',
+    payment_status: 'pending',
+    waiver_status: 'pending',
   });
 };

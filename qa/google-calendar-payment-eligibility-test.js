@@ -6,7 +6,7 @@ const booking = fs.readFileSync(path.join(root, 'booking.js'), 'utf8');
 const webhook = fs.readFileSync(path.join(root, 'stripe-webhook.js'), 'utf8');
 const sync = fs.readFileSync(path.join(root, 'session-calendar-sync.js'), 'utf8');
 const sessions = fs.readFileSync(path.join(root, 'sessions.js'), 'utf8');
-if (!booking.includes("google_calendar_status: controlledTest ? 'pending' : 'not_requested'")) throw new Error('unpaid public booking is actionable');
+if (!booking.includes("google_calendar_status: 'not_requested'")) throw new Error('unpaid public booking is actionable');
 if (!webhook.includes("google_calendar_status: session.service === 'Distance Energy Session' ? 'pending'")) throw new Error('payment finalization does not queue remote sync');
 if (!sync.includes("payment_status || '').toLowerCase() === 'paid'")) throw new Error('sync worker lacks payment gate');
 if (!sessions.includes('calendarEligible')) throw new Error('dashboard lifecycle lacks payment gate');

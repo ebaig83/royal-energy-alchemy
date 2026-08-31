@@ -27,7 +27,7 @@ async function processPending({ sb, api, limit = 25, now = () => new Date(), sen
   const { data, error } = await sb.from('sessions').select('*').in('google_calendar_status', ACTIONABLE_STATUSES).limit(limit);
   if (error) throw error;
   const results = { synced: [], failed: [], notifications: [] };
-  for (const session of (data || []).filter(s => String(s.payment_status || '').toLowerCase() === 'paid' || s.source === 'controlled_google_meet_test')) {
+  for (const session of (data || []).filter(s => String(s.payment_status || '').toLowerCase() === 'paid')) {
     try {
       const result = await syncSession(session, api, syncOptions);
       const patch = {

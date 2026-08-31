@@ -1,21 +1,25 @@
 'use strict';
+const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
-const source = fs.readFileSync(path.join(__dirname, '..', 'netlify', 'functions', 'sessions.js'), 'utf8');
-const checks = [
-  ['dashboard auth retained', /requireAdmin\(event\)/],
-  ['constant-time secret compare', /timingSafeEqual/],
-  ['expiration required', /GOOGLE_MEET_TEST_EXPIRES_AT/],
-  ['actions limited', /\['reschedule', 'cancel'\]/],
-  ['controlled source required', /controlled_google_meet_test/],
-  ['identity required', /google meet test/],
-  ['email required', /droyal168@gmail\.com/],
-  ['service required', /Distance Energy Session/],
-  ['single-use marker required', /markerCount !== 1/],
-  ['body allowlist enforced', /Object\.keys\(body\)\.some/],
-  ['controlled reschedule audited', /controlled_google_meet_test_rescheduled/],
-  ['controlled cancellation audited', /controlled_google_meet_test_cancelled/],
-  ['unauthorized response generic', /respond\(401, \{ error: 'Unauthorized\.' \}\)/],
-];
-for (const [name, pattern] of checks) if (!pattern.test(source)) throw new Error(`Missing contract: ${name}`);
-console.log(`controlled-lifecycle-authorization-contract: ${checks.length}/${checks.length} passed`);
+const vm = require('vm');
+const source = fs.readFileSync(path.join(__dirname,'../netlify/functions/sessions.js'),'utf8');
+let dbReads=0;
+const sandbox={exports:{},require:name=>{
+  if(name==='./lib/auth')return {requireAdmin:async()=>({error:{statusCode:401,body:'Unauthorized'}}),respond:(statusCode,body)=>({statusCode,body})};
+  if(name==='./lib/supabase')return {getClient:()=>{dbReads++;throw new Error('Unauthorized DB access');}};
+  return {};
+}};
+vm.runInNewContext(source,sandbox);
+(async()=>{
+  let checks=0;
+  for(const method of ['GET','POST','PATCH']) for(const action of ['reschedule','cancel','restore']){
+    const result=await sandbox.exports.handler({httpMethod:method,headers:{'x-google-meet-test-auth':'local-test-only'},queryStringParameters:{id:'existing'},body:JSON.stringify({action})});
+    assert.equal(result.statusCode,401);checks++;
+  }
+  assert.equal(dbReads,0);checks++;
+  assert(!/GOOGLE_MEET_TEST_|authorizeControlledLifecycle|auth.controlled/.test(source));checks++;
+  assert(!source.includes("source === 'controlled_google_meet_test'"));checks++;
+  assert(source.includes("action: 'session_rescheduled'")&&source.includes("action: 'session_cancelled'"));checks++;
+  console.log(`controlled lifecycle removal/auth contract: ${checks}/13 passed`);
+})().catch(e=>{console.error(e);process.exitCode=1;});

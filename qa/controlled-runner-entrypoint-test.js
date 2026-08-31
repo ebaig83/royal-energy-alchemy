@@ -9,7 +9,7 @@ function bundle(overrides={}) {
 }
 
 (async()=>{
-  await assert.rejects(()=>runCli([],{}),/requires both explicit safety flags/);
+  await assert.rejects(()=>runCli([],{}),/retired/);
   await assert.rejects(()=>runCli(['--controlled-production','--confirm-single-production-lifecycle'],{createAdapters:async()=>{throw new Error('Authenticated Netlify token not found.');}}),/Netlify token/);
   await assert.rejects(()=>runCli(['--controlled-production','--confirm-single-production-lifecycle'],{createAdapters:async()=>{throw new Error('Supabase verification unavailable.');}}),/Supabase/);
   const happy=bundle(); const output=[];
