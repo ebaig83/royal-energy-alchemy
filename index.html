@@ -1930,6 +1930,13 @@ footer a:hover,footer a:focus-visible{color:#fff0b8 !important;border-bottom-col
         </div>
       </div>
 
+      <div class="svc2-card svc2-placeholder" aria-label="More services coming soon">
+        <div class="svc2-num">12</div>
+        <div class="svc2-placeholder-mark" aria-hidden="true">✦</div>
+        <div class="svc2-name">More Services Coming Soon</div>
+        <p class="svc2-desc">New ways to support your healing journey are being prepared.</p>
+      </div>
+
     </div>
     <div style="text-align:center;margin-top:52px;">
       <a href="#assess" style="display:inline-block;font-family:'Cinzel',serif;font-size:15px;letter-spacing:.35em;text-transform:uppercase;color:var(--gold);border:1px solid #e8b84b73;padding:16px 40px;text-decoration:none;transition:background 0.3s,border-color 0.3s,box-shadow 0.3s;" onmouseover="this.style.background='#e8b84b14';this.style.borderColor='#e8b84bcc';this.style.boxShadow='0 0 24px #e8b84b2e'" onmouseout="this.style.background='transparent';this.style.borderColor='#e8b84b73';this.style.boxShadow='none'">Start Assessment →</a>
@@ -2041,6 +2048,20 @@ footer a:hover,footer a:focus-visible{color:#fff0b8 !important;border-bottom-col
 @keyframes modalIn { from { opacity:0; transform:scale(0.92) translateY(16px); } to { opacity:1; transform:scale(1) translateY(0); } }
 #svc-modal.closing #svc-modal-box { animation: modalOut 0.3s ease forwards; }
 @keyframes modalOut { to { opacity:0; transform:scale(0.94) translateY(8px); } }
+.svc2-placeholder {
+  cursor:default;
+  min-height:100%;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  border-style:dashed;
+  background:linear-gradient(145deg,rgba(4,6,20,.58),rgba(232,184,75,.035));
+}
+.svc2-placeholder:hover { transform:none; box-shadow:none; border-color:#e8b84b38; }
+.svc2-placeholder .svc2-num { position:absolute; top:28px; left:24px; }
+.svc2-placeholder-mark { color:var(--gold); font-size:28px; margin:20px 0 18px; opacity:.72; }
+.svc2-placeholder .svc2-name { margin-bottom:14px; }
+.svc2-placeholder .svc2-desc { max-width:280px; }
 
 @media(max-width:700px){
   #svc-card-grid { grid-template-columns: 1fr 1fr !important; }
@@ -2669,7 +2690,7 @@ function returnToSessions(){
 }
 
 // card actions
-document.querySelectorAll('.svc2-card').forEach(function(card){
+document.querySelectorAll('.svc2-card[data-svc]').forEach(function(card){
   var svcId=parseInt(card.dataset.svc);
   card.querySelector('.svc2-play').addEventListener('click',function(e){
     e.stopPropagation();
@@ -4252,7 +4273,6 @@ function showBookingConfirmation(method,sent){
   form.parentNode.insertBefore(conf,form.nextSibling);
   form.style.display='none';
 }
-
 function showOnboardingConfirmation(method){
   var btn=document.getElementById('book-submit-btn');
   if(btn){btn.textContent='Submitted!';btn.disabled=true;btn.style.opacity='0.7';}
