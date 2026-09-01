@@ -2056,13 +2056,15 @@ footer a:hover,footer a:focus-visible{color:#fff0b8 !important;border-bottom-col
   justify-content:center;
   text-align:center;
   border-style:dashed;
-  background:linear-gradient(145deg,rgba(4,6,20,.58),rgba(232,184,75,.035));
+  background-image:linear-gradient(rgba(2,4,14,.12),rgba(2,4,14,.3)),url('images/services/12_more_services_coming_soon_new.png');
+  background-size:cover;
+  background-position:center;
 }
 .svc2-placeholder:hover { transform:none; box-shadow:none; border-color:#e8b84b38; }
 .svc2-placeholder .svc2-num { position:absolute; top:28px; left:24px; }
-.svc2-placeholder-mark { color:var(--gold); font-size:28px; margin:20px 0 18px; opacity:.72; }
-.svc2-placeholder .svc2-name { margin-bottom:14px; }
-.svc2-placeholder .svc2-desc { max-width:280px; }
+.svc2-placeholder-mark,
+.svc2-placeholder .svc2-name,
+.svc2-placeholder .svc2-desc { position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0; }
 
 @media(max-width:700px){
   #svc-card-grid { grid-template-columns: 1fr 1fr !important; }
@@ -2622,8 +2624,8 @@ var SVC_DATA=[
   {name:'15 Minute Energy Session',price:'$50',image:'images/services/07_15_minute_energy_session_new.png',desc:'Short focused energy session for ages 15 and up.',details:'A quick, focused energy reset designed for teens ages 15 and up and adults. This session supports the release of built-up tension and energetic blocks, helping restore balance, clarity, and a calmer sense of alignment within a shorter appointment.'},
   {name:'15 Minute Energy Session',price:'$40',image:'images/services/08_15_minute_youth_session_new.png',desc:'Short focused energy session for ages 10 to 14.',details:'A gentle, age-appropriate session created for adolescents ages 10 to 14. The focused work supports calming, emotional balance, energetic realignment, and a lighter, more centered state with parent or guardian involvement as appropriate.'},
   {name:'10 Minute Energy Session',price:'$30',image:'images/services/09_10_minute_child_session_new.png',desc:'Gentle short energy session for ages 9 and down with parent or guardian support.',details:'A brief and soothing energy session for children ages 9 and under, provided with parent or guardian support. The work emphasizes comfort, calming, protective care, and a gentle energetic reset suited to a younger child’s needs.'},
-  {name:'Spiritual Coaching',price:'$75/Hour',image:'images/services/08_spiritual_coaching_cinematic.png',desc:'Spiritual coaching for support, reflection, accountability, and guidance. Not a reading.'},
-  {name:'House Cleansing/Blessing In-Person',price:'$80',image:'images/services/05_house_cleansing_blessing_cinematic.png',desc:'In-person energetic cleansing and blessing for homes and spaces that feel heavy, unsettled, or spiritually disrupted.'}
+  {name:'Spiritual Coaching',price:'$75/Hour',image:'images/services/10_spiritual_coaching_new.png',desc:'Spiritual coaching for support, reflection, accountability, and guidance. Not a reading.',details:'A grounded, conversational session for exploring personal growth, spiritual direction, and the patterns shaping your next steps. Through reflection, accountability, and practical guidance, Daron helps you clarify intentions and move forward with greater awareness and purpose. This is coaching, not a psychic reading.'},
+  {name:'House Cleansing/Blessing In-Person',price:'$80',image:'images/services/11_house_cleansing_blessing_new.png',desc:'In-person energetic cleansing and blessing for homes and spaces that feel heavy, unsettled, or spiritually disrupted.',details:'An in-person energetic reset for homes and spaces carrying stagnant, tense, or disruptive energy. The service combines cleansing, protective work, and blessing to support a lighter atmosphere, stronger energetic boundaries, greater peace of mind, and a renewed sense of harmony in your environment.'}
 ];
 
 function openModal(svcId){
