@@ -63,10 +63,6 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:18px 48px;display:fl
 @keyframes heroBookPulse{0%,100%{box-shadow:0 0 26px rgba(232,184,75,.34),0 10px 30px rgba(0,0,0,.34)}50%{box-shadow:0 0 48px rgba(232,184,75,.64),0 10px 30px rgba(0,0,0,.34)}}
 .btn-outline{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;color:var(--gold);text-transform:uppercase;text-decoration:none;border:1px solid #e8b84b66;padding:14px 36px;transition:all .3s;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);display:inline-block}
 .btn-outline:hover{border-color:var(--gold);color:var(--gold-light);transform:translateY(-2px);background:#e8b84b0f}
-.scroll-hint{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);z-index:5;display:flex;flex-direction:column;align-items:center;gap:8px;opacity:0;animation:revUp 1.2s ease-out 2.5s forwards}
-.scroll-line{width:1px;height:44px;background:linear-gradient(to bottom,var(--gold),transparent);animation:scPulse 2s ease-in-out infinite}
-@keyframes scPulse{0%,100%{opacity:.3}50%{opacity:.8}}
-.scroll-txt{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.4em;color:#e8b84baa;text-transform:uppercase}
 @keyframes revUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
 .veil{position:fixed;inset:0;background:#000;z-index:200;pointer-events:none;animation:vFade 2s ease-out .2s forwards}
 @keyframes vFade{from{opacity:1}to{opacity:0}}
@@ -728,10 +724,6 @@ footer a:hover,footer a:focus-visible{color:#fff0b8 !important;border-bottom-col
     </div>
   </div>
 
-  <div class="scroll-hint">
-    <div class="scroll-line"></div>
-    <span class="scroll-txt">Scroll</span>
-  </div>
 </section>
 
 <!-- ═══ TRUST STRIP ═══ -->
