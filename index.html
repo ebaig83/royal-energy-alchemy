@@ -1956,6 +1956,7 @@ footer a:hover,footer a:focus-visible{color:#fff0b8 !important;border-bottom-col
       <div id="svc-modal-num" style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.5em;color:var(--gold);opacity:0.6;margin-bottom:8px;"></div>
       <div id="svc-modal-title" style="font-family:'Cinzel Decorative',serif;font-size:clamp(18px,2.4vw,24px);color:#f0ecff;margin-bottom:10px;"></div>
       <p id="svc-modal-desc" style="font-family:'EB Garamond',serif;font-size:16px;line-height:1.85;color:rgba(232,228,240,0.68);margin:0;"></p>
+      <p id="svc-modal-details" style="font-family:'EB Garamond',serif;font-size:16px;line-height:1.85;color:rgba(232,228,240,0.82);margin:14px 0 0;padding-top:14px;border-top:1px solid #e8b84b24;"></p>
       <div class="svc-modal-actions">
         <button type="button" id="svc-modal-return" class="svc2-return">← Return to Sessions</button>
         <button type="button" id="svc-modal-select" class="svc2-select">Select This Session</button>
@@ -2600,6 +2601,7 @@ var canvas=document.getElementById('svc-anim-canvas');
 var ctx2=null; /* set fresh in openModal with DPR scale */
 var modalTitle=document.getElementById('svc-modal-title');
 var modalDesc=document.getElementById('svc-modal-desc');
+var modalDetails=document.getElementById('svc-modal-details');
 var modalNum=document.getElementById('svc-modal-num');
 var modalBar=document.getElementById('svc-modal-bar');
 var modalImage=document.getElementById('svc-modal-image');
@@ -2611,9 +2613,9 @@ var currentSvcId=null;
 
 var SVC_DATA=[
   null,
-  {name:'Implant/Parasite Removal',price:'$100',image:'images/services/01_energetic_parasite_removal_cinematic.png',desc:'Focused removal work for energetic implants, parasites, attachments, and disruptive patterns affecting the field.'},
-  {name:'Follow-Up Session',price:'$80 each',image:'images/services/04_distance_energy_session_cinematic.png',desc:'A return session for continued clearing, integration, and guidance after previous work.'},
-  {name:'Heavy Duty Removal',price:'$120',image:'images/services/06_emergency_removal_session_cinematic.png',desc:'Intensive clearing for severe energetic attachments and disruptive patterns that require focused removal work.'},
+  {name:'Implant/Parasite Removal',price:'$100',image:'images/services/01_implant_parasite_removal_new.png',desc:'Focused removal work for energetic implants, parasites, attachments, and disruptive patterns affecting the field.',details:'This targeted session focuses on identifying and clearing intrusive energetic influences from the field. The work supports energetic extraction, field restoration, and a cleaner, more stable foundation for continued healing and integration.'},
+  {name:'Follow-Up Session',price:'$80 each',image:'images/services/02_follow_up_session_new.png',desc:'A return session for continued clearing, integration, and guidance after previous work.',details:'Designed for returning clients, this session builds on earlier work through continued alignment, deeper integration, and ongoing support. Daron reviews what has shifted, addresses remaining patterns, and helps stabilize your progress between sessions.'},
+  {name:'Heavy Duty Removal',price:'$120',image:'images/services/03_heavy_duty_removal_new.png',desc:'Intensive clearing for severe energetic attachments and disruptive patterns that require focused removal work.',details:'This intensive session is intended for dense attachments, persistent interference, or complex energetic conditions requiring full-spectrum clearing. The work prioritizes focused removal, stabilization, and restoration of the energetic field with careful follow-through.'},
   {name:'Exorcism Session',price:'$120',image:'images/services/06_emergency_removal_session_cinematic.png',desc:'Focused spiritual clearing for oppressive or intrusive energies that require specialized exorcism work.'},
   {name:'Emergency Removal Session',price:'$120',image:'images/services/06_emergency_removal_session_cinematic.png',desc:'Urgent removal and stabilization work for spiritual concerns that need immediate attention.'},
   {name:'Distance Energy Session',price:'$70',image:'images/services/04_distance_energy_session_cinematic.png',desc:'Remote energy work when the subject is not aware of the session or cannot attend directly.'},
@@ -2630,6 +2632,8 @@ function openModal(svcId){
   modalNum.textContent=(svcId<10?'0':'')+svcId+' — '+data.price;
   modalTitle.textContent=data.name;
   modalDesc.textContent=data.desc;
+  modalDetails.textContent=data.details||'';
+  modalDetails.style.display=data.details?'block':'none';
   modalImage.src=data.image;
   modalImage.alt=data.name+' session card';
   modal.style.display='flex';
