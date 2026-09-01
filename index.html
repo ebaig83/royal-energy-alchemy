@@ -741,29 +741,30 @@ footer a:hover,footer a:focus-visible{color:#fff0b8 !important;border-bottom-col
 <!-- ═══ ABOUT ═══ -->
 <style>
   #about { overflow:hidden;scroll-margin-top:76px;background:#03050d;border-top:1px solid rgba(232,184,75,.12);border-bottom:1px solid rgba(232,184,75,.16); }
-  .about-split { display:grid;grid-template-columns:minmax(0,44%) minmax(0,56%);min-height:920px; }
+  .about-split { display:grid;grid-template-columns:minmax(0,48%) minmax(0,52%);min-height:920px; }
   .about-copy { position:relative;z-index:2;padding:96px clamp(32px,4.2vw,76px) 76px;background:radial-gradient(circle at 15% 12%,rgba(24,30,65,.5),transparent 35%),linear-gradient(145deg,#070a18 0%,#02040c 72%);box-shadow:18px 0 44px rgba(0,0,0,.58); }
   .about-copy::after { content:'';position:absolute;top:7%;right:0;width:1px;height:86%;background:linear-gradient(transparent,rgba(232,184,75,.62),transparent);box-shadow:0 0 20px rgba(232,184,75,.22); }
   .about-copy-inner { width:min(100%,680px);margin-left:auto;margin-right:auto;text-align:left; }
   .about-copy p { max-width:64ch; }
   .about-stats { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px;margin-bottom:38px;padding:25px 0;border-top:1px solid rgba(232,184,75,.14);border-bottom:1px solid rgba(232,184,75,.14); }
-  .about-info-grid { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px; }
-  .about-info-card { background:linear-gradient(145deg,rgba(12,15,34,.96),rgba(4,5,15,.94));border:1px solid rgba(232,184,75,.25);padding:15px 17px;min-width:0; }
-  .about-visual { position:relative;display:grid;place-items:center;min-width:0;padding:clamp(46px,5vw,82px);background:radial-gradient(circle at 50% 47%,rgba(20,27,62,.42),transparent 48%),linear-gradient(145deg,#040713,#01030a 76%);overflow:hidden; }
+  .about-info-grid { grid-column:1/-1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;padding:24px clamp(32px,4.2vw,76px) 28px;background:linear-gradient(90deg,#050817,#02040c 58%,#050712);border-top:1px solid rgba(232,184,75,.18); }
+  .about-info-card { background:linear-gradient(145deg,rgba(12,15,34,.96),rgba(4,5,15,.94));border:1px solid rgba(232,184,75,.25);padding:17px 20px;min-width:0; }
+  .about-visual { position:relative;display:grid;place-items:center;min-width:0;padding:0;background:#02040b;overflow:hidden; }
   .about-visual::before { content:'';position:absolute;z-index:2;inset:0 auto 0 0;width:8%;background:linear-gradient(90deg,rgba(2,4,12,.58),transparent);pointer-events:none; }
-  .about-visual img { display:block;width:100%;height:auto;max-width:760px;max-height:82%;object-fit:contain;object-position:center center;border:1px solid rgba(232,184,75,.2);box-shadow:0 28px 70px rgba(0,0,0,.68),0 0 42px rgba(232,184,75,.08); }
+  .about-visual img { display:block;width:100%;height:100%;max-width:none;max-height:none;aspect-ratio:auto;object-fit:cover;object-position:center center;border:0;box-shadow:none; }
   @media(max-width:980px){
     .about-split { grid-template-columns:1fr;min-height:0; }
     .about-copy { padding:84px clamp(28px,7vw,70px) 68px;box-shadow:none; }
     .about-copy::after { top:auto;bottom:0;left:7%;width:86%;height:1px;background:linear-gradient(90deg,transparent,rgba(232,184,75,.62),transparent); }
-    .about-visual { min-height:clamp(430px,76vw,760px);padding:clamp(34px,6vw,64px); }
+    .about-info-grid { grid-template-columns:repeat(2,minmax(0,1fr));padding:22px clamp(28px,7vw,70px) 26px; }
+    .about-visual { min-height:clamp(430px,76vw,760px);padding:clamp(28px,5vw,50px); }
     .about-visual::before { inset:0 0 auto;width:100%;height:9%;background:linear-gradient(180deg,rgba(2,4,12,.5),transparent); }
-    .about-visual img { width:100%;height:auto;max-width:900px;max-height:none;object-fit:contain;object-position:center center; }
+    .about-visual img { width:100%;height:auto;max-width:900px;max-height:none;aspect-ratio:auto;object-fit:contain;object-position:center center; }
   }
   @media(max-width:620px){
     .about-copy { padding:72px 24px 54px; }
     .about-stats { grid-template-columns:1fr;gap:18px; }
-    .about-info-grid { grid-template-columns:1fr; }
+    .about-info-grid { grid-template-columns:1fr;padding:20px 24px 24px; }
     .about-visual { min-height:72vw;padding:28px 24px; }
     .about-visual img { object-fit:contain;object-position:center center; }
   }
@@ -775,14 +776,14 @@ footer a:hover,footer a:focus-visible{color:#fff0b8 !important;border-bottom-col
 
     <!-- Headline -->
     <span class="sec-label" style="text-align:left;">The Practitioner</span>
-    <h2 class="sec-title" style="font-size:clamp(34px,4.2vw,58px);margin-bottom:24px;text-align:left;">Who Is<br>Daron Royal?</h2>
+    <h2 class="sec-title" style="font-size:clamp(37px,4.5vw,62px);margin-bottom:24px;text-align:left;">Who Is<br>Daron Royal?</h2>
     <div style="width:48px;height:2px;background:var(--gold);margin:0 0 36px;opacity:0.6;"></div>
 
     <!-- Bio -->
-    <p style="font-family:'EB Garamond',serif;font-size:17px;font-style:italic;line-height:1.9;color:rgba(232,228,240,0.93);margin-bottom:22px;text-align:left;">Daron Royal is a Galactic Healer based in Erie, Pennsylvania. He has been doing this work for years — in shops, in homes, and across distance — helping people clear what is attached to them, release what is draining them, and reset what has been disrupted.</p>
-    <p style="font-family:'EB Garamond',serif;font-size:16px;line-height:1.85;color:rgba(232,228,240,0.80);margin-bottom:22px;text-align:left;">His sessions include full body scans, chakra clearing, parasite and cord removal, pain extraction, and energy transmutation. He closes every session by placing a shield of light around the client and sealing their field. Maintaining spiritual hygiene after the session is the client's responsibility; Daron provides guidance, but daily protection and energetic boundaries must be practiced by the client.</p>
-    <p style="font-family:'EB Garamond',serif;font-size:16px;line-height:1.85;color:rgba(232,228,240,0.80);margin-bottom:22px;text-align:left;">Daron does not work alone. He works in active partnership with his Galactic Team — a collective of higher dimensional beings and cosmic allies who show up in every session. <span style="display:block;margin-top:16px;color:var(--gold);font-size:19px;font-style:italic;font-weight:600;text-shadow:0 0 24px #e8b84bcc,0 0 48px #e8b84b66,0 0 72px #e8b84b33;letter-spacing:0.02em;">When you book with Daron, you get the whole team.</span></p>
-    <p style="font-family:'EB Garamond',serif;font-size:16px;line-height:1.85;color:rgba(232,228,240,0.80);margin-bottom:28px;text-align:left;">He has over 16,000 followers on Facebook. His content on energetic parasites, cord removal, and transmutation reaches tens of thousands of people because he names what they are already feeling but could not explain.</p>
+    <p style="font-family:'EB Garamond',serif;font-size:18px;font-style:italic;line-height:1.9;color:rgba(232,228,240,0.93);margin-bottom:22px;text-align:left;">Daron Royal is a Galactic Healer based in Erie, Pennsylvania. He has been doing this work for years — in shops, in homes, and across distance — helping people clear what is attached to them, release what is draining them, and reset what has been disrupted.</p>
+    <p style="font-family:'EB Garamond',serif;font-size:17px;line-height:1.85;color:rgba(232,228,240,0.80);margin-bottom:22px;text-align:left;">His sessions include full body scans, chakra clearing, parasite and cord removal, pain extraction, and energy transmutation. He closes every session by placing a shield of light around the client and sealing their field. Maintaining spiritual hygiene after the session is the client's responsibility; Daron provides guidance, but daily protection and energetic boundaries must be practiced by the client.</p>
+    <p style="font-family:'EB Garamond',serif;font-size:17px;line-height:1.85;color:rgba(232,228,240,0.80);margin-bottom:22px;text-align:left;">Daron does not work alone. He works in active partnership with his Galactic Team — a collective of higher dimensional beings and cosmic allies who show up in every session. <span style="display:block;margin-top:16px;color:var(--gold);font-size:20px;font-style:italic;font-weight:600;text-shadow:0 0 24px #e8b84bcc,0 0 48px #e8b84b66,0 0 72px #e8b84b33;letter-spacing:0.02em;">When you book with Daron, you get the whole team.</span></p>
+    <p style="font-family:'EB Garamond',serif;font-size:17px;line-height:1.85;color:rgba(232,228,240,0.80);margin-bottom:28px;text-align:left;">He has over 16,000 followers on Facebook. His content on energetic parasites, cord removal, and transmutation reaches tens of thousands of people because he names what they are already feeling but could not explain.</p>
 
     <!-- Stats — tighter to bio -->
     <div class="about-stats">
@@ -791,29 +792,29 @@ footer a:hover,footer a:focus-visible{color:#fff0b8 !important;border-bottom-col
       <div><div style="font-family:'Cinzel Decorative',serif;font-size:32px;color:var(--gold);font-weight:700;">Erie</div><div style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.4em;color:#e8b84bcc;text-transform:uppercase;margin-top:4px;">Pennsylvania</div></div>
     </div>
 
-    <!-- Footer info cards — tighter, metadata feel -->
-    <div class="about-info-grid">
-      <div class="about-info-card">
-        <div style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.45em;color:var(--gold);text-transform:uppercase;margin-bottom:7px;">Title</div>
-        <div style="font-family:'EB Garamond',serif;font-size:15px;color:#f0ecff;">Galactic Healer</div>
-      </div>
-      <div class="about-info-card">
-        <div style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.45em;color:var(--gold);text-transform:uppercase;margin-bottom:7px;">Location</div>
-        <div style="font-family:'EB Garamond',serif;font-size:15px;color:#f0ecff;">Erie, PA</div>
-      </div>
-      <div class="about-info-card">
-        <div style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.45em;color:var(--gold);text-transform:uppercase;margin-bottom:7px;">Sessions</div>
-        <div style="font-family:'EB Garamond',serif;font-size:15px;color:#f0ecff;">Local + Distance</div>
-      </div>
-      <div class="about-info-card">
-        <div style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.45em;color:var(--gold);text-transform:uppercase;margin-bottom:7px;">Team</div>
-        <div style="font-family:'EB Garamond',serif;font-size:15px;color:#f0ecff;">The Galactic Team</div>
-      </div>
-    </div>
   </div>
   </div>
   <div class="about-visual" aria-label="Daron Royal with his Galactic Team and angelic guide">
     <img src="assets/about-bg.png?v=20260901" alt="Daron Royal standing with his Galactic Team and an angelic guide" loading="lazy" decoding="async">
+  </div>
+  <!-- Full-width practitioner details -->
+  <div class="about-info-grid">
+    <div class="about-info-card">
+      <div style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.45em;color:var(--gold);text-transform:uppercase;margin-bottom:7px;">Title</div>
+      <div style="font-family:'EB Garamond',serif;font-size:15px;color:#f0ecff;">Galactic Healer</div>
+    </div>
+    <div class="about-info-card">
+      <div style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.45em;color:var(--gold);text-transform:uppercase;margin-bottom:7px;">Location</div>
+      <div style="font-family:'EB Garamond',serif;font-size:15px;color:#f0ecff;">Erie, PA</div>
+    </div>
+    <div class="about-info-card">
+      <div style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.45em;color:var(--gold);text-transform:uppercase;margin-bottom:7px;">Sessions</div>
+      <div style="font-family:'EB Garamond',serif;font-size:15px;color:#f0ecff;">Local + Distance</div>
+    </div>
+    <div class="about-info-card">
+      <div style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.45em;color:var(--gold);text-transform:uppercase;margin-bottom:7px;">Team</div>
+      <div style="font-family:'EB Garamond',serif;font-size:15px;color:#f0ecff;">The Galactic Team</div>
+    </div>
   </div>
   </div>
 </section>
