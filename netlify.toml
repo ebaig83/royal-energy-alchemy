@@ -9,6 +9,9 @@
 [functions."session-calendar-sync"]
   schedule = "*/5 * * * *"
 
+[functions."session-communications"]
+  schedule = "*/5 * * * *"
+
 # Keep legacy booking links working while the homepage form is the single
 # public booking experience.
 [[redirects]]
