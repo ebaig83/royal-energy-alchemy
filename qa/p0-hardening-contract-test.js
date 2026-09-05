@@ -6,7 +6,7 @@ const path = require('path');
 const root = path.join(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 
-process.env.APPOINTMENT_ACTION_SECRET = 'test-only-appointment-secret-0123456789abcdef0123456789abcdef';
+process.env.APPOINTMENT_ACTION_SECRET = 'test-only-appointment-secret-alpha-bravo-charlie-delta-echo';
 const tokens = require('../netlify/functions/lib/appointment-token');
 const policy = require('../netlify/functions/lib/record-policy');
 
