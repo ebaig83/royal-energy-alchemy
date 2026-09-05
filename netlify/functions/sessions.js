@@ -118,7 +118,10 @@ exports.handler = async function(event) {
           service:      data.service     || '',
           session_date: data.session_date || '',
           session_time: data.session_time ? data.session_time.slice(0, 5) : '',
+          timezone:     'ET',
+          duration_minutes: data.duration_minutes || null,
           location_type: data.location_type || 'distance',
+          contact_email: process.env.ADMIN_EMAIL || 'droyal168@gmail.com',
           manage_url:   process.env.SITE_URL
             ? `${process.env.SITE_URL}/manage-appointment.html?session_id=${data.id}`
             : '',

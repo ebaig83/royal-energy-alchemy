@@ -6,6 +6,7 @@
 // All sends are logged to the communications table.
 
 const https = require('https');
+const { renderTemplate } = require('./email-render');
 
 function callResend(payload, idempotencyKey) {
   const apiKey = process.env.RESEND_API_KEY;
@@ -39,30 +40,6 @@ function callResend(payload, idempotencyKey) {
     req.write(body);
     req.end();
   });
-}
-
-function renderTemplate(tmpl, vars) {
-  let html = tmpl.html_body || '', text = tmpl.text_body || '', subj = tmpl.subject || '';
-
-  // Process {{#if varName}}...{{/if}} — keep block when var is truthy, strip when falsy/empty
-  function processConditionals(str) {
-    return str.replace(/\{\{#if\s+(\w+)\}\}([\s\S]*?)\{\{\/if\}\}/g, (_, key, inner) => {
-      const val = vars[key];
-      return (val != null && val !== '' && val !== false) ? inner : '';
-    });
-  }
-  html = processConditionals(html);
-  text = processConditionals(text);
-
-  // Simple {{variable}} substitution
-  Object.keys(vars || {}).forEach(k => {
-    const re = new RegExp('\\{\\{' + k + '\\}\\}', 'g');
-    const v  = String(vars[k] != null ? vars[k] : '');
-    html = html.replace(re, v);
-    text = text.replace(re, v);
-    subj = subj.replace(re, v);
-  });
-  return { html, text, subject: subj };
 }
 
 async function logComm(sb, entry) {
@@ -166,7 +143,24 @@ async function sendTransactional(sb, opts) {
     return { skipped: true, reason: 'template_not_found' };
   }
 
-  const rendered = renderTemplate(tmpl, variables || {});
+  let rendered;
+  try {
+    rendered = renderTemplate(tmpl, variables || {});
+  } catch (error) {
+    console.error('[mailer] Rendering blocked for', templateName, '-', error.code || 'render_error');
+    await logComm(sb, {
+      client_id: clientId || null, message_type: tmpl.type, recipient: recipientEmail,
+      subject: null, status: 'failed', template_id: tmpl.id,
+      metadata: { ...(metadata || {}), rendering_error: true, error_code: error.code || 'EMAIL_RENDER_ERROR' },
+    });
+    if (reservation && sb) {
+      await sb.from('transactional_notifications').update({
+        status: 'failed', failed_at: new Date().toISOString(),
+        last_error: error.code || 'EMAIL_RENDER_ERROR',
+      }).eq('id', reservation.id);
+    }
+    throw error;
+  }
 
   const send = transport || callResend;
   const result = await send({

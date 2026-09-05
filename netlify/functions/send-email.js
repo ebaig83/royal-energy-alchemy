@@ -16,6 +16,7 @@ const https = require('https');
 const { requireAdmin, respond } = require('./lib/auth');
 const { getClient }             = require('./lib/supabase');
 const { log }                   = require('./lib/audit');
+const { renderTemplate, assertRenderSafe } = require('./lib/email-render');
 
 // ── Resend API call (server-side only) ────────────────────────────────────
 function callResend(apiKey, payload) {
@@ -49,20 +50,6 @@ function callResend(apiKey, payload) {
 }
 
 // ── Template variable substitution ───────────────────────────────────────
-function renderTemplate(template, variables) {
-  let html = template.html_body || '';
-  let text = template.text_body || '';
-  let subj = template.subject   || '';
-  const vars = variables || {};
-  Object.keys(vars).forEach(k => {
-    const re = new RegExp('\\{\\{' + k + '\\}\\}', 'g');
-    html = html.replace(re, String(vars[k] || ''));
-    text = text.replace(re, String(vars[k] || ''));
-    subj = subj.replace(re, String(vars[k] || ''));
-  });
-  return { html, text, subject: subj };
-}
-
 // ── Missing-table guard (same pattern as financial.js) ────────────────────
 function isMissingTableError(error) {
   if (!error) return false;
@@ -144,6 +131,7 @@ async function sendFreeform(sb, body, auth, ip, apiKey, fromEmail) {
   if (!body.subject)         throw new Error('subject is required.');
   if (!body.message_type)    throw new Error('message_type is required.');
   if (!body.html && !body.text) throw new Error('html or text body is required.');
+  assertRenderSafe({ subject: body.subject, html: body.html || '', text: body.text || '' });
 
   const VALID_TYPES = [
     'appointment_reminder','followup_reminder','recommendation_delivery',

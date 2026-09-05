@@ -270,7 +270,7 @@ exports.handler = async function(event) {
 
   // Intake invitation
   sendWithPreferences(sb, {
-    templateName:   'intake_received',
+    templateName:   'intake_invitation',
     recipientEmail: client_email.trim(),
     clientId,
     sessionId,

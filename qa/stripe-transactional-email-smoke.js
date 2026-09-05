@@ -44,7 +44,13 @@ const templateNames = [
 ];
 const db = {
   clients: [{ id: 'client-1', email: 'client@example.com', email_consent: true }],
-  email_templates: templateNames.map((name, i) => ({ id: `tmpl-${i}`, name, is_active: true, type: name, subject: name, html_body: '<p>{{session_reference}} {{amount_paid}} {{refunded_amount}}</p>', text_body: '{{session_reference}}' })),
+  email_templates: templateNames.map((name, i) => ({
+    id: `tmpl-${i}`, name, is_active: true, type: name, subject: name,
+    html_body: name.includes('refund')
+      ? '<p>{{session_reference}} {{refunded_amount}}</p>'
+      : (name.includes('confirmed') ? '<p>{{session_reference}} {{amount_paid}}</p>' : '<p>{{session_reference}}</p>'),
+    text_body: '{{session_reference}}',
+  })),
   transactional_notifications: [], communications: [],
 };
 const sb = { from: table => new Query(db, table) };
