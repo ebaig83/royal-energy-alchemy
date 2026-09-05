@@ -57,7 +57,30 @@ exports.handler = async function(event) {
         .eq('client_id', params.id)
         .order('scheduled_for', { ascending: false });
 
-      return respond(200, { client, sessions: sessions || [], aftercare: aftercare || [] });
+      const { data: outgoingRelationships, error: outgoingError } = await sb
+        .from('client_relationships')
+        .select('id,relationship_type,relationship_label,source,notes,related_client:clients!client_relationships_related_client_id_fkey(id,full_name,status)')
+        .eq('client_id', params.id)
+        .order('created_at', { ascending: true });
+
+      const { data: incomingRelationships, error: incomingError } = await sb
+        .from('client_relationships')
+        .select('id,relationship_type,relationship_label,source,notes,anchor_client:clients!client_relationships_client_id_fkey(id,full_name,status)')
+        .eq('related_client_id', params.id)
+        .order('created_at', { ascending: true });
+
+      // Keep profiles usable during a staged rollout before the migration lands.
+      const reciprocalLabel = type => ({
+        child: 'Parent', parent: 'Child', grandchild: 'Grandparent',
+        grandparent: 'Grandchild', sibling: 'Sibling', friend: 'Friend',
+        uncle: 'Related family', associated: 'Associated',
+      })[type] || 'Related';
+      const relationships = (outgoingError || incomingError) ? [] : [
+        ...(outgoingRelationships || []).map(r => ({ ...r, direction: 'outgoing', client: r.related_client })),
+        ...(incomingRelationships || []).map(r => ({ ...r, direction: 'incoming', relationship_label: reciprocalLabel(r.relationship_type), client: r.anchor_client })),
+      ];
+
+      return respond(200, { client, sessions: sessions || [], aftercare: aftercare || [], relationships });
     }
 
     if (params.search) {

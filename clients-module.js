@@ -450,6 +450,7 @@
       var plans    = results[4].action_plans    || [];
       var cl       = data.client;
       var sess     = data.sessions  || [];
+      var relationships = data.relationships || [];
       var tlEvents = tlData.timeline || [];
       var tlStats  = tlData.stats   || {};
 
@@ -799,7 +800,7 @@
         ? sess.map(function(s) {
             var payCol = s.payment_status === 'paid' ? '#22c98a' : s.payment_status === 'exchange' ? '#b09ef8' : '#f8a84b';
             return '<tr>' +
-              '<td style="padding:10px 10px 10px 0;color:#f0ecff;font-family:\'EB Garamond\',serif;font-size:17px;border-bottom:1px solid #e8b84b14">' + fmtDate(s.session_date) + '</td>' +
+              '<td style="padding:10px 10px 10px 0;color:#f0ecff;font-family:\'EB Garamond\',serif;font-size:17px;border-bottom:1px solid #e8b84b14">' + fmtDate(s.session_date) + '<div style="font-size:14px;color:#dddaee99">' + (s.session_time ? s.session_time.slice(0, 5) : 'Time unknown') + '</div></td>' +
               '<td style="padding:10px 10px;color:#e8b84b;font-family:\'EB Garamond\',serif;font-size:17px;border-bottom:1px solid #e8b84b14">' + (s.service || s.service_type || '—') + '</td>' +
               '<td style="padding:10px 10px;font-family:\'EB Garamond\',serif;font-size:17px;border-bottom:1px solid #e8b84b14">' + statusBadge(s.status || 'pending') + '</td>' +
               '<td style="padding:10px 0 10px 10px;color:' + payCol + ';font-family:\'EB Garamond\',serif;font-size:17px;border-bottom:1px solid #e8b84b14">' +
@@ -882,6 +883,20 @@
         '#e8b84b'
       );
 
+      var relationshipsHtml = relationships.length ? caseSection('◇', 'Family / Related Clients',
+        cardWrap(
+          relationships.map(function(r) {
+            var related = r.client || {};
+            var label = r.relationship_label || r.relationship_type || 'Related';
+            return '<button type="button" onclick="crmOpenProfile(\'' + esc(related.id || '') + '\')" ' +
+              'style="display:flex;width:100%;align-items:center;justify-content:space-between;gap:16px;padding:13px 0;' +
+              'border:0;border-bottom:1px solid #e8b84b18;background:transparent;color:inherit;cursor:pointer;text-align:left">' +
+                '<span style="font-family:\'EB Garamond\',serif;font-size:18px;color:#f0ecff">' + esc(related.full_name || 'Related client') + '</span>' +
+                '<span style="font-family:\'Cinzel\',serif;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#b09ef8">' + esc(label) + '</span>' +
+              '</button>';
+          }).join('')
+        ), '#b09ef8') : '';
+
 
 
       var notesHtml = caseSection('◇', 'Client Notes',
@@ -958,7 +973,8 @@
         caseTabPanel('overview',
           caseSection('◈', 'Client Snapshot', snapshotHtml, '#e8b84b') +
           needsAttentionHtml +
-          clientInfoHtml,
+          clientInfoHtml +
+          relationshipsHtml,
           true
         ) +
         caseTabPanel('documents',
