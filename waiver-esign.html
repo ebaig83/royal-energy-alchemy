@@ -395,6 +395,7 @@ const today = new Date().toISOString().split('T')[0];
 document.getElementById('signDate').value = today;
 const WAIVER_PARAMS = new URLSearchParams(window.location.search);
 const WAIVER_SESSION_ID = WAIVER_PARAMS.get('session_id') || WAIVER_PARAMS.get('booking_id') || '';
+const WAIVER_ACTION_TOKEN = WAIVER_PARAMS.get('token') || '';
 
 // Pre-fill from assessment sessionStorage
 (function() {
@@ -594,7 +595,7 @@ document.getElementById('waiverForm').addEventListener('submit', async function(
       WAIVER_SESSION_ID,
       (err.message || 'Your waiver was saved locally, but secure payment could not be opened.') + ' Please use the payment button to continue.',
       'Continue to Payment →',
-      '/booking-confirmation.html?session_id=' + encodeURIComponent(WAIVER_SESSION_ID) + '&payment=pending'
+      '/booking-confirmation.html?session_id=' + encodeURIComponent(WAIVER_SESSION_ID) + '&token=' + encodeURIComponent(WAIVER_ACTION_TOKEN) + '&payment=pending'
     );
   }
 });

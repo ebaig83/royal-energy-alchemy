@@ -96,7 +96,7 @@ exports.handler = async function (event) {
   if (event.httpMethod === 'OPTIONS') return respond(200, {});
   if (event.httpMethod !== 'POST')    return respond(405, { error: 'Method not allowed.' });
 
-  const auth = requireAdmin(event);
+  const auth = await requireAdmin(event);
   if (auth.error) return auth.error;
 
   const apiKey   = process.env.RESEND_API_KEY;

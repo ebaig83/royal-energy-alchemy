@@ -41,7 +41,7 @@ function isMissingTableError(error) {
 exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return respond(200, {});
 
-  const auth = requireAdmin(event);
+  const auth = await requireAdmin(event);
   if (auth.error) return respond(auth.status, { error: auth.error });
 
   const sb     = getClient();

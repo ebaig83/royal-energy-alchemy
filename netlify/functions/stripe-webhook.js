@@ -6,6 +6,8 @@ const { getClient } = require('./lib/supabase');
 const { findService } = require('./lib/services');
 const { sendWithPreferences } = require('./lib/comms');
 const { sendTransactional } = require('./lib/mailer');
+const { appointmentManageUrl } = require('./lib/appointment-token');
+const { isCalendarEligible } = require('./lib/record-policy');
 
 const SITE_URL = process.env.SITE_URL || 'https://www.daronroyal.com';
 
@@ -76,7 +78,7 @@ async function markPayment(sb, sessionId, event, checkout) {
     stripe_checkout_session_id: checkout.id || null,
     stripe_payment_intent_id: checkout.payment_intent || null,
     stripe_payment_status: checkout.payment_status || 'paid',
-    google_calendar_status: session.service === 'Distance Energy Session' ? 'pending' : (session.google_calendar_status || 'not_requested'),
+    google_calendar_status: isCalendarEligible({ ...session, payment_status: 'paid' }) ? 'pending' : (session.google_calendar_status || 'not_requested'),
     booking_status: waiverDone ? 'ready' : 'payment_paid',
     updated_at: new Date().toISOString(),
   };
@@ -242,7 +244,7 @@ async function notifyPaymentSuccess(sb, eventId, session, transport) {
     session_date: session.session_date || '', session_time: String(session.session_time || '').slice(0, 5),
     timezone: 'ET', amount_paid: Number(session.amount_paid || 0).toFixed(2),
     session_reference: session.id, payment_reference: session.payment_reference || '',
-    manage_url: `${SITE_URL}/manage-appointment.html?session_id=${encodeURIComponent(session.id)}`,
+    manage_url: appointmentManageUrl(session.id, { siteUrl: SITE_URL }),
     dashboard_url: `${SITE_URL}/dashboard.html`,
   };
   return Promise.all([

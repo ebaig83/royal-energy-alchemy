@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const g = require('../netlify/functions/lib/google-calendar');
 
-const base = { id: 'session-1', session_date: '2026-09-01', session_time: '10:00:00', duration_minutes: 60, location_type: 'distance', service: 'Energy Session', status: 'confirmed' };
+const base = { id: 'session-1', session_date: '2099-09-01', session_time: '10:00:00', duration_minutes: 60, location_type: 'distance', service: 'Energy Session', status: 'confirmed' };
 const readyEvent = id => ({ id, conferenceData: { entryPoints: [{ entryPointType: 'video', uri: 'https://meet.google.com/abc-defg-hij' }] } });
 
 async function run() {

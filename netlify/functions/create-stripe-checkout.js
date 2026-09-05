@@ -3,6 +3,7 @@
 const { respond }     = require('./lib/auth');
 const { getClient }   = require('./lib/supabase');
 const { findService } = require('./lib/services');
+const { createAppointmentToken } = require('./lib/appointment-token');
 
 const SITE_URL = process.env.SITE_URL || 'https://www.daronroyal.com';
 
@@ -100,8 +101,9 @@ exports.handler = async function(event) {
 
   const params = new URLSearchParams();
   params.set('mode', 'payment');
-  params.set('success_url', `${SITE_URL}/booking-confirmation.html?session_id=${encodeURIComponent(sessionId)}&payment=success`);
-  params.set('cancel_url', `${SITE_URL}/booking-confirmation.html?session_id=${encodeURIComponent(sessionId)}&payment=cancelled`);
+  const actionToken = createAppointmentToken(sessionId);
+  params.set('success_url', `${SITE_URL}/booking-confirmation.html?session_id=${encodeURIComponent(sessionId)}&token=${encodeURIComponent(actionToken)}&payment=success`);
+  params.set('cancel_url', `${SITE_URL}/booking-confirmation.html?session_id=${encodeURIComponent(sessionId)}&token=${encodeURIComponent(actionToken)}&payment=cancelled`);
   params.set('client_reference_id', sessionId);
   if (clientEmail) params.set('customer_email', clientEmail);
   params.set('line_items[0][quantity]', '1');

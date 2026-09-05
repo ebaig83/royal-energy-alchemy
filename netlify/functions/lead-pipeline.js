@@ -31,8 +31,8 @@ function respond(statusCode, body) {
   };
 }
 
-function requireAdmin(event) {
-  const a = auth.requireAdmin(event);
+async function requireAdmin(event) {
+  const a = await auth.requireAdmin(event);
   if (a && a.error) return { error: a.error };
   return a || {};
 }
@@ -69,7 +69,7 @@ const LEAD_COLS = [
 const RS_COLS = 'id, name, source_type, contact_info, notes, active, created_at, updated_at';
 
 exports.handler = async function (event) {
-  const authResult = requireAdmin(event);
+  const authResult = await requireAdmin(event);
   if (authResult.error) return authResult.error;
 
   const sb = createClient(

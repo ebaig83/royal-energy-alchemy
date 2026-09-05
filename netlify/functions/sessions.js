@@ -13,9 +13,11 @@ const { log }                   = require('./lib/audit');
 const { scheduleAftercare }     = require('./agents/aftercare-agent');
 const { sendTransactional }     = require('./lib/mailer');
 const { emailFailure }          = require('./lib/ops-alert');
+const { appointmentManageUrl }  = require('./lib/appointment-token');
+const { isCalendarEligible, isQaRecord } = require('./lib/record-policy');
 
 function calendarEligible(session) {
-  return String(session?.payment_status || '').toLowerCase() === 'paid';
+  return String(session?.payment_status || '').toLowerCase() === 'paid' && isCalendarEligible(session);
 }
 
 exports.handler = async function(event) {
@@ -61,7 +63,8 @@ exports.handler = async function(event) {
 
     const { data, error } = await query;
     if (error) return respond(500, { error: error.message });
-    return respond(200, { sessions: data });
+    const sessions = params.include_qa === 'true' ? (data || []) : (data || []).filter(s => !isQaRecord(s));
+    return respond(200, { sessions });
   }
 
   // ── POST ─────────────────────────────────────────────────────────
@@ -87,7 +90,7 @@ exports.handler = async function(event) {
       seller_notes:      body.seller_notes       || null,
       state_before:      body.state_before       || null,
       state_after:       body.state_after        || null,
-      google_calendar_status: String(body.payment_status || 'unpaid').toLowerCase() === 'paid' && !['in_person', 'in-person', 'house-cleansing-blessing'].includes(String(body.location_type || 'distance').toLowerCase()) ? 'pending' : 'not_requested',
+      google_calendar_status: calendarEligible({ ...body, id: 'new', location_type: body.location_type || 'distance', session_date: body.session_date, session_time: body.session_time }) ? 'pending' : 'not_requested',
     };
 
     const { data, error } = await sb.from('sessions').insert(insert).select().single();
@@ -122,9 +125,7 @@ exports.handler = async function(event) {
           duration_minutes: data.duration_minutes || null,
           location_type: data.location_type || 'distance',
           contact_email: process.env.ADMIN_EMAIL || 'droyal168@gmail.com',
-          manage_url:   process.env.SITE_URL
-            ? `${process.env.SITE_URL}/manage-appointment.html?session_id=${data.id}`
-            : '',
+          manage_url:   appointmentManageUrl(data.id),
         },
         metadata: { trigger: 'booking_created', session_id: data.id },
       }).catch(async e => {
@@ -188,7 +189,7 @@ exports.handler = async function(event) {
         templateName: 'appointment_reminder', recipientEmail: clientEmail, clientId: old.client_id || null,
         variables: { client_name: old.client_name || '', service: old.service || '',
           session_date: old.session_date || '', session_time: old.session_time ? old.session_time.slice(0, 5) : '',
-          timezone: 'ET', manage_url: process.env.SITE_URL ? `${process.env.SITE_URL}/manage-appointment.html?session_id=${old.id}` : '',
+          timezone: 'ET', manage_url: appointmentManageUrl(old.id),
           contact_email: process.env.ADMIN_EMAIL || 'royalenergyalchemy@gmail.com',
           ...(/^https:\/\/meet\.google\.com\//i.test(old.google_meet_url || '') ? { google_meet_url: old.google_meet_url } : {}) },
         metadata: { trigger: 'dashboard_manual_reminder', session_id: old.id },
@@ -293,7 +294,7 @@ exports.handler = async function(event) {
     const allowed = ['status','booking_status','payment_status','amount_due','amount_paid','payment_paid_at','waiver_status','waiver_completed','waiver_completed_at','session_date','session_time','service','location_type','seller_notes','square_booking_id','stripe_checkout_session_id','stripe_payment_intent_id','stripe_payment_status','state_before','state_after'];
     const updates = {};
     allowed.forEach(k => { if (body[k] !== undefined) updates[k] = body[k]; });
-    const calendarRelevantChange = ['session_date','session_time','service','location_type'].some(k => body[k] !== undefined && body[k] !== old[k]);
+    const calendarRelevantChange = ['session_date','session_time','service','location_type','payment_status'].some(k => body[k] !== undefined && body[k] !== old[k]);
     const nextLocation = String(body.location_type !== undefined ? body.location_type : old.location_type || '').toLowerCase();
     const nextStatus = String(body.status !== undefined ? body.status : old.status || '').toLowerCase();
     if (nextStatus === 'cancelled' || (calendarRelevantChange && ['in_person','in-person','house-cleansing-blessing'].includes(nextLocation))) {

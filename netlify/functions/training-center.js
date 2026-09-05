@@ -51,7 +51,7 @@ const PATH_COLS   = 'id, title, description, path_type, module_ids, status, esti
 const CERT_COLS   = 'id, title, description, required_modules, status, created_by, created_at, updated_at';
 
 exports.handler = async function (event) {
-  const authResult = requireAdmin(event);
+  const authResult = await requireAdmin(event);
   if (authResult.error) return authResult.error;
 
   const ip = event.headers['x-forwarded-for'] || 'unknown';
@@ -118,8 +118,8 @@ exports.handler = async function (event) {
   }
 };
 
-function requireAdmin(event) {
-  const a = auth.requireAdmin(event);
+async function requireAdmin(event) {
+  const a = await auth.requireAdmin(event);
   if (a && a.error) return { error: a.error };
   return a || {};
 }

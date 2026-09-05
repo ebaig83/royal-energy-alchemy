@@ -8,16 +8,13 @@
 const { requireAdmin, respond } = require('./lib/auth');
 const { getClient }             = require('./lib/supabase');
 const { log }                   = require('./lib/audit');
+const { isQaRecord }            = require('./lib/record-policy');
 
 // Strip QA/test seed clients from production responses unless ?include_qa=true
 function _filterQA(rows, params) {
   if (!rows) return [];
   if (params && params.include_qa === 'true') return rows;
-  const QA_TAGS = ['qa', 'test', 'seed', 'demo'];
-  return rows.filter(function(c) {
-    const tags = (c.tags || []).map(function(t) { return (t || '').toLowerCase(); });
-    return !QA_TAGS.some(function(q) { return tags.includes(q); });
-  });
+  return rows.filter(function(c) { return !isQaRecord(c); });
 }
 
 exports.handler = async function(event) {
@@ -44,6 +41,7 @@ exports.handler = async function(event) {
         .single();
 
       if (error) return respond(404, { error: 'Client not found.' });
+      if (params.include_qa !== 'true' && isQaRecord(client)) return respond(404, { error: 'Client not found.' });
 
       const { data: sessions } = await sb
         .from('sessions')
@@ -80,7 +78,8 @@ exports.handler = async function(event) {
         ...(incomingRelationships || []).map(r => ({ ...r, direction: 'incoming', relationship_label: reciprocalLabel(r.relationship_type), client: r.anchor_client })),
       ];
 
-      return respond(200, { client, sessions: sessions || [], aftercare: aftercare || [], relationships });
+      const visibleSessions = params.include_qa === 'true' ? (sessions || []) : (sessions || []).filter(s => !isQaRecord(s));
+      return respond(200, { client, sessions: visibleSessions, aftercare: aftercare || [], relationships });
     }
 
     if (params.search) {

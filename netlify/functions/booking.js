@@ -18,6 +18,7 @@ const { SERVICES, findService } = require('./lib/services');
 const { findSessionConflicts }  = require('./lib/session-overlap');
 const { isWithinPublicHorizon } = require('./lib/scheduling-horizon');
 const crypto                   = require('crypto');
+const { appointmentManageUrl, createAppointmentToken } = require('./lib/appointment-token');
 
 const SITE_URL = process.env.SITE_URL || 'https://royal-energy-alchemy.netlify.app';
 
@@ -234,9 +235,10 @@ exports.handler = async function(event) {
 
 
   // ── Step 6: Build client-facing URLs ──────────────────────────────────────
-  const manageUrl = `${SITE_URL}/manage-appointment.html?session_id=${sessionId}`;
+  const actionToken = createAppointmentToken(sessionId);
+  const manageUrl = appointmentManageUrl(sessionId, { siteUrl: SITE_URL });
   const intakeUrl = `${SITE_URL}/full-intake.html?session_id=${sessionId}&name=${encodeURIComponent(client_name.trim())}&email=${encodeURIComponent(client_email.trim())}`;
-  const waiverUrl = `${SITE_URL}/waiver-esign.html?session_id=${sessionId}&name=${encodeURIComponent(client_name.trim())}&email=${encodeURIComponent(client_email.trim())}&phone=${encodeURIComponent(client_phone || '')}`;
+  const waiverUrl = `${SITE_URL}/waiver-esign.html?session_id=${sessionId}&token=${encodeURIComponent(actionToken)}&name=${encodeURIComponent(client_name.trim())}&email=${encodeURIComponent(client_email.trim())}&phone=${encodeURIComponent(client_phone || '')}`;
   const cancelUrl = `${SITE_URL}/cancel-session.html?session_id=${sessionId}`;
   // ── Step 7: Transactional emails (fire-and-forget) ────────────────────────
   const emailVars = {

@@ -4,6 +4,7 @@ const assert = require('assert');
 process.env.RESEND_API_KEY = 'test_only';
 process.env.FROM_EMAIL = 'test@example.com';
 process.env.ADMIN_EMAIL = 'daron@example.com';
+process.env.APPOINTMENT_ACTION_SECRET = 'test-only-appointment-action-secret-000000000000';
 
 const webhook = require('../netlify/functions/stripe-webhook')._test;
 

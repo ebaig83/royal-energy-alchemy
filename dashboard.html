@@ -9252,8 +9252,7 @@ async function refreshScheduleFromSupabase(force) {
 function isTestEntry(str){
   if(!str)return false;
   var s=str.toString().toLowerCase().trim();
-  return /(^|[^a-z])(test|testing|qa|demo|seed)([^a-z]|$)/.test(s)||
-         /(^|[^a-z])(delete|sprint\s*\d+)([^a-z]|$)/.test(s);
+  return /\[qa\]/i.test(s)||/(^|[^a-z])(test|testing|qa|demo|seed)([^a-z]|$)/.test(s);
 }
 function shouldSkipEntry(name,email){
   return isTestEntry(name)||isTestEntry(email)||
@@ -15646,8 +15645,8 @@ purgeTestEntries();
 (function() {
 
   // ── P7: Auth token helper ─────────────────────────────────────────────
-  // Centralised accessor — future migration: swap sessionStorage for a
-  // server-read httpOnly cookie by changing this one function only.
+  // Compatibility accessor. Authentication is enforced by the server-read
+  // HttpOnly cookie; this value is only a non-secret UI marker.
   window.getAuthToken = function() {
     return sessionStorage.getItem('rea_api_token') || '';
   };
@@ -16415,7 +16414,8 @@ function _dashAnswerBusinessQuestion(q, ctx) {
     var source=(typeof _scheduleStore!=='undefined'&&_scheduleStore.loaded)?_scheduleStore.sessions:((typeof getScheduleSessions==='function')?getScheduleSessions():[]);
     return source.filter(function(s){
       var name=s.client_name||s.client||'',email=s.client_email||s.email||'',source=key(s.source),scheduleSource=key(s.scheduleSource);
-      return (!scheduleSource||scheduleSource==='supabase'||scheduleSource==='manual'||scheduleSource==='local')&&!shouldSkipEntry(name,email)&&s.is_test!==true&&source!=='test'&&source!=='demo'&&source!=='seed';
+      var qaSources=['qa','qa_auto','qa_financial','qa_migration_check','qa_test','test','demo','seed','controlled_test','controlled_google_meet_test','workflow_audit'];
+      return (!scheduleSource||scheduleSource==='supabase'||scheduleSource==='manual'||scheduleSource==='local')&&!shouldSkipEntry(name,email)&&s.is_test!==true&&!qaSources.includes(source);
     });
   }
   function money(v){return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(Number(v)||0);}

@@ -402,6 +402,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
 'use strict';
 
 var _sessionId       = null;
+var _actionToken     = '';
 var _sessionData     = null;
 var _action          = null;
 var _allSlots        = [];           // [{id, date, time, displayTime, label}]
@@ -416,6 +417,7 @@ var _selectedSlotTime = null;
 (function init() {
   var params  = new URLSearchParams(window.location.search);
   _sessionId  = params.get('session_id') || params.get('id');
+  _actionToken = params.get('token') || '';
   var action  = params.get('action');
 
   if (!_sessionId) {
@@ -434,7 +436,7 @@ var _selectedSlotTime = null;
 
 async function loadAppointment(sessionId) {
   try {
-    var res  = await fetch('/.netlify/functions/manage-appointment?session_id=' + encodeURIComponent(sessionId));
+    var res  = await fetch('/.netlify/functions/manage-appointment?session_id=' + encodeURIComponent(sessionId) + '&token=' + encodeURIComponent(_actionToken));
     var json = await res.json();
 
     if (!res.ok || !json.session) {
@@ -664,6 +666,7 @@ document.getElementById('rescheduleForm').addEventListener('submit', async funct
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({
         session_id:   _sessionId,
+        token:        _actionToken,
         action:       'reschedule_confirmed',
         slot_id:      _selectedSlotId,
         new_date:     _selectedSlotDate,
@@ -751,6 +754,7 @@ document.getElementById('cancelForm').addEventListener('submit', async function(
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({
         session_id:  _sessionId,
+        token:       _actionToken,
         action:      'cancel_confirmed',
         reason,
         detail:      document.getElementById('cancel-detail').value.trim() || null,
@@ -800,6 +804,7 @@ document.getElementById('requestTimeForm').addEventListener('submit', async func
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({
         session_id:      _sessionId,
+        token:           _actionToken,
         action:          'request_time',
         preferred_dates: dates,
         preferred_times: times,
@@ -833,6 +838,7 @@ async function logAudit(action, extra) {
   extra = extra || {};
   var body = Object.assign({
     session_id:  _sessionId,
+    token:       _actionToken,
     action,
     client_name: _sessionData ? _sessionData.client_name : null,
   }, extra);

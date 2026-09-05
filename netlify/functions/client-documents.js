@@ -50,7 +50,7 @@ exports.handler = async (event) => {
 
   // ── ADMIN read: list a client's documents by client_id ────────────────────
   if (event.httpMethod === 'GET' && params.client_id) {
-    const auth = requireAdmin(event);
+    const auth = await requireAdmin(event);
     if (auth.error) return auth.error;
 
     const { data, error } = await sb

@@ -57,14 +57,14 @@ const APP_COLS  = 'id, practitioner_id, application_text, experience, training_h
 const CERT_COLS = 'id, practitioner_id, training_certification_id, completion_date, expiration_date, status, created_at, updated_at';
 const REF_COLS  = 'id, client_id, practitioner_id, reason, status, created_at, updated_at';
 
-function requireAdmin(event) {
-  const a = auth.requireAdmin(event);
+async function requireAdmin(event) {
+  const a = await auth.requireAdmin(event);
   if (a && a.error) return { error: a.error };
   return a || {};
 }
 
 exports.handler = async function (event) {
-  const authResult = requireAdmin(event);
+  const authResult = await requireAdmin(event);
   if (authResult.error) return authResult.error;
 
   const sb = createClient(

@@ -52,7 +52,7 @@ exports.handler = async (event) => {
 
   // ── ADMIN ──────────────────────────────────────────────────────────────────
   if (isAdminAttempt) {
-    const auth = requireAdmin(event);
+    const auth = await requireAdmin(event);
     if (auth.error) return auth.error;
 
     if (event.httpMethod === 'GET') {

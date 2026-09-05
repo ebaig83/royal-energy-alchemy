@@ -8,6 +8,7 @@
 const { requireAdmin, respond } = require('./lib/auth');
 const { getClient }             = require('./lib/supabase');
 const { log }                   = require('./lib/audit');
+const { isCalendarEligible }    = require('./lib/record-policy');
 
 exports.handler = async function(event) {
   if (event.httpMethod === 'OPTIONS') return respond(200, {});
@@ -101,7 +102,7 @@ exports.handler = async function(event) {
     if (body.session_id) {
       const { data: session } = await sb
         .from('sessions')
-        .select('amount_due, amount_paid')
+        .select('id,amount_due,amount_paid,service,session_date,session_time,location_type,status,source,google_calendar_status,google_calendar_event_id')
         .eq('id', body.session_id)
         .single();
 
@@ -110,8 +111,13 @@ exports.handler = async function(event) {
         const due       = session.amount_due || 0;
         const newStatus = totalPaid >= due && due > 0 ? 'paid' : totalPaid > 0 ? 'partial' : 'unpaid';
 
+        const sessionPatch = { amount_paid: totalPaid, payment_status: newStatus };
+        if (newStatus === 'paid' && isCalendarEligible({ ...session, payment_status: newStatus }) && !session.google_calendar_event_id && session.google_calendar_status === 'not_requested') {
+          sessionPatch.google_calendar_status = 'pending';
+          sessionPatch.google_calendar_error = null;
+        }
         await sb.from('sessions')
-          .update({ amount_paid: totalPaid, payment_status: newStatus })
+          .update(sessionPatch)
           .eq('id', body.session_id);
       }
     }

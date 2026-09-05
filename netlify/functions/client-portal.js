@@ -13,6 +13,7 @@
 
 const { respond }   = require('./lib/auth');
 const { getClient } = require('./lib/supabase');
+const { appointmentManageUrl } = require('./lib/appointment-token');
 
 const SITE_URL = process.env.SITE_URL || 'https://royal-energy-alchemy.netlify.app';
 
@@ -159,7 +160,7 @@ async function buildPayload(sb, client, token) {
     status:         s.status,
     payment_status: s.payment_status,
     upcoming:       s.session_date >= today && !['cancelled', 'completed'].includes(s.status),
-    manage_url:     `${SITE_URL}/manage-appointment.html?session_id=${s.id}`,
+    manage_url:     appointmentManageUrl(s.id, { siteUrl: SITE_URL }),
   }));
 
   const appointment = sessionRow ? {

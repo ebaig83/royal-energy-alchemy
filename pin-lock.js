@@ -1,16 +1,9 @@
 (function () {
-  var KEY       = "rea_pin_unlocked";
-  var TOKEN_KEY = "rea_api_token";
-  var HOURS     = 8;
-
-  function isPinUnlocked() {
-    var t = Number(sessionStorage.getItem(KEY));
-    return t && Date.now() < t + HOURS * 3600000;
-  }
-
-  function unlockDashboard(apiToken) {
-    sessionStorage.setItem(KEY, Date.now().toString());
-    if (apiToken) sessionStorage.setItem(TOKEN_KEY, apiToken);
+  var UI_MARKER_KEY = "rea_api_token";
+  function unlockDashboard() {
+    // Compatibility marker for legacy UI branches that only check truthiness.
+    // It is not a credential; the server authenticates the HttpOnly cookie.
+    sessionStorage.setItem(UI_MARKER_KEY, "cookie-session");
     var gate = document.getElementById("accessGate");
     if (gate) gate.classList.add("hidden");
     var lb = document.getElementById("logoutBtn");
@@ -19,8 +12,7 @@
   }
 
   function lockDashboard() {
-    sessionStorage.removeItem(KEY);
-    sessionStorage.removeItem(TOKEN_KEY);
+    sessionStorage.removeItem(UI_MARKER_KEY);
     var gate = document.getElementById("accessGate");
     if (gate) gate.classList.remove("hidden");
     var lb = document.getElementById("logoutBtn");
@@ -33,7 +25,8 @@
     if (btn) { btn.disabled = false; btn.textContent = "Unlock"; }
   }
 
-  // Returns { ok, token } — token is the DASHBOARD_API_SECRET returned by the function.
+  // The server creates an opaque, expiring HttpOnly cookie. No permanent
+  // administrator secret is returned to or stored by browser JavaScript.
   async function verifyPin(pin) {
     try {
       var res = await fetch("/.netlify/functions/verify-pin", {
@@ -43,7 +36,7 @@
       });
       if (!res.ok) return { ok: false };
       var data = await res.json();
-      return { ok: true, token: data.token || "" };
+      return { ok: true };
     } catch (_) {
       return { ok: false };
     }
@@ -74,15 +67,17 @@
       return;
     }
 
-    unlockDashboard(result.token);
+    unlockDashboard();
   };
 
-  window.doLogout = lockDashboard;
+  window.doLogout = async function () {
+    try { await fetch("/.netlify/functions/verify-pin", { method: "DELETE" }); } catch (_) {}
+    lockDashboard();
+  };
 
   document.addEventListener("DOMContentLoaded", function () {
-    if (isPinUnlocked()) {
-      // Token already in sessionStorage from previous unlock — no re-fetch needed.
-      unlockDashboard();
-    }
+    fetch("/.netlify/functions/verify-pin", { method: "GET" })
+      .then(function (res) { if (res.ok) unlockDashboard(); })
+      .catch(function () {});
   });
 })();

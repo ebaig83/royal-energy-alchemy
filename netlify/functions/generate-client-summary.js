@@ -123,7 +123,7 @@ exports.handler = async (event) => {
 
   const { requireAdmin, respond } = require("./lib/auth");
   const { logAIUsage } = require("./lib/ai-log");
-  const auth = requireAdmin(event);
+  const auth = await requireAdmin(event);
   if (auth.error) return auth.error;
 
   if (!process.env.ANTHROPIC_API_KEY) {

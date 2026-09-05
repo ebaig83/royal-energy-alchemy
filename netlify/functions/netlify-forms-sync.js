@@ -18,7 +18,7 @@ const NETLIFY_API = 'https://api.netlify.com/api/v1';
 const { requireAdmin } = require('./lib/auth');
 
 exports.handler = async function(event) {
-  const auth = requireAdmin(event);
+  const auth = await requireAdmin(event);
   if (auth.error) return auth.error;
 
   const token  = process.env.NETLIFY_ACCESS_TOKEN;

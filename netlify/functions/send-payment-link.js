@@ -5,7 +5,7 @@ const { sendTransactional } = require('./lib/mailer');
 const checkout = require('./create-stripe-checkout');
 exports.handler = async function(event) {
   if (event.httpMethod !== 'POST') return respond(405, { error: 'Method not allowed.' });
-  const auth = requireAdmin(event); if (auth.error) return auth.error;
+  const auth = await requireAdmin(event); if (auth.error) return auth.error;
   let body; try { body = JSON.parse(event.body || '{}'); } catch { return respond(400, { error: 'Invalid JSON.' }); }
   const sessionId = body.session_id; if (!sessionId) return respond(400, { error: 'session_id is required.' });
   const sb = getClient();

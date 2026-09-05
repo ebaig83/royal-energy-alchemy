@@ -1,6 +1,7 @@
 'use strict';
 
 const crypto = require('crypto');
+const { isCalendarEligible } = require('./record-policy');
 const CALENDAR_SCOPE = 'https://www.googleapis.com/auth/calendar.events';
 const TIMEZONE = process.env.DASHBOARD_TIMEZONE || 'America/New_York';
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
@@ -57,9 +58,7 @@ async function refreshAccessToken({ fetchImpl = fetch, timeoutMs, now = Date.now
 }
 
 function eligibleSession(session) {
-  const location = String(session?.location_type || '').toLowerCase();
-  if (['in_person', 'in-person', 'house-cleansing-blessing'].includes(location)) return false;
-  return Boolean(session?.id && session?.session_date && session?.session_time);
+  return isCalendarEligible(session);
 }
 function requestId(sessionId) { return `rea-session-${String(sessionId)}`; }
 function eventId(sessionId) { return `rea${crypto.createHash('sha256').update(String(sessionId)).digest('hex').slice(0, 28)}`; }

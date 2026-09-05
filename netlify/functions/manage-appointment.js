@@ -1,6 +1,6 @@
 // /.netlify/functions/manage-appointment
 //
-// Public-facing endpoint — no auth required (clients use it from email links)
+// Public-facing endpoint authenticated by a scoped signed token in client email links.
 //
 // GET ?session_id=uuid — return minimal session info for the public manage page
 //
@@ -20,6 +20,23 @@ const { respond }            = require('./lib/auth');
 const { getClient }          = require('./lib/supabase');
 const { calcRefund, POLICY } = require('./lib/policy');
 const { sendTransactional }  = require('./lib/mailer');
+const { verifyAppointmentToken, appointmentManageUrl } = require('./lib/appointment-token');
+
+const TOKEN_ROLLOUT_AT = Date.parse(process.env.APPOINTMENT_TOKEN_ROLLOUT_AT || '2026-09-05T21:30:00Z');
+const LEGACY_LINK_CUTOFF = Date.parse(process.env.APPOINTMENT_LEGACY_LINK_CUTOFF || '2026-10-05T23:59:59Z');
+
+function managementAuthorized(token, session, action, now = Date.now()) {
+  const verified = verifyAppointmentToken(token, session.id, action);
+  if (verified.ok) return { ok: true, legacy: false };
+  const created = Date.parse(session.created_at || '');
+  if (!token && now <= LEGACY_LINK_CUTOFF && Number.isFinite(created) && created < TOKEN_ROLLOUT_AT) {
+    return { ok: true, legacy: true };
+  }
+  return { ok: false, reason: verified.reason || 'required' };
+}
+
+// Exported for focused authorization tests; the handler remains the only network entrypoint.
+exports.managementAuthorized = managementAuthorized;
 
 const VALID_ACTIONS = [
   'view',
@@ -53,13 +70,16 @@ exports.handler = async (event) => {
 
     const { data, error } = await sb
       .from('sessions')
-      .select('id, service, session_date, session_time, duration_minutes, status, booking_status, payment_status, waiver_status, waiver_completed, waiver_completed_at, client_name, amount_due, amount_paid, location_type')
+      .select('id, service, session_date, session_time, duration_minutes, status, booking_status, payment_status, waiver_status, waiver_completed, waiver_completed_at, client_name, amount_due, amount_paid, location_type, created_at')
       .eq('id', sessionId)
       .single();
 
     if (error || !data) return respond(404, { error: 'Session not found.' });
+    const access = managementAuthorized(params.token, data, params.action || 'view');
+    if (!access.ok) return respond(401, { error: 'This appointment link is invalid or has expired.', code: access.reason });
 
     return respond(200, {
+      legacy_link: access.legacy,
       session: {
         id:               data.id,
         service:          data.service,
@@ -89,6 +109,11 @@ exports.handler = async (event) => {
 
     if (!action)                         return respond(400, { error: 'action is required.' });
     if (!VALID_ACTIONS.includes(action)) return respond(400, { error: `Invalid action. Must be one of: ${VALID_ACTIONS.join(', ')}` });
+    if (!session_id) return respond(400, { error: 'session_id is required.' });
+    const { data: accessSession } = await sb.from('sessions').select('id,created_at').eq('id', session_id).maybeSingle();
+    if (!accessSession) return respond(404, { error: 'Session not found.' });
+    const access = managementAuthorized(body.token, accessSession, action);
+    if (!access.ok) return respond(401, { error: 'This appointment link is invalid or has expired.', code: access.reason });
 
     // ── reschedule_confirmed — real slot swap ─────────────────────────────
     if (action === 'reschedule_confirmed') {
@@ -222,7 +247,7 @@ async function handleRescheduleConfirmed(sb, body, session_id, ip, ua) {
     .single();
 
   // 6. Send automated reschedule confirmation (fire-and-forget)
-  const clientEmail = body.client_email || await lookupClientEmail(sb, session.client_id);
+  const clientEmail = await lookupClientEmail(sb, session.client_id);
   if (clientEmail) {
     sendTransactional(sb, {
       templateName:   'appointment_rescheduled',
@@ -236,9 +261,7 @@ async function handleRescheduleConfirmed(sb, body, session_id, ip, ua) {
         new_date,
         new_time:    formatDisplayTime(timeNorm),
         timezone:    'ET',
-        manage_url:  process.env.SITE_URL
-          ? `${process.env.SITE_URL}/manage-appointment.html?session_id=${session_id}`
-          : '',
+        manage_url:  appointmentManageUrl(session_id),
         contact_email: process.env.ADMIN_EMAIL || 'royalenergyalchemy@gmail.com',
       },
       metadata: { trigger: 'reschedule_confirmed', session_id },
@@ -318,7 +341,7 @@ async function handleCancelConfirmed(sb, body, session_id, ip, ua) {
     .single();
 
   // 6. Send automated cancellation confirmation (fire-and-forget)
-  const clientEmail = body.client_email || await lookupClientEmail(sb, session.client_id);
+  const clientEmail = await lookupClientEmail(sb, session.client_id);
   if (clientEmail) {
     sendTransactional(sb, {
       templateName:   'appointment_cancelled',

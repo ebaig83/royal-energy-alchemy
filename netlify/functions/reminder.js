@@ -13,6 +13,7 @@ const { requireAdmin, respond } = require('./lib/auth');
 const { getClient }             = require('./lib/supabase');
 const { sendWithPreferences }   = require('./lib/comms');
 const { reminderFailure }       = require('./lib/ops-alert');
+const { appointmentManageUrl }  = require('./lib/appointment-token');
 
 const SITE_URL = process.env.SITE_URL || 'https://royal-energy-alchemy.netlify.app';
 
@@ -94,7 +95,7 @@ exports.handler = async function(event) {
         continue;
       }
 
-      const manageUrl = `${SITE_URL}/manage-appointment.html?session_id=${session.id}`;
+      const manageUrl = appointmentManageUrl(session.id, { siteUrl: SITE_URL });
       const timeStr   = session.session_time ? session.session_time.slice(0, 5) : '';
 
       const result = await sendWithPreferences(sb, {
