@@ -758,9 +758,9 @@ footer a:hover,footer a:focus-visible{color:#fff0b8 !important;border-bottom-col
   .about-stats { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px;margin-bottom:38px;padding:25px 0;border-top:1px solid rgba(232,184,75,.14);border-bottom:1px solid rgba(232,184,75,.14); }
   .about-info-grid { grid-column:1/-1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;padding:24px clamp(32px,4.2vw,76px) 28px;background:linear-gradient(90deg,#050817,#02040c 58%,#050712);border-top:1px solid rgba(232,184,75,.18); }
   .about-info-card { background:linear-gradient(145deg,rgba(12,15,34,.96),rgba(4,5,15,.94));border:1px solid rgba(232,184,75,.25);padding:17px 20px;min-width:0; }
-  .about-visual { position:relative;display:grid;place-items:center;min-width:0;padding:0;background:#02040b;overflow:hidden; }
+  .about-visual { position:relative;display:grid;place-items:center;min-width:0;padding:clamp(30px,3vw,56px);background:#02040b;overflow:hidden; }
   .about-visual::before { content:'';position:absolute;z-index:2;inset:0 auto 0 0;width:8%;background:linear-gradient(90deg,rgba(2,4,12,.58),transparent);pointer-events:none; }
-  .about-visual img { display:block;width:100%;height:100%;max-width:none;max-height:none;aspect-ratio:auto;object-fit:cover;object-position:center center;border:0;box-shadow:none; }
+  .about-visual img { display:block;width:100%;height:auto;max-width:100%;max-height:100%;aspect-ratio:auto;object-fit:contain;object-position:center center;border:0;box-shadow:none; }
   @media(max-width:980px){
     .about-split { grid-template-columns:1fr;min-height:0; }
     .about-copy { padding:84px clamp(28px,7vw,70px) 68px;box-shadow:none; }
@@ -804,7 +804,7 @@ footer a:hover,footer a:focus-visible{color:#fff0b8 !important;border-bottom-col
   </div>
   </div>
   <div class="about-visual" aria-label="Daron Royal with his Galactic Team and angelic guide">
-    <img src="assets/about-bg.png?v=20260901" alt="Daron Royal standing with his Galactic Team and an angelic guide" loading="lazy" decoding="async">
+    <img src="assets/about-bg.png?v=20260905" alt="Daron Royal standing with his Galactic Team and an angelic guide" loading="lazy" decoding="async">
   </div>
   <!-- Full-width practitioner details -->
   <div class="about-info-grid">
