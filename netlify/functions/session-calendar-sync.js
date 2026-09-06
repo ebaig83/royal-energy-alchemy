@@ -1,12 +1,14 @@
 'use strict';
 
 const { getClient } = require('./lib/supabase');
+const { isSilentPlannerImport } = require('./lib/record-policy');
 const { sendWithPreferences } = require('./lib/comms');
 const { syncSession, sanitizeError, createGoogleCalendarApi } = require('./lib/google-calendar');
 
 const ACTIONABLE_STATUSES = ['pending', 'retryable_error', 'reschedule_pending', 'cancel_pending'];
 
 async function sendMeetingReady(sb, session, send = sendWithPreferences) {
+  if (isSilentPlannerImport(session)) return { skipped: true, reason: 'silent_planner_import' };
   if (!session.google_meet_url) return { skipped: true, reason: 'meet_not_ready' };
   let email = session.client_email || null;
   if (!email && session.client_id) {
@@ -27,7 +29,7 @@ async function processPending({ sb, api, limit = 25, now = () => new Date(), sen
   const { data, error } = await sb.from('sessions').select('*').in('google_calendar_status', ACTIONABLE_STATUSES).limit(limit);
   if (error) throw error;
   const results = { synced: [], failed: [], notifications: [] };
-  for (const session of (data || []).filter(s => String(s.payment_status || '').toLowerCase() === 'paid')) {
+  for (const session of (data || []).filter(s => !isSilentPlannerImport(s) && String(s.payment_status || '').toLowerCase() === 'paid')) {
     try {
       const result = await syncSession(session, api, syncOptions);
       const patch = {

@@ -20,12 +20,17 @@ function isQaRecord(record) {
     tags.some(tag => QA_TAGS.has(tag)) || /\[qa\]/i.test(String(record.client_name || record.full_name || ''));
 }
 
+// Manual planner reconciliation must stay silent until explicitly reviewed.
+function isSilentPlannerImport(record) {
+  return normalized(record && record.source) === 'manual_planner_import_20260905';
+}
+
 function isHistoricalRecord(record) {
   return HISTORICAL_SOURCES.has(normalized(record && record.source));
 }
 
 function isCalendarEligible(record, today = new Date().toISOString().slice(0, 10)) {
-  if (!record || isQaRecord(record) || isHistoricalRecord(record)) return false;
+  if (!record || isQaRecord(record) || isHistoricalRecord(record) || isSilentPlannerImport(record)) return false;
   const location = normalized(record.location_type);
   const status = normalized(record.status);
   if (!record.id || !record.session_date || !record.session_time) return false;
@@ -34,4 +39,4 @@ function isCalendarEligible(record, today = new Date().toISOString().slice(0, 10
   return ['distance', 'remote'].includes(location);
 }
 
-module.exports = { QA_SOURCES, HISTORICAL_SOURCES, isQaRecord, isHistoricalRecord, isCalendarEligible };
+module.exports = { QA_SOURCES, HISTORICAL_SOURCES, isQaRecord, isHistoricalRecord, isSilentPlannerImport, isCalendarEligible };

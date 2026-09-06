@@ -4,6 +4,7 @@
 // Netlify invokes this every five minutes; the exported processDue function is
 // dependency-injectable for local contract tests and never requires production credentials.
 const { getClient } = require('./lib/supabase');
+const { isSilentPlannerImport } = require('./lib/record-policy');
 const { sendWithPreferences } = require('./lib/comms');
 const { pickTemplate } = require('./lib/followup-templates');
 const { sessionStart, isActiveSession, isDue, followupDue, followupUrl } = require('./lib/session-communications');
@@ -13,12 +14,13 @@ async function processDue({ sb, now = new Date(), send = sendWithPreferences } =
   const from = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const to = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const { data: sessions, error } = await sb.from('sessions')
-    .select('id, client_id, client_name, service, session_date, session_time, duration_minutes, status, google_meet_url')
+    .select('id, client_id, client_name, service, session_date, session_time, duration_minutes, status, google_meet_url, source')
     .gte('session_date', from).lte('session_date', to);
   if (error) throw error;
   const sent = [], skipped = [], failed = [];
   for (const session of sessions || []) {
     try {
+    if (isSilentPlannerImport(session)) { skipped.push({ id: session.id, reason: 'silent_planner_import' }); continue; }
     if (!isActiveSession(session)) { skipped.push({ id: session.id, reason: 'inactive' }); continue; }
     const start = sessionStart(session);
     const reminder = isDue(start, now, 30);

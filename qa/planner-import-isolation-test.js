@@ -1,0 +1,20 @@
+'use strict';
+const assert=require('assert');
+const path=require('path');
+const root=process.env.PLANNER_TEST_ROOT||path.resolve(__dirname,'..');
+const {isSilentPlannerImport,isCalendarEligible}=require(path.join(root,'netlify/functions/lib/record-policy'));
+const {processDue}=require(path.join(root,'netlify/functions/session-communications'));
+const {processPending}=require(path.join(root,'netlify/functions/session-calendar-sync'));
+const imported={id:'planner-fixture',source:'manual_planner_import_20260905',client_id:'fixture-client',status:'confirmed',location_type:'distance',payment_status:'paid',session_date:'2099-09-01',session_time:'10:00:00',duration_minutes:60,google_calendar_status:'pending'};
+assert(isSilentPlannerImport(imported));assert(!isCalendarEligible(imported));assert(isCalendarEligible({...imported,source:'online'}));
+let externalCalls=0;
+const fail=()=>{externalCalls++;throw Error('Unexpected import side effect');};
+const sb={from(table){assert.strictEqual(table,'sessions');const q={select(fields){if(fields!=='*')assert(fields.includes('source'));return q;},gte(){return q;},lte(){return q;},in(){return q;},limit(){return q;},then(a,b){return Promise.resolve({data:[imported],error:null}).then(a,b);}};return q;}};
+(async()=>{
+ const now=new Date('2099-09-01T09:30:00');
+ const reminders=await processDue({sb,now,send:fail});assert.strictEqual(reminders.sent.length,0);assert(reminders.skipped.some(r=>r.reason==='silent_planner_import'));
+ const followups=await processDue({sb,now:new Date('2099-09-04T11:00:00'),send:fail});assert.strictEqual(followups.sent.length,0);
+ const calendar=await processPending({sb,api:{create:fail,get:fail,update:fail,delete:fail},send:fail});assert.deepStrictEqual(calendar,{synced:[],failed:[],notifications:[]});
+ assert.strictEqual(externalCalls,0);
+ console.log('planner import isolation: passed (paid Distance, reminder, follow-up, no provider calls; online eligibility retained)');
+})().catch(e=>{console.error(e);process.exitCode=1});

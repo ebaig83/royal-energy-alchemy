@@ -14,6 +14,7 @@ const { getClient }             = require('./lib/supabase');
 const { sendWithPreferences }   = require('./lib/comms');
 const { reminderFailure }       = require('./lib/ops-alert');
 const { appointmentManageUrl }  = require('./lib/appointment-token');
+const { isSilentPlannerImport } = require('./lib/record-policy');
 
 const SITE_URL = process.env.SITE_URL || 'https://royal-energy-alchemy.netlify.app';
 
@@ -37,7 +38,7 @@ exports.handler = async function(event) {
 
   const { data: sessions, error: sessErr } = await sb
     .from('sessions')
-    .select('id, client_id, client_name, service, session_date, session_time, status, reminder_sent, reminder_sent_at')
+    .select('id, client_id, client_name, service, session_date, session_time, status, reminder_sent, reminder_sent_at, source')
     .gte('session_date', todayStr)
     .lte('session_date', cutoffStr)
     .in('status', ['pending', 'confirmed'])
@@ -47,6 +48,7 @@ exports.handler = async function(event) {
   if (sessErr) return respond(500, { error: sessErr.message });
 
   const candidates = (sessions || []).filter(s => {
+    if (isSilentPlannerImport(s)) return false;
     // If session is today, only include if session_time is ≥ now
     if (s.session_date === todayStr && s.session_time) {
       const [hh, mm] = s.session_time.split(':').map(Number);
