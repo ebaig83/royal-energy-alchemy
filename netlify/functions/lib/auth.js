@@ -20,7 +20,7 @@ function sessionCookie(token, maxAge = SESSION_HOURS * 3600) {
 }
 function clearSessionCookie() { return `${COOKIE_NAME}=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0`; }
 
-async function requireAdmin(event) {
+async function requireAdmin(event, options = {}) {
   const token = cookieValue(event);
   if (!token || token.length < 32) return { error: respond(401, { error: 'Unauthorized.' }) };
   const sb = getClient();
@@ -36,7 +36,7 @@ async function requireAdmin(event) {
     const allowed = String(process.env.SITE_URL || 'https://www.daronroyal.com').replace(/\/$/, '');
     if (origin && origin.replace(/\/$/, '') !== allowed) return { error: respond(403, { error: 'Origin not allowed.' }) };
   }
-  sb.from('admin_sessions').update({ last_seen_at: now }).eq('id', data.id).then(() => {}).catch(() => {});
+  if (options.touch !== false) sb.from('admin_sessions').update({ last_seen_at: now }).eq('id', data.id).then(() => {}).catch(() => {});
   return { user: { email: data.actor_email }, sessionId: data.id };
 }
 

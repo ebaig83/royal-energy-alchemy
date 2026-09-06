@@ -1,0 +1,7 @@
+const assert=require('node:assert/strict');const {isQa,filterData,contactClass,diagnostics}=require('../netlify/functions/lib/p1-policy');const {classify}=require('./p1-linkage-audit.cjs');
+const d={clients:[{id:'c',full_name:'Normal'},{id:'q',full_name:'SPRINT 18L TEST DELETE'}],sessions:[{id:'s',client_id:'c'},{id:'qsession',client_id:'q'}],payments:[{id:'p',session_id:'qsession'}],ledger:[{related_session_id:'qsession'}],communications:[{client_id:'q'}],aftercare:[{session_id:'qsession'}],relationships:[]};
+const clean=filterData(d);assert.equal(clean.sessions.length,1);for(const key of ['payments','ledger','communications','aftercare'])assert.equal(clean[key].length,0);assert.equal(filterData(d,true).payments.length,1);
+assert.equal(classify({session_id:'s'},d,isQa).client_id,'c');assert.equal(classify({client_name:'Normal'},d,isQa).classification,'PROBABLE / NEEDS REVIEW');assert.equal(classify({client_name:'Stranger'},d,isQa).classification,'UNRESOLVED');
+assert.equal(contactClass({tags:['identity-linkage-pending']},[]),'Descriptive/relationship client');assert.equal(contactClass({id:'old'},[{client_id:'old',session_date:'2020-01-01'}]),'Historical planner client — contact unknown');
+const diag=diagnostics(d,{P1_LOCAL_REVIEW:'true'});assert.equal(diag.services[0].status,'Degraded');assert.equal(diag.services.at(-1).status,'Healthy');assert(!JSON.stringify(diag).includes('STRIPE_SECRET_KEY'));
+console.log('PASS read-model QA propagation, conservative linkage, historical contacts, safe diagnostic status');

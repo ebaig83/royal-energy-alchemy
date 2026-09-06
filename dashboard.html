@@ -5444,7 +5444,6 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
   <!-- KNOWLEDGE HUB TAB -->
   <div class="tab-content" id="tab-questions"></div>
 
-  <div class="tab-content" id="tab-training"></div>
 
   <!-- KNOWLEDGE CENTER TAB -->
   <div class="tab-content" id="tab-knowledge">
@@ -5452,17 +5451,13 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
       <div class="kc-header">
         <div>
           <h2 class="kc-title">Knowledge Center</h2>
-          <p class="kc-subtitle">Knowledge, content, and training tools gathered into one workspace.</p>
+          <p class="kc-subtitle">Practitioner reference knowledge.</p>
         </div>
       </div>
       <div class="kc-tabs" role="tablist" aria-label="Knowledge Center sections">
         <button type="button" class="kc-tab active" data-kc-tab="kh" onclick="showKnowledgeCenter('kh')">Knowledge Hub</button>
-        <button type="button" class="kc-tab" data-kc-tab="cs" onclick="showKnowledgeCenter('cs')">Content Studio</button>
-        <button type="button" class="kc-tab" data-kc-tab="tc" onclick="showKnowledgeCenter('tc')">Training Center</button>
       </div>
       <div class="kc-panel active" id="tab-kh"></div>
-      <div class="kc-panel" id="tab-cs"></div>
-      <div class="kc-panel" id="tab-tc"></div>
     </div>
   </div>
 
@@ -6179,7 +6174,9 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
 })();
 
 function showTab(name) {
-  var knowledgeAliases = { kh: true, cs: true, tc: true };
+  // Retired products are not valid dashboard routes.
+  if (['cs', 'tc', 'training'].includes(name)) return false;
+  var knowledgeAliases = { kh: true };
   var knowledgeSub = knowledgeAliases[name] ? name : null;
   if (knowledgeSub) name = 'knowledge';
   if (name === 'knowledge' && !knowledgeSub) knowledgeSub = window._knowledgeCenterSub || 'kh';
@@ -6202,25 +6199,23 @@ function showTab(name) {
   if (name === 'followups')   { try { loadFollowUps(); } catch(e){ console.error('loadFollowUps', e); } }
   if (name === 'knowledge')   { try { renderKnowledgeCenter(knowledgeSub); } catch(e){ console.error('renderKnowledgeCenter', e); } }
   if (name === 'kh')             { try { khInit(); } catch(e){ console.error('khInit', e); } }
-  if (name === 'cs')             { try { csInit(); } catch(e){ console.error('csInit', e); } }
-  if (name === 'tc')             { try { tcInit(); } catch(e){ console.error('tcInit', e); } }
   if (name === 'pn')             { try { pnInit(); } catch(e){ console.error('pnInit', e); } }
   if (name === 'lp')             { try { lpInit(); } catch(e){ console.error('lpInit', e); } }
   if (name === 'financial')      { try { fcInit(); } catch(e){ console.error('fcInit', e); } }
   if (name === 'communications') { try { cmInit(); } catch(e){ console.error('cmInit', e); } }
   if (name === 'docs')          { try { docsInit(); } catch(e){ console.error('docsInit', e); } }
   if (name === 'questions')     { try { questionsInit(); } catch(e){ console.error('questionsInit', e); } }
-  if (name === 'training')      { try { trainingInit(); } catch(e){ console.error('trainingInit', e); } }
 }
 
 function showKnowledgeCenter(section) {
+  if (section && section !== 'kh') return false;
   window._knowledgeCenterSub = section || window._knowledgeCenterSub || 'kh';
   showTab('knowledge');
 }
 
 function renderKnowledgeCenter(section) {
   var active = section || window._knowledgeCenterSub || 'kh';
-  if (!/^(kh|cs|tc)$/.test(active)) active = 'kh';
+  if (active !== 'kh') active = 'kh';
   window._knowledgeCenterSub = active;
   document.querySelectorAll('.kc-tab').forEach(function(btn) {
     btn.classList.toggle('active', btn.getAttribute('data-kc-tab') === active);
@@ -6231,8 +6226,6 @@ function renderKnowledgeCenter(section) {
     panel.classList.toggle('active', isActive);
   });
   if (active === 'kh') { try { khInit(); } catch(e){ console.error('khInit', e); } }
-  if (active === 'cs') { try { csInit(); } catch(e){ console.error('csInit', e); } }
-  if (active === 'tc') { try { tcInit(); } catch(e){ console.error('tcInit', e); } }
 }
 
 function showBookingWorkspace(section) {
@@ -6405,50 +6398,6 @@ function updateBookingCommandKpis() {
   set('bkTopRequests', requestCount);
   set('bkTopFollowups', text('homeStatFollowUps'));
   set('bkTopRevenue', text('bkRevenueScheduled') !== '—' ? text('bkRevenueScheduled') : text('execKpiRevenue'));
-}
-
-/* ── TRAINING INTEREST LEADS (Sprint 18) ─────────────────────────────────── */
-var TI_STATUS_COLOR = { new:'#f8a84b', contacted:'#e8b84b', enrolled:'#22c98a', closed:'#9a96c0' };
-async function trainingInit() {
-  var host = document.getElementById('tab-training');
-  if (!host) return;
-  host.innerHTML = '<div style="padding:24px;color:#9a96c0">Loading training leads…</div>';
-  var key = sessionStorage.getItem('rea_api_token') || '';
-  try {
-    var r = await fetch('/.netlify/functions/training-interest', { headers: { 'X-Dashboard-Token': key } });
-    var j = await r.json();
-    if (!r.ok) { host.innerHTML = '<div style="padding:24px;color:#cc6666">'+ (j && j.error || 'Failed to load.') +'</div>'; return; }
-    trainingRender(j.leads || []);
-  } catch (e) { host.innerHTML = '<div style="padding:24px;color:#cc6666">Error: '+ e.message +'</div>'; }
-}
-function tiEsc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
-function trainingRender(list) {
-  var host = document.getElementById('tab-training');
-  var newN = list.filter(function(l){return l.status==='new';}).length;
-  var head = '<h2 style="font-family:Cinzel,serif;font-size:16px;letter-spacing:.2em;text-transform:uppercase;color:#e8b84b;margin-bottom:8px">Training Interest Leads</h2>'+
-    '<p style="color:#9a96c0;margin-bottom:18px">'+list.length+' total · '+newN+' new</p>';
-  if (!list.length) { host.innerHTML = head + '<div style="padding:24px;color:#9a96c0">No training leads yet.</div>'; return; }
-  var rows = '<table style="width:100%;border-collapse:collapse;font-size:14px">'+
-    '<tr style="text-align:left;color:#e8b84b99;font-family:Cinzel,serif;font-size:10px;letter-spacing:.16em;text-transform:uppercase">'+
-      '<th style="padding:8px 10px">Date</th><th style="padding:8px 10px">Name</th><th style="padding:8px 10px">Email</th><th style="padding:8px 10px">Interested In</th><th style="padding:8px 10px">Status</th></tr>'+
-    list.map(function(l){
-      var sc = TI_STATUS_COLOR[l.status]||'#9a96c0';
-      var date = (l.created_at||'').slice(0,10);
-      return '<tr style="border-top:1px solid #e8b84b1a">'+
-        '<td style="padding:9px 10px;color:#9a96c0">'+tiEsc(date)+'</td>'+
-        '<td style="padding:9px 10px;color:#fff">'+tiEsc(l.first_name||'—')+'</td>'+
-        '<td style="padding:9px 10px;color:#d8d4f0">'+tiEsc(l.email||'')+'</td>'+
-        '<td style="padding:9px 10px;color:#c8c4e0">'+tiEsc(l.interested_courses||'—')+'</td>'+
-        '<td style="padding:9px 10px"><select onchange="trainingSetStatus(\''+l.id+'\',this.value)" style="background:#06030f;border:1px solid '+sc+'55;color:'+sc+';padding:5px 8px;font-size:12px">'+
-          ['new','contacted','enrolled','closed'].map(function(s){return '<option value="'+s+'"'+(s===l.status?' selected':'')+'>'+s+'</option>';}).join('')+
-        '</select></td></tr>';
-    }).join('')+'</table>';
-  host.innerHTML = head + rows;
-}
-async function trainingSetStatus(id, status) {
-  var key = sessionStorage.getItem('rea_api_token') || '';
-  var r = await fetch('/.netlify/functions/training-interest?id='+encodeURIComponent(id), { method:'PATCH', headers:{ 'Content-Type':'application/json','X-Dashboard-Token':key }, body:JSON.stringify({ status: status }) });
-  if (!r.ok) { var j=await r.json().catch(function(){return{};}); alert('Update failed: '+(j.error||r.status)); }
 }
 
 /* ── CLIENT QUESTIONS QUEUE (Sprint 17B) ─────────────────────────────────── */
@@ -11825,10 +11774,8 @@ function _renderHomeSignalsState(questions, training, inquiries) {
   var el = document.getElementById('homeSignals');
   if (!el) return;
   var qList = Array.isArray(questions) ? questions : [];
-  var tList = Array.isArray(training) ? training : [];
   var iList = Array.isArray(inquiries) ? inquiries : [];
   var openQuestions = qList.filter(function(q) { return q && q.status !== 'closed' && q.status !== 'responded'; });
-  var openTraining = tList.filter(function(l) { return l && (!l.status || l.status === 'new' || l.status === 'contacted'); });
   var openInquiries = iList.filter(function(i) { return i; });
   var rows = [
     {
@@ -11836,12 +11783,6 @@ function _renderHomeSignalsState(questions, training, inquiries) {
       count: openQuestions.length,
       empty: 'No new portal questions.',
       action: 'questions'
-    },
-    {
-      label: 'Training Session Interest',
-      count: openTraining.length,
-      empty: 'No new training inquiries.',
-      action: 'training'
     },
     {
       label: 'Website Inquiries',
@@ -11871,9 +11812,7 @@ function _fetchHomeSignals() {
     fetch('/.netlify/functions/client-questions', { headers: { 'X-Dashboard-Token': key } })
       .then(function(r) { return r.ok ? r.json() : { questions: [] }; })
       .catch(function() { return { questions: [] }; }),
-    fetch('/.netlify/functions/training-interest', { headers: { 'X-Dashboard-Token': key } })
-      .then(function(r) { return r.ok ? r.json() : { leads: [] }; })
-      .catch(function() { return { leads: [] }; }),
+    Promise.resolve({ leads: [] }),
     fetch('/.netlify/functions/netlify-forms-sync?per_page=100', { headers: { 'X-Dashboard-Token': key } })
       .then(function(r) { return r.ok ? r.json() : { submissions: [] }; })
       .catch(function() { return { submissions: [] }; })
@@ -16248,8 +16187,6 @@ function _dashAnswerBusinessQuestion(q, ctx) {
 <script src="sessions-module.js"></script>
 <script src="financial-module.js"></script>
 <script src="kh-module.js"></script>
-<script src="cs-module.js"></script>
-<script src="tc-module.js"></script>
 <script src="pn-module.js"></script>
 <script src="lp-module.js"></script>
 <script src="communications-module.js"></script>

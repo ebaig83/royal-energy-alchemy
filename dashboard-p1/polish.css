@@ -1,0 +1,15 @@
+/* Small P1 review polish — same workspaces, cards, sample data and actions. */
+.session-row.next{background:linear-gradient(90deg,#302a47,#1d2940);box-shadow:inset 4px 0 #bd9ee9}
+.session-row.next .time{font-size:17px;font-weight:650;color:#f4eaff}
+.session-row.next strong{font-size:16px;font-weight:650;color:#f7f0ff}
+.collections-primary{background:#e5bb6805;box-shadow:inset 0 2px #d5b372;border-radius:0}
+.collections-primary .eyebrow{color:#f0cf94}.collections-primary strong{color:#f5d89d;font-weight:600}
+.balances-secondary strong{font-size:27px;color:#c5cfdf}.balances-secondary .eyebrow{color:#afbbce}
+.issue-list{display:flex;flex-wrap:wrap;gap:5px 12px;margin-top:7px}.issue{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#c2cddd;line-height:1.5}.issue-icon{width:18px;display:inline-grid;place-items:center;flex-shrink:0;font:500 15px/1.4 system-ui}.issue-payment .issue-icon{color:#ecc989}.issue-waiver .issue-icon{color:#d3bcec}.issue-calendar .issue-icon{color:#b4c9ff}.issue-communication .issue-icon{color:#efb2b9}.issue-followup .issue-icon{color:#a5d4c8}
+.chart .tiny-label{font-size:13px;font-variant-numeric:tabular-nums}.chart-labels{font-size:12px;color:#c0cbdc}.revenue-grid small{font-size:14px}.revenue-disclaimer{font-size:13px;line-height:1.6;color:#c1cbdb;border-left:2px solid #736580;padding-left:10px;margin-top:16px}
+.session-row small{font-size:13px}.next-summary{font-size:14px}.next-summary>.muted{font-size:13px}.quiet-note small,.quiet-note a{font-size:13px}.quiet-note .eyebrow{font-size:12px;letter-spacing:.09em}.client-card .contact,td small{font-size:14px}.metric small{font-size:13px}.tiny-label{font-size:13px}
+.attention-item>a{display:inline-flex;align-items:center;min-height:44px}.check{min-height:44px}.panel-head>a{min-height:44px;display:inline-flex;align-items:center}
+@media(max-width:700px){.session-row.next .time{font-size:15px}.session-row.next strong{font-size:15px}.session-row .time small{font-size:12px}.session-row small{font-size:12px}.badge{font-size:12px}.metric .eyebrow{font-size:11px;line-height:1.5}.metric small{font-size:12px}.metrics .balances-secondary strong{font-size:24px}.revenue-grid small{font-size:12px}.chart .tiny-label{font-size:12px}.chart-labels{font-size:12px}.revenue-disclaimer{font-size:12px}.issue{font-size:12px}.next-summary{font-size:12px}.client-card .contact,td small{font-size:13px}.quiet-note small{font-size:13px}.tabs button{font-size:13px}.footer{font-size:12px;line-height:1.7}}
+
+/* Five provenance-preserving summary cards. */
+.metrics{grid-template-columns:repeat(5,minmax(0,1fr))}.metric .eyebrow{line-height:1.6;white-space:normal}.metric{min-width:0}.metric small{overflow-wrap:anywhere}@media(max-width:1100px){.metrics{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:700px){.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}

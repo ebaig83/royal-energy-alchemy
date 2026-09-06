@@ -1,4 +1,5 @@
 'use strict';
+const { observeWorker } = require('./lib/worker-health');
 
 // Scheduled, idempotent client communications for authoritative sessions.
 // Netlify invokes this every five minutes; the exported processDue function is
@@ -60,6 +61,6 @@ async function processDue({ sb, now = new Date(), send = sendWithPreferences } =
 exports.config = { schedule: '*/5 * * * *' };
 exports.processDue = processDue;
 exports.handler = async () => {
-  try { return { statusCode: 200, body: JSON.stringify(await processDue({ sb: getClient() })) }; }
+  try { return { statusCode: 200, body: JSON.stringify(await observeWorker(getClient(), 'communications', () => processDue({ sb: getClient() }))) }; }
   catch (error) { console.error('[session-communications]', error.message); return { statusCode: 500, body: JSON.stringify({ error: 'Communication job failed.' }) }; }
 };

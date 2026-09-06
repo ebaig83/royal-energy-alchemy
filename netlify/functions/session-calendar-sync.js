@@ -1,4 +1,5 @@
 'use strict';
+const { observeWorker } = require('./lib/worker-health');
 
 const { getClient } = require('./lib/supabase');
 const { isSilentPlannerImport } = require('./lib/record-policy');
@@ -68,6 +69,6 @@ exports.ACTIONABLE_STATUSES = ACTIONABLE_STATUSES;
 exports.sendMeetingReady = sendMeetingReady;
 exports.processPending = processPending;
 exports.handler = async () => {
-  try { return { statusCode: 200, body: JSON.stringify(await processPending({ sb: getClient(), api: createGoogleCalendarApi() })) }; }
+  try { return { statusCode: 200, body: JSON.stringify(await observeWorker(getClient(), 'calendar', () => processPending({ sb: getClient(), api: createGoogleCalendarApi() }))) }; }
   catch (error) { console.error('[session-calendar-sync]', sanitizeError(error)); return { statusCode: 500, body: JSON.stringify({ error: 'Calendar synchronization job failed.' }) }; }
 };
