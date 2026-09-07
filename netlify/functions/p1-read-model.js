@@ -2,13 +2,20 @@
 const {readContent}=require('./lib/p1-content');
 const {providerHealth}=require('./lib/p1-provider-health');
 const {requireAdmin,respond}=require('./lib/auth');
-const {FIELDS,readTable,project}=require('./lib/p1-read-model');
+const {FIELDS,readTable,readReconciliation,project}=require('./lib/p1-read-model');
 const {filterData,contactClass,diagnostics}=require('./lib/p1-policy');
+const validDate=value=>typeof value==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(value)?value:null;
 exports.handler=async event=>{
  try{
   const auth=await requireAdmin(event,{touch:false});if(auth.error)return auth.error;
   if(event.httpMethod!=='GET')return respond(405,{error:'Read-only endpoint.'});
   if(event.queryStringParameters?.embed==='tiktok')return require('./lib/p1-tiktok').embed();
+  if(event.queryStringParameters?.reconcile==='true'){
+   const q=event.queryStringParameters||{},clientName=q.client_name?.trim()||'',date=validDate(q.date),from=validDate(q.from),to=validDate(q.to);
+   if((q.date&&!date)||(q.from&&!from)||(q.to&&!to)||(date&&(from||to))||(from&&to&&from>to))return respond(400,{error:'Invalid reconciliation filter.'});
+   const rows=await readReconciliation(process.env.SUPABASE_URL,process.env.SUPABASE_SERVICE_ROLE_KEY,{clientName,date,from,to});
+   return respond(200,{authenticated:true,reconciliation:rows});
+  }
   const raw=Object.fromEntries(await Promise.all(Object.keys(FIELDS).map(async table=>[table,await readTable(process.env.SUPABASE_URL,process.env.SUPABASE_SERVICE_ROLE_KEY,table)])));
   const content=await readContent(process.env.SUPABASE_URL,process.env.SUPABASE_SERVICE_ROLE_KEY,{includeQA:event.queryStringParameters?.include_qa==='true'});
   const all=project(raw),data=filterData(all,event.queryStringParameters?.include_qa==='true');

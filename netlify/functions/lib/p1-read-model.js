@@ -9,6 +9,7 @@ const FIELDS={
  client_relationships:'id,client_id,related_client_id,relationship_type,relationship_label',
  session_notes:'id,session_id,client_id,content,created_at'
 };
+const RECONCILIATION_FIELDS='id,client_id,client_name,session_date,session_time,status,source,google_calendar_status,google_calendar_event_id,google_meet_url';
 async function readTable(base,key,table){
  if(!FIELDS[table])throw Error('Unsupported resource');
  const rows=[];
@@ -17,6 +18,22 @@ async function readTable(base,key,table){
   const r=await fetch(u,{method:'GET',headers:{apikey:key,Authorization:'Bearer '+key},signal:AbortSignal.timeout(20000)});
   if(!r.ok)throw Error('Read unavailable: '+table+' ('+r.status+')');
   const page=await r.json();if(!Array.isArray(page))throw Error('Invalid read response');rows.push(...page);if(page.length<500)return rows;
+ }
+}
+function validDate(value){return typeof value==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(value)?value:null;}
+async function readReconciliation(base,key,{clientName,date,from,to}={}){
+ const rows=[];
+ for(let offset=0;;offset+=500){
+  const params=new URLSearchParams({select:RECONCILIATION_FIELDS,order:'session_date.asc,session_time.asc,id.asc',offset:String(offset),limit:'500'});
+  if(clientName)params.set('client_name','eq.'+clientName);
+  if(date)params.set('session_date','eq.'+date);
+  else {if(from)params.append('session_date','gte.'+from);if(to)params.append('session_date','lte.'+to);}
+  const u=new URL('/rest/v1/sessions',base);u.search=params;
+  const r=await fetch(u,{method:'GET',headers:{apikey:key,Authorization:'Bearer '+key},signal:AbortSignal.timeout(20000)});
+  if(!r.ok)throw Error('Read unavailable: sessions ('+r.status+')');
+  const page=await r.json();if(!Array.isArray(page))throw Error('Invalid read response');
+  rows.push(...page.map(s=>({session_id:s.id,client_id:s.client_id,client_name:s.client_name,session_date:s.session_date,session_time:s.session_time,status:s.status,source:s.source,google_calendar_status:s.google_calendar_status,has_google_calendar_event_id:!!s.google_calendar_event_id,has_google_meet_url:!!s.google_meet_url})));
+  if(page.length<500)return rows;
  }
 }
 function project(raw){
@@ -29,4 +46,4 @@ function project(raw){
   payments:d.payments,aftercare:d.aftercare,relationships:d.client_relationships};
 }
 
-module.exports={FIELDS,readTable,project};
+module.exports={FIELDS,readTable,readReconciliation,project};
