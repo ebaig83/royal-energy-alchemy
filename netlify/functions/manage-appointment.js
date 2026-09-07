@@ -117,12 +117,12 @@ exports.handler = async (event) => {
 
     // ── reschedule_confirmed — real slot swap ─────────────────────────────
     if (action === 'reschedule_confirmed') {
-      return await handleRescheduleConfirmed(sb, body, session_id, ip, ua);
+      return await managedChange(sb,body,session_id,'reschedule');
     }
 
     // ── cancel_confirmed — real session cancel ────────────────────────────
     if (action === 'cancel_confirmed') {
-      return await handleCancelConfirmed(sb, body, session_id, ip, ua);
+      return await managedChange(sb,body,session_id,'cancel');
     }
 
     // ── request_time — client requests alternate time from practitioner ───
@@ -449,4 +449,12 @@ function formatDisplayTime(timeStr) {
   const ampm = h >= 12 ? 'PM' : 'AM';
   const h12  = h === 0 ? 12 : h > 12 ? h - 12 : h;
   return `${h12}:${m} ${ampm}`;
+}
+
+async function managedChange(sb,body,id,action){
+ const {data:s,error}=await sb.from('sessions').select('*').eq('id',id).single();if(error||!s)return respond(404,{error:'Session not found.'});
+ if(action==='reschedule'&&!body.slot_id)return respond(400,{error:'Select an available slot.'});
+ const hash=require('crypto').createHash('sha256').update([id,action,s.session_date,s.session_time,body.new_date,body.new_time].join(':')).digest('hex');
+ const request=hash.slice(0,8)+'-'+hash.slice(8,12)+'-'+hash.slice(12,16)+'-'+hash.slice(16,20)+'-'+hash.slice(20,32);
+ return require('./lib/practitioner-appointments').change(sb,s,{...body,action,confirmed:true,request_id:request,expected_date:s.session_date,expected_time:s.session_time,new_slot_id:body.slot_id},'client');
 }

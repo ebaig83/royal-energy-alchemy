@@ -3,12 +3,8 @@
 const SITE_URL = process.env.SITE_URL || 'https://royal-energy-alchemy.netlify.app';
 const SUPPRESSED = new Set(['cancelled', 'no_show']);
 
-function sessionStart(session) {
-  if (!session?.session_date || !session?.session_time) return null;
-  const value = `${session.session_date}T${String(session.session_time).slice(0, 8)}`;
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date;
-}
+const { easternInstant } = require('./business-time');
+function sessionStart(session) { return easternInstant(session?.session_date, session?.session_time); }
 
 function sessionDuration(session) {
   const n = Number(session?.duration_minutes);

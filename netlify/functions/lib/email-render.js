@@ -72,6 +72,13 @@ function renderTemplate(template, input) {
   let text = template.text_body || '';
   let subject = template.subject || '';
 
+  // Reschedule notices must carry the current meeting details, not a second
+  // generic meeting-ready email with an unrelated idempotency key.
+  if (template.name === 'appointment_rescheduled' && vars.google_meet_url) {
+    const details = '<p>Duration: {{duration}}<br>Location: {{location}}</p><p><a href="{{google_meet_url}}">Join Google Meet</a></p>';
+    html = html.replace(/(<a href="\{\{manage_url\}\}")/, details + '$1');
+    text += '\nDuration: {{duration}}\nLocation: {{location}}\nGoogle Meet: {{google_meet_url}}\n';
+  }
   const conditionals = /\{\{#if\s+(\w+)\}\}([\s\S]*?)\{\{\/if\}\}/g;
   const applyConditionals = value => value.replace(conditionals, (_, key, inner) => {
     const present = vars[key] != null && vars[key] !== '' && vars[key] !== false;

@@ -1,5 +1,5 @@
 export const IMPORT='manual_planner_import_20260905';
-export const AREAS=['Today','Clients','Schedule','Communications','Finance','System'];
+export const AREAS=['Today','Clients','Schedule','Communications','Finance','Content Studio','System'];
 export const escapeHTML=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export const money=v=>Number.isFinite(Number(v))?new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(Number(v)):'—';
 export function dateKey(now=new Date()){return new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(now);}
@@ -10,7 +10,7 @@ export const stamp=s=>s.session_date+'T'+s.session_time;
 // Legacy QA signatures affect visibility only; no identity merging or database edits.
 export const legacyQA=r=>/^(?:__match_(?:probe|flow_test)__|Brand New Person \d{13}|(?:Jordan Sandbox|Stripe Sandbox Test) \d{8}|Google Meet Test)$/.test(r?.client_name||r?.full_name||'')||/^(?:QA(?:\s|-)|test$|Sprint Test Client$)/i.test(r?.client_name||r?.full_name||'');
 export const qa=r=>!!r&&(legacyQA(r)||r.is_test===true||['qa','qa_auto','qa_financial','qa_migration_check','qa_test','test','demo','seed','controlled_test','controlled_google_meet_test','workflow_audit'].includes(String(r.source||'').trim().toLowerCase())||(r.tags||[]).some(t=>['qa','test','seed','demo','controlled-test'].includes(String(t).trim().toLowerCase()))||/\[qa\]/i.test(r.client_name||r.full_name||''));
-export const silent=s=>s.source===IMPORT;
+export const silent=s=>[IMPORT,'manual_planner_calendar_20260907'].includes(s.source);
 export const historical=(s,now)=>silent(s)||['historical_planner_reconciliation_20260902','planner-reconciliation'].includes(s.source)||s.session_date<dateKey(now);
 export const active=s=>!['cancelled','completed','no_show'].includes(s.status);
 export const future=(s,now)=>active(s)&&stamp(s)>=dateKey(now)+'T'+clockKey(now)+':00';
@@ -20,7 +20,7 @@ export function intake(s){return ['complete','completed','submitted'].includes(s
 export function appointment(s){return ({confirmed:['Confirmed','blue'],pending:['Pending confirmation','amber'],ready:['Confirmed','blue'],completed:['Completed','green'],cancelled:['Cancelled','muted'],no_show:['Missed appointment','amber']})[s.status]||['Review appointment','muted'];}
 export function meetURL(s){try{const u=new URL(s.google_meet_url);return u.protocol==='https:'&&u.hostname==='meet.google.com'?u.href:null;}catch{return null;}}
 export function canJoin(s,now){return !historical(s,now)&&active(s)&&s.payment_status==='paid'&&['distance','remote'].includes(s.location_type)&&!!meetURL(s);}
-export function calendar(s,now){if(silent(s))return ['Automatic sync off','muted'];if(historical(s,now))return ['Historical','muted'];if(['retryable_error','failed','error'].includes(s.google_calendar_status))return ['Sync Error','red'];if(canJoin(s,now))return ['Meet Ready','green'];if(['in_person','in-person'].includes(s.location_type))return ['In person','muted'];return ['Meet not ready','muted'];}
+export function calendar(s,now){if(s.source==='manual_planner_calendar_20260907'){if(s.google_calendar_status==='ready')return ['Calendar Ready','green'];if(/error|failed/.test(s.google_calendar_status||''))return ['Sync Error','red'];return ['Calendar pending','muted'];}if(silent(s))return ['Automatic sync off','muted'];if(historical(s,now))return ['Historical','muted'];if(['retryable_error','failed','error'].includes(s.google_calendar_status))return ['Sync Error','red'];if(canJoin(s,now))return ['Meet Ready','green'];if(['in_person','in-person'].includes(s.location_type))return ['In person','muted'];return ['Meet not ready','muted'];}
 export function needsAttention(s,now){return !historical(s,now)&&active(s)&&(payment(s)[1]==='amber'||payment(s)[1]==='red'||waiver(s)[0]==='Waiver Needed'||intake(s)[0]==='Intake Needed'||calendar(s,now)[0]==='Sync Error');}
 export function forClient(rows,id){return rows.filter(r=>r.client_id===id);}
 export function clientStats(c,sessions,now){const rows=forClient(sessions,c.id).slice().sort((a,b)=>stamp(a).localeCompare(stamp(b)));return {count:rows.length,next:rows.find(s=>future(s,now)),last:rows.filter(s=>stamp(s)<dateKey(now)+'T'+clockKey(now)+':00'&&s.status!=='cancelled').at(-1),attention:rows.some(s=>needsAttention(s,now))};}
@@ -56,4 +56,37 @@ export function finance(entries,sessions,month,transactions=[]){
  const balanceRows=sessions.filter(s=>s.session_date?.startsWith(month)&&!silent(s)&&active(s)&&['unpaid','pending','failed'].includes(s.payment_status)&&s.amount_due!=null).map(s=>({id:s.id,amount:Math.max(0,cents(s.amount_due)-cents(s.amount_paid))/100}));
  return {collected,refunds,net:(cents(collected)-cents(refunds))/100,balances:total(balanceRows),balanceRows,manual:total(paid.filter(e=>e.payment_method&&e.payment_method!=='stripe')),stripe:total(paid.filter(e=>e.payment_method==='stripe')),ledgerOnly:total(paid.filter(e=>e.source_table==='ledger_entries')),plannerEvidence:total(evidence.filter(e=>e.kind==='planner'&&e.amount!=null)),manualEvidence:total(evidence.filter(e=>e.kind==='manual'&&e.amount!=null)),evidenceTotal:total(evidence.filter(e=>e.amount!=null)),evidenceUnknown:evidence.filter(e=>e.amount==null).length,evidence,rows};
 }
-export function eligibleActions(s,now){const actions=['View'];if(canJoin(s,now))actions.push('Join Meet');if(!historical(s,now)&&active(s)){actions.push('Manage','Reschedule','Cancel');if(s.payment_status!=='paid'&&s.waiver_completed===true)actions.push('Send Payment Link');if(s.payment_status==='paid'&&calendar(s,now)[0]==='Sync Error')actions.push('Retry Calendar');}return actions;}
+export function eligibleActions(s,now){const actions=['View'];if(canJoin(s,now))actions.push('Join Meet');if(future(s,now)&&!qa(s)){actions.push('Manage','Reschedule','Cancel');if(s.payment_status!=='paid'&&s.waiver_completed===true)actions.push('Send Payment Link');if(s.payment_status==='paid'&&calendar(s,now)[0]==='Sync Error')actions.push('Retry Calendar');}return actions;}
+
+export const areaKey=name=>name.toLowerCase().replaceAll(' ','-');
+
+
+const TIMEZONE = 'America/New_York';
+const formatter = new Intl.DateTimeFormat('en-CA', { timeZone: TIMEZONE, year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit', hourCycle:'h23' });
+function parts(value) { return Object.fromEntries(formatter.formatToParts(value).filter(p=>p.type!=='literal').map(p=>[p.type,Number(p.value)])); }
+function wallMillis(p) { return Date.UTC(p.year,p.month-1,p.day,p.hour,p.minute,p.second); }
+// Reject nonexistent spring-forward and ambiguous fall-back wall times rather
+// than silently shifting a client appointment. Normal business hours are unique.
+function easternInstant(date,time) {
+ if (!/^\d{4}-\d{2}-\d{2}$/.test(String(date)) || !/^\d{2}:\d{2}(?::\d{2})?$/.test(String(time))) return null;
+ const [year,month,day]=date.split('-').map(Number),[hour,minute,second=0]=time.split(':').map(Number);
+ if(year<1000||month<1||month>12||day<1||day>31||hour>23||minute>59||second>59)return null;
+ const wall=Date.UTC(year,month-1,day,hour,minute,second),check=new Date(wall);
+ if(check.getUTCFullYear()!==year||check.getUTCMonth()!==month-1||check.getUTCDate()!==day)return null;
+ const candidates=new Set();
+ for(const hours of [-36,-12,0,12,36]) {
+  const probe=wall+hours*3600000,offset=wallMillis(parts(new Date(probe)))-probe;
+  const candidate=wall-offset;
+  if(wallMillis(parts(new Date(candidate)))===wall)candidates.add(candidate);
+ }
+ return candidates.size===1?new Date([...candidates][0]):null;
+}
+
+
+export const DISPLAY_ZONES = [['America/New_York','Eastern'],['America/Chicago','Central'],['America/Denver','Mountain'],['America/Los_Angeles','Pacific'],['America/Phoenix','Arizona'],['Pacific/Honolulu','Hawaii'],['Europe/London','London'],['UTC','UTC']];
+export function displayAppointment(session, zone='America/New_York') {
+ if(!DISPLAY_ZONES.some(([id])=>id===zone))zone='America/New_York';
+ const instant=easternInstant(session.session_date,session.session_time);
+ if(!instant)return {date:date(session.session_date),time:time(session.session_time),zone:'Eastern · conversion unavailable',dateKey:session.session_date};
+ return {date:new Intl.DateTimeFormat('en-US',{timeZone:zone,month:'short',day:'numeric',year:'numeric'}).format(instant),time:new Intl.DateTimeFormat('en-US',{timeZone:zone,hour:'numeric',minute:'2-digit'}).format(instant),zone:new Intl.DateTimeFormat('en-US',{timeZone:zone,timeZoneName:'short'}).formatToParts(instant).find(p=>p.type==='timeZoneName').value,dateKey:new Intl.DateTimeFormat('en-CA',{timeZone:zone,year:'numeric',month:'2-digit',day:'2-digit'}).format(instant)};
+}

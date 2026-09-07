@@ -22,9 +22,13 @@ function isQaRecord(record) {
 
 // Manual planner reconciliation must stay silent until explicitly reviewed.
 function isSilentPlannerImport(record) {
-  return normalized(record && record.source) === 'manual_planner_import_20260905';
+  return ['manual_planner_import_20260905', 'manual_planner_calendar_20260907'].includes(normalized(record && record.source));
 }
 
+// This reviewed batch permits Calendar-only events, never automatic customer messages.
+function isReviewedPlannerCalendar(record, today = new Intl.DateTimeFormat('en-CA', {timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())) {
+ return !!record?.id && record.source === 'manual_planner_calendar_20260907' && !isQaRecord(record) && !!record.session_time && record.session_date >= today && !['cancelled','completed','no_show'].includes(normalized(record.status));
+}
 function isHistoricalRecord(record) {
   return HISTORICAL_SOURCES.has(normalized(record && record.source));
 }
@@ -39,4 +43,4 @@ function isCalendarEligible(record, today = new Date().toISOString().slice(0, 10
   return ['distance', 'remote'].includes(location);
 }
 
-module.exports = { QA_SOURCES, HISTORICAL_SOURCES, isQaRecord, isHistoricalRecord, isSilentPlannerImport, isCalendarEligible };
+module.exports = { QA_SOURCES, HISTORICAL_SOURCES, isReviewedPlannerCalendar, isQaRecord, isHistoricalRecord, isSilentPlannerImport, isCalendarEligible };

@@ -1,7 +1,7 @@
 'use strict';
 
 const crypto = require('crypto');
-const { isCalendarEligible } = require('./record-policy');
+const { isCalendarEligible, isReviewedPlannerCalendar } = require('./record-policy');
 const CALENDAR_SCOPE = 'https://www.googleapis.com/auth/calendar.events';
 const TIMEZONE = process.env.DASHBOARD_TIMEZONE || 'America/New_York';
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
@@ -121,6 +121,15 @@ async function syncSession(session, api, options = {}) {
     }
     const cancelled = String(session?.status || '').toLowerCase() === 'cancelled';
     return { status: cancelled ? 'cancelled' : 'not_requested', eventId: null, meetUrl: cancelled ? null : (session?.video_link || null), operation: 'cancel' };
+  }
+  if (isReviewedPlannerCalendar(session)) {
+    const body = eventBody(session, {includeConference:false, includeId:!session.google_calendar_event_id});
+    body.summary = 'Royal Energy Alchemy — ' + session.client_name + ' — ' + (session.service || 'Planner appointment');
+    // No location or conference is inferred from (m)/(T), price or a person's country.
+    let event;
+    if (session.google_calendar_event_id) event = await api.update(session.google_calendar_event_id, body);
+    else { try { event = await api.create(body); } catch(error) { if(error?.status!==409)throw error; event=await api.get(eventId(session.id)); } }
+    return {status:'ready',eventId:event.id || eventId(session.id),meetUrl:null,operation:session.google_calendar_event_id?'update':'create'};
   }
   if (!eligibleSession(session)) return { status: 'not_requested', eventId: session?.google_calendar_event_id || null, meetUrl: session?.google_meet_url || null, operation: 'skip' };
   let event; let operation;

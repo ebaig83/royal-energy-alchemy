@@ -32,6 +32,11 @@ exports.handler = async function(event) {
 
   // ── GET ──────────────────────────────────────────────────────────
   if (event.httpMethod === 'GET') {
+    if (params.id && params.action==='manage-link') {
+      const {data,error}=await sb.from('sessions').select('id').eq('id',params.id).single();
+      if(error||!data)return respond(404,{error:'Session not found.'});
+      return respond(200,{url:appointmentManageUrl(data.id,{ttlSeconds:1800})});
+    }
     if (params.id) {
       const { data, error } = await sb
         .from('sessions')
@@ -145,6 +150,7 @@ exports.handler = async function(event) {
 
     const { data: old } = await sb.from('sessions').select('*').eq('id', params.id).single();
     if (!old) return respond(404, { error: 'Session not found.' });
+    if(body.p1===true && ['reschedule','cancel'].includes(body.action))return require('./lib/practitioner-appointments').change(sb,old,body,auth.user.email);
 
     if (body.action === 'cancel') {
       if (old.status === 'cancelled') return respond(409, { error: 'Session is already cancelled.' });

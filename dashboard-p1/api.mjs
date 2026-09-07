@@ -1,7 +1,7 @@
 // Local production review: credentials stay in the GET-only server adapter.
 let current;
-export async function loadData(includeQA=false){
- const r=await fetch('/.netlify/functions/p1-read-model'+(includeQA?'?include_qa=true':''),{method:'GET',credentials:'same-origin',headers:{Accept:'application/json','X-P1-Review':'read-only'},cache:'no-store'});
+export async function loadData(includeQA=false,diagnostics=false){
+ const r=await fetch('/.netlify/functions/p1-read-model'+'?'+new URLSearchParams({include_qa:String(includeQA),diagnostics:String(diagnostics)}),{method:'GET',credentials:'same-origin',headers:{Accept:'application/json','X-P1-Review':'read-only'},cache:'no-store'});
  if(r.status===401){const e=Error('Sign in to view production records.');e.status=401;throw e;}
  if(!r.ok)throw Error('Production data is unavailable. Reload to retry; no sample data has been substituted.');
  const result=await r.json();for(const k of ['clients','sessions','ledger','communications','aftercare','relationships'])if(!Array.isArray(result[k]))throw Error('Incomplete production read model');

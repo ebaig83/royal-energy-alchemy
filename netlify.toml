@@ -12,6 +12,15 @@
 [functions."session-communications"]
   schedule = "*/5 * * * *"
 
+# Keep the canonical dashboard URL on the current P1 practitioner workspace.
+# The legacy dashboard.html file remains in the tree until its references are
+# fully retired, but production serves the P1 shell at the bookmarked URL.
+[[redirects]]
+  from = "/dashboard.html"
+  to = "/dashboard-p1.html"
+  status = 200
+  force = true
+
 # Keep legacy booking links working while the homepage form is the single
 # public booking experience.
 [[redirects]]
