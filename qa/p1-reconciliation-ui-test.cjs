@@ -1,0 +1,17 @@
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+const source=fs.readFileSync(path.join(__dirname,'../dashboard-p1/app.mjs'),'utf8');
+assert(source.includes("/.netlify/functions/p1-read-model?'+params.toString()"));
+assert(source.includes("method:'GET',credentials:'same-origin'"));
+assert(source.includes("response.status===401"));
+assert(source.includes("No matching rows."));
+assert(source.includes('The reconciliation service is temporarily unavailable.'));
+assert(source.includes('Sherry Beckmann'));
+assert(source.includes("reconciliationFilters={clientName:'',date:today,from:'',to:''}"));
+assert(source.includes("from:today,to:reconcileDate(today,14)"));
+assert(source.includes('session_id')&&source.includes('has_google_calendar_event_id')&&source.includes('has_google_meet_url'));
+for(const forbidden of ['google_calendar_event_id','google_meet_url','email','phone','payment_status','password_hash'])assert(!source.includes(`r.${forbidden}`),`UI must not render ${forbidden}`);
+const reconcile=source.slice(source.indexOf('async function runReconciliation'),source.indexOf('function reconciliationPreset'));
+assert(!/method:'(?:POST|PUT|PATCH|DELETE)'/.test(reconcile));
+console.log('PASS reconciliation UI endpoint, same-origin auth, approved fields, errors, presets and GET-only behavior');
