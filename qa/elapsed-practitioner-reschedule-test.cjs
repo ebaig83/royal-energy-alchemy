@@ -1,0 +1,20 @@
+'use strict';
+const assert=require('assert/strict');
+(async()=>{
+ const M=await import('../dashboard-p1/model.mjs');
+ const now=new Date('2026-09-07T23:00:00.000Z');
+ const base={id:'sherry',session_date:'2026-09-07',session_time:'10:00:00',status:'pending',source:'online',google_calendar_event_id:'evt-1',google_calendar_status:'ready'};
+ assert(M.eligibleActions(base,now).includes('Reschedule'),'elapsed active pending appointments remain reschedulable');
+ for(const status of ['cancelled','completed','no_show']) assert(!M.eligibleActions({...base,status},now).includes('Reschedule'),`${status} appointments remain blocked`);
+ const calls=[];
+ const {change}=require('../netlify/functions/lib/practitioner-appointments');
+ const result=await change({rpc:async(name,args)=>{calls.push({name,args});return{data:{session:{...base,session_date:'2026-09-17',session_time:'10:00',google_calendar_status:'reschedule_pending',google_calendar_event_id:'evt-1'},duplicate:false}}}},base,{action:'reschedule',confirmed:true,request_id:'11111111-1111-4111-8111-111111111111',expected_date:base.session_date,expected_time:base.session_time,new_date:'2026-09-17',new_time:'10:00',new_slot_id:'slot-1'},'practitioner@example.com');
+ assert.equal(result.statusCode,200);
+ assert.equal(calls.length,1);
+ assert.equal(calls[0].args.p_slot,'slot-1');
+ assert.equal(JSON.parse(result.body).calendar_status,'reschedule_pending');
+ assert.equal(JSON.parse(result.body).session.google_calendar_event_id,'evt-1');
+ const replay=await change({rpc:async()=>({data:{session:{...base,google_calendar_status:'reschedule_pending',google_calendar_event_id:'evt-1'},duplicate:true}})},base,{action:'reschedule',confirmed:true,request_id:'11111111-1111-4111-8111-111111111111',expected_date:base.session_date,expected_time:base.session_time,new_date:'2026-09-17',new_time:'10:00',new_slot_id:'slot-1'},'practitioner@example.com');
+ assert.equal(JSON.parse(replay.body).duplicate,true);
+ console.log('PASS: elapsed practitioner reschedule eligibility, terminal-state blocking, slot forwarding, event preservation, calendar intent, and idempotent replay contract.');
+})().catch(error=>{console.error(error);process.exitCode=1;});

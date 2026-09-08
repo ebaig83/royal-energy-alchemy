@@ -13,7 +13,7 @@ const futureUnpaid={...future,id:'future-unpaid',payment_status:'unpaid'};
 assert.deepEqual(M.eligibleActions(future,now),['View','Join Meet','Manage','Reschedule','Cancel']);
 assert.deepEqual(M.eligibleActions(futureWithPaymentLink,now),['View','Manage','Reschedule','Cancel','Send Payment Link']);
 assert.deepEqual(M.eligibleActions(canceled,now),['View']);
-assert.deepEqual(M.eligibleActions(past,now),['View']);
+assert.deepEqual(M.eligibleActions(past,now),['View','Reschedule']);
 assert.deepEqual(M.eligibleActions(futureUnpaid,now),['View','Manage','Reschedule','Cancel','Send Payment Link']);
 assert.deepEqual(M.eligibleActions(qa,now),['View','Join Meet']);
 assert.deepEqual(M.eligibleActions({...imported,payment_status:'paid',google_meet_url:online.google_meet_url,session_date:'2026-09-01',session_time:'10:00:00'},d.now),['View']);
