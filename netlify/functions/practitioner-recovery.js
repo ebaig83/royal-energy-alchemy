@@ -7,14 +7,25 @@ const RECOVERY_MINUTES=20;
 function origin(raw){return String(raw||'').trim().replace(/\/$/,'');}
 function allowed(event){const actual=origin(event.headers?.origin||event.headers?.Origin);const configured=(process.env.VERIFY_PIN_ALLOWED_ORIGINS||'').split(',').map(origin).filter(Boolean);const base=origin(process.env.SITE_URL||'https://www.daronroyal.com');return !actual||[...new Set([...configured,base])].includes(actual);}
 function sameSecret(value){const expected=process.env.PRACTITIONER_RECOVERY_ADMIN_SECRET||'';if(!expected||typeof value!=='string')return false;const a=Buffer.from(value),b=Buffer.from(expected);return a.length===b.length&&crypto.timingSafeEqual(a,b);}
+function recoverySecret(event){return event.headers?.['x-practitioner-recovery-secret']||event.headers?.['X-Practitioner-Recovery-Secret'];}
 exports.handler=async event=>{
  try{
-  if(String(event.httpMethod||'').toUpperCase()!=='POST'||!allowed(event))return respond(403,{error:'Recovery request was not accepted.'});
+  const method=String(event.httpMethod||'').toUpperCase(),actualOrigin=origin(event.headers?.origin||event.headers?.Origin),originAllowed=allowed(event);
+  if(method!=='POST')return respond(403,{error:'Recovery request was not accepted.'});
   if((event.body||'').length>2048)return respond(400,{error:'Recovery request was not accepted.'});
   let body;try{body=JSON.parse(event.body||'{}');}catch{return respond(400,{error:'Recovery request was not accepted.'});}
+  if(body.action==='diagnostic'&&process.env.PRACTITIONER_RECOVERY_DIAGNOSTIC==='true'){
+   const configured=(process.env.VERIFY_PIN_ALLOWED_ORIGINS||'').split(',').map(origin).filter(Boolean);
+   const siteUrl=origin(process.env.SITE_URL||'');
+   const expected=process.env.PRACTITIONER_RECOVERY_ADMIN_SECRET||'';
+   const requestSecret=recoverySecret(event);
+   if(!sameSecret(requestSecret))return respond(403,{error:'Recovery request was not accepted.'});
+   return respond(200,{has_admin_secret:Boolean(expected),request_secret_present:typeof requestSecret==='string'&&requestSecret.length>0,secret_matches:true,origin_present:Boolean(actualOrigin),origin_allowed:originAllowed,site_url_present:Boolean(siteUrl),allowed_origins_present:configured.length>0});
+  }
+  if(!originAllowed)return respond(403,{error:'Recovery request was not accepted.'});
   const sb=getClient();
   if(body.action==='initiate'){
-   if(!sameSecret(event.headers?.['x-practitioner-recovery-secret']||event.headers?.['X-Practitioner-Recovery-Secret']))return respond(403,{error:'Recovery request was not accepted.'});
+   if(!sameSecret(recoverySecret(event)))return respond(403,{error:'Recovery request was not accepted.'});
    if(!await credential.recoveryAttempt(sb,event))return respond(429,{error:'Recovery request was not accepted.'});
    const token=crypto.randomBytes(32).toString('base64url'),expires=new Date(Date.now()+RECOVERY_MINUTES*60000).toISOString();
    const {error}=await sb.from('practitioner_recovery_tokens').insert({token_hash:hashToken(token),expires_at:expires});
