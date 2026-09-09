@@ -10,6 +10,7 @@ assert.match(actions,/call\('send-payment-link','POST'/);
 assert.match(actions,/Client email is required to request payment\./);
 assert.match(actions,/Needs attention — waiver must be completed first/);
 assert.match(actions,/Payment: \$\{paymentStatus\}/);
+for(const [id,price] of Object.entries({'implant-parasite-removal':100,'follow-up-session':80,'heavy-duty-removal':120,'exorcism-session':120,'emergency-removal-session':120,'distance-energy-session':70,'energy-session-15-adult':50,'energy-session-15-youth':40,'energy-session-10-child':30,'spiritual-coaching':75,'house-cleansing-blessing':80})) assert.match(actions,new RegExp(`'${id}':${price}`));
 assert.match(endpoint,/findService/);
 assert.match(endpoint,/amount_due: serviceInfo\.price/);
 assert.match(payment,/Waiver must be completed before payment can be requested/);
