@@ -1,7 +1,7 @@
 'use strict';
 const FIELDS={
  clients:'id,full_name,email,phone,source,status,notes,tags,created_at',
- sessions:'id,client_id,client_name,service,session_date,session_time,duration_minutes,location_type,status,payment_status,amount_due,amount_paid,source,seller_notes,created_at,intake_status,waiver_status,waiver_completed,google_calendar_status,google_meet_url',
+ sessions:'id,client_id,client_name,service,session_date,session_time,duration_minutes,location_type,status,payment_status,amount_due,amount_paid,payment_method,payment_reference,payment_note,payment_source,source,seller_notes,created_at,intake_status,waiver_status,waiver_completed,google_calendar_status,google_meet_url',
  ledger_entries:'id,client_id,client_name,entry_type,amount,entry_date,created_at,related_session_id,related_payment_id,deleted_at',
  payments:'id,session_id,client_id,client_name,method,status,amount,paid_at,refunded_amount,refunded_at,refund_status',
  communications:'id,client_id,channel,message_type,recipient,subject,status,sent_at,created_at',

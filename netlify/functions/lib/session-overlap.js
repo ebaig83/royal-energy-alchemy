@@ -21,7 +21,7 @@ function intervalsOverlap(firstStart, firstDuration, secondStart, secondDuration
 }
 
 function isActiveSession(session) {
-  return !['cancelled', 'no_show'].includes(String(session?.status || '').toLowerCase());
+  return !['cancelled', 'completed', 'no_show'].includes(String(session?.status || '').toLowerCase());
 }
 
 function sessionOverlapsInterval(session, interval) {

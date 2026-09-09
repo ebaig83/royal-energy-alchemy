@@ -17,7 +17,11 @@ function calendarIntentStatus(session, action) {
 async function change(sb,session,body,actor){
  if(body.confirmed!==true)return respond(400,{error:'Explicit confirmation is required.'});
  if(!UUID.test(body.request_id||''))return respond(400,{error:'A request identifier is required.'});
- if(isQaRecord(session))return respond(409,{error:'Test appointments cannot be changed here.'});
+ // Controlled QA appointments may be cancelled through their signed lifecycle
+ // path so their availability and Calendar state are cleaned up atomically.
+ // Rescheduling QA records remains blocked to prevent test data from being
+ // repurposed as a live appointment.
+ if(isQaRecord(session)&&body.action!=='cancel')return respond(409,{error:'Test appointments cannot be rescheduled here.'});
  if(!['reschedule','cancel'].includes(body.action))return respond(400,{error:'Unsupported appointment action.'});
  if(body.action==='reschedule'&&!easternInstant(body.new_date,body.new_time))return respond(400,{error:'Enter a valid, unambiguous Eastern date and time.'});
  if(!body.expected_date||!body.expected_time)return respond(400,{error:'Reload the appointment before changing it.'});

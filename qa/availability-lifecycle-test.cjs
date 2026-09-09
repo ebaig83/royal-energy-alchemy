@@ -1,0 +1,10 @@
+'use strict';
+const assert=require('assert/strict');
+const {filterSlotsAgainstSessions}=require('../netlify/functions/lib/session-overlap');
+const slot={status:'available',slot_date:'2026-09-18',slot_time:'16:00:00'};
+assert.equal(filterSlotsAgainstSessions([slot],[{status:'confirmed',session_date:'2026-09-18',session_time:'16:00:00',duration_minutes:60}]).length,0);
+assert.equal(filterSlotsAgainstSessions([slot],[{status:'cancelled',session_date:'2026-09-18',session_time:'16:00:00',duration_minutes:60}]).length,1);
+assert.equal(filterSlotsAgainstSessions([slot],[{status:'completed',session_date:'2026-09-18',session_time:'16:00:00',duration_minutes:60}]).length,1);
+assert.equal(filterSlotsAgainstSessions([slot],[{status:'confirmed',session_date:'2026-09-18',session_time:'15:30:00',duration_minutes:60}]).length,0);
+assert.equal(filterSlotsAgainstSessions([slot],[{status:'confirmed',session_date:'2026-09-19',session_time:'16:00:00',duration_minutes:60}]).length,1);
+console.log('PASS: active sessions hide slots; cancelled/completed sessions release them; overlap and Eastern date boundaries remain enforced.');

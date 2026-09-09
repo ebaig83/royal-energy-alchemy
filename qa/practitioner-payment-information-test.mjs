@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import createSessionModule from '../netlify/functions/practitioner-create-session.js';
+const {paymentMetadata}=createSessionModule._test;
+const base={payment_status:'unpaid',amount_paid:0,payment_method:'none'};
+assert.deepEqual(paymentMetadata({...base,payment_status:'paid',amount_paid:100,payment_method:'cash'},100),{status:'paid',amountPaid:100,method:'cash',reference:null,note:null,source:'manual_off_platform'});
+assert.equal(paymentMetadata({...base,payment_status:'partial',amount_paid:40,payment_method:'venmo'},100).status,'partial');
+assert.equal(paymentMetadata({...base,payment_status:'complimentary'},100).source,'complimentary');
+assert.match(paymentMetadata({...base,amount_paid:-1},100).error,/non-negative/);
+assert.match(paymentMetadata({...base,payment_status:'paid',amount_paid:100,payment_method:'stripe'},100).error,/Stripe webhook/);
+assert.match(paymentMetadata({...base,payment_note:'card number 4111111111111111'},100).error,/may not contain/);
+assert.match(paymentMetadata({...base,payment_status:'partial',amount_paid:100,payment_method:'cash'},100).error,/less than/);
+const ui=fs.readFileSync(new URL('../dashboard-p1/actions.mjs',import.meta.url),'utf8');
+for(const text of ['Payment information','Amount due','Amount paid','Payment status','Payment reference','Do not enter card'])assert.ok(ui.includes(text),`missing UI text: ${text}`);
+const migration=fs.readFileSync(new URL('../migrations/2026-09-09-practitioner-payment-information.sql',import.meta.url),'utf8');
+for(const text of ['payment_method','payment_reference','payment_note','payment_source','complimentary'])assert.ok(migration.includes(text),`missing migration field: ${text}`);
+console.log('PASS: canonical due, paid/partial/complimentary states, invalid amounts, Stripe hardening, sensitive-note rejection, UI fields, and schema controls.');

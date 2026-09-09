@@ -10,7 +10,7 @@ assert.match(actions,/name="create_google_meet"/);
 assert.match(actions,/calendarHealthy\?'':'disabled'/);
 assert.match(actions,/Google Calendar connection needs attention/);
 assert.match(actions,/wantsMeet&&\!calendarHealthy/);
-assert.match(actions,/Calendar\/Meet: \$\{calendarStatus\}/);
+assert.match(actions,/Calendar\/Meet: \$\{wantsMeet\?'Pending':'Not requested'\}/);
 assert.match(app,/name==='Google Calendar'&&s\.status==='Healthy'/);
 assert.match(create,/body\.create_google_meet === true/);
 assert.match(create,/source: wantsMeet \? 'manual_practitioner_calendar' : 'manual_practitioner'/);
