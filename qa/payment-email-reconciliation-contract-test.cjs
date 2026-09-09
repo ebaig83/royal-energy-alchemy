@@ -1,0 +1,12 @@
+'use strict';
+const assert=require('assert/strict'),fs=require('fs');
+const migration=fs.readFileSync('migrations/2026-09-09-payment-email-reconciliation.sql','utf8');
+const worker=fs.readFileSync('netlify/functions/payment-email-reconcile.js','utf8');
+const gmail=fs.readFileSync('netlify/functions/lib/gmail-payment-source.js','utf8');
+const endpoint=fs.readFileSync('netlify/functions/payment-reconciliation.js','utf8');
+const ui=fs.readFileSync('dashboard-p1/payment-reconciliation.mjs','utf8');
+for(const text of ['payment_reconciliation_items','payment_reconciliation_audit','payment_reconciliation_checkpoints','payment_reconciliation_attach','provider_reference_key'])assert.match(migration,new RegExp(text));
+assert.match(migration,/stripe_payment_status/);assert.match(migration,/stripe_state_is_authoritative/);assert.match(migration,/amount_conflict/);
+assert.match(gmail,/GMAIL_CLIENT_ID/);assert.match(worker,/PAYMENT_EMAIL_AUTO_ATTACH_ENABLED/);assert.match(worker,/source_message_id/);assert.match(worker,/candidate_matches/);assert.match(gmail,/oauth2\.googleapis\.com\/token/);assert.doesNotMatch(worker,/raw_email|raw_body/i);
+assert.match(endpoint,/requireAdmin/);assert.match(endpoint,/payment_reconciliation_attach/);assert.match(ui,/Payment reconciliation/);assert.match(ui,/Mark unrelated/);assert.doesNotMatch(ui,/raw email body/i);
+console.log('PASS payment reconciliation schema, Gmail/OAuth separation, admin endpoint, safe metadata, auto-attach gate, audit and UI contracts');
