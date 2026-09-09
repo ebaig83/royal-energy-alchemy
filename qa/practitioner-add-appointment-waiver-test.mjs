@@ -1,0 +1,23 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import { _test } from '../netlify/functions/practitioner-create-session.js';
+
+const actions=fs.readFileSync(new URL('../dashboard-p1/actions.mjs',import.meta.url),'utf8');
+const endpoint=fs.readFileSync(new URL('../netlify/functions/practitioner-create-session.js',import.meta.url),'utf8');
+const waiver=fs.readFileSync(new URL('../netlify/functions/send-waiver.js',import.meta.url),'utf8');
+assert.match(actions,/name="send_waiver"/);
+assert.match(actions,/After creating this appointment/);
+assert.match(actions,/call\('send-waiver','POST'/);
+assert.match(actions,/waiverStatus='Needs attention'/);
+assert.match(actions,/wantsWaiver&&\!String\(values\.client_email\|\|''\)\.trim\(\)/);
+assert.match(endpoint,/body\.send_waiver === true/);
+assert.match(endpoint,/Client email is required to send the waiver\./);
+assert.match(waiver,/requireAdmin\(event\)/);
+assert.match(waiver,/sendTransactional/);
+assert.match(waiver,/idempotencyKey:/);
+assert.doesNotMatch(actions,/waiver_url/);
+assert.doesNotMatch(actions,/googleapis\.com|createGoogleCalendarApi|conferenceData/);
+assert.equal(_test.validEmail('client@example.com'),true);
+assert.equal(_test.validEmail('not-an-email'),false);
+assert.equal(_test.validEmail(''),true);
+console.log('PASS practitioner Add Appointment optional waiver, email gate, reuse, failure state, and privacy contract');

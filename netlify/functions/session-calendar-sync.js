@@ -30,7 +30,7 @@ async function processPending({ sb, api, limit = 25, now = () => new Date(), sen
   const { data, error } = await sb.from('sessions').select('*').in('google_calendar_status', ACTIONABLE_STATUSES).limit(limit);
   if (error) throw error;
   const results = { synced: [], failed: [], notifications: [] };
-  for (const session of (data || []).filter(s => (!isQaRecord(s) && s.google_calendar_event_id && ['cancel_pending','reschedule_pending'].includes(s.google_calendar_status)) || isReviewedPlannerCalendar(s) || (!isSilentPlannerImport(s) && String(s.payment_status || '').toLowerCase() === 'paid'))) {
+  for (const session of (data || []).filter(s => (!isQaRecord(s) && s.google_calendar_event_id && ['cancel_pending','reschedule_pending'].includes(s.google_calendar_status)) || isReviewedPlannerCalendar(s) || s.source === 'manual_practitioner_calendar' || (!isSilentPlannerImport(s) && String(s.payment_status || '').toLowerCase() === 'paid'))) {
     try {
       const result = await syncSession(session, api, syncOptions);
       const patch = {

@@ -1,0 +1,22 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+
+const actions=fs.readFileSync(new URL('../dashboard-p1/actions.mjs',import.meta.url),'utf8');
+const ui=fs.readFileSync(new URL('./p1-dashboard-ui-test.cjs',import.meta.url),'utf8');
+assert.match(actions,/id="add-review-summary"/);
+for(const field of ['review-client','review-email','review-phone','review-service','review-date','review-business-time','review-client-time','review-zone','review-waiver','review-payment','review-meet'])assert.match(actions,new RegExp(`id="${field}"`));
+assert.match(actions,/function renderSummary\(\)/);
+assert.match(actions,/form\.addEventListener\('input',renderSummary\)/);
+assert.match(actions,/form\.addEventListener\('change',renderSummary\)/);
+assert.match(actions,/displayAppointment\(/);
+assert.match(actions,/Don’t send/);
+assert.match(actions,/Don’t request/);
+assert.match(actions,/Unavailable/);
+assert.match(actions,/Google Calendar connection needs attention/);
+const polish=fs.readFileSync(new URL('../dashboard-p1/polish.css',import.meta.url),'utf8');
+assert.match(polish,/form#add-appointment\{grid-template-columns:minmax\(0,1fr\) minmax\(280px,\.8fr\)/);
+assert.match(polish,/#add-review-summary\{grid-column:2/);
+assert.match(polish,/max-width:760px/);
+assert.match(ui,/getByText\('\$270\.00',\{exact:true\}\)\.waitFor/);
+assert.doesNotMatch(actions,/review-(?:event|token|slot)/i);
+console.log('PASS Add Appointment live Review Summary and Finance preview timing contract');

@@ -1,0 +1,23 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+
+const actions=fs.readFileSync(new URL('../dashboard-p1/actions.mjs',import.meta.url),'utf8');
+const app=fs.readFileSync(new URL('../dashboard-p1/app.mjs',import.meta.url),'utf8');
+const create=fs.readFileSync(new URL('../netlify/functions/practitioner-create-session.js',import.meta.url),'utf8');
+const worker=fs.readFileSync(new URL('../netlify/functions/session-calendar-sync.js',import.meta.url),'utf8');
+const calendar=fs.readFileSync(new URL('../netlify/functions/lib/google-calendar.js',import.meta.url),'utf8');
+assert.match(actions,/name="create_google_meet"/);
+assert.match(actions,/calendarHealthy\?'':'disabled'/);
+assert.match(actions,/Google Calendar connection needs attention/);
+assert.match(actions,/wantsMeet&&\!calendarHealthy/);
+assert.match(actions,/Calendar\/Meet: \$\{calendarStatus\}/);
+assert.match(app,/name==='Google Calendar'&&s\.status==='Healthy'/);
+assert.match(create,/body\.create_google_meet === true/);
+assert.match(create,/source: wantsMeet \? 'manual_practitioner_calendar' : 'manual_practitioner'/);
+assert.match(create,/google_calendar_status: wantsMeet \? 'pending' : 'not_requested'/);
+assert.match(worker,/s\.source === 'manual_practitioner_calendar'/);
+assert.match(calendar,/conferenceData/);
+assert.match(calendar,/google_meet_url|meetUrl/);
+assert.doesNotMatch(actions,/googleapis\.com|createGoogleCalendarApi|conferenceData/);
+assert.doesNotMatch(actions,/fetch\([^)]*google/i);
+console.log('PASS practitioner Add Appointment optional Meet health gate, worker queue, persistence, and browser isolation contract');

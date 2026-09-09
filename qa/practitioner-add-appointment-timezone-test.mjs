@@ -1,0 +1,23 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {displayAppointment} from '../dashboard-p1/model.mjs';
+
+const source=fs.readFileSync(new URL('../dashboard-p1/actions.mjs',import.meta.url),'utf8');
+const app=fs.readFileSync(new URL('../dashboard-p1/app.mjs',import.meta.url),'utf8');
+assert.match(source,/type="date" min=/);
+assert.match(source,/showPicker/);
+assert.match(source,/dateInput\.focus\(\)/);
+assert.match(source,/availability\?date=/);
+assert.match(source,/name="appointment_timezone"/);
+for(const zone of ['America/New_York','America/Chicago','America/Denver','America/Los_Angeles','America/Anchorage','Pacific/Honolulu'])assert.match(source,new RegExp(zone.replace('/','\\/')));
+assert.match(source,/displayAppointment\(/);
+assert.match(source,/Business time:/);
+assert.match(source,/Stored appointment time remains Eastern/);
+assert.match(app,/addAppointment\(data\.clients,openDialog,start,data\.now,calendarHealthy\)/);
+const march=displayAppointment({session_date:'2026-03-08',session_time:'10:00:00'},'America/Los_Angeles');
+const november=displayAppointment({session_date:'2026-11-01',session_time:'10:00:00'},'America/Los_Angeles');
+assert.equal(march.time,'7:00 AM');
+assert.equal(november.time,'7:00 AM');
+assert.equal(march.dateKey,'2026-03-08');
+assert.equal(november.dateKey,'2026-11-01');
+console.log('PASS practitioner Add Appointment date picker, Eastern canonical time, timezone display, and DST contract');

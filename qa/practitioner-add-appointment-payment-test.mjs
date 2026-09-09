@@ -1,0 +1,22 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+
+const actions=fs.readFileSync(new URL('../dashboard-p1/actions.mjs',import.meta.url),'utf8');
+const endpoint=fs.readFileSync(new URL('../netlify/functions/practitioner-create-session.js',import.meta.url),'utf8');
+const payment=fs.readFileSync(new URL('../netlify/functions/send-payment-link.js',import.meta.url),'utf8');
+const checkout=fs.readFileSync(new URL('../netlify/functions/create-stripe-checkout.js',import.meta.url),'utf8');
+assert.match(actions,/name="request_payment"/);
+assert.match(actions,/call\('send-payment-link','POST'/);
+assert.match(actions,/Client email is required to request payment\./);
+assert.match(actions,/Needs attention — waiver must be completed first/);
+assert.match(actions,/Payment: \$\{paymentStatus\}/);
+assert.match(endpoint,/findService/);
+assert.match(endpoint,/amount_due: serviceInfo\.price/);
+assert.match(payment,/Waiver must be completed before payment can be requested/);
+assert.match(payment,/create-stripe-checkout/);
+assert.match(checkout,/findService\(session\.service\)/);
+assert.match(checkout,/unit_amount.*String\(amount\)/s);
+assert.doesNotMatch(actions,/stripePost|STRIPE_SECRET_KEY|payment_intent/);
+assert.doesNotMatch(checkout,/capture_method.*automatic/);
+assert.match(payment,/idempotencyKey: `payment-link:/);
+console.log('PASS practitioner Add Appointment optional payment, waiver prerequisite, canonical pricing, no-charge, and idempotency contract');

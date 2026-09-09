@@ -4,6 +4,7 @@ const { requireAdmin, respond } = require('./lib/auth');
 const { getClient } = require('./lib/supabase');
 const { log } = require('./lib/audit');
 const { findSessionConflicts, normalizeDuration, timeToMinutes } = require('./lib/session-overlap');
+const { findService } = require('./lib/services');
 
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const ACTIVE = new Set(['pending', 'ready', 'confirmed', 'completed']);
@@ -14,6 +15,9 @@ function validDate(value) {
   return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === value;
 }
 function sameName(a, b) { return String(a || '').trim().replace(/\s+/g, ' ').toLowerCase() === String(b || '').trim().replace(/\s+/g, ' ').toLowerCase(); }
+function normalizeEmail(value) { const email=String(value||'').trim().toLowerCase(); return email || null; }
+function normalizePhone(value) { const raw=String(value||'').trim(); if(!raw)return null; const digits=(raw.match(/\d/g)||[]).join(''); if(digits.length<7||digits.length>15)return null; return raw.startsWith('+')?`+${digits}`:digits; }
+function validEmail(value) { return !value || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value); }
 
 exports.handler = async event => {
   if (event.httpMethod === 'OPTIONS') return respond(200, {});
@@ -26,9 +30,17 @@ exports.handler = async event => {
   const date = String(body.session_date || '');
   const time = String(body.session_time || '').slice(0, 5);
   const duration = normalizeDuration(body.duration_minutes, 60);
+  const serviceInfo = findService(body.service);
+  const email = normalizeEmail(body.client_email);
+  const phone = normalizePhone(body.client_phone);
   if (!clientName) return respond(400, { error: 'client_name is required.' });
+  if (!serviceInfo) return respond(400, { error: 'A valid service is required.' });
   if (!validDate(date)) return respond(400, { error: 'session_date must be a valid YYYY-MM-DD date.' });
   if (timeToMinutes(time) == null) return respond(400, { error: 'session_time must be a valid 24-hour time.' });
+  if (!validEmail(email)) return respond(400, { error: 'Client email must be a valid email address.' });
+  if (body.client_phone && !phone) return respond(400, { error: 'Client telephone must be a valid phone number.' });
+  if (body.send_waiver === true && !email) return respond(400, { error: 'Client email is required to send the waiver.' });
+  if (body.request_payment === true && !email) return respond(400, { error: 'Client email is required to send the waiver or payment request.' });
   if (!body.slot_id) return respond(400, { error: 'An available slot is required.' });
   const sb = getClient();
   const { data: existing, error: existingError } = await sb.from('sessions').select('id,client_id,client_name,session_date,session_time,duration_minutes,status').eq('session_date', date);
@@ -40,7 +52,8 @@ exports.handler = async event => {
   if (body.client_id) { const { data: client } = await sb.from('clients').select('id').eq('id', body.client_id).single(); if (!client) return respond(400, { error: 'The selected client was not found.' }); }
   const { data: slot, error: slotError } = await sb.from('availability_slots').select('id,status,session_id,slot_date,slot_time').eq('id', body.slot_id).single();
   if (slotError || !slot || slot.status !== 'available' || slot.session_id || slot.slot_date !== date || String(slot.slot_time || '').slice(0, 5) !== time) return respond(409, { error: 'That availability slot is no longer available.' });
-  const row = { client_id: body.client_id || null, client_name: clientName, service: String(body.service || '').trim() || 'Practitioner appointment', session_date: date, session_time: `${time}:00`, duration_minutes: duration, location_type: 'distance', status: 'pending', payment_status: 'unpaid', source: 'manual_practitioner', google_calendar_status: 'not_requested', seller_notes: null };
+  const wantsMeet = body.create_google_meet === true;
+  const row = { client_id: body.client_id || null, client_name: clientName, client_email: email, client_phone: phone, service: serviceInfo.id, session_date: date, session_time: `${time}:00`, duration_minutes: duration, amount_due: serviceInfo.price, location_type: 'distance', status: 'pending', payment_status: 'unpaid', source: wantsMeet ? 'manual_practitioner_calendar' : 'manual_practitioner', google_calendar_status: wantsMeet ? 'pending' : 'not_requested', seller_notes: null };
   const { data: session, error: insertError } = await sb.from('sessions').insert(row).select('id,session_date,session_time,client_name,source,google_calendar_status').single();
   if (insertError || !session) return respond(500, { error: 'Appointment creation failed.' });
   const { data: reserved, error: reserveError } = await sb.from('availability_slots').update({ status: 'booked', session_id: session.id }).eq('id', slot.id).eq('status', 'available').is('session_id', null).select('id').maybeSingle();
@@ -49,4 +62,4 @@ exports.handler = async event => {
   return respond(201, { created: true, duplicate: false, session });
 };
 
-exports._test = { validDate, sameName };
+exports._test = { validDate, sameName, normalizeEmail, normalizePhone, validEmail };

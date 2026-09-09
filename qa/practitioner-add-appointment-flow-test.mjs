@@ -7,7 +7,7 @@ const endpoint = fs.readFileSync(new URL('../netlify/functions/practitioner-crea
 
 assert.match(app, /data-review-action=\"Add appointment\"/);
 assert.match(app, /button\.dataset\.reviewAction==='Add appointment'/);
-assert.match(app, /addAppointment\(data\.clients,openDialog,start\)/);
+assert.match(app, /addAppointment\(data\.clients,openDialog,start,data\.now,calendarHealthy\)/);
 assert.match(actions, /id=\"add-appointment\"/);
 assert.match(actions, /call\('availability\?date='/);
 assert.match(actions, /call\('practitioner-create-session','POST'/);
@@ -15,8 +15,8 @@ assert.match(actions, /credentials:'same-origin'/);
 assert.match(endpoint, /requireAdmin\(event\)/);
 assert.match(endpoint, /slot\.status !== 'available'/);
 assert.match(endpoint, /findSessionConflicts/);
-assert.match(endpoint, /google_calendar_status: 'not_requested'/);
-assert.match(endpoint, /source: 'manual_practitioner'/);
+assert.match(endpoint, /google_calendar_status: wantsMeet \? 'pending' : 'not_requested'/);
+assert.match(endpoint, /source: wantsMeet \? 'manual_practitioner_calendar' : 'manual_practitioner'/);
 assert.match(endpoint, /eq\('status', 'available'\)\.is\('session_id', null\)/);
 assert.match(endpoint, /duplicate: true/);
 assert.doesNotMatch(actions, /fetch\([^)]*method:['\"](PUT|PATCH|DELETE)/);
