@@ -20,6 +20,7 @@ function normalizePhone(value) { const raw=String(value||'').trim(); if(!raw)ret
 function validEmail(value) { return !value || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value); }
 const PAYMENT_STATUSES = new Set(['unpaid', 'pending', 'partial', 'paid', 'complimentary']);
 const PAYMENT_METHODS = new Set(['none', 'cash', 'venmo', 'zelle', 'stripe', 'other']);
+const REQUEST_PAYMENT_METHODS = new Set(['stripe', 'venmo', 'cash_app', 'paypal', 'zelle', 'other']);
 const SENSITIVE_PAYMENT_NOTE = /(?:cvv|cvc|credit\s*card|debit\s*card|card\s*number|bank\s*account|routing\s*number|account\s*number|\bpin\b|\b\d{13,19}\b)/i;
 function normalizeMoney(value, fallback = 0) {
   if (value === undefined || value === null || value === '') return fallback;
@@ -71,6 +72,7 @@ exports.handler = async event => {
   if (body.client_phone && !phone) return respond(400, { error: 'Client telephone must be a valid phone number.' });
   if (body.send_waiver === true && !email) return respond(400, { error: 'Client email is required to send the waiver.' });
   if (body.request_payment === true && !email) return respond(400, { error: 'Client email is required to send the waiver or payment request.' });
+  if (body.request_payment === true && !REQUEST_PAYMENT_METHODS.has(String(body.request_payment_method || 'stripe').trim().toLowerCase())) return respond(400, { error: 'Payment request method is invalid.' });
   if (!body.slot_id) return respond(400, { error: 'An available slot is required.' });
   const sb = getClient();
   const { data: existing, error: existingError } = await sb.from('sessions').select('id,client_id,client_name,session_date,session_time,duration_minutes,status').eq('session_date', date);
@@ -92,4 +94,4 @@ exports.handler = async event => {
   return respond(201, { created: true, duplicate: false, session });
 };
 
-exports._test = { validDate, sameName, normalizeEmail, normalizePhone, validEmail, paymentMetadata };
+exports._test = { validDate, sameName, normalizeEmail, normalizePhone, validEmail, paymentMetadata, REQUEST_PAYMENT_METHODS };

@@ -15,7 +15,7 @@ async function processPayments({ sb, env = process.env, now = () => new Date() }
   const checkpoint = (await sb.from('payment_reconciliation_checkpoints').select('*').eq('source_name', SOURCE).maybeSingle()).data;
   const token = await accessToken(env);
   const messages = await listPaymentMessages({ token, after: checkpoint?.last_message_at });
-  const sessions = (await sb.from('sessions').select('id,client_id,client_name,client_email,client_phone,session_date,session_time,status,payment_status,amount_due,amount_paid,source,stripe_payment_status,stripe_payment_intent_id')).data || [];
+  const sessions = (await sb.from('sessions').select('id,client_id,client_name,client_email,client_phone,session_date,session_time,status,payment_status,amount_due,amount_paid,source,stripe_payment_status,stripe_payment_intent_id,payment_request_reference')).data || [];
   const clients = (await sb.from('clients').select('id,full_name,email,phone')).data || [];
   const references = messages.map(message => message.parsed.provider_reference_id).filter(Boolean);
   const existing = references.length ? ((await sb.from('payments').select('method,reference_id,session_id').in('reference_id', references)).data || []) : [];

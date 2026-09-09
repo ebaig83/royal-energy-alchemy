@@ -9,7 +9,7 @@ function cents(value) { const n = Number(value); return Number.isFinite(n) ? Mat
 function remaining(session) { return Math.max(0, cents(session.amount_due) - cents(session.amount_paid)); }
 function dateDistance(a, b) { if (!a || !b) return Infinity; const x = new Date(a).getTime(), y = new Date(b).getTime(); return Number.isFinite(x) && Number.isFinite(y) ? Math.abs(x - y) / 86400000 : Infinity; }
 function eligible(session) { return session && !isQaRecord(session) && !['cancelled', 'no_show'].includes(norm(session.status)) && OPEN_PAYMENT_STATUSES.has(norm(session.payment_status)) && remaining(session) > 0 && norm(session.payment_source) !== 'stripe' && norm(session.stripe_payment_status) !== 'paid' && !session.stripe_payment_intent_id; }
-function exactMemoSession(payment, sessions) { const memo = String(payment.memo || ''); return sessions.find(s => s.id && memo.includes(s.id)); }
+function exactMemoSession(payment, sessions) { const memo = `${String(payment.memo || '')} ${String(payment.provider_reference_id || '')}`.toLowerCase(); return sessions.find(s => (s.payment_request_reference && memo.includes(String(s.payment_request_reference).toLowerCase())) || (s.id && memo.includes(s.id.toLowerCase()))); }
 
 function matchPayment(payment, { sessions = [], clients = [], existingPayments = [] } = {}) {
   if (!payment?.valid) return { status: 'needs_reconciliation', confidence: 'none', reason: payment?.reason || 'invalid_payment' };
@@ -18,7 +18,7 @@ function matchPayment(payment, { sessions = [], clients = [], existingPayments =
   if (duplicate) return { status: 'duplicate', confidence: 'high', reason: 'provider_reference_already_recorded', matched_session_id: duplicate.session_id || null };
   const open = sessions.filter(eligible);
   const memoSession = exactMemoSession(payment, open);
-  if (memoSession) return evaluate(payment, [memoSession], 'high', 'memo_contains_exact_session_reference');
+  if (memoSession) return evaluate(payment, [memoSession], 'high', memoSession.payment_request_reference && `${String(payment.memo || '')} ${String(payment.provider_reference_id || '')}`.toLowerCase().includes(String(memoSession.payment_request_reference).toLowerCase()) ? 'memo_contains_exact_payment_request_reference' : 'memo_contains_exact_session_reference');
 
   const payerEmail = norm(payment.payer_email);
   const payerPhone = digits(payment.payer_phone);
