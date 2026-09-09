@@ -22,7 +22,8 @@ async function gmailGet(path, token, params = {}) {
 }
 function headers(message) { return Object.fromEntries((message.payload?.headers || []).map(header => [String(header.name || '').toLowerCase(), header.value || ''])); }
 function decodePart(part) { if (!part?.body?.data) return ''; try { return Buffer.from(part.body.data.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8'); } catch { return ''; } }
-function textParts(part, output = []) { if (!part) return output; if (part.mimeType === 'text/plain') output.push(decodePart(part)); for (const child of part.parts || []) textParts(child, output); return output; }
+function htmlText(value) { return String(value || '').replace(/<style[\s\S]*?<\/style>|<script[\s\S]*?<\/script>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/gi, ' ').replace(/&amp;/gi, '&').replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/\s+/g, ' ').trim(); }
+function textParts(part, output = []) { if (!part) return output; if (part.mimeType === 'text/plain') output.push(decodePart(part)); else if (part.mimeType === 'text/html') output.push(htmlText(decodePart(part))); for (const child of part.parts || []) textParts(child, output); return output; }
 async function listPaymentMessages({ token, after }) {
   const query = `newer_than:30d {venmo paypal "cash app" zelle stripe}${after ? ` after:${Math.max(0, Math.floor(new Date(after).getTime() / 1000))}` : ''}`;
   const list = await gmailGet('messages', token, { q: query, maxResults: 100 });

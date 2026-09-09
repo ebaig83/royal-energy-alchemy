@@ -21,6 +21,13 @@ function safeMemo(value) {
   if (/(?:card|credit|debit|cvv|cvc|routing|account|bank\s+account|password|passcode|pin)\s*[:#-]?\s*[A-Za-z0-9-]{3,}/i.test(memo) || /\b\d{13,19}\b/.test(memo)) return null;
   return memo;
 }
+function payerName(value) {
+  let name = cleanText(value, 160);
+  if (!name) return null;
+  name = name.replace(/\s*(?:\(\s*)?(?:transaction details|transaction id|confirmation number|into your account|for any issues|privacy policy|customer support|support hours)[\s\S]*$/i, '').trim();
+  if (!name || /^[@#]/.test(name) || /(?:privacy policy|support hours|customer support|for any issues|\baccount\b)/i.test(name)) return null;
+  return name;
+}
 function money(value) { const n = Number(String(value || '').replace(/[$,]/g, '')); return Number.isFinite(n) && n > 0 && n <= 100000 ? Math.round(n * 100) / 100 : null; }
 function providerFrom(input) {
   const text = `${input.from || ''} ${input.sender || ''} ${input.subject || ''} ${input.body || ''}`.toLowerCase();
@@ -32,11 +39,21 @@ function providerFrom(input) {
   return null;
 }
 function referenceFrom(text) { for (const re of REF_PATTERNS) { const m = String(text || '').match(re); if (m?.[1]) return cleanText(m[1], 240); } return null; }
-function amountFrom(text) { for (const re of AMOUNT_PATTERNS) { const m = String(text || '').match(re); const n = money(m?.[1]); if (n != null) return n; } return null; }
+function amountFrom(text) {
+  const source = String(text || '');
+  for (const re of AMOUNT_PATTERNS) { const m = source.match(re); const n = money(m?.[1]); if (n != null) return n; }
+  const providerSubject = source.match(/(?:paid you|sent you|payment received|received payment|payment deposited)[^$]{0,80}\$\s*([0-9,]+(?:\.\d{2})?)/i);
+  return money(providerSubject?.[1]);
+}
 function dateFrom(input, text) { const candidates = [input.transaction_at, input.date, text.match(/\b20\d{2}-\d{2}-\d{2}(?:[T ][0-9:.-]+)?(?:Z|[+-]\d{2}:?\d{2})?\b/)?.[0]]; for (const value of candidates) { if (!value) continue; const d = new Date(value); if (!Number.isNaN(d.getTime())) return d.toISOString(); } return null; }
 function payerFrom(input, text) {
-  const named = input.payer_display_name || text.match(/(?:from|sent by|paid by|payer)\s*[:\-]?\s*([^\n|,]{2,80})/i)?.[1];
-  return cleanText(named, 160);
+  const subject = String(input.subject || '');
+  const providerNamed = subject.match(/^(.{2,100}?)\s+(?:paid you|sent you)\s+\$\s*[0-9,]+(?:\.\d{2})?/i)?.[1]
+    || text.match(/(?:payment|paid)\s+from\s+([^\n|,.]{2,100})/i)?.[1];
+  const named = input.payer_display_name || providerNamed || text.match(/(?:from|sent by|paid by|payer)\s*[:\-]?\s*([^\n|,]{2,80})/i)?.[1];
+  const cleaned = payerName(named);
+  if (!cleaned || /^(?:your|the|a|payment|transaction|account|venmo|paypal|cash app|zelle|stripe)\b/i.test(cleaned)) return null;
+  return cleaned;
 }
 
 function parsePaymentEmail(input = {}) {

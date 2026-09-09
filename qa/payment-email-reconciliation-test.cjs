@@ -10,6 +10,10 @@ const zelle=parsePaymentEmail({provider:'zelle',message_id:'m4',subject:'Zelle p
 const stripe=parsePaymentEmail({provider:'stripe',subject:'Stripe payment',body:'Amount: $100.00\nPayment ID: pi_123456'});assert.equal(stripe.auto_attach_allowed,false);
 assert.equal(parsePaymentEmail({provider:'venmo',body:'Amount: $20.00'}).valid,false);
 assert.equal(parsePaymentEmail({provider:'venmo',body:'Amount: $20.00\nTransaction ID: SAFE123\nMemo: card 4111111111111111'}).memo,null);
+const venmoSubject=parsePaymentEmail({provider:'venmo',subject:'Juanita Bybee paid you $97.01',body:'Transaction ID: VENO987654'});assert.equal(venmoSubject.payer_display_name,'Juanita Bybee');assert.equal(venmoSubject.amount,97.01);assert.equal(venmoSubject.valid,true);
+const paypalSubject=parsePaymentEmail({provider:'paypal',subject:'Dawn Sharkey sent you $70.00 USD',body:'Transaction ID: PAY987654'});assert.equal(paypalSubject.payer_display_name,'Dawn Sharkey');assert.equal(paypalSubject.amount,70);assert.equal(paypalSubject.valid,true);
+assert.equal(parsePaymentEmail({provider:'cash_app',subject:'Payment received',body:'8 AM to 9:30 PM ET. Privacy Policy\n+$100.00\nTransaction ID: CASH987654'}).payer_display_name,null);
+assert.equal(parsePaymentEmail({provider:'zelle',subject:'We deposited your payment',body:'Payment from Lisa Savin (confirmation number 6077211489) into your account\nAmount: $40.00'}).payer_display_name,'Lisa Savin');
 const session={id:'s1',client_id:'c1',client_name:'Jane Doe',client_email:'jane@example.com',status:'confirmed',payment_status:'unpaid',amount_due:100,amount_paid:0,session_date:'2026-10-01',session_time:'10:00:00',source:'manual_practitioner'};
 assert.equal(matchPayment({...venmo,payer_email:'jane@example.com'}, {sessions:[session],clients:[],existingPayments:[]}).status,'matched');
 assert.equal(matchPayment({...venmo,payer_display_name:'Unknown'}, {sessions:[session],clients:[],existingPayments:[]}).status,'needs_reconciliation');
