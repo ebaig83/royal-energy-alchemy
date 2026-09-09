@@ -10,6 +10,7 @@ const authPath = require.resolve(path.join(root, 'lib', 'auth.js'));
 const verifyPath = require.resolve(path.join(root, 'verify-pin.js'));
 
 const state = { sessions: [], failed: 0, seq: 0 };
+const credential = { version: 1, password_hash: null, password_changed_at: null, created_at: new Date().toISOString() };
 
 class Query {
   constructor(table) { this.table = table; this.operation = 'select'; this.filters = []; this.patch = null; this.row = null; this.countMode = false; }
@@ -22,9 +23,11 @@ class Query {
   gt(field, value) { this.filters.push(row => String(row[field]) > String(value)); return this; }
   gte() { return this; }
   lt(field, value) { this.filters.push(row => String(row[field]) < String(value)); return this; }
+  single() { return this; }
   maybeSingle() { return this; }
   execute() {
     if (this.table === 'audit_logs') return { count: state.failed, data: null, error: null };
+    if (this.table === 'practitioner_credentials') return { data: credential, error: null };
     if (this.table !== 'admin_sessions') return { data: null, error: null };
     if (this.operation === 'insert') {
       state.sessions.push({ id: `session-${++state.seq}`, created_at: new Date().toISOString(), revoked_at: null, ...this.row });
@@ -38,7 +41,14 @@ class Query {
   then(resolve, reject) { return Promise.resolve(this.execute()).then(resolve, reject); }
 }
 
-const fake = { from: table => new Query(table) };
+const fake = { from: table => new Query(table), rpc: async (name, args = {}) => {
+  if (name === 'practitioner_attempt') return { data: true, error: null };
+  if (name === 'practitioner_login') {
+    state.sessions.push({ id: `session-${++state.seq}`, actor_email: args.p_email, expires_at: args.p_expires, revoked_at: null, token_hash: args.p_token_hash });
+    return { data: true, error: null };
+  }
+  return { data: true, error: null };
+} };
 require.cache[supabasePath] = { id: supabasePath, filename: supabasePath, loaded: true, exports: { getClient: () => fake } };
 require.cache[auditPath] = { id: auditPath, filename: auditPath, loaded: true, exports: { log: async () => {} } };
 delete require.cache[authPath];
