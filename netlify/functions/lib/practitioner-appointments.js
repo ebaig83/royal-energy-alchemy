@@ -27,4 +27,20 @@ async function change(sb,session,body,actor){
  const calendar_status = nextSession.google_calendar_status || calendarIntentStatus(nextSession, body.action);
  return respond(200,{...data,[body.action==='cancel'?'cancelled':'rescheduled']:true,communication_status:'Queued subject to contact and communication policy',calendar_status});
 }
-module.exports={change};
+async function retryCalendar(sb,session,body,actor){
+ if(!UUID.test(body.request_id||''))return respond(400,{error:'A request identifier is required.'});
+ if(isQaRecord(session))return respond(409,{error:'Test appointments cannot be changed here.'});
+ if(['cancelled','completed','no_show'].includes(String(session.status||'').toLowerCase()))return respond(409,{error:'This appointment cannot be retried.'});
+ const retryable=['failed','error','retryable_error'];
+ if(!retryable.includes(String(session.google_calendar_status||'').toLowerCase())){
+  const alreadyQueued=['pending','reschedule_pending'].includes(String(session.google_calendar_status||'').toLowerCase());
+  if(alreadyQueued)return respond(200,{session,calendar_status:session.google_calendar_status,duplicate:true});
+  return respond(409,{error:'This appointment has no retryable Calendar failure.'});
+ }
+ const next=session.google_calendar_event_id?'reschedule_pending':'pending';
+ const {data,error}=await sb.from('sessions').update({google_calendar_status:next,google_calendar_error:null}).eq('id',session.id).in('google_calendar_status',retryable).select().maybeSingle();
+ if(error) return respond(409,{error:'The Calendar retry could not be queued. Reload and try again.'});
+ if(!data)return respond(200,{session,calendar_status:session.google_calendar_status,duplicate:true});
+ return respond(200,{session:data,retried:true,calendar_status:next,request_id:body.request_id,actor});
+}
+module.exports={change,retryCalendar};

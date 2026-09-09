@@ -151,6 +151,7 @@ exports.handler = async function(event) {
     const { data: old } = await sb.from('sessions').select('*').eq('id', params.id).single();
     if (!old) return respond(404, { error: 'Session not found.' });
     if(body.p1===true && ['reschedule','cancel'].includes(body.action))return require('./lib/practitioner-appointments').change(sb,old,body,auth.user.email);
+    if(body.p1===true && body.action==='retry-calendar')return require('./lib/practitioner-appointments').retryCalendar(sb,old,body,auth.user.email);
 
     if (body.action === 'cancel') {
       if (old.status === 'cancelled') return respond(409, { error: 'Session is already cancelled.' });
