@@ -7,6 +7,7 @@ const endpoint = fs.readFileSync(new URL('../netlify/functions/practitioner-crea
 
 assert.match(app, /data-review-action=\"Add appointment\"/);
 assert.match(app, /button\.dataset\.reviewAction==='Add appointment'/);
+assert.match(app, /if\(!preview\)data=await loadData\(includeQA,true\)/);
 assert.match(app, /addAppointment\(data\.clients,openDialog,start,data\.now,calendarHealthy\)/);
 assert.match(actions, /id=\"add-appointment\"/);
 assert.match(actions, /call\('availability\?date='/);
