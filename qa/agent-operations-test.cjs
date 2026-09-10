@@ -9,9 +9,16 @@ const view = fs.readFileSync(path.join(root, 'dashboard-p1', 'agent-operations.m
 assert.match(app, /agentOperationsNavObserver/);
 assert.match(app, /data-agent-operations-nav/);
 assert.match(app, /id="agent-operations-panel"/);
-assert.match(view, /Website Agent/);
-assert.match(view, /Dashboard Agent/);
-assert.match(view, /Manager Agent/);
-assert.doesNotMatch(view, /fetch\(|\.netlify\/functions|PATCH|POST|DELETE/);
+assert.match(view, /agent-operations/);
+assert.match(view, /Live, sanitized Manager telemetry/);
+assert.match(view, /Live\/Recent/);
+assert.match(view, /Stale/);
+assert.match(view, /No heartbeat/);
+assert.match(view, /agent-operations-refresh/);
+assert.match(view, /agent-operations/);
+assert.match(view, /fetch\('\/.netlify\/functions\/agent-operations'/);
+assert.match(view, /Agent status temporarily unavailable/);
+assert.match(view, /credentials:'same-origin'/);
+assert.doesNotMatch(view, /PATCH|POST|DELETE|x-agent-telemetry-token|client_email|payment/);
 
 console.log('agent operations read-only UI contract: ok');
