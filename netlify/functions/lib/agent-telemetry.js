@@ -2,6 +2,7 @@
 
 const crypto = require('crypto');
 const { getClient } = require('./supabase');
+const { readManagerMessages } = require('./agent-manager-messages');
 
 const BUILDER_FIELDS = new Set([
   'last_heartbeat_at', 'current_task_summary', 'status',
@@ -90,9 +91,10 @@ function publicAgent(row, now) {
 }
 async function readOperations() {
   const sb = getClient();
-  const [{ data: agents, error: agentsError }, { data: state, error: stateError }] = await Promise.all([
+  const [{ data: agents, error: agentsError }, { data: state, error: stateError }, managerCommunication] = await Promise.all([
     sb.from('agent_status').select('*').order('agent_key'),
     sb.from('agent_operations_state').select('*').eq('state_key', 'current').maybeSingle(),
+    readManagerMessages(),
   ]);
   if (agentsError) throw agentsError;
   if (stateError) throw stateError;
@@ -105,6 +107,7 @@ async function readOperations() {
     releaseAuthority: 'Manager Agent',
     daronStatus: state?.daron_status || 'No Manager Status has been published.',
     managerState: { releaseApproval: state?.release_approval || 'pending', deployStatus: state?.deploy_status || 'not-deployed', productionHealthSummary: state?.production_health_summary || null, finalBlockerSummary: state?.final_blocker_summary || null },
+    managerCommunication,
   };
 }
 
