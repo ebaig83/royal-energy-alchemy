@@ -24,3 +24,31 @@ qa/data-quality-report.txt
 
 qa/.workflow-runs/
 qa/workflow-fixture-manifest.json
+
+# Local environment and OAuth credentials
+.env
+.env.*
+!.env.example
+**/.gmail-payment-oauth.json
+**/.google-calendar-oauth.json
+**/client_secret*.json
+**/token*.json
+**/credentials*.json
+
+# Local deployment artifacts
+.netlify/
+netlify-deploy-*.zip
+deploy-*.zip
+*.deploy.json
+
+# QA/browser artifacts and logs
+qa/**/screenshots/
+qa/**/output/
+qa/**/artifacts/
+qa/**/reports/
+*.har
+*.trace
+*.log
+
+# Local Supabase state
+supabase/.temp/
