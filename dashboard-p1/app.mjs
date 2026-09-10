@@ -118,4 +118,6 @@ const paymentSettingsObserver=new MutationObserver(()=>{if(area!=='system'||!mut
 paymentSettingsObserver.observe(app,{childList:true,subtree:true});
 const agentOperationsObserver=new MutationObserver(()=>{if(area!=='system')return;const view=document.querySelector('#view');if(!view||view.querySelector('#agent-operations-panel'))return;view.insertAdjacentHTML('beforeend',`<section id="agent-operations-panel" class="panel section-gap"><div class="panel-head"><h2>Agent Operations</h2></div><div class="panel-body">${agentOperations(E,badge)}</div></section>`);});
 agentOperationsObserver.observe(app,{childList:true,subtree:true});
+const agentOperationsNavObserver=new MutationObserver(()=>{const nav=document.querySelector('.nav');if(!nav||nav.querySelector('[data-agent-operations-nav]'))return;nav.insertAdjacentHTML('beforeend','<a href="#system" data-agent-operations-nav>✦ Agent Operations</a>');});
+agentOperationsNavObserver.observe(app,{childList:true,subtree:true});
 if(area==='system'&&mutationsEnabled){const view=document.querySelector('#view');if(view&&!view.querySelector('#payment-settings-panel')){view.insertAdjacentHTML('beforeend',paymentSettingsPanel());view.querySelector('#open-payment-settings')?.addEventListener('click',openPaymentSettings);}}
