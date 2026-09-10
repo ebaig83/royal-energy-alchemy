@@ -10,6 +10,22 @@ const { getClient }             = require('./lib/supabase');
 const { log }                   = require('./lib/audit');
 const { isQaRecord }            = require('./lib/record-policy');
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+function optionalText(value) { return value == null || String(value).trim() === '' ? null : String(value).trim(); }
+function validDateOnly(value) {
+  if (value == null || String(value).trim() === '') return true;
+  const text = String(value).trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(text)) return false;
+  const date = new Date(`${text}T00:00:00Z`);
+  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === text && date <= new Date();
+}
+function validPhone(value) {
+  if (value == null || String(value).trim() === '') return true;
+  const text = String(value).trim();
+  const digits = text.replace(/\D/g, '');
+  return digits.length >= 7 && digits.length <= 15 && /^[+()\-\.\s\dextEXT#x]+$/.test(text);
+}
+
 // Strip QA/test seed clients from production responses unless ?include_qa=true
 function _filterQA(rows, params) {
   if (!rows) return [];
@@ -130,15 +146,15 @@ exports.handler = async function(event) {
         email:     body.email?.trim()  || null,
         phone:     body.phone?.trim()  || null,
         source:    body.source         || 'manual',
-        notes:     body.notes          || null,
-        tags:      body.tags           || [],
+        notes:     optionalText(body.notes),
+        tags:      Array.isArray(body.tags) ? body.tags : [],
       })
       .select()
       .single();
 
     if (error) return respond(500, { error: error.message });
 
-    await log({ actor: auth.user.email, action: 'created', tableName: 'clients', recordId: data.id, newData: data, context: `Created client ${data.full_name}`, ip });
+    await log({ actor: auth.user.email, action: 'created', tableName: 'clients', recordId: data.id, newData: { id: data.id, changed_fields: ['full_name', 'email', 'phone', 'notes', 'tags'] }, context: 'Created client profile', ip });
     return respond(201, { client: data });
   }
 
@@ -150,10 +166,23 @@ exports.handler = async function(event) {
     try { body = JSON.parse(event.body || '{}'); } catch { return respond(400, { error: 'Invalid JSON.' }); }
 
     const { data: old } = await sb.from('clients').select('*').eq('id', params.id).single();
+    if (!old) return respond(404, { error: 'Client not found.' });
 
-    const allowed = ['full_name','email','phone','status','notes','tags','source'];
+    if (body.full_name !== undefined && !String(body.full_name || '').trim()) return respond(400, { error: 'Client name cannot be empty.' });
+    if (body.email !== undefined && body.email && !EMAIL_RE.test(String(body.email).trim())) return respond(400, { error: 'Enter a valid email address.' });
+    if (body.phone !== undefined && !validPhone(body.phone)) return respond(400, { error: 'Enter a valid phone number or leave it blank.' });
+    if (body.date_of_birth !== undefined && !validDateOnly(body.date_of_birth)) return respond(400, { error: 'Date of birth must be a valid past date in YYYY-MM-DD format.' });
+
+    const allowed = ['full_name','email','phone','status','notes','tags','source','address','date_of_birth','emergency_contact','additional_information','preferred_contact'];
     const updates = {};
-    allowed.forEach(k => { if (body[k] !== undefined) updates[k] = body[k]; });
+    allowed.forEach(k => {
+      if (body[k] === undefined) return;
+      if (k === 'tags') updates[k] = Array.isArray(body[k]) ? body[k].map(v => String(v).trim()).filter(Boolean).slice(0, 50) : [];
+      else if (['full_name','email','phone','notes','address','emergency_contact','additional_information','date_of_birth'].includes(k)) updates[k] = optionalText(body[k]);
+      else if (k === 'preferred_contact') updates[k] = optionalText(body[k])?.toLowerCase();
+      else updates[k] = body[k];
+    });
+    if (!Object.keys(updates).length) return respond(400, { error: 'No client fields were supplied.' });
 
     const { data, error } = await sb
       .from('clients')
@@ -164,7 +193,7 @@ exports.handler = async function(event) {
 
     if (error) return respond(500, { error: error.message });
 
-    await log({ actor: auth.user.email, action: 'updated', tableName: 'clients', recordId: params.id, oldData: old, newData: data, context: `Updated client ${data.full_name}`, ip });
+    await log({ actor: auth.user.email, action: 'updated', tableName: 'clients', recordId: params.id, oldData: { id: old.id, changed_fields: Object.keys(updates) }, newData: { id: data.id, changed_fields: Object.keys(updates) }, context: 'Updated client profile fields', ip });
     return respond(200, { client: data });
   }
 

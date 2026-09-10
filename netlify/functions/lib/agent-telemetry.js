@@ -18,6 +18,11 @@ const AGENTS = {
   dashboard: { name: 'REA Dashboard Agent', branch: 'agent/dashboard', env: 'AGENT_TELEMETRY_DASHBOARD_TOKEN' },
   manager: { name: 'REA Manager Agent', branch: 'agent/manager', env: 'AGENT_TELEMETRY_MANAGER_TOKEN' },
 };
+const AGENT_PRESENTATION = {
+  manager: { name: 'Spirit', role: 'Manager', avatar: '/assets/agent-spirit.svg' },
+  dashboard: { name: 'Stuart', role: 'Dashboard', avatar: '/assets/agent-stuart.svg' },
+  website: { name: 'Kevin', role: 'Website', avatar: '/assets/agent-kevin.svg' },
+};
 
 function text(value, max = 500) {
   if (value === null || value === undefined) return null;
@@ -80,8 +85,9 @@ function staleness(lastHeartbeat, now = new Date()) {
   return { label: ageMinutes <= 15 ? 'Live/Recent' : ageMinutes <= 60 ? 'Stale' : 'No recent heartbeat', ageMinutes };
 }
 function publicAgent(row, now) {
+  const presentation = AGENT_PRESENTATION[row.agent_key] || {};
   return {
-    agentKey: row.agent_key, agentName: row.agent_name, branch: row.branch,
+    agentKey: row.agent_key, agentName: presentation.name || row.agent_name, agentRole: presentation.role || null, avatar: presentation.avatar || null, branch: row.branch,
     status: row.status, staleness: staleness(row.last_heartbeat_at, now),
     lastHeartbeatAt: row.last_heartbeat_at, currentTaskSummary: row.current_task_summary,
     latestHandoffSummary: row.latest_handoff_summary, blockerSummary: row.blocker_summary,
@@ -111,4 +117,4 @@ async function readOperations() {
   };
 }
 
-module.exports = { AGENTS, BUILDER_FIELDS, MANAGER_FIELDS, STATUSES, identity, sanitizeAgentUpdate, sanitizeManagerUpdate, staleness, readOperations };
+module.exports = { AGENTS, AGENT_PRESENTATION, BUILDER_FIELDS, MANAGER_FIELDS, STATUSES, identity, sanitizeAgentUpdate, sanitizeManagerUpdate, staleness, readOperations };
