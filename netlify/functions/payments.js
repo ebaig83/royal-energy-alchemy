@@ -9,6 +9,7 @@ const { requireAdmin, respond } = require('./lib/auth');
 const { getClient }             = require('./lib/supabase');
 const { log }                   = require('./lib/audit');
 const { isCalendarEligible }    = require('./lib/record-policy');
+const { isWebsiteBooking }      = require('./lib/booking-state');
 
 exports.handler = async function(event) {
   if (event.httpMethod === 'OPTIONS') return respond(200, {});
@@ -79,6 +80,10 @@ exports.handler = async function(event) {
 
     if (!body.amount || isNaN(body.amount)) return respond(400, { error: 'amount is required.' });
     if (!body.session_id && !body.client_id) return respond(400, { error: 'session_id or client_id is required.' });
+    if (body.session_id) {
+      const { data: targetSession } = await sb.from('sessions').select('id,source').eq('id', body.session_id).single();
+      if (isWebsiteBooking(targetSession)) return respond(409, { error: 'Website bookings become paid only through verified Stripe webhook processing.' });
+    }
 
     const { data: payment, error: payErr } = await sb
       .from('payments')
@@ -110,6 +115,7 @@ exports.handler = async function(event) {
         const totalPaid = (session.amount_paid || 0) + parseFloat(body.amount);
         const due       = session.amount_due || 0;
         const newStatus = totalPaid >= due && due > 0 ? 'paid' : totalPaid > 0 ? 'partial' : 'unpaid';
+        if (isWebsiteBooking(session) && newStatus === 'paid') return respond(409, { error: 'Website bookings become paid only through verified Stripe webhook processing.' });
 
         const sessionPatch = { amount_paid: totalPaid, payment_status: newStatus };
         if (newStatus === 'paid' && isCalendarEligible({ ...session, payment_status: newStatus }) && !session.google_calendar_event_id && session.google_calendar_status === 'not_requested') {

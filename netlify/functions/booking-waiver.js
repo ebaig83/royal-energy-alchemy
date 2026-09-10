@@ -20,7 +20,7 @@ async function markBookingState(sb, sessionId, updates) {
   const paymentPaid = String(updates.payment_status || current.payment_status || '').toLowerCase() === 'paid';
   const waiverDone = updates.waiver_completed === true || isDone(updates.waiver_status || current.waiver_status) || current.waiver_completed === true;
   const next = Object.assign({}, updates, {
-    booking_status: paymentPaid && waiverDone ? 'ready' : 'waiver_complete',
+    booking_status: paymentPaid && waiverDone ? 'ready' : paymentPaid ? 'payment_paid' : 'payment_required',
     updated_at: new Date().toISOString(),
   });
 

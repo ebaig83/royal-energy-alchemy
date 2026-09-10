@@ -8,6 +8,7 @@ const { sendWithPreferences } = require('./lib/comms');
 const { sendTransactional } = require('./lib/mailer');
 const { appointmentManageUrl } = require('./lib/appointment-token');
 const { isCalendarEligible } = require('./lib/record-policy');
+const { isWebsiteBooking } = require('./lib/booking-state');
 
 const SITE_URL = process.env.SITE_URL || 'https://www.daronroyal.com';
 
@@ -53,7 +54,7 @@ function isWaiverDone(session) {
 async function markPayment(sb, sessionId, event, checkout) {
   const { data: session, error } = await sb
     .from('sessions')
-    .select('id, status, service, location_type, session_date, session_time, waiver_status, waiver_completed, client_id, client_name, amount_due, amount_paid, payment_status, google_calendar_status')
+    .select('id, status, source, service, location_type, session_date, session_time, waiver_status, waiver_completed, client_id, client_name, amount_due, amount_paid, payment_status, google_calendar_status, payment_hold_expires_at')
     .eq('id', sessionId)
     .single();
 
@@ -71,13 +72,16 @@ async function markPayment(sb, sessionId, event, checkout) {
 
   const amountPaid = checkout.amount_total != null ? Number(checkout.amount_total) / 100 : Number(session.amount_due || 0);
   const waiverDone = isWaiverDone(session);
+  const websiteBooking = isWebsiteBooking(session);
   const updates = {
+    status: websiteBooking ? 'confirmed' : session.status,
     payment_status: 'paid',
     amount_paid: amountPaid,
     payment_paid_at: new Date().toISOString(),
     stripe_checkout_session_id: checkout.id || null,
     stripe_payment_intent_id: checkout.payment_intent || null,
     stripe_payment_status: checkout.payment_status || 'paid',
+    payment_hold_expires_at: null,
     google_calendar_status: isCalendarEligible({ ...session, payment_status: 'paid' }) ? 'pending' : (session.google_calendar_status || 'not_requested'),
     booking_status: waiverDone ? 'ready' : 'payment_paid',
     updated_at: new Date().toISOString(),

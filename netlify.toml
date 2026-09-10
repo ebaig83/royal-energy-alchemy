@@ -32,3 +32,6 @@
   to = "/book.html"
   status = 301
   force = true
+
+[functions."expire-website-bookings"]
+  schedule = "*/10 * * * *"

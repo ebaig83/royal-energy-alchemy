@@ -15,6 +15,7 @@ const { sendTransactional }     = require('./lib/mailer');
 const { emailFailure }          = require('./lib/ops-alert');
 const { appointmentManageUrl }  = require('./lib/appointment-token');
 const { isCalendarEligible, isQaRecord } = require('./lib/record-policy');
+const { isWebsiteBooking, isPaid, websiteAppointmentStatus } = require('./lib/booking-state');
 
 function calendarEligible(session) {
   return String(session?.payment_status || '').toLowerCase() === 'paid' && isCalendarEligible(session);
@@ -78,6 +79,10 @@ exports.handler = async function(event) {
     try { body = JSON.parse(event.body || '{}'); } catch { return respond(400, { error: 'Invalid JSON.' }); }
 
     if (!body.client_id && !body.client_name) return respond(400, { error: 'client_id or client_name is required.' });
+    const websiteBooking = isWebsiteBooking({ source: body.source || 'manual' });
+    if (websiteBooking && (String(body.status || '').toLowerCase() === 'confirmed' || String(body.payment_status || '').toLowerCase() === 'paid')) {
+      return respond(409, { error: 'Website bookings require verified Stripe payment before confirmation.' });
+    }
 
     const insert = {
       client_id:         body.client_id        || null,
@@ -87,11 +92,12 @@ exports.handler = async function(event) {
       session_time:      body.session_time       || null,
       duration_minutes:  body.duration_minutes   || 60,
       location_type:     body.location_type      || 'distance',
-      status:            body.status             || 'pending',
-      payment_status:    body.payment_status     || 'unpaid',
+      status:            websiteBooking ? 'pending' : (body.status || 'pending'),
+      payment_status:    websiteBooking ? 'pending' : (body.payment_status || 'unpaid'),
       amount_due:        body.amount_due         || null,
       square_booking_id: body.square_booking_id  || null,
       source:            body.source             || 'manual',
+      ...(websiteBooking ? { booking_status: 'payment_required', payment_hold_expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString() } : {}),
       seller_notes:      body.seller_notes       || null,
       state_before:      body.state_before       || null,
       state_after:       body.state_after        || null,
@@ -175,7 +181,7 @@ exports.handler = async function(event) {
       }
       if (slot) await sb.from('availability_slots').update({ status: 'booked', session_id: params.id }).eq('id', slot.id);
       const { data: restored, error: restoreErr } = await sb.from('sessions')
-        .update({ status: 'confirmed', google_calendar_status: calendarEligible(old) ? 'pending' : 'not_requested', google_calendar_error: null }).eq('id', params.id).select().single();
+        .update({ status: websiteAppointmentStatus(old), booking_status: isWebsiteBooking(old) && !isPaid(old) ? 'payment_required' : old.booking_status, google_calendar_status: calendarEligible({ ...old, status: websiteAppointmentStatus(old) }) ? 'pending' : 'not_requested', google_calendar_error: null }).eq('id', params.id).select().single();
       if (restoreErr) return respond(500, { error: restoreErr.message });
       await log({ actor: auth.user.email, action: 'session_restored', tableName: 'sessions', recordId: params.id,
         oldData: old, newData: restored, context: body.reason || 'Restored cancelled session from dashboard', ip });
@@ -261,7 +267,8 @@ exports.handler = async function(event) {
         .update({
           session_date:          body.new_date,
           session_time:          body.new_time,
-          status:                'confirmed',
+          status:                websiteAppointmentStatus(old),
+          booking_status:        isWebsiteBooking(old) && !isPaid(old) ? 'payment_required' : old.booking_status,
           reschedule_count:      reschedCount,
           reschedule_reason:     body.reason     || null,
           last_rescheduled_at:   new Date().toISOString(),
@@ -299,8 +306,15 @@ exports.handler = async function(event) {
 
     // ── Generic field update ─────────────────────────────────────────
     const allowed = ['status','booking_status','payment_status','amount_due','amount_paid','payment_paid_at','waiver_status','waiver_completed','waiver_completed_at','session_date','session_time','service','location_type','seller_notes','square_booking_id','stripe_checkout_session_id','stripe_payment_intent_id','stripe_payment_status','state_before','state_after'];
+    if (isWebsiteBooking(old) && (!isPaid(old) || String(body.payment_status || '').toLowerCase() !== 'paid') && (String(body.status || '').toLowerCase() === 'confirmed' || String(body.payment_status || '').toLowerCase() === 'paid' || String(body.stripe_payment_status || '').toLowerCase() === 'paid')) {
+      return respond(409, { error: 'Website bookings become confirmed/paid only through verified Stripe webhook processing.' });
+    }
     const updates = {};
     allowed.forEach(k => { if (body[k] !== undefined) updates[k] = body[k]; });
+    if (isWebsiteBooking(old) && !isPaid(old)) {
+      updates.status = websiteAppointmentStatus({ ...old, ...updates });
+      if (updates.booking_status === 'ready' || updates.payment_status !== 'paid') updates.booking_status = 'payment_required';
+    }
     const calendarRelevantChange = ['session_date','session_time','service','location_type','payment_status'].some(k => body[k] !== undefined && body[k] !== old[k]);
     const nextLocation = String(body.location_type !== undefined ? body.location_type : old.location_type || '').toLowerCase();
     const nextStatus = String(body.status !== undefined ? body.status : old.status || '').toLowerCase();

@@ -2,6 +2,7 @@
 
 const crypto = require('crypto');
 const { isCalendarEligible, isReviewedPlannerCalendar } = require('./record-policy');
+const { isWebsiteBooking, isPaid } = require('./booking-state');
 const CALENDAR_SCOPE = 'https://www.googleapis.com/auth/calendar.events';
 const TIMEZONE = process.env.DASHBOARD_TIMEZONE || 'America/New_York';
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
@@ -58,7 +59,7 @@ async function refreshAccessToken({ fetchImpl = fetch, timeoutMs, now = Date.now
 }
 
 function eligibleSession(session) {
-  return isCalendarEligible(session);
+  return isCalendarEligible(session) && (!isWebsiteBooking(session) || isPaid(session));
 }
 function requestId(sessionId) { return `rea-session-${String(sessionId)}`; }
 function eventId(sessionId) { return `rea${crypto.createHash('sha256').update(String(sessionId)).digest('hex').slice(0, 28)}`; }

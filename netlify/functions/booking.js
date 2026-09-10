@@ -183,13 +183,14 @@ exports.handler = async function(event) {
         location_type:    'distance',
         status:           'pending',
         payment_status:   'pending',
+        payment_hold_expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
         amount_due:       serviceInfo.price,
         amount_paid:      0,
         source:           body.source || 'online',
         intake_status:    'pending',
         waiver_status:    'pending',
         waiver_completed: false,
-        booking_status:   'booking_received',
+        booking_status:   'payment_required',
         // Public bookings are never eligible for sync before payment finalization.
         google_calendar_status: 'not_requested',
       })
@@ -300,6 +301,7 @@ exports.handler = async function(event) {
     },
     service:    serviceInfo.label,
     amount_due: serviceInfo.price,
+    appointment_status: 'pending',
     payment_status: 'pending',
     waiver_status: 'pending',
   });

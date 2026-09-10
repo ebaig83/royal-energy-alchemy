@@ -3,6 +3,7 @@ const {respond}=require('./auth');
 const {isCalendarEligible}=require('./google-calendar');
 const {easternInstant}=require('./business-time');
 const {isQaRecord}=require('./record-policy');
+const {isWebsiteBooking,isPaid}=require('./booking-state');
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 function calendarIntentStatus(session, action) {
   const hasEvent = Boolean(session?.google_calendar_event_id);
@@ -28,6 +29,11 @@ async function change(sb,session,body,actor){
  const {data,error}=await sb.rpc('practitioner_appointment_change',{p_id:session.id,p_action:body.action,p_expected_date:body.expected_date,p_expected_time:body.expected_time,p_date:body.action==='reschedule'?body.new_date:null,p_time:body.action==='reschedule'?body.new_time:null,p_actor:actor,p_reason:String(body.reason||'').slice(0,500),p_request:body.request_id,p_slot:body.new_slot_id||null});
  if(error)return respond(409,{error:'The appointment could not be changed. Reload and check that the destination is available.'});
  const nextSession = data?.session || {};
+ if(body.action==='reschedule'&&isWebsiteBooking(session)&&!isPaid(session)&&typeof sb.from==='function'){
+  const {data: gated,error:gatedError}=await sb.from('sessions').update({status:'pending',booking_status:'payment_required',google_calendar_status:'not_requested'}).eq('id',session.id).neq('payment_status','paid').select().single();
+  if(gatedError)return respond(500,{error:'The unpaid website appointment was rescheduled but its payment gate could not be enforced.'});
+  nextSession.status=gated.status; nextSession.booking_status=gated.booking_status; nextSession.google_calendar_status=gated.google_calendar_status;
+ }
  const calendar_status = nextSession.google_calendar_status || calendarIntentStatus(nextSession, body.action);
  return respond(200,{...data,[body.action==='cancel'?'cancelled':'rescheduled']:true,communication_status:'Queued subject to contact and communication policy',calendar_status});
 }
