@@ -9,6 +9,9 @@ const view = fs.readFileSync(path.join(root, 'dashboard-p1', 'agent-operations.m
 assert.match(app, /agentOperationsNavObserver/);
 assert.match(app, /data-agent-operations-nav/);
 assert.match(app, /id="agent-operations-panel"/);
+assert.match(app, /href="#agent-operations"/);
+assert.match(app, /showAgentOperationsPage/);
+assert.doesNotMatch(app, /href="#system" data-agent-operations-nav/);
 assert.match(view, /agent-operations/);
 assert.match(view, /Live, sanitized Manager telemetry/);
 assert.match(view, /Live\/Recent/);
