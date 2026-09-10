@@ -24,16 +24,11 @@
   status = 200
   force = true
 
-# Keep legacy booking links working while the homepage form is the single
-# public booking experience.
+# The catalog-driven booking page is the canonical public booking experience.
+# Keep the short route as a stable alias without sending visitors to the
+# separate homepage inquiry form.
 [[redirects]]
   from = "/book"
-  to = "/#contact"
-  status = 301
-  force = true
-
-[[redirects]]
-  from = "/book.html"
-  to = "/#contact"
+  to = "/book.html"
   status = 301
   force = true
