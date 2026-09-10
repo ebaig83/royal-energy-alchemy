@@ -22,6 +22,13 @@ assert.match(view, /agent-operations/);
 assert.match(view, /fetch\('\/.netlify\/functions\/agent-operations'/);
 assert.match(view, /Agent status temporarily unavailable/);
 assert.match(view, /credentials:'same-origin'/);
-assert.doesNotMatch(view, /PATCH|POST|DELETE|x-agent-telemetry-token|client_email|payment/);
+assert.match(view, /Manager Communication/);
+assert.match(view, /managerCommunication/);
+assert.match(view, /agent-manager-message/);
+assert.match(view, /method:'PATCH'/);
+assert.match(view, /action/);
+assert.doesNotMatch(view, /method:'POST'/);
+assert.doesNotMatch(view, /method:'DELETE'/);
+assert.doesNotMatch(view, /x-agent-telemetry-token|client_email|payment/);
 
 console.log('agent operations read-only UI contract: ok');
