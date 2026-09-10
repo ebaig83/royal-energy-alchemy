@@ -63,7 +63,7 @@ async function run() {
   await check('P1 authentication succeeds without exposing the PIN', async () => {
     await page.locator('#admin-pin').fill(PIN);
     await page.locator('#sign-in button[type="submit"]').click();
-    await page.locator('nav[aria-label="Main navigation"]').waitFor();
+    await page.locator('aside[aria-label="Main navigation"] .nav').waitFor();
     await page.locator('#sign-in').waitFor({ state: 'detached' });
   });
 
@@ -78,7 +78,7 @@ async function run() {
       if (!(await page.getByRole('link', { name: label, exact: true }).count())) throw new Error(`missing ${label} navigation link`);
     }
     await page.getByRole('link', { name: 'System', exact: true }).click();
-    if (!(await page.locator('#view').innerText()).includes('System')) throw new Error('System view did not render');
+    await page.getByRole('heading', { name: 'System', exact: true }).waitFor();
   });
 
   await check('Agent Operations navigation and page work', async () => {
