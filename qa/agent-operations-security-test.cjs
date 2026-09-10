@@ -1,0 +1,18 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const root = path.resolve(__dirname, '..');
+const migration = fs.readFileSync(path.join(root, 'migrations', '2026-09-09-agent-status.sql'), 'utf8');
+const endpoint = fs.readFileSync(path.join(root, 'netlify', 'functions', 'agent-telemetry.js'), 'utf8');
+const readEndpoint = fs.readFileSync(path.join(root, 'netlify', 'functions', 'agent-operations.js'), 'utf8');
+const lib = fs.readFileSync(path.join(root, 'netlify', 'functions', 'lib', 'agent-telemetry.js'), 'utf8');
+assert.match(migration, /BEGIN;[\s\S]*COMMIT;/);
+assert.match(migration, /ENABLE ROW LEVEL SECURITY/);
+assert.match(migration, /REVOKE ALL ON agent_status FROM anon, authenticated/);
+assert.match(lib, /x-agent-telemetry-token/);
+assert.match(endpoint, /requestedKey !== actor\.key/);
+assert.match(lib, /Builder attempted to update a Manager-owned field/);
+assert.match(fs.readFileSync(path.join(root, 'netlify', 'functions', 'agent-operations-admin.js'), 'utf8'), /actor\.role !== 'manager'/);
+assert.match(readEndpoint, /requireAdmin/);
+assert.doesNotMatch([endpoint, readEndpoint, lib].join('\n'), /client_email|payment|password|refresh_token|service_role_key/);
+console.log('agent operations telemetry security contract: ok');
