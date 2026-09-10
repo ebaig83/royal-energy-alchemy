@@ -57,9 +57,9 @@ check('canonical form submits directly to existing booking backend',
 check('homepage inline JavaScript syntax is valid', inlineScriptsAreValid(index));
 
 check('public booking links use the canonical destination',
-  !/\/book\.html/.test([index, nav, portal, pay, waiver].join('\n')) &&
-  /href=["']\/?#contact["']/.test(index) &&
-  /\/#contact/.test(nav));
+  /\/book\.html/.test([index, nav, portal, pay].join('\n')) &&
+  !/href=["']\/?#contact["']/.test([index, nav, portal, pay].join('\n')) &&
+  !/\/#contact/.test(nav));
 
 check('legacy booking URLs redirect to the canonical destination',
   /from = "\/book"[\s\S]*?to = "\/book\.html"[\s\S]*?status = 301[\s\S]*?force = true/.test(redirects) &&
