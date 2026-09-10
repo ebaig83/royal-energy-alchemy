@@ -92,8 +92,10 @@ async function run() {
 
   await check('Schedule page renders', async () => {
     await page.getByRole('link', { name: 'Schedule', exact: true }).click();
-    await page.locator('#view .toolbar').waitFor();
-    if (!(await page.locator('#view').innerText()).includes('appointments')) throw new Error('schedule content missing');
+    await page.getByRole('heading', { name: 'Schedule', exact: true }).waitFor();
+    await page.getByLabel('Display time zone').waitFor();
+    await page.getByLabel('Appointment filter').waitFor();
+    await page.locator('[data-schedule-view="Upcoming"]').waitFor();
   });
 
   await check('QA performed no production mutations', async () => {
