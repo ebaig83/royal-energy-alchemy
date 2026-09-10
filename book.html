@@ -207,19 +207,6 @@ function easternLabel(value) {
   return label && !/\bE[DS]?T\b/i.test(label) ? label + ' EST' : label;
 }
 
-// ── Services (must match booking.js SERVICES array) ───────────────────────────
-const SERVICES = [
-  { id: 'implant-parasite-removal', label: 'Implant/Parasite Removal — $100',       duration: 60, desc: 'Focused removal work for implants, parasites, and attachments' },
-  { id: 'follow-up-session',     label: 'Follow-Up Session — $80 each',             duration: 60, desc: 'Continued clearing, integration, and next-step guidance' },
-  { id: 'heavy-duty-removal',    label: 'Heavy Duty Removal, Exorcism or Emergency Removal Session — $120', duration: 60, desc: 'Heavy duty removal, exorcism, or emergency removal work' },
-  { id: 'distance-energy-session', label: 'Distance Energy Session — $70',          duration: 60, desc: 'Remote energy work when the subject is not aware of session' },
-  { id: 'energy-session-15-adult', label: '15 Minute Energy Session — $50 (15 yrs + up)', duration: 15, desc: 'Short focused energy session for ages 15 and up' },
-  { id: 'energy-session-15-youth', label: '15 Minute Energy Session — $40 (10 - 14 yrs)', duration: 15, desc: 'Short focused energy session for ages 10 to 14' },
-  { id: 'energy-session-10-child', label: '10 Minute Energy Session — $30 (9 yrs + down)', duration: 10, desc: 'Gentle short energy session for ages 9 and down' },
-  { id: 'spiritual-coaching',    label: 'Spiritual Coaching — $75/Hour',             duration: 60, desc: 'Spiritual coaching, not a reading' },
-  { id: 'house-cleansing-blessing', label: 'House Cleansing/Blessing In-Person — $80', duration: 60, desc: 'In-person energetic cleansing and blessing for homes and spaces' },
-];
-
 // ── DOM helpers ───────────────────────────────────────────────────────────────
 function showPanel(n) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
@@ -247,21 +234,62 @@ function clearError() { document.getElementById('errorMsg').classList.remove('sh
 
 // ── Panel 1: Services ─────────────────────────────────────────────────────────
 const grid = document.getElementById('serviceGrid');
-SERVICES.forEach(svc => {
-  const card = document.createElement('div');
-  card.className = 'svc-card';
-  card.innerHTML = `<h3>${svc.label}</h3><p>${svc.desc} · ${svc.duration} min</p>`;
-  card.addEventListener('click', () => {
-    document.querySelectorAll('.svc-card').forEach(c => c.classList.remove('selected'));
-    card.classList.add('selected');
-    state.service = svc.id;
-    state.serviceLabel = svc.label;
-    const btn = document.getElementById('p1Next');
-    btn.textContent = `Continue with ${svc.label} →`;
-    btn.disabled = false;
-  });
-  grid.appendChild(card);
-});
+const p1Next = document.getElementById('p1Next');
+grid.innerHTML = '<div class="slots-loading" role="status">Loading services<span>...</span></div>';
+p1Next.disabled = true;
+
+function catalogError() {
+  grid.innerHTML = '<div class="no-slots" role="alert">Unable to load services right now. Please retry.</div>';
+  const retry = document.createElement('button');
+  retry.type = 'button';
+  retry.className = 'btn-primary';
+  retry.textContent = 'Retry loading services';
+  retry.addEventListener('click', loadCatalog);
+  grid.appendChild(retry);
+  p1Next.disabled = true;
+}
+
+function validCatalog(data) {
+  return Array.isArray(data?.services) && data.services.length === 11 && data.services.every(service => (
+    service && typeof service.id === 'string' && service.id.trim() &&
+    typeof service.label === 'string' && service.label.trim() &&
+    Number.isFinite(Number(service.price)) && Number(service.price) >= 0 &&
+    Number.isInteger(Number(service.duration)) && Number(service.duration) > 0 &&
+    service.publicBookable === true
+  ));
+}
+
+function loadCatalog() {
+  grid.innerHTML = '<div class="slots-loading" role="status">Loading services<span>...</span></div>';
+  p1Next.disabled = true;
+  return fetch('/.netlify/functions/public-service-catalog', { cache: 'no-store' })
+    .then(response => { if (!response.ok) throw new Error('Catalog request failed'); return response.json(); })
+    .then(data => {
+      if (!validCatalog(data)) throw new Error('Catalog response invalid');
+      grid.textContent = '';
+      data.services.filter(service => service.publicBookable).forEach(svc => {
+        const card = document.createElement('div');
+        card.className = 'svc-card';
+        const heading = document.createElement('h3');
+        heading.textContent = svc.label;
+        const details = document.createElement('p');
+        details.textContent = `$${Number(svc.price).toFixed(2)}${svc.priceNote ? ` ${svc.priceNote}` : ''} · ${svc.duration} min`;
+        card.append(heading, details);
+        card.addEventListener('click', () => {
+          document.querySelectorAll('.svc-card').forEach(c => c.classList.remove('selected'));
+          card.classList.add('selected');
+          state.service = svc.id;
+          state.serviceLabel = svc.label;
+          p1Next.textContent = `Continue with ${svc.label} →`;
+          p1Next.disabled = false;
+        });
+        grid.appendChild(card);
+      });
+      if (grid.children.length !== 11) throw new Error('No public services available');
+    })
+    .catch(() => { catalogError(); });
+}
+loadCatalog();
 document.getElementById('p1Next').addEventListener('click', () => {
   if (!state.service) return;
   clearError();
