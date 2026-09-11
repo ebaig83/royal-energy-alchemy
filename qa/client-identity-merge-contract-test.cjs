@@ -24,7 +24,37 @@ assert.equal(projected.sessions[0].client_name, 'Canonical Name');
 assert.equal(projected.sessions[0].client_display_name, 'Canonical Name');
 assert.equal(projected.sessions[0].historical_client_name, 'Historical Name');
 assert.match(app, /client_display_name/);
-assert.match(app, /client_name\|\|'Client not linked'/);
+assert.match(app, /s\?\.client_name\|\|'Client not linked'/);
+
+const softMerged = model.project({
+  clients: [
+    { id: 'p', full_name: 'Primary Name', merged_into_client_id: null },
+    { id: 'd', full_name: 'Duplicate Name', merged_into_client_id: 'p' },
+  ],
+  sessions: [{ id: 'merged-session', client_id: 'd', client_name: 'Historical Duplicate', session_date: '2026-01-02', session_time: '10:00', status: 'confirmed' }],
+  ledger_entries: [], payments: [], communications: [], aftercare: [], client_relationships: [], session_notes: [],
+});
+assert.equal(softMerged.sessions[0].client_display_name, 'Primary Name');
+assert.equal(softMerged.sessions[0].client_name, 'Primary Name');
+assert.equal(softMerged.sessions[0].historical_client_name, 'Historical Duplicate');
+
+const missingLink = model.project({
+  clients: [],
+  sessions: [{ id: 'missing-link', client_id: 'gone', client_name: 'Historical Client', session_date: '2026-01-03', status: 'pending' }],
+  ledger_entries: [], payments: [], communications: [], aftercare: [], client_relationships: [], session_notes: [],
+});
+assert.equal(missingLink.sessions[0].client_display_name, 'Historical Client');
+assert.equal(missingLink.sessions[0].client_name, 'Historical Client');
+
+const unlinked = model.project({
+  clients: [],
+  sessions: [{ id: 'unlinked', client_id: null, client_name: 'Planner Snapshot', session_date: '2026-01-04', status: 'pending' }, { id: 'unknown', client_id: null, client_name: null, session_date: '2026-01-05', status: 'pending' }],
+  ledger_entries: [], payments: [], communications: [], aftercare: [], client_relationships: [], session_notes: [],
+});
+assert.equal(unlinked.sessions[0].client_display_name, 'Planner Snapshot');
+assert.equal(unlinked.sessions[1].client_display_name, null);
+assert.equal(unlinked.sessions[1].session_date, '2026-01-05');
+assert.equal(unlinked.sessions[1].status, 'pending');
 assert.match(clients, /\.update\(updates\)[\s\S]*\.eq\('id', params\.id\)/);
 assert.match(clients, /merged_into_client_id/);
 assert.match(audit, /event\.httpMethod !== 'GET'/);

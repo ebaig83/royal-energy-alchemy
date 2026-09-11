@@ -39,8 +39,10 @@ async function readReconciliation(base,key,{clientName,date,from,to}={}){
 function project(raw){
  const d=Object.fromEntries(Object.entries(FIELDS).map(([t,fields])=>[t,(raw[t]||[]).map(r=>Object.fromEntries(fields.split(',').map(k=>[k,r[k]??null])))]));
  const canonicalClients=new Map(d.clients.map(c=>[c.id,c]));
- // Current UI identity comes from clients.id. Snapshot fields remain historical evidence.
- const withCurrentIdentity=row=>{const current=canonicalClients.get(row.client_id)?.full_name||null;return {...row,client_display_name:current,historical_client_name:row.client_name||null,client_name:current||row.client_name||null};};
+ // Current UI identity comes from clients.id; snapshots remain historical evidence.
+ // Resolve soft-merged links without exposing the duplicate as an active profile.
+ const resolveCurrentClient=id=>{const seen=new Set();let client=id?canonicalClients.get(id):null;while(client?.merged_into_client_id&&!seen.has(client.id)){seen.add(client.id);client=canonicalClients.get(client.merged_into_client_id)||null;}return client?.full_name||null;};
+ const withCurrentIdentity=row=>{const current=resolveCurrentClient(row.client_id);const historical=row.historical_client_name||row.client_name||null;return {...row,client_display_name:current||historical,historical_client_name:historical,client_name:current||historical||null};};
  const payments=new Map(d.payments.map(p=>[p.id,p]));
  return {preview:false,fullHistory:true,now:new Date().toISOString(),coverage:'Complete paginated Supabase reads · refreshed when the page loads · provider heartbeats not checked',errors:[],
   clients:d.clients.filter(c=>!c.merged_into_client_id),sessions:d.sessions.map(s=>({...withCurrentIdentity(s),session_notes:d.session_notes.filter(n=>n.session_id===s.id)})),

@@ -27,7 +27,8 @@ const visibleMessages=()=>data.communications.filter(m=>includeQA||(!M.qa(m)&&!M
 const visibleLedger=()=>data.ledger.filter(l=>!M.silent(data.sessions.find(s=>s.id===l.related_session_id)||{})&&(includeQA||(!M.qa(l)&&!M.qa(data.clients.find(c=>c.id===l.client_id))&&!M.qa(data.sessions.find(s=>s.id===l.related_session_id)))));
 const visiblePayments=()=>(data.payments||[]).filter(p=>includeQA||(!M.qa(p)&&!M.qa(data.clients.find(c=>c.id===p.client_id))&&!M.qa(data.sessions.find(s=>s.id===p.session_id))));
 const clientName=id=>data.clients.find(c=>c.id===id)?.full_name||'Client not linked';
-const displayClientName=s=>s?.client_display_name||clientName(s?.client_id)||(s?.client_name||'Client not linked');
+// Prefer the projected canonical identity, then a linked client, then preserved history.
+const displayClientName=s=>s?.client_display_name||(s?.client_id?clientName(s.client_id):null)||s?.client_name||'Client not linked';
 const duplicateIds=()=>new Set((duplicateAudit.candidates||[]).flatMap(candidate=>[...candidateClientIds(candidate)]));
 const candidateForClient=id=>(duplicateAudit.candidates||[]).find(candidate=>candidateClientIds(candidate).has(id));
 const rowBtn=(s,label='View')=>`<button data-session="${E(s.id)}" aria-label="${E(label+' '+displayClientName(s))}">${E(label)}</button>`;
