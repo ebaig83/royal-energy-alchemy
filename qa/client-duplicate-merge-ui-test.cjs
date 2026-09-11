@@ -16,7 +16,7 @@ const {pathToFileURL}=require('node:url');
  assert.match(html,/Primary profile/);assert.match(html,/Possible duplicate/);assert.match(html,/Resolve conflicts/);assert.match(html,/Related records preserved/);assert.match(html,/Upcoming appointments: 1/);assert.match(html,/Unresolved linkage warnings/);assert.match(html,/data-review-merge disabled/);
  html=workflow.renderMergeWorkflow({preview,resolutions:{email:'primary'},stage:'preview'});assert.doesNotMatch(html,/data-review-merge disabled/);
  html=workflow.renderMergeWorkflow({preview,resolutions:{email:'primary'},stage:'confirm'});assert.match(html,/Final confirmation/);assert.match(html,/historical sessions, communications, and Stripe\/payment evidence/);
- let postCalled=false;const result=await workflow.executeMerge('c1','c6',{email:'primary'},async()=>{postCalled=true;return {ok:true};});assert.equal(result.disabled,true);assert.equal(postCalled,false,'browser QA must not POST merge by default');
+ let postCalled=false;const result=await workflow.executeMerge('c1','c6',{email:'primary'},async()=>{postCalled=true;return {ok:true,json:async()=>({merged:true})};});assert.equal(result.merged,true);assert.equal(postCalled,true,'explicit final confirmation may POST through the guarded server endpoint');
  assert.match(app,/data-duplicate-audit/);assert.match(app,/data-merge-client/);assert.match(app,/client_display_name/);assert.match(app,/!c\.merged_into_client_id/);
  assert.match(fixture,/merged_into_client_id:id==='c7'\?'c1':null/);
  console.log('client duplicate/merge UI contract: PASS');

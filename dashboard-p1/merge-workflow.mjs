@@ -33,7 +33,6 @@ export function renderMergeWorkflow({candidates=[],primaryId='',duplicateId='',p
 }
 
 export async function executeMerge(primaryId,duplicateId,resolutions,fetchImpl=fetch){
- if(globalThis.__ALLOW_CLIENT_MERGE__!==true)return {disabled:true};
  const response=await fetchImpl('/.netlify/functions/client-merge',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({primary_id:primaryId,duplicate_id:duplicateId,resolutions})});
  if(!response.ok)throw Error('Merge was not accepted. No assumptions were made about record state.');
  return response.json();
