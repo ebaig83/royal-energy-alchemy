@@ -1,0 +1,23 @@
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+const {pathToFileURL}=require('node:url');
+(async()=>{
+ const root=path.resolve(__dirname,'..');
+ const workflow=await import(pathToFileURL(path.join(root,'dashboard-p1/merge-workflow.mjs')).href);
+ const app=fs.readFileSync(path.join(root,'dashboard-p1/app.mjs'),'utf8');
+ const fixture=fs.readFileSync(path.join(root,'dashboard-p1/fixture.mjs'),'utf8');
+ const candidate={confidence:'possible',reason:'Normalized contact review',clients:[{id:'c1',name:'Emma Carter'},{id:'c6',name:'Ava Martinez'}]};
+ const select=workflow.renderMergeWorkflow({candidates:[candidate],primaryId:'c1',duplicateId:'c6'});
+ assert.match(select,/Possible duplicate review is read-only|Read-only duplicate review/);
+ assert.match(select,/data-merge-primary/);assert.match(select,/data-merge-duplicate/);assert.match(select,/data-load-merge-preview/);
+ const preview={primary:{id:'c1',profile:{full_name:'Emma Carter',email:'emma@example.com'}},duplicate:{id:'c6',profile:{full_name:'Ava Martinez',email:'ava.other@example.com'}},conflicts:[{field:'email',primary:'emma@example.com',duplicate:'ava.other@example.com'}],relatedCounts:{sessions:{primary:{count:2},duplicate:{count:1}},communications:{primary:{count:1},duplicate:{count:0}},payments:{primary:{count:2},duplicate:{count:1}},intakes:{primary:{count:0},duplicate:{count:0}},aftercare:{primary:{count:1},duplicate:{count:0}}},upcomingAppointments:[{id:'a1'}],calendarReferences:[{id:'g1'}],unresolvedReferences:['Review calendar reference']};
+ let html=workflow.renderMergeWorkflow({preview,resolutions:{},stage:'preview'});
+ assert.match(html,/Primary profile/);assert.match(html,/Possible duplicate/);assert.match(html,/Resolve conflicts/);assert.match(html,/Related records preserved/);assert.match(html,/Upcoming appointments: 1/);assert.match(html,/Unresolved linkage warnings/);assert.match(html,/data-review-merge disabled/);
+ html=workflow.renderMergeWorkflow({preview,resolutions:{email:'primary'},stage:'preview'});assert.doesNotMatch(html,/data-review-merge disabled/);
+ html=workflow.renderMergeWorkflow({preview,resolutions:{email:'primary'},stage:'confirm'});assert.match(html,/Final confirmation/);assert.match(html,/historical sessions, communications, and Stripe\/payment evidence/);
+ let postCalled=false;const result=await workflow.executeMerge('c1','c6',{email:'primary'},async()=>{postCalled=true;return {ok:true};});assert.equal(result.disabled,true);assert.equal(postCalled,false,'browser QA must not POST merge by default');
+ assert.match(app,/data-duplicate-audit/);assert.match(app,/data-merge-client/);assert.match(app,/client_display_name/);assert.match(app,/!c\.merged_into_client_id/);
+ assert.match(fixture,/merged_into_client_id:id==='c7'\?'c1':null/);
+ console.log('client duplicate/merge UI contract: PASS');
+})().catch(error=>{console.error(error.stack||error);process.exitCode=1;});
