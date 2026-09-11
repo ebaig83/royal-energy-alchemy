@@ -1,6 +1,6 @@
 'use strict';
 const FIELDS={
- clients:'id,full_name,email,phone,source,status,notes,tags,created_at',
+ clients:'id,full_name,email,phone,address,date_of_birth,emergency_contact,additional_information,preferred_contact,source,status,notes,tags,created_at,merged_into_client_id,merged_at,merged_by',
  sessions:'id,client_id,client_name,service,session_date,session_time,duration_minutes,location_type,status,payment_status,amount_due,amount_paid,payment_method,payment_reference,payment_note,payment_source,source,seller_notes,created_at,intake_status,waiver_status,waiver_completed,google_calendar_status,google_meet_url',
  ledger_entries:'id,client_id,client_name,entry_type,amount,entry_date,created_at,related_session_id,related_payment_id,deleted_at',
  payments:'id,session_id,client_id,client_name,method,status,amount,paid_at,refunded_amount,refunded_at,refund_status',
@@ -38,12 +38,15 @@ async function readReconciliation(base,key,{clientName,date,from,to}={}){
 }
 function project(raw){
  const d=Object.fromEntries(Object.entries(FIELDS).map(([t,fields])=>[t,(raw[t]||[]).map(r=>Object.fromEntries(fields.split(',').map(k=>[k,r[k]??null])))]));
+ const canonicalClients=new Map(d.clients.map(c=>[c.id,c]));
+ // Current UI identity comes from clients.id. Snapshot fields remain historical evidence.
+ const withCurrentIdentity=row=>{const current=canonicalClients.get(row.client_id)?.full_name||null;return {...row,client_display_name:current,historical_client_name:row.client_name||null,client_name:current||row.client_name||null};};
  const payments=new Map(d.payments.map(p=>[p.id,p]));
  return {preview:false,fullHistory:true,now:new Date().toISOString(),coverage:'Complete paginated Supabase reads · refreshed when the page loads · provider heartbeats not checked',errors:[],
-  clients:d.clients,sessions:d.sessions.map(s=>({...s,session_notes:d.session_notes.filter(n=>n.session_id===s.id)})),
-  ledger:d.ledger_entries.filter(l=>!l.deleted_at).map(l=>({...l,payment_method:payments.get(l.related_payment_id)?.method||null})),
-  communications:d.communications.map(m=>({...m,error_message:m.status==='failed'?'Delivery failed. Detailed provider diagnostics are not connected.':null})),
-  payments:d.payments,aftercare:d.aftercare,relationships:d.client_relationships};
+  clients:d.clients.filter(c=>!c.merged_into_client_id),sessions:d.sessions.map(s=>({...withCurrentIdentity(s),session_notes:d.session_notes.filter(n=>n.session_id===s.id)})),
+  ledger:d.ledger_entries.filter(l=>!l.deleted_at).map(l=>({...withCurrentIdentity(l),payment_method:payments.get(l.related_payment_id)?.method||null})),
+  communications:d.communications.map(m=>({...withCurrentIdentity(m),error_message:m.status==='failed'?'Delivery failed. Detailed provider diagnostics are not connected.':null})),
+  payments:d.payments.map(withCurrentIdentity),aftercare:d.aftercare.map(withCurrentIdentity),relationships:d.client_relationships};
 }
 
 module.exports={FIELDS,readTable,readReconciliation,project};

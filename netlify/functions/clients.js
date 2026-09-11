@@ -57,6 +57,7 @@ exports.handler = async function(event) {
         .single();
 
       if (error) return respond(404, { error: 'Client not found.' });
+      if (client.merged_into_client_id) return respond(410, { error: 'Client profile was merged.', primary_client_id: client.merged_into_client_id });
       if (params.include_qa !== 'true' && isQaRecord(client)) return respond(404, { error: 'Client not found.' });
 
       const { data: sessions } = await sb
@@ -108,6 +109,7 @@ exports.handler = async function(event) {
         .limit(50);
       // Exclude archived unless caller explicitly requests it
       if (params.include_archived !== 'true') q2 = q2.not('status', 'eq', 'archived');
+      q2 = q2.is('merged_into_client_id', null);
       const { data, error } = await q2;
       if (error) return respond(500, { error: error.message });
       return respond(200, { clients: _filterQA(data, params) });
@@ -116,7 +118,7 @@ exports.handler = async function(event) {
     // List all — exclude archived and QA/test clients by default
     let query = sb
       .from('clients')
-      .select('id, full_name, email, phone, status, source, tags, created_at')
+      .select('id, full_name, email, phone, status, source, tags, created_at, merged_into_client_id')
       .order('created_at', { ascending: false });
 
     // If a specific status filter is requested, apply it server-side
@@ -127,6 +129,7 @@ exports.handler = async function(event) {
       query = query.not('status', 'eq', 'archived');
     }
 
+    query = query.is('merged_into_client_id', null);
     const { data, error } = await query;
     if (error) return respond(500, { error: error.message });
     return respond(200, { clients: _filterQA(data, params) });
