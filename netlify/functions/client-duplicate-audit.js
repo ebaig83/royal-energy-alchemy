@@ -2,7 +2,7 @@
 const { requireAdmin, respond } = require('./lib/auth');
 const { getClient } = require('./lib/supabase');
 const { isQaRecord } = require('./lib/record-policy');
-const { normalizeEmail, normalizePhone, profileSummary } = require('./lib/client-identity');
+const { normalizeEmail, normalizePhone, nameSimilarityManual, profileSummary } = require('./lib/client-identity');
 
 exports.handler = async event => {
   const auth = await requireAdmin(event, { touch: false });
@@ -25,18 +25,27 @@ exports.handler = async event => {
       if (email) { if (byEmail.has(email)) join(client.id, byEmail.get(email)); else byEmail.set(email, client.id); }
       if (phone.length >= 7) { if (byPhone.has(phone)) join(client.id, byPhone.get(phone)); else byPhone.set(phone, client.id); }
     }
+    // Name similarity is review evidence only. It never raises confidence or authorizes a merge.
+    for (let i = 0; i < active.length; i += 1) for (let j = i + 1; j < active.length; j += 1) {
+      if (nameSimilarityManual(active[i].full_name, active[j].full_name)) join(active[i].id, active[j].id);
+    }
     const groups = new Map();
     for (const client of active) {
       const root = find(client.id); if (!groups.has(root)) groups.set(root, []); groups.get(root).push(client);
     }
     const candidates = [...groups.values()].filter(group => group.length > 1).map(group => {
-      const emails = new Set(group.map(c => normalizeEmail(c.email)).filter(Boolean));
-      const phones = new Set(group.map(c => normalizePhone(c.phone)).filter(v => v.length >= 7));
-      const reasons = [];
-      if (emails.size < group.length) reasons.push('normalized exact email match');
-      if (phones.size < group.length) reasons.push('normalized exact phone match');
-      const confidence = reasons.length > 1 ? 'high' : 'medium';
-      return { confidence, reason: reasons.join(' + '), clients: group.map(c => profileSummary(c, sessions || [])) };
+      const emails = group.map(c => normalizeEmail(c.email)).filter(Boolean);
+      const phones = group.map(c => normalizePhone(c.phone)).filter(v => v.length >= 7);
+      const reasons = [], exactSignals = [];
+      const hasExactEmail = new Set(emails).size < emails.length;
+      const hasExactPhone = new Set(phones).size < phones.length;
+      if (hasExactEmail) reasons.push('normalized exact email match');
+      if (hasExactPhone) reasons.push('normalized exact phone match');
+      if (hasExactEmail) exactSignals.push('email');
+      if (hasExactPhone) exactSignals.push('phone');
+      if (group.some((client, index) => group.some((other, otherIndex) => index < otherIndex && nameSimilarityManual(client.full_name, other.full_name)))) reasons.push('name_similarity_manual_review');
+      const hasExactSignal = exactSignals.length > 0;
+      return { confidence: hasExactSignal ? (exactSignals.length > 1 ? 'high' : 'medium') : 'low', manualVerificationRequired: !hasExactSignal, reason: reasons.join(' + '), clients: group.map(c => profileSummary(c, sessions || [])) };
     });
     return respond(200, { readOnly: true, candidates });
   } catch { return respond(503, { error: 'Duplicate audit is unavailable.' }); }

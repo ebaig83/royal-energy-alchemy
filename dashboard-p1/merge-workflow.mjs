@@ -19,7 +19,7 @@ export async function loadMergePreview(primaryId,duplicateId,fetchImpl=fetch){
 }
 
 export function candidateClientIds(candidate){return new Set((candidate?.clients||[]).map(client=>client.id));}
-export function renderDuplicateBadge(){return '<span class="badge purple duplicate-badge">Possible duplicate</span>';}
+export function renderDuplicateBadge(candidate={manualVerificationRequired:true}){return `<span class="badge purple duplicate-badge">Possible duplicate</span>${candidate.manualVerificationRequired?'<small class="duplicate-review-note">Manual verification required</small>':''}`;}
 export function mergeResolutionComplete(preview,resolutions){return (preview?.conflicts||[]).every(conflict=>resolutions?.[conflict.field]==='primary'||resolutions?.[conflict.field]==='duplicate');}
 
 function pairOptions(candidates,primaryId,duplicateId){return candidates.flatMap(candidate=>candidate.clients||[]).filter((client,index,all)=>all.findIndex(other=>other.id===client.id)===index).map(client=>`<option value="${E(client.id)}" ${client.id===primaryId?'selected':''}>${E(client.name||client.full_name||client.id)}</option>`).join('');}

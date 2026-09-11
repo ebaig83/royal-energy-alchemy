@@ -4,6 +4,15 @@ const PROFILE_FIELDS = ['full_name', 'email', 'phone', 'address', 'date_of_birth
 
 function normalizeEmail(value) { return String(value || '').trim().toLowerCase(); }
 function normalizePhone(value) { return String(value || '').replace(/\D/g, ''); }
+function normalizeName(value) { return String(value || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim().replace(/\s+/g, ' '); }
+function nameSimilarityManual(a, b) {
+  const left = normalizeName(a).split(' ').filter(Boolean), right = normalizeName(b).split(' ').filter(Boolean);
+  if (!left.length || !right.length) return false;
+  if (left.join(' ') === right.join(' ')) return true;
+  const shorter = left.length <= right.length ? left : right;
+  const longer = left.length <= right.length ? right : left;
+  return shorter.length === 1 && shorter[0].length >= 4 && longer.includes(shorter[0]);
+}
 function hasValue(value) { return value !== null && value !== undefined && String(value).trim() !== ''; }
 
 function profileSummary(client, sessions) {
@@ -22,4 +31,4 @@ function fieldConflicts(primary, duplicate) {
     .map(field => ({ field, primary: primary[field], duplicate: duplicate[field], suggested: primary[field] ?? duplicate[field] }));
 }
 
-module.exports = { PROFILE_FIELDS, normalizeEmail, normalizePhone, profileSummary, fieldConflicts, hasValue };
+module.exports = { PROFILE_FIELDS, normalizeEmail, normalizePhone, normalizeName, nameSimilarityManual, profileSummary, fieldConflicts, hasValue };
