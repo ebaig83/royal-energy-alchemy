@@ -13,7 +13,7 @@ async function stopPreview(server){if(!server||server.killed)return;await new Pr
  page.on('pageerror',e=>errors.push(e.message));
  await page.route('**/*',route=>{const u=new URL(route.request().url());requests.push({host:u.hostname,path:u.pathname,method:route.request().method()});if(u.hostname!=='127.0.0.1'||route.request().method()!=='GET')return route.abort();return route.continue();});
  await page.goto(PREVIEW_URL);await page.getByRole('heading',{name:'Good morning, Daron'}).waitFor();
- assert.equal(await page.locator('nav a').count(),7);assert.equal(await page.locator('nav').innerText(),'Today\nClients\nSchedule\nCommunications\nFinance\nContent Studio\nSystem');
+ assert.equal(await page.locator('nav a').count(),8);assert.equal(await page.locator('nav').innerText(),'Today\nClients\nSchedule\nCommunications\nFinance\nContent Studio\nSystem\n✦ Agent Operations');
  await page.screenshot({path:path.join(out,'today-desktop.png'),fullPage:true});
  await page.getByRole('link',{name:'Clients',exact:true}).click();await page.getByRole('searchbox').fill('Ava Martinez');assert.equal(await page.locator('.client-card').count(),2);
  await page.locator('.client-card').first().getByRole('button',{name:'Open case file'}).click();await page.getByRole('dialog').waitFor();

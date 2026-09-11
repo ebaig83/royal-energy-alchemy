@@ -7,11 +7,14 @@ const app = fs.readFileSync(path.join(root, 'dashboard-p1', 'app.mjs'), 'utf8');
 const view = fs.readFileSync(path.join(root, 'dashboard-p1', 'agent-operations.mjs'), 'utf8');
 const css = fs.readFileSync(path.join(root, 'dashboard-p1', 'refinement.css'), 'utf8');
 
-assert.match(app, /agentOperationsNavObserver/);
+assert.match(app, /const dashboardRoutes=/);
+assert.match(app, /function resolveRoute/);
+assert.match(app, /function routeView/);
 assert.match(app, /data-agent-operations-nav/);
 assert.match(app, /id="agent-operations-panel"/);
 assert.match(app, /href="#agent-operations"/);
-assert.match(app, /showAgentOperationsPage/);
+assert.match(app, /if\(area==='agent-operations'\)loadAgentOperations/);
+assert.doesNotMatch(app, /agentOperationsNavObserver|showAgentOperationsPage/);
 assert.doesNotMatch(app, /href="#system" data-agent-operations-nav/);
 assert.match(view, /agent-operations/);
 assert.match(view, /Live, sanitized Manager telemetry/);
