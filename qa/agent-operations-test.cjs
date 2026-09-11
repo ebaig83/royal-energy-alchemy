@@ -5,6 +5,7 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const app = fs.readFileSync(path.join(root, 'dashboard-p1', 'app.mjs'), 'utf8');
 const view = fs.readFileSync(path.join(root, 'dashboard-p1', 'agent-operations.mjs'), 'utf8');
+const css = fs.readFileSync(path.join(root, 'dashboard-p1', 'refinement.css'), 'utf8');
 
 assert.match(app, /agentOperationsNavObserver/);
 assert.match(app, /data-agent-operations-nav/);
@@ -30,5 +31,16 @@ assert.match(view, /action/);
 assert.doesNotMatch(view, /method:'POST'/);
 assert.doesNotMatch(view, /method:'DELETE'/);
 assert.doesNotMatch(view, /x-agent-telemetry-token|client_email|payment/);
+assert.match(view, /agent-heartbeat-inline/);
+assert.match(view, /<summary>View details<\/summary>/);
+assert.match(view, /<summary>View full Manager report<\/summary>/);
+assert.match(view, /Recent communication history/);
+assert.doesNotMatch(view, /class="agent-state agent-state-/);
+assert.doesNotMatch(view, /class="agent-card-footer"/);
+assert.doesNotMatch(view, /<dt>Status<\/dt>/);
+assert.match(css, /\.agent-operations-cards\{grid-template-columns:repeat\(3/);
+assert.match(css, /@media\(max-width:1180px\)\{\.agent-operations-cards\{grid-template-columns:repeat\(2/);
+assert.match(css, /@media\(max-width:850px\)[\s\S]*?\.agent-operations-cards,\.agent-operations-lower\{grid-template-columns:1fr\}/);
+assert.match(css, /\.agent-metric\{min-height:76px/);
 
 console.log('agent operations read-only UI contract: ok');
