@@ -20,9 +20,10 @@ export async function clientDetail(id){
 }
 
 export async function login(pin,rememberMe=false){const r=await fetch('/.netlify/functions/verify-pin',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin,remember_me:rememberMe===true})});if(!r.ok)throw Error('Sign-in was not accepted. Check the PIN or try again later.');}
-
 export async function logout(){
  const r=await fetch('/.netlify/functions/verify-pin',{method:'DELETE',credentials:'same-origin',headers:{Accept:'application/json'},cache:'no-store'});
  if(!r.ok)throw Error('Log out could not be completed. Try again.');
  return r.json();
 }
+export async function requestPasswordReset(email){const r=await fetch('/.netlify/functions/practitioner-recovery-request',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});if(!r.ok)throw Error('Recovery request could not be submitted. Try again later.');return r.json();}
+export async function completePasswordReset(token,next,confirm){const r=await fetch('/.netlify/functions/practitioner-recovery',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'complete',token,next,confirm})});if(!r.ok)throw Error('This reset link is invalid or expired. Request a new one.');return r.json();}

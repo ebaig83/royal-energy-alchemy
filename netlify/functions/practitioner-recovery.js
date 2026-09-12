@@ -3,6 +3,7 @@ const crypto=require('crypto');
 const {getClient}=require('./lib/supabase');
 const {respond,hashToken,clearSessionCookie}=require('./lib/auth');
 const credential=require('./lib/practitioner-credential');
+const {logRecoveryAudit}=require('./lib/recovery-audit');
 const RECOVERY_MINUTES=20;
 function origin(raw){return String(raw||'').trim().replace(/\/$/,'');}
 function allowed(event){const actual=origin(event.headers?.origin||event.headers?.Origin);const configured=(process.env.VERIFY_PIN_ALLOWED_ORIGINS||'').split(',').map(origin).filter(Boolean);const base=origin(process.env.SITE_URL||'https://www.daronroyal.com');return !actual||[...new Set([...configured,base])].includes(actual);}
@@ -33,11 +34,13 @@ exports.handler=async event=>{
    return respond(200,{recovery_token:token,expires_at:expires,expires_in_minutes:RECOVERY_MINUTES});
   }
   if(body.action!=='complete'||typeof body.token!=='string'||body.token.length<32||body.token.length>256||!credential.validNew(body.next)||body.next!==body.confirm)return respond(400,{error:'Recovery request was not accepted.'});
-  if(!await credential.recoveryAttempt(sb,event))return respond(429,{error:'Recovery request was not accepted.'});
+  const tokenHash=hashToken(body.token);
+  if(!await credential.recoveryAttempt(sb,event)){await logRecoveryAudit(sb,{eventType:'complete',outcome:'rate_limited',identifier:tokenHash});return respond(429,{error:'Recovery request was not accepted.'});}
   const encoded=await credential.hash(body.next);
-  const {data,error}=await sb.rpc('practitioner_recover',{p_token_hash:hashToken(body.token),p_hash:encoded});
+  const {data,error}=await sb.rpc('practitioner_recover',{p_token_hash:tokenHash,p_hash:encoded});
   if(error)throw Error();
-  if(data!==true)return respond(400,{error:'Recovery request was not accepted.'},{cookie:clearSessionCookie()});
+  if(data!==true){await logRecoveryAudit(sb,{eventType:'complete',outcome:'rejected',identifier:tokenHash});return respond(400,{error:'Recovery request was not accepted.'},{cookie:clearSessionCookie()});}
+  await logRecoveryAudit(sb,{eventType:'complete',outcome:'success',identifier:tokenHash});
   return respond(200,{reset:true,sign_in_required:true,sessions_revoked:true},{cookie:clearSessionCookie()});
  }catch{return respond(503,{error:'Recovery request was not accepted.'});}
 };
