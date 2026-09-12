@@ -3,6 +3,7 @@ const crypto=require('crypto');
 const {getClient}=require('./lib/supabase');
 const {requireAdmin,respond,cookieValue,hashToken,sessionCookie,clearSessionCookie,SESSION_HOURS}=require('./lib/auth');
 const credential=require('./lib/practitioner-credential');
+const {cookieMaxAge}=require('./lib/session-policy');
 function normalizeOrigin(raw){
   return String(raw || '').trim().replace(/\/$/, '');
 }
@@ -33,9 +34,16 @@ exports.handler=async event=>{
    if(error)throw Error();if(data!==true)return respond(409,{error:'Security state changed. Sign in again.'},{cookie:clearSessionCookie()});
    return respond(200,{changed:true,sign_in_required:true,sessions_revoked:true},{cookie:clearSessionCookie()});
   }
-  const token=crypto.randomBytes(32).toString('base64url'),expires=new Date(Date.now()+SESSION_HOURS*3600000).toISOString();
-  const {data,error}=await sb.rpc('practitioner_login',{p_version:row.version,p_token_hash:hashToken(token),p_email:process.env.ADMIN_EMAIL||'admin',p_expires:expires});
-  if(error)throw Error();if(data!==true)return respond(409,{error:'Credential changed. Sign in again.'});
-  return respond(200,{success:true,expires_at:expires},{cookie:sessionCookie(token)});
+  if(Object.prototype.hasOwnProperty.call(body,'expires_at')||Object.prototype.hasOwnProperty.call(body,'session_duration'))return respond(400,{error:'Session duration is server-controlled.'});
+  const remembered=body.remember_me===true;
+  if(body.remember_me!==undefined&&typeof body.remember_me!=='boolean')return respond(400,{error:'Invalid session preference.'});
+  const token=crypto.randomBytes(32).toString('base64url');
+  const ip=String(event.headers?.['x-nf-client-connection-ip']||event.headers?.['client-ip']||'').split(',')[0].trim();
+  const userAgent=String(event.headers?.['user-agent']||'');
+  const {data,error}=await sb.rpc('practitioner_login_session',{p_version:row.version,p_token_hash:hashToken(token),p_email:process.env.ADMIN_EMAIL||'admin',p_remembered:remembered,p_ip:ip,p_user_agent:userAgent});
+  if(error)throw Error();
+  const session=Array.isArray(data)?data[0]:data;
+  if(!session?.session_id)return respond(409,{error:'Credential changed. Sign in again.'});
+  return respond(200,{success:true,expires_at:session.expires_at,remembered},{cookie:sessionCookie(token,cookieMaxAge(remembered))});
  }catch{return respond(503,{error:'Secure sign-in is temporarily unavailable. No credential changes were accepted.'});}
 };

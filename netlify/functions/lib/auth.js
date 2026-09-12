@@ -2,6 +2,7 @@
 
 const crypto = require('crypto');
 const { getClient } = require('./supabase');
+const { idleExpired } = require('./session-policy');
 
 const COOKIE_NAME = 'rea_admin_session';
 const SESSION_HOURS = 8;
@@ -26,9 +27,13 @@ async function requireAdmin(event, options = {}) {
   const sb = getClient();
   const now = new Date().toISOString();
   const { data, error } = await sb.from('admin_sessions')
-    .select('id,actor_email,expires_at,revoked_at')
+    .select('id,actor_email,created_at,last_seen_at,expires_at,absolute_expires_at,remembered,credential_version,revoked_at')
     .eq('token_hash', hashToken(token)).is('revoked_at', null).gt('expires_at', now).maybeSingle();
   if (error || !data) return { error: respond(401, { error: 'Session expired or revoked.' }) };
+  if (data.absolute_expires_at && Date.parse(data.absolute_expires_at) <= Date.parse(now)) return { error: respond(401, { error: 'Session expired or revoked.' }) };
+  if (idleExpired(data)) return { error: respond(401, { error: 'Session expired or revoked.' }) };
+  const { data: credential, error: credentialError } = await sb.from('practitioner_credentials').select('version').eq('id', true).single();
+  if (credentialError || !credential || Number(credential.version) !== Number(data.credential_version)) return { error: respond(401, { error: 'Session expired or revoked.' }) };
 
   const method = String(event.httpMethod || 'GET').toUpperCase();
   if (!['GET', 'HEAD', 'OPTIONS'].includes(method)) {

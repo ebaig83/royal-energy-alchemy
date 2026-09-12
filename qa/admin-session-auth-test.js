@@ -43,9 +43,10 @@ class Query {
 
 const fake = { from: table => new Query(table), rpc: async (name, args = {}) => {
   if (name === 'practitioner_attempt') return { data: true, error: null };
-  if (name === 'practitioner_login') {
-    state.sessions.push({ id: `session-${++state.seq}`, actor_email: args.p_email, expires_at: args.p_expires, revoked_at: null, token_hash: args.p_token_hash });
-    return { data: true, error: null };
+  if (name === 'practitioner_login_session') {
+    const expires = args.p_remembered ? new Date(Date.now() + 30 * 86400000).toISOString() : new Date(Date.now() + 8 * 3600000).toISOString();
+    state.sessions.push({ id: `session-${++state.seq}`, actor_email: args.p_email, expires_at: expires, absolute_expires_at: expires, last_seen_at: new Date().toISOString(), remembered: args.p_remembered === true, credential_version: credential.version, revoked_at: null, token_hash: args.p_token_hash });
+    return { data: [{ session_id: `session-${state.seq}`, expires_at: expires, absolute_expires_at: expires }], error: null };
   }
   return { data: true, error: null };
 } };
