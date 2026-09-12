@@ -17,3 +17,26 @@
 .content-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.content-directory h2,.content-body,.content-excerpt{overflow-wrap:anywhere}.content-body{white-space:pre-wrap;font:inherit;line-height:1.6;max-width:100%}.content-directory .panel{min-width:0}.content-directory h2{font-size:20px}.content-excerpt{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}@media(max-width:540px){.content-summary{gap:8px}.content-summary .panel-body{padding:12px}.content-summary small{font-size:12px}}
 
 #detail form{display:grid;gap:16px}#detail form label{display:grid;gap:7px}#detail input{min-height:44px;min-width:0;width:100%;box-sizing:border-box}#detail form#add-appointment{grid-template-columns:minmax(0,1fr) minmax(280px,.8fr);align-items:start}#detail form#add-appointment>#add-review-summary{grid-column:2;grid-row:1 / span 8;position:sticky;top:16px}#detail form#add-appointment>fieldset,#detail form#add-appointment>button,#detail form#add-appointment>[role=alert],#detail form#add-appointment>.form-note{grid-column:1}@media(max-width:760px){#detail form#add-appointment{grid-template-columns:1fr}#detail form#add-appointment>#add-review-summary{grid-column:1;grid-row:auto;position:static}#detail form#add-appointment>fieldset,#detail form#add-appointment>button,#detail form#add-appointment>[role=alert],#detail form#add-appointment>.form-note{grid-column:1}}.schedule-week{margin-bottom:18px}.schedule-week>summary{padding:16px;min-height:44px;cursor:pointer;font-size:17px}.schedule-day{padding:12px 20px;color:#edce96}.tiktok-frame{border:0;width:100%;height:680px;max-width:720px}
+
+/* Add appointment: calm two-column intake with a readable, at-a-glance review rail. */
+#detail form#add-appointment{gap:20px 24px;grid-template-columns:minmax(0,1.12fr) minmax(320px,.88fr)}
+#detail form#add-appointment>p:first-child{grid-column:1/-1;margin:0;padding:13px 16px;border:1px solid #4a4661;border-left:3px solid #b795e4;border-radius:10px;background:#151d30;color:#bfcbe0;line-height:1.55}
+#detail form#add-appointment>label{padding:0 2px;color:#d9e1ef;font-size:14px}
+#detail form#add-appointment>label input,#detail form#add-appointment>label select,#detail form#add-appointment fieldset input,#detail form#add-appointment fieldset select,#detail form#add-appointment fieldset textarea{background:#0b1627;border:1px solid #3d4b63;border-radius:9px;color:#eef2f8;padding:11px 13px;font:inherit}
+#detail form#add-appointment>label input:focus,#detail form#add-appointment>label select:focus,#detail form#add-appointment fieldset input:focus,#detail form#add-appointment fieldset select:focus,#detail form#add-appointment fieldset textarea:focus{outline:2px solid #b795e4;outline-offset:1px;border-color:#d0b2f4}
+#detail form#add-appointment>#add-review-summary{grid-column:2;grid-row:2 / span 7;top:0;margin:0;padding:20px 22px;border:1px solid #6a5b45;border-radius:14px;background:linear-gradient(145deg,#18243a,#111b2d);box-shadow:0 14px 35px #02081330}
+#detail form#add-appointment>#add-review-summary h3{margin:0 0 16px;color:#f1cf88;font:600 23px Georgia,serif}
+#detail form#add-appointment>#add-review-summary dl{display:grid;grid-template-columns:minmax(125px,.8fr) minmax(0,1.2fr);gap:0 14px;margin:0}
+#detail form#add-appointment>#add-review-summary dt{padding:9px 0;color:#9eacc2;font-size:12px}
+#detail form#add-appointment>#add-review-summary dd{margin:0;padding:9px 0;color:#f0f3f8;font-size:14px;text-align:right;overflow-wrap:anywhere}
+#detail form#add-appointment>fieldset{margin:0;padding:18px 18px 16px;border:1px solid #3d4b63;border-radius:12px;background:#101c2e}
+#detail form#add-appointment>fieldset legend{padding:0 8px;color:#efcf8e;font:600 17px Georgia,serif}
+#detail form#add-appointment>fieldset label{font-size:13px}
+#detail form#add-appointment>fieldset label+label{margin-top:12px}
+#detail form#add-appointment>fieldset label:has(input[type=checkbox]){display:flex;grid-template-columns:none;align-items:center;gap:10px;min-height:34px}
+#detail form#add-appointment>fieldset label:has(input[type=checkbox]) input{width:18px;min-height:18px;padding:0;accent-color:#d4ad67}
+#detail form#add-appointment>fieldset textarea{min-height:78px;resize:vertical}
+#detail form#add-appointment>#add-review-summary+fieldset{margin-top:0}
+#detail form#add-appointment>button[type=submit]{width:100%;min-height:48px;border-radius:10px;font-weight:650;letter-spacing:.01em}
+#detail form#add-appointment>button[data-close]{width:auto}
+@media(max-width:760px){#detail form#add-appointment{gap:16px}#detail form#add-appointment>p:first-child{grid-column:1}#detail form#add-appointment>#add-review-summary{grid-column:1;grid-row:auto;position:static;order:-1}#detail form#add-appointment>#add-review-summary dl{grid-template-columns:1fr 1fr}#detail form#add-appointment>#add-review-summary dd{text-align:right}#detail form#add-appointment>fieldset{padding:16px}#detail form#add-appointment>button[type=submit]{order:20}}
