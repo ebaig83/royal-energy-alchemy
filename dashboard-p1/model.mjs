@@ -4,16 +4,18 @@ export const escapeHTML=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<'
 export const money=v=>Number.isFinite(Number(v))?new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(Number(v)):'—';
 export function dateKey(now=new Date()){return new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(now);}
 export function clockKey(now=new Date()){return new Intl.DateTimeFormat('en-GB',{timeZone:'America/New_York',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(now);}
-export function time(t){if(!t)return 'Time not recorded';const [h,m]=t.split(':');return `${+h%12||12}:${m} ${+h<12?'AM':'PM'}`;}
-export function date(d){if(!d)return 'Date not recorded';return new Date(d.slice(0,10)+'T12:00:00Z').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'});}
-export const stamp=s=>s.session_date+'T'+s.session_time;
+export function time(t){if(!t)return 'Time not recorded';if(!validTimeValue(t))return 'Time needs review';const [h,m]=String(t).split(':');return `${+h%12||12}:${m} ${+h<12?'AM':'PM'}`;}
+export function date(d){if(!d)return 'Date not recorded';const value=String(d).slice(0,10);if(!validDateValue(value))return 'Date needs review';return new Date(value+'T12:00:00Z').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'});}
+export const appointmentInstant=s=>easternInstant(s?.session_date,s?.session_time);
+export const validAppointmentDateTime=s=>!!appointmentInstant(s);
+export const stamp=s=>validAppointmentDateTime(s)?`${s.session_date}T${s.session_time}`:'';
 // Legacy QA signatures affect visibility only; no identity merging or database edits.
 export const legacyQA=r=>/^(?:__match_(?:probe|flow_test)__|Brand New Person \d{13}|(?:Jordan Sandbox|Stripe Sandbox Test) \d{8}|Google Meet Test)$/.test(r?.client_name||r?.full_name||'')||/^(?:QA(?:\s|-)|test$|Sprint Test Client$)/i.test(r?.client_name||r?.full_name||'');
 export const qa=r=>!!r&&(legacyQA(r)||r.is_test===true||['qa','qa_auto','qa_financial','qa_migration_check','qa_test','test','demo','seed','controlled_test','controlled_google_meet_test','workflow_audit'].includes(String(r.source||'').trim().toLowerCase())||(r.tags||[]).some(t=>['qa','test','seed','demo','controlled-test'].includes(String(t).trim().toLowerCase()))||/\[qa\]/i.test(r.client_name||r.full_name||''));
 export const silent=s=>[IMPORT,'manual_planner_calendar_20260907'].includes(s.source);
-export const historical=(s,now)=>silent(s)||['historical_planner_reconciliation_20260902','planner-reconciliation'].includes(s.source)||s.session_date<dateKey(now);
+export const historical=(s,now)=>silent(s)||['historical_planner_reconciliation_20260902','planner-reconciliation'].includes(s.source)||(validAppointmentDateTime(s)&&s.session_date<dateKey(now));
 export const active=s=>!['cancelled','completed','no_show'].includes(s.status);
-export const future=(s,now)=>active(s)&&stamp(s)>=dateKey(now)+'T'+clockKey(now)+':00';
+export const future=(s,now)=>active(s)&&validAppointmentDateTime(s)&&stamp(s)>=dateKey(now)+'T'+clockKey(now)+':00';
 export function payment(s){if(silent(s))return /Paid (?:noted|notation):?\s*Yes|\$\d+ Paid/i.test(s.seller_notes||'')?['Paid noted in planner','amber']:['Payment unverified','muted'];return ({paid:['Paid','green'],partial:['Partial payment','amber'],complimentary:['Complimentary / no charge','purple'],refunded:['Refunded','purple'],partially_refunded:['Partially refunded','purple'],failed:['Payment failed','red'],unpaid:['Payment Needed','amber'],pending:['Payment pending','amber']})[s.payment_status]||['Payment unverified','muted'];}
 export function waiver(s){return (s.waiver_completed===true||['complete','completed','signed'].includes(s.waiver_status))?['Waiver complete','green']:(s.waiver_completed===false||['needed','pending','sent','incomplete'].includes(s.waiver_status))&&!silent(s)?['Waiver Needed','amber']:['Waiver not recorded','muted'];}
 export function intake(s){return ['complete','completed','submitted'].includes(s.intake_status)?['Intake complete','green']:!silent(s)&&['needed','pending','sent','incomplete'].includes(s.intake_status)?['Intake Needed','amber']:['Intake not recorded','muted'];}
@@ -23,7 +25,7 @@ export function canJoin(s,now){return !historical(s,now)&&active(s)&&s.payment_s
 export function calendar(s,now){if(s.source==='manual_planner_calendar_20260907'){if(s.google_calendar_status==='ready')return ['Calendar Ready','green'];if(/error|failed/.test(s.google_calendar_status||''))return ['Sync Error','red'];return ['Calendar pending','muted'];}if(silent(s))return ['Automatic sync off','muted'];if(historical(s,now))return ['Historical','muted'];if(['retryable_error','failed','error'].includes(s.google_calendar_status))return ['Sync Error','red'];if(canJoin(s,now))return ['Meet Ready','green'];if(['in_person','in-person'].includes(s.location_type))return ['In person','muted'];return ['Meet not ready','muted'];}
 export function needsAttention(s,now){return !historical(s,now)&&active(s)&&(payment(s)[1]==='amber'||payment(s)[1]==='red'||waiver(s)[0]==='Waiver Needed'||intake(s)[0]==='Intake Needed'||calendar(s,now)[0]==='Sync Error');}
 export function forClient(rows,id){return rows.filter(r=>r.client_id===id);}
-export function clientStats(c,sessions,now){const rows=forClient(sessions,c.id).slice().sort((a,b)=>stamp(a).localeCompare(stamp(b)));return {count:rows.length,next:rows.find(s=>future(s,now)),last:rows.filter(s=>stamp(s)<dateKey(now)+'T'+clockKey(now)+':00'&&s.status!=='cancelled').at(-1),attention:rows.some(s=>needsAttention(s,now))};}
+export function clientStats(c,sessions,now){const rows=forClient(sessions,c.id),scheduled=rows.filter(validAppointmentDateTime).slice().sort((a,b)=>stamp(a).localeCompare(stamp(b)));return {count:rows.length,next:scheduled.find(s=>future(s,now)),last:scheduled.filter(s=>stamp(s)<dateKey(now)+'T'+clockKey(now)+':00'&&s.status!=='cancelled').at(-1),attention:rows.some(s=>needsAttention(s,now))};}
 // All sums use integer cents. Payment dates use Eastern time; note evidence uses appointment month.
 const cents=v=>Number.isFinite(Number(v))?Math.round(Number(v)*100):0;
 const total=rows=>rows.reduce((sum,r)=>sum+cents(r.amount),0)/100;
@@ -66,14 +68,23 @@ const TIMEZONE = 'America/New_York';
 const formatter = new Intl.DateTimeFormat('en-CA', { timeZone: TIMEZONE, year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit', hourCycle:'h23' });
 function parts(value) { return Object.fromEntries(formatter.formatToParts(value).filter(p=>p.type!=='literal').map(p=>[p.type,Number(p.value)])); }
 function wallMillis(p) { return Date.UTC(p.year,p.month-1,p.day,p.hour,p.minute,p.second); }
+function validDateValue(value) {
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(String(value)))return false;
+ const [year,month,day]=String(value).split('-').map(Number),check=new Date(Date.UTC(year,month-1,day));
+ return year>=1000&&check.getUTCFullYear()===year&&check.getUTCMonth()===month-1&&check.getUTCDate()===day;
+}
+function validTimeValue(value) {
+ if(!/^\d{2}:\d{2}(?::\d{2})?$/.test(String(value)))return false;
+ const [hour,minute,second=0]=String(value).split(':').map(Number);
+ return hour<=23&&minute<=59&&second<=59;
+}
 // Reject nonexistent spring-forward and ambiguous fall-back wall times rather
 // than silently shifting a client appointment. Normal business hours are unique.
 function easternInstant(date,time) {
- if (!/^\d{4}-\d{2}-\d{2}$/.test(String(date)) || !/^\d{2}:\d{2}(?::\d{2})?$/.test(String(time))) return null;
+ if (!validDateValue(date) || !validTimeValue(time)) return null;
+ date=String(date);time=String(time);
  const [year,month,day]=date.split('-').map(Number),[hour,minute,second=0]=time.split(':').map(Number);
- if(year<1000||month<1||month>12||day<1||day>31||hour>23||minute>59||second>59)return null;
  const wall=Date.UTC(year,month-1,day,hour,minute,second),check=new Date(wall);
- if(check.getUTCFullYear()!==year||check.getUTCMonth()!==month-1||check.getUTCDate()!==day)return null;
  const candidates=new Set();
  for(const hours of [-36,-12,0,12,36]) {
   const probe=wall+hours*3600000,offset=wallMillis(parts(new Date(probe)))-probe;

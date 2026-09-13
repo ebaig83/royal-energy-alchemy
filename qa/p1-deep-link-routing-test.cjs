@@ -41,13 +41,24 @@ const agentState = {
 (async () => {
   const { sampleData } = await import(pathToFileURL(path.join(root, 'dashboard-p1', 'fixture.mjs')).href);
   const sample = sampleData();
-  const readModel = { ...sample, now: sample.now.toISOString() };
+  const template = sample.sessions.find(session => session.status === 'confirmed');
+  const missingDate = { ...template, id: 'missing-date' }; delete missingDate.session_date;
+  const malformed = [
+    { ...template, id: 'null-date', session_date: null },
+    missingDate,
+    { ...template, id: 'invalid-date', session_date: '2026-02-30' },
+    { ...template, id: 'missing-time', session_time: null },
+    { ...template, id: 'invalid-time', session_time: '25:61:00' },
+  ];
+  const readModel = { ...sample, now: sample.now.toISOString(), sessions: [...sample.sessions, ...malformed] };
   let server, browser;
   const writes = [];
 
   async function openRoute(hash, initiallyAuthenticated = false) {
     const context = await browser.newContext();
     const page = await context.newPage();
+    const pageErrors = [];
+    page.on('pageerror', error => pageErrors.push(error.message));
     page.setDefaultTimeout(10000);
     let authenticated = initiallyAuthenticated;
     await page.route('**/.netlify/functions/**', async route => {
@@ -71,7 +82,7 @@ const agentState = {
       await page.locator('#sign-in button[type="submit"]').click();
       await page.locator('aside[aria-label="Main navigation"]').waitFor();
     }
-    return { context, page };
+    return { context, page, pageErrors };
   }
 
   async function expectRoute(page, key, heading) {
@@ -88,8 +99,14 @@ const agentState = {
     browser = await chromium.launch({ channel: 'msedge', headless: true });
 
     for (const [hash, key, heading] of [['#agent-operations', 'agent-operations', 'Agent Operations'], ['#schedule', 'schedule', 'Schedule'], ['#clients', 'clients', 'Clients']]) {
-      const { context, page } = await openRoute(hash, false);
+      const { context, page, pageErrors } = await openRoute(hash, false);
       await expectRoute(page, key, heading);
+      if(key==='schedule'){
+        assert.equal(await page.getByTestId('schedule-date-review').count(),1);
+        assert((await page.getByTestId('schedule-date-review').innerText()).includes('5 active appointment records'));
+        assert((await page.locator('.schedule-week').count())>0);
+      }
+      assert.deepEqual(pageErrors,[]);
       await context.close();
     }
 
@@ -105,6 +122,18 @@ const agentState = {
 
     const normal = await openRoute('', true);
     await expectRoute(normal.page, 'today', 'Good morning, Daron');
+    assert.equal(await normal.page.getByTestId('schedule-date-review').count(), 0);
+    const viewSchedule=normal.page.getByRole('link',{name:/View schedule/i});
+    assert.equal(await viewSchedule.getAttribute('href'),'#schedule');
+    await viewSchedule.click();
+    await expectRoute(normal.page,'schedule','Schedule');
+    assert.equal(new URL(normal.page.url()).hash,'#schedule');
+    await normal.page.goBack();
+    await expectRoute(normal.page,'today','Good morning, Daron');
+    await normal.page.goForward();
+    await expectRoute(normal.page,'schedule','Schedule');
+    assert.deepEqual(normal.pageErrors,[]);
+    await normal.page.getByRole('link',{name:'Today',exact:true}).click();
     for (const [label, key] of [['Clients', 'clients'], ['Schedule', 'schedule'], ['Agent Operations', 'agent-operations']]) {
       const link = key === 'agent-operations' ? normal.page.locator('a[data-agent-operations-nav]') : normal.page.getByRole('link', { name: label, exact: true });
       await link.click();

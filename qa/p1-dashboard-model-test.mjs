@@ -10,12 +10,23 @@ const canceled={...future,id:'future-cancelled',status:'cancelled'};
 const past={...online,id:'past-session',session_date:'2026-09-01',session_time:'10:00:00',status:'confirmed'};
 const qa={...future,id:'qa-session',client_name:'[QA] fixture',source:'qa'};
 const futureUnpaid={...future,id:'future-unpaid',payment_status:'unpaid'};
+const malformedAppointments=[
+ {...future,id:'null-date',session_date:null},
+ Object.fromEntries(Object.entries({...future,id:'missing-date'}).filter(([key])=>key!=='session_date')),
+ {...future,id:'invalid-date',session_date:'2026-02-30'},
+ {...future,id:'missing-time',session_time:null},
+ {...future,id:'invalid-time',session_time:'25:61:00'},
+];
 assert.deepEqual(M.eligibleActions(future,now),['View','Join Meet','Manage','Reschedule','Cancel']);
 assert.deepEqual(M.eligibleActions(futureWithPaymentLink,now),['View','Manage','Reschedule','Cancel','Send Payment Link']);
 assert.deepEqual(M.eligibleActions(canceled,now),['View']);
 assert.deepEqual(M.eligibleActions(past,now),['View','Reschedule']);
 assert.deepEqual(M.eligibleActions(futureUnpaid,now),['View','Manage','Reschedule','Cancel','Send Payment Link']);
 assert.deepEqual(M.eligibleActions(qa,now),['View','Join Meet']);
+for(const session of malformedAppointments){assert.equal(M.validAppointmentDateTime(session),false);assert.equal(M.future(session,now),false);assert.equal(M.stamp(session),'');}
+assert.equal(M.date('2026-02-30'),'Date needs review');
+assert.equal(M.time('25:61:00'),'Time needs review');
+assert.equal(M.future(future,now),true);
 assert.deepEqual(M.eligibleActions({...imported,payment_status:'paid',google_meet_url:online.google_meet_url,session_date:'2026-09-01',session_time:'10:00:00'},d.now),['View']);
 assert.equal(M.payment(imported)[0],'Paid noted in planner');
 assert.equal(M.needsAttention(imported,d.now),false);
