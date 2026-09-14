@@ -20,3 +20,9 @@ export async function clientDetail(id){
 }
 
 export async function login(pin){const r=await fetch('/.netlify/functions/verify-pin',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin})});if(!r.ok)throw Error('Sign-in was not accepted. Check the PIN or try again later.');}
+
+export async function logout(){
+ const r=await fetch('/.netlify/functions/verify-pin',{method:'DELETE',credentials:'same-origin',headers:{Accept:'application/json'},cache:'no-store'});
+ if(!r.ok)throw Error('Log out could not be completed. Try again.');
+ return r.json();
+}

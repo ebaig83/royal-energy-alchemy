@@ -32,3 +32,22 @@ dialog{width:min(1030px,94vw);height:min(760px,90vh);background:#101b2d;box-shad
 @media(max-width:1180px){.agent-operations-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.agent-metrics{grid-template-columns:repeat(4,minmax(0,1fr))}.agent-metric small{display:none}}
 @media(max-width:850px){.agent-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.agent-operations-cards,.agent-operations-lower{grid-template-columns:1fr}.agent-metric small{display:block}.agent-operations-cards .agent-card{min-height:0}}
 @media(max-width:520px){.agent-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.agent-metric{min-height:68px;padding:10px}.agent-metric small{display:none}.agent-card-header{align-items:flex-start}.agent-card-meta{align-items:flex-start;flex-direction:column}.agent-card-meta code{max-width:100%}.agent-status-badge{margin-top:2px}.agent-operations-header button{width:100%}}
+
+/* Practitioner account menu: logout remains a server-revoked session action. */
+.profile-menu{position:relative;flex:0 0 auto}
+.profile-trigger{display:flex;align-items:center;gap:10px;min-height:52px;padding:5px 8px;border-color:transparent;background:transparent;text-align:left}
+.profile-trigger:hover,.profile-trigger[aria-expanded="true"]{border-color:#5d5369;background:#171d31}
+.profile-copy{line-height:1.25;white-space:nowrap}
+.profile-copy small{display:block;margin-top:2px;font-size:11px}
+.profile-chevron{color:var(--gold);font-size:16px;transition:transform .18s ease}
+.profile-trigger[aria-expanded="true"] .profile-chevron{transform:rotate(180deg)}
+.profile-dropdown{position:absolute;right:0;top:calc(100% + 8px);z-index:75;width:min(250px,calc(100vw - 32px));padding:8px;background:#111b2e;border:1px solid #66583f;border-radius:12px;box-shadow:0 20px 60px #020612b8}
+.profile-dropdown[hidden]{display:none}
+.profile-signed-in{margin:0 4px 7px;padding:9px 10px 12px;border-bottom:1px solid #2d394f;color:#9eacc0;font-size:12px}
+.profile-signed-in strong{display:block;margin-top:2px;color:#eef1f6;font-size:13px}
+.profile-dropdown [role="menuitem"]{display:flex;align-items:center;width:100%;min-height:44px;padding:10px 12px;border:0;border-radius:8px;background:transparent;color:#e6ebf3;text-align:left;text-decoration:none}
+.profile-dropdown [role="menuitem"]:hover,.profile-dropdown [role="menuitem"]:focus-visible{background:#24273c;color:#f5d99b;text-decoration:none}
+.profile-dropdown [data-logout]{margin-top:5px;border-top:1px solid #2d394f;border-radius:0 0 8px 8px;color:#edcf98}
+.profile-dropdown [data-logout]:disabled{color:#99a4b6}
+@media(max-width:1200px){.header-tools .profile-trigger{display:flex}.profile-copy{display:none}.profile-trigger{gap:5px}}
+@media(max-width:700px){.profile-dropdown{position:fixed;right:14px;top:76px}.profile-trigger{min-height:44px;padding:2px 5px}.profile-trigger .avatar{width:36px;height:36px}.profile-chevron{font-size:14px}}

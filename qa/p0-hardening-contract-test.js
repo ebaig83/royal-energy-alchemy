@@ -57,7 +57,7 @@ test('permanent admin secret is never returned or accepted', () => {
 });
 test('logout revokes server session and clears cookie', () => {
   const source = read('netlify/functions/verify-pin.js');
-  assert(source.includes("method === 'DELETE'"));
+  assert(/method\s*===\s*'DELETE'/.test(source));
   assert(source.includes('revoked_at'));
   assert(source.includes('clearSessionCookie'));
 });
