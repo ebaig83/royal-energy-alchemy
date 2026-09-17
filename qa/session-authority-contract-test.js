@@ -85,7 +85,10 @@ test('silent importer is authenticated, session-only, and has no communications 
 
 test('booking flow independently rejects conflicts before creating a session', () => {
   const conflictIndex = bookingSource.indexOf('findSessionConflicts');
-  const sessionInsertMatch = /\.from\('sessions'\)\r?\n\s*\.insert/.exec(bookingSource);
+  const sessionInsertPattern = /\.from\('sessions'\)\r?\n\s*\.insert/;
+  assert.match(".from('sessions')\n  .insert", sessionInsertPattern);
+  assert.match(".from('sessions')\r\n  .insert", sessionInsertPattern);
+  const sessionInsertMatch = sessionInsertPattern.exec(bookingSource);
   const sessionInsertIndex = sessionInsertMatch ? sessionInsertMatch.index : -1;
   assert.ok(conflictIndex >= 0 && sessionInsertIndex > conflictIndex);
   assert.match(bookingSource, /This time is no longer available/);
