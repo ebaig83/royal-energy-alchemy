@@ -185,8 +185,10 @@ checks fail. Do not continue to the next phase after a critical failure.
 1. Redeploy the last known-good application commit first.
 2. Preserve the added columns and backfilled session metadata during immediate
    rollback; dropping columns is unnecessary and could destroy audit context.
-3. Restore the prior `practitioner_login_session` RPC definition from the
-   pre-migration database snapshot if the previous application requires it.
+3. Leave the new `practitioner_login_session` RPC dormant during immediate
+   rollback. The current production application continues to use the preserved
+   legacy `practitioner_login` RPC, so there is no prior
+   `practitioner_login_session` definition to restore.
 4. Revoke unexpectedly issued staging sessions if testing exposed a policy bug.
 5. Do not alter practitioner credentials unless separately approved.
 
