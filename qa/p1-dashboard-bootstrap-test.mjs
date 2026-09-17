@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
 
-const root=new URL('..',import.meta.url).pathname.replace(/^\//,'').replaceAll('/','\\');
-const api=fs.readFileSync(root+'\\dashboard-p1\\api.mjs','utf8');
-const app=fs.readFileSync(root+'\\dashboard-p1\\app.mjs','utf8');
+const root=path.dirname(path.dirname(fileURLToPath(import.meta.url)));
+const api=fs.readFileSync(path.join(root,'dashboard-p1','api.mjs'),'utf8');
+const app=fs.readFileSync(path.join(root,'dashboard-p1','app.mjs'),'utf8');
 
 assert.match(api,/AbortController/);
 assert.match(api,/setTimeout\(\(\)=>controller\.abort\(\),10000\)/);
