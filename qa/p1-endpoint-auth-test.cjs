@@ -1,5 +1,5 @@
 const assert=require('node:assert/strict');const path=require('node:path');const root=path.resolve(__dirname,'../netlify/functions');const sbPath=require.resolve(path.join(root,'lib/supabase'));let touched=0,reads=[];
-const query={select(){return this;},eq(){return this;},is(){return this;},gt(){return this;},maybeSingle:async()=>({data:{id:'session',actor_email:'admin@example.test'},error:null}),update(){touched++;throw Error('Read endpoint must not touch session');}};
+const query={select(){return this;},eq(){return this;},is(){return this;},gt(){return this;},maybeSingle:async()=>({data:{id:'session',actor_email:'admin@example.test',credential_version:1,remembered:false},error:null}),single:async()=>({data:{version:1},error:null}),update(){touched++;throw Error('Read endpoint must not touch session');}};
 require.cache[sbPath]={id:sbPath,filename:sbPath,loaded:true,exports:{getClient:()=>({from:()=>query})}};
 process.env.SUPABASE_URL='https://example.invalid';process.env.SUPABASE_SERVICE_ROLE_KEY='test-placeholder';const saved=global.fetch;global.fetch=async(url,options)=>{reads.push({url:String(url),method:options.method});return {ok:true,json:async()=>[]};};
 const {handler}=require(path.join(root,'p1-read-model'));
