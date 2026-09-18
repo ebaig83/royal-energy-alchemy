@@ -118,7 +118,7 @@ exports.handler = async function(event) {
     // List all — exclude archived and QA/test clients by default
     let query = sb
       .from('clients')
-      .select('id, full_name, email, phone, status, source, tags, created_at, merged_into_client_id')
+      .select('id, full_name, email, phone, status, source, tags, created_at, merged_into_client_id, booking_blocked, booking_blocked_at')
       .order('created_at', { ascending: false });
 
     // If a specific status filter is requested, apply it server-side
@@ -175,16 +175,24 @@ exports.handler = async function(event) {
     if (body.email !== undefined && body.email && !EMAIL_RE.test(String(body.email).trim())) return respond(400, { error: 'Enter a valid email address.' });
     if (body.phone !== undefined && !validPhone(body.phone)) return respond(400, { error: 'Enter a valid phone number or leave it blank.' });
     if (body.date_of_birth !== undefined && !validDateOnly(body.date_of_birth)) return respond(400, { error: 'Date of birth must be a valid past date in YYYY-MM-DD format.' });
+    if (body.booking_blocked !== undefined && typeof body.booking_blocked !== 'boolean') return respond(400, { error: 'booking_blocked must be true or false.' });
+    if (body.booking_block_reason !== undefined && body.booking_block_reason != null && String(body.booking_block_reason).trim().length > 500) return respond(400, { error: 'Booking block reason is too long.' });
 
-    const allowed = ['full_name','email','phone','status','notes','tags','source','address','date_of_birth','emergency_contact','additional_information','preferred_contact'];
+    const allowed = ['full_name','email','phone','status','notes','tags','source','address','date_of_birth','emergency_contact','additional_information','preferred_contact','booking_blocked','booking_block_reason'];
     const updates = {};
     allowed.forEach(k => {
       if (body[k] === undefined) return;
       if (k === 'tags') updates[k] = Array.isArray(body[k]) ? body[k].map(v => String(v).trim()).filter(Boolean).slice(0, 50) : [];
       else if (['full_name','email','phone','notes','address','emergency_contact','additional_information','date_of_birth'].includes(k)) updates[k] = optionalText(body[k]);
       else if (k === 'preferred_contact') updates[k] = optionalText(body[k])?.toLowerCase();
+      else if (k === 'booking_block_reason') updates[k] = optionalText(body[k]);
       else updates[k] = body[k];
     });
+    if (body.booking_blocked !== undefined) {
+      updates.booking_blocked = body.booking_blocked;
+      updates.booking_blocked_at = body.booking_blocked ? new Date().toISOString() : null;
+      if (!body.booking_blocked) updates.booking_block_reason = null;
+    }
     if (!Object.keys(updates).length) return respond(400, { error: 'No client fields were supplied.' });
 
     const { data, error } = await sb

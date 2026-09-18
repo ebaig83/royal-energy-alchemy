@@ -22,6 +22,32 @@ const { appointmentManageUrl, createAppointmentToken } = require('./lib/appointm
 
 const SITE_URL = process.env.SITE_URL || 'https://royal-energy-alchemy.netlify.app';
 
+function normalizeEmail(value) {
+  const email = String(value == null ? '' : value).trim().toLowerCase();
+  return email || null;
+}
+function normalizePhone(value) {
+  const raw = String(value == null ? '' : value).trim();
+  if (!raw) return null;
+  const digits = (raw.match(/\d/g) || []).join('');
+  if (digits.length < 7 || digits.length > 15 || !/^[+()\-\.\s\dextEXT#x]+$/.test(raw)) return null;
+  return raw.startsWith('+') ? `+${digits}` : digits;
+}
+function isBlockedClient(client, email, phone) {
+  return normalizeEmail(client?.email) === email || normalizePhone(client?.phone) === phone;
+}
+function validatePublicBookingFields(body) {
+  const name = String(body?.client_name == null ? '' : body.client_name).trim();
+  const email = normalizeEmail(body?.client_email);
+  const phoneProvided = Object.prototype.hasOwnProperty.call(body || {}, 'client_phone');
+  const phone = normalizePhone(body?.client_phone);
+  if (!name) return { error: 'Your name is required.' };
+  if (!email) return { error: 'Your email address is required.' };
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { error: 'Please enter a valid email address.' };
+  if (!phoneProvided || !phone) return { error: 'Your telephone number is required.' };
+  return { name, email, phone };
+}
+
 // Secure, URL-safe portal token (48 hex chars) — gives the client token-based
 // access to their document hub without a dashboard login.
 function newPortalToken() { return crypto.randomBytes(24).toString('hex'); }
@@ -52,14 +78,34 @@ exports.handler = async function(event) {
   // ── Validation ────────────────────────────────────────────────────────────
   if (!slot_id)       return respond(400, { error: 'Please select an available time slot.' });
   if (!service)       return respond(400, { error: 'Please select a service.' });
-  if (!client_name?.trim())  return respond(400, { error: 'Your name is required.' });
-  if (!client_email?.trim()) return respond(400, { error: 'Your email address is required.' });
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(client_email)) {
-    return respond(400, { error: 'Please enter a valid email address.' });
-  }
-  const serviceInfo = findService(service);
+  const fields = validatePublicBookingFields(body);
+  if (fields.error) return respond(400, { error: fields.error });
+  const normalizedName = fields.name;
+  const normalizedEmail = fields.email;
+  const normalizedPhone = fields.phone;
+  const serviceInfo = findService(String(service || '').trim());
   if (!serviceInfo || serviceInfo.price == null) {
     return respond(400, { error: 'Selected service price could not be verified. Please choose a service again.' });
+  }
+
+  // Enforce rebooking blocks before claiming a slot or creating any booking/payment state.
+  const { data: blockedClients, error: blockLookupError } = await sb
+    .from('clients')
+    .select('id,email,phone')
+    .eq('booking_blocked', true)
+    .is('merged_into_client_id', null);
+  if (blockLookupError) return respond(503, { error: 'We’re unable to complete this booking online. Please contact Royal Energy Alchemy for assistance.' });
+  const matched = (blockedClients || []).find(client => isBlockedClient(client, normalizedEmail, normalizedPhone));
+  if (matched) {
+    await sb.from('audit_logs').insert({
+      action: 'booking_blocked_attempt',
+      table_name: 'clients',
+      record_id: matched.id,
+      actor: 'public_booking',
+      ip_address: ip,
+      new_data: { matched_by: normalizeEmail(matched.email) === normalizedEmail ? 'email' : 'phone' },
+    });
+    return respond(409, { error: 'We’re unable to complete this booking online. Please contact Royal Energy Alchemy for assistance.' });
   }
 
   // ── Rate limiting (5 bookings per IP per hour) ────────────────────────────
@@ -117,7 +163,7 @@ exports.handler = async function(event) {
   let clientId = null;
   let portalToken = null;
   try {
-    const emailNorm = client_email.toLowerCase().trim();
+    const emailNorm = normalizedEmail;
     const { data: existing } = await sb
       .from('clients')
       .select('id, email_consent, preferred_contact, portal_token')
@@ -129,7 +175,7 @@ exports.handler = async function(event) {
       portalToken = existing.portal_token || null;
       // Update phone / preferred_contact if newly provided
       const updates = {};
-      if (client_phone) updates.phone = client_phone;
+      if (normalizedPhone) updates.phone = normalizedPhone;
       if (preferred_contact) updates.preferred_contact = preferred_contact;
       // Issue a portal token if this client doesn't have one yet.
       if (!portalToken) {
@@ -145,9 +191,9 @@ exports.handler = async function(event) {
       const { data: newClient, error: clientErr } = await sb
         .from('clients')
         .insert({
-          full_name:          client_name.trim(),
+          full_name:          normalizedName,
           email:              emailNorm,
-          phone:              client_phone  || null,
+          phone:              normalizedPhone,
           preferred_contact:  preferred_contact || 'email',
           email_consent:      true,
           source:             'booking',
@@ -175,7 +221,7 @@ exports.handler = async function(event) {
       .from('sessions')
       .insert({
         client_id:        clientId    || null,
-        client_name:      client_name.trim(),
+        client_name:      normalizedName,
         service:          serviceInfo.label,
         session_date:     sessionDate,
         session_time:     sessionTime.length === 5 ? sessionTime + ':00' : sessionTime,
@@ -219,7 +265,7 @@ exports.handler = async function(event) {
       action:     'booking_submitted',
       table_name: 'sessions',
       record_id:  sessionId,
-      actor:      client_email.toLowerCase().trim(),
+      actor:      normalizedEmail,
       ip_address: ip,
       new_data: {
         session_id:        sessionId,
@@ -238,12 +284,12 @@ exports.handler = async function(event) {
   // ── Step 6: Build client-facing URLs ──────────────────────────────────────
   const actionToken = createAppointmentToken(sessionId);
   const manageUrl = appointmentManageUrl(sessionId, { siteUrl: SITE_URL });
-  const intakeUrl = `${SITE_URL}/full-intake.html?session_id=${sessionId}&name=${encodeURIComponent(client_name.trim())}&email=${encodeURIComponent(client_email.trim())}`;
-  const waiverUrl = `${SITE_URL}/waiver-esign.html?session_id=${sessionId}&token=${encodeURIComponent(actionToken)}&name=${encodeURIComponent(client_name.trim())}&email=${encodeURIComponent(client_email.trim())}&phone=${encodeURIComponent(client_phone || '')}`;
+  const intakeUrl = `${SITE_URL}/full-intake.html?session_id=${sessionId}&name=${encodeURIComponent(normalizedName)}&email=${encodeURIComponent(normalizedEmail)}`;
+  const waiverUrl = `${SITE_URL}/waiver-esign.html?session_id=${sessionId}&token=${encodeURIComponent(actionToken)}&name=${encodeURIComponent(normalizedName)}&email=${encodeURIComponent(normalizedEmail)}&phone=${encodeURIComponent(normalizedPhone)}`;
   const cancelUrl = `${SITE_URL}/cancel-session.html?session_id=${sessionId}`;
   // ── Step 7: Transactional emails (fire-and-forget) ────────────────────────
   const emailVars = {
-    client_name:  client_name.trim(),
+    client_name:  normalizedName,
     service:      serviceInfo.label,
     service_name: serviceInfo.label,
     session_date: sessionDate,
@@ -262,7 +308,7 @@ exports.handler = async function(event) {
   // the appointment is confirmed. Final confirmation comes from Stripe webhook.
   sendWithPreferences(sb, {
     templateName:   'booking_received_pending_payment',
-    recipientEmail: client_email.trim(),
+    recipientEmail: normalizedEmail,
     clientId,
     sessionId,
     variables:      emailVars,
@@ -274,7 +320,7 @@ exports.handler = async function(event) {
   // Intake invitation
   sendWithPreferences(sb, {
     templateName:   'intake_invitation',
-    recipientEmail: client_email.trim(),
+    recipientEmail: normalizedEmail,
     clientId,
     sessionId,
     variables:      { ...emailVars, intake_url: intakeUrl },
@@ -306,3 +352,5 @@ exports.handler = async function(event) {
     waiver_status: 'pending',
   });
 };
+
+exports._test = { normalizeEmail, normalizePhone, validatePublicBookingFields, isBlockedClient };

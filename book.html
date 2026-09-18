@@ -140,11 +140,11 @@ body{background:var(--bg);color:var(--text);font-family:'EB Garamond',serif;min-
     <button class="btn-back" id="p3Back">← Back</button>
     <div class="section-title">Your Contact Information</div>
     <div class="field-row">
-      <div class="fg"><label for="clientName">Full Name *</label><input type="text" id="clientName" placeholder="Your full name" autocomplete="name"></div>
-      <div class="fg"><label for="clientEmail">Email Address *</label><input type="email" id="clientEmail" placeholder="your@email.com" autocomplete="email"></div>
+      <div class="fg"><label for="clientName">Full Name *</label><input type="text" id="clientName" placeholder="Your full name" autocomplete="name" required></div>
+      <div class="fg"><label for="clientEmail">Email Address *</label><input type="email" id="clientEmail" placeholder="your@email.com" autocomplete="email" required></div>
     </div>
     <div class="field-row">
-      <div class="fg"><label for="clientPhone">Phone Number</label><input type="tel" id="clientPhone" placeholder="Optional" autocomplete="tel"></div>
+      <div class="fg"><label for="clientPhone">Phone Number *</label><input type="tel" id="clientPhone" placeholder="Your phone number" autocomplete="tel" required></div>
       <div class="fg">
         <label for="preferredContact">Preferred Contact</label>
         <select id="preferredContact">
@@ -362,6 +362,8 @@ document.getElementById('p3Next').addEventListener('click', () => {
 
   // Build summary
   const phone   = document.getElementById('clientPhone').value.trim();
+  const phoneDigits = (phone.match(/\d/g) || []).join('');
+  if (!phone || phoneDigits.length < 7 || phoneDigits.length > 15 || !/^[+()\-\.\s\dextEXT#x]+$/.test(phone)) { showError('Please enter a valid telephone number.'); return; }
   const contact = document.getElementById('preferredContact').value;
   const card    = document.getElementById('summaryCard');
   card.innerHTML = [
@@ -390,7 +392,7 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
     service:           state.service,
     client_name:       document.getElementById('clientName').value.trim(),
     client_email:      document.getElementById('clientEmail').value.trim(),
-    client_phone:      document.getElementById('clientPhone').value.trim() || null,
+    client_phone:      document.getElementById('clientPhone').value.trim(),
     preferred_contact: document.getElementById('preferredContact').value,
     bot_field:         document.getElementById('botField').value || null,
     source:            'online',
