@@ -1,0 +1,16 @@
+const assert=require('assert'),fs=require('fs'),path=require('path');
+const root=path.join(__dirname,'..');
+const migration=fs.readFileSync(path.join(root,'migrations/2026-09-18-multi-user-dashboard-access.sql'),'utf8');
+const auth=fs.readFileSync(path.join(root,'netlify/functions/lib/auth.js'),'utf8');
+const login=fs.readFileSync(path.join(root,'netlify/functions/verify-pin.js'),'utf8');
+const users=fs.readFileSync(path.join(root,'netlify/functions/authorized-users.js'),'utf8');
+const recovery=fs.readFileSync(path.join(root,'netlify/functions/practitioner-recovery-request.js'),'utf8');
+const invite=fs.readFileSync(path.join(root,'netlify/functions/practitioner-invite.js'),'utf8');
+const ui=fs.readFileSync(path.join(root,'dashboard-p1/multi-user-login.mjs'),'utf8');
+for(const field of ['practitioner_users','user_id','role','credential_version','practitioner_user_login_session','practitioner_user_change_password','practitioner_user_recover'])assert.match(migration,new RegExp(field.replace(/[()]/g,'\\$&')));
+assert.match(auth,/data\.user_id/);assert.match(auth,/data\.role/);assert.match(auth,/user\.credential_version/);
+assert.match(login,/body\.email/);assert.match(login,/practitioner_user_login_session/);assert.match(login,/practitioner_user_change_password/);
+assert.match(users,/auth\.role !== 'owner'/);assert.match(users,/authorized_user_created/);assert.match(users,/authorized_user_revoked/);assert.doesNotMatch(users,/password_hash[^\n]*body/);
+assert.match(recovery,/practitioner_users/);assert.match(recovery,/user_id: eligible\.id/);assert.match(invite,/invite_token_hash/);assert.match(invite,/credential\.hash/);assert.doesNotMatch(invite,/console\.(log|error)/);
+assert.match(ui,/admin-email/);assert.match(ui,/remember_me/);assert.match(ui,/practitioner-invite/);
+console.log('PASS multi-user schema, per-user session/version authority, owner-only user management, invitation password flow, and separate login identifier contracts');

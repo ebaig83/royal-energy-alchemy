@@ -19,7 +19,7 @@ export async function clientDetail(id){
  return {record:{client:current.clients.find(c=>c.id===id),sessions:linked(current.sessions),aftercare:linked(current.aftercare),relationships:current.relationships.filter(r=>r.client_id===id||r.related_client_id===id).map(r=>({...r,client:current.clients.find(c=>c.id===(r.client_id===id?r.related_client_id:r.client_id))}))},messages:{communications:linked(current.communications)},finance:{entries:linked(current.ledger)},errors:[]};
 }
 
-export async function login(pin,rememberMe=false){const r=await fetch('/.netlify/functions/verify-pin',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin,remember_me:rememberMe===true})});if(!r.ok)throw Error('Sign-in was not accepted. Check the PIN or try again later.');}
+export async function login(pin,rememberMe=false,email=''){const r=await fetch('/.netlify/functions/verify-pin',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin,email:email.trim(),remember_me:rememberMe===true})});if(!r.ok)throw Error('Sign-in was not accepted. Check the email and password or try again later.');return r.json();}
 export async function logout(){
  const r=await fetch('/.netlify/functions/verify-pin',{method:'DELETE',credentials:'same-origin',headers:{Accept:'application/json'},cache:'no-store'});
  if(!r.ok)throw Error('Log out could not be completed. Try again.');

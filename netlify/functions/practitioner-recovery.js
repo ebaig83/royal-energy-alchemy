@@ -37,7 +37,10 @@ exports.handler=async event=>{
   const tokenHash=hashToken(body.token);
   if(!await credential.recoveryAttempt(sb,event)){await logRecoveryAudit(sb,{eventType:'complete',outcome:'rate_limited',identifier:tokenHash});return respond(429,{error:'Recovery request was not accepted.'});}
   const encoded=await credential.hash(body.next);
-  const {data,error}=await sb.rpc('practitioner_recover',{p_token_hash:tokenHash,p_hash:encoded});
+  const { data: tokenRow } = await sb.from('practitioner_recovery_tokens').select('user_id').eq('token_hash',tokenHash).maybeSingle();
+  const {data,error}=tokenRow?.user_id
+    ? await sb.rpc('practitioner_user_recover',{p_token_hash:tokenHash,p_hash:encoded})
+    : await sb.rpc('practitioner_recover',{p_token_hash:tokenHash,p_hash:encoded});
   if(error)throw Error();
   if(data!==true){await logRecoveryAudit(sb,{eventType:'complete',outcome:'rejected',identifier:tokenHash});return respond(400,{error:'Recovery request was not accepted.'},{cookie:clearSessionCookie()});}
   await logRecoveryAudit(sb,{eventType:'complete',outcome:'success',identifier:tokenHash});

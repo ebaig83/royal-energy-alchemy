@@ -26,15 +26,17 @@ exports.handler = async event => {
     const sb = getClient();
     if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { await logRecoveryAudit(sb, { eventType: 'request', outcome: 'invalid_input', identifier: emailHash }); return generic(); }
     if (!await credential.recoveryRequestAttempt(sb, event, emailHash)) { await logRecoveryAudit(sb, { eventType: 'request', outcome: 'rate_limited', identifier: emailHash }); return generic(); }
-    if (!configured || email !== configured) { await logRecoveryAudit(sb, { eventType: 'request', outcome: 'not_eligible', identifier: emailHash }); return generic(); }
+    const { data: account } = await sb.from('practitioner_users').select('id,email,active').eq('email',email).eq('active',true).maybeSingle();
+    const eligible = account || (configured && email === configured ? { id: null, email: configured, active: true } : null);
+    if (!eligible) { await logRecoveryAudit(sb, { eventType: 'request', outcome: 'not_eligible', identifier: emailHash }); return generic(); }
     const token = crypto.randomBytes(32).toString('base64url');
     const tokenHash = hashToken(token);
     const expires = new Date(Date.now() + 20 * 60000).toISOString();
     const ip = String(event.headers?.['x-nf-client-connection-ip'] || event.headers?.['client-ip'] || 'unknown').split(',')[0].trim();
-    const { error } = await sb.from('practitioner_recovery_tokens').insert({ token_hash: tokenHash, expires_at: expires, request_email_hash: emailHash, request_ip_hash: hashIdentifier(ip) });
+    const { error } = await sb.from('practitioner_recovery_tokens').insert({ token_hash: tokenHash, user_id: eligible.id, expires_at: expires, request_email_hash: emailHash, request_ip_hash: hashIdentifier(ip) });
     if (error) throw Error();
     const base = String(process.env.SITE_URL || 'https://www.daronroyal.com').replace(/\/$/, '');
-    const mail = await sendTransactional(sb, { templateName: 'practitioner_password_recovery', recipientEmail: configured, idempotencyKey: `practitioner-recovery:${tokenHash}`, variables: { reset_url: `${base}/dashboard.html#reset=${token}` }, metadata: { notification_type: 'practitioner_password_recovery', recovery_token_present: true } });
+    const mail = await sendTransactional(sb, { templateName: 'practitioner_password_recovery', recipientEmail: eligible.email, idempotencyKey: `practitioner-recovery:${tokenHash}`, variables: { reset_url: `${base}/dashboard.html#reset=${token}` }, metadata: { notification_type: 'practitioner_password_recovery', recovery_token_present: true } });
     await sb.from('practitioner_recovery_tokens').update({ provider_message_id: mail.message_id || null }).eq('token_hash', tokenHash);
     await logRecoveryAudit(sb, { eventType: 'request', outcome: mail.sent ? 'email_sent' : 'email_not_sent', identifier: emailHash, providerMessageId: mail.message_id || null });
     return generic();
