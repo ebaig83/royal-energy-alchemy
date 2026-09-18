@@ -138,7 +138,7 @@ dialog.addEventListener('close',()=>{if(dialogReturn?.isConnected)dialogReturn.f
 dialog.addEventListener('keydown',ev=>{if(ev.key!=='Tab')return;const els=[...dialog.querySelectorAll('button:not(:disabled),a[href],input,select,[tabindex="0"]')];const first=els[0],last=els.at(-1);if(ev.shiftKey&&document.activeElement===first){ev.preventDefault();last.focus();}else if(!ev.shiftKey&&document.activeElement===last){ev.preventDefault();first.focus();}});
 document.addEventListener('keydown',ev=>{if(['ArrowRight','ArrowLeft','Home','End'].includes(ev.key)&&ev.target.matches('[data-client-tab]')){ev.preventDefault();const tabs=[...dialog.querySelectorAll('[data-client-tab]')],index=tabs.indexOf(ev.target);const next=ev.key==='Home'?0:ev.key==='End'?tabs.length-1:(index+(ev.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;tabs[next].click();}if(ev.key==='Escape'){closeProfileMenu(true);document.querySelector('.sidebar')?.classList.remove('open');document.querySelector('.menu-button')?.setAttribute('aria-expanded','false');}});
 window.addEventListener('resize',()=>{if(dialog.open)dialog.querySelector('[data-client-tab][aria-pressed=true]')?.scrollIntoView({block:'nearest',inline:'nearest'});});
-window.addEventListener('hashchange',()=>{page=0;if(!data){renderLogin('Sign in to continue.');return;}render();document.querySelector('#workspace')?.focus();});
+window.addEventListener('hashchange',()=>{page=0;if(routeRecoveryFragment())return;if(!data){renderLogin('Sign in to continue.');return;}render();document.querySelector('#workspace')?.focus();});
 window.addEventListener('pageshow',event=>{if(event.persisted&&!preview){data=undefined;start();}});
 function bindRecoveryPanel(form,recovery,forcedToken=null){
  const input=form.querySelector('#admin-pin');
@@ -161,15 +161,17 @@ function renderLogin(message='Your dashboard session has expired. Sign in again.
  input.focus();
 }
 function showLoadError(error){if(error.status===401||error.status===403){renderLogin(error.status===403?'Dashboard access requires a fresh sign-in.':'Your dashboard session has expired. Sign in again.');return;}app.innerHTML='<main class="main"><section class="panel panel-body"><h1>Dashboard unavailable</h1><p role="alert">'+E(error.message)+'</p><p>Retry the read-only bootstrap. No sample records were substituted.</p><button id="retry-bootstrap" class="gold" type="button">Retry</button></section></main>';app.querySelector('#retry-bootstrap').addEventListener('click',()=>{app.innerHTML='<p role="status">Loading your workspace…</p>';start();});}
+function routeRecoveryFragment(){
+ if(!location.hash.startsWith('#reset='))return false;
+ const resetToken=location.hash.slice(7);
+ history.replaceState(null,'',location.pathname+location.search);
+ data=undefined;
+ renderLogin();
+ bindRecoveryPanel(app.querySelector('#sign-in'),app.querySelector('#recovery-panel'),resetToken);
+ return true;
+}
 async function start(){
- const isResetRoute=location.hash.startsWith('#reset=');
- if(isResetRoute){
-  const resetToken=location.hash.slice(7);
-  history.replaceState(null,'',location.pathname+location.search);
-  renderLogin();
-  bindRecoveryPanel(app.querySelector('#sign-in'),app.querySelector('#recovery-panel'),resetToken);
-  return;
- }
+ if(routeRecoveryFragment())return;
  try{data=preview?sampleData():await loadData(includeQA);month=M.dateKey(data.now).slice(0,7);render();}catch(error){showLoadError(error);}
 }
 await start();
