@@ -4859,6 +4859,21 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
 </style>
 </head>
 <body>
+<script>
+(function(){
+  const match=/^#reset=([A-Za-z0-9_-]{32,128})$/.exec(location.hash);
+  if(!match)return;
+  const token=match[1];
+  history.replaceState(null,'',location.pathname+location.search);
+  document.open();
+  document.write(`<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Reset your Royal Energy Alchemy password</title><style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#04020e;color:#f0ecff;font:18px Georgia,serif}.card{width:min(440px,calc(100% - 40px));padding:36px;background:#0a0612;border:1px solid #e8b84b77;box-shadow:0 4px 32px #000b}h1{margin:0 0 12px;color:#e8b84b;font:600 28px Georgia,serif}p{line-height:1.5}label{display:block;margin:18px 0 8px}input{display:block;width:100%;box-sizing:border-box;margin-top:7px;padding:12px;background:#120c20;border:1px solid #e8b84b77;color:#fff;font:inherit}button{margin-top:18px;padding:12px 18px;background:#e8b84b;color:#04020e;border:0;font:600 16px Georgia,serif;cursor:pointer}.link{background:transparent;color:#e8b84b;text-decoration:underline;padding:0;margin-left:12px}.status{min-height:1.5em;color:#f5d68a}</style></head><body><main class="card" id="recovery-root"><h1>Create a new password</h1><p>Choose a new password with at least 12 characters. This link can be used once.</p><form id="recovery-form"><label for="recovery-next">New password<input id="recovery-next" type="password" minlength="12" maxlength="256" autocomplete="new-password" required></label><label for="recovery-confirm">Confirm new password<input id="recovery-confirm" type="password" minlength="12" maxlength="256" autocomplete="new-password" required></label><button type="button" id="recovery-show">Show password</button><button type="submit">Create new password</button><p class="status" id="recovery-status" role="alert"></p></form></main></body></html>`);
+  document.close();
+  const form=document.getElementById('recovery-form'),next=document.getElementById('recovery-next'),confirm=document.getElementById('recovery-confirm'),status=document.getElementById('recovery-status'),show=document.getElementById('recovery-show');
+  show.addEventListener('click',()=>{const visible=next.type==='text';next.type=visible?'password':'text';confirm.type=visible?'password':'text';show.textContent=visible?'Show password':'Hide password';});
+  form.addEventListener('submit',async event=>{event.preventDefault();if(next.value!==confirm.value){status.textContent='Passwords do not match.';return;}status.textContent='Saving…';try{const response=await fetch('/.netlify/functions/practitioner-recovery',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'complete',token,next:next.value,confirm:confirm.value})});if(!response.ok)throw Error('This reset link is invalid or expired. Request a new one.');form.hidden=true;status.textContent='Your password was reset. Return to sign in with your new password.';const link=document.createElement('a');link.href='/dashboard-p1.html';link.className='link';link.textContent='Return to sign in';status.after(link);}catch(error){status.textContent=error.message;next.value='';confirm.value='';}});
+  next.focus();
+})();
+</script>
 
 <!-- ── ACCESS GATE ── -->
 <div id="accessGate">
