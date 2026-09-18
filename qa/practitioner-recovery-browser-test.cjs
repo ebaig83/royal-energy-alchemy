@@ -7,7 +7,7 @@ const assert=require('assert');
 const {chromium}=require('playwright');
 
 const baseURL=process.env.RECOVERY_ROUTE_BASE_URL||'http://127.0.0.1:8098';
-const token='SyntheticTokenForBrowserRouteRegression_1234567890';
+const token='A'.repeat(40);
 
 (async()=>{
  const browser=await chromium.launch({headless:true});
