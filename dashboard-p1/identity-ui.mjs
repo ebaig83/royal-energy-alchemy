@@ -10,6 +10,8 @@ const observer = new MutationObserver(async () => {
     const name = user.displayName || user.email;
     profile.innerHTML = `<span class="avatar">${name.split(/\\s+/).map(part=>part[0]).join('').slice(0,2).toUpperCase()}</span><span>${name}<small style="display:block">${user.role}</small></span>`;
     profile.setAttribute('aria-label', `${name} · ${user.role}`);
+    const heading = document.querySelector('#workspace h1');
+    if (heading && (!location.hash || location.hash === '#today')) heading.textContent = `Good morning, ${name}`;
   } catch { /* Dashboard identity is already protected server-side. */ }
 });
 observer.observe(document.documentElement, { childList: true, subtree: true });
