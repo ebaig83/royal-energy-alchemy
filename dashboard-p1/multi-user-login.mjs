@@ -1,7 +1,18 @@
 // Multi-user login adapter: add the account identifier and submit it to the
 // existing login endpoint without exposing credentials outside the form.
+export function readInviteToken(hash = location.hash) {
+  const raw = String(hash || '');
+  if (!raw.startsWith('#invite=')) return '';
+  try {
+    const token = decodeURIComponent(raw.slice('#invite='.length));
+    return /^[A-Za-z0-9_-]{32,128}$/.test(token) ? token : '';
+  } catch {
+    return '';
+  }
+}
+
 const observe = new MutationObserver(() => {
-  const invite = location.hash.startsWith('#invite=') ? location.hash.slice(7) : '';
+  const invite = readInviteToken();
   if (invite && !document.querySelector('#invite-form')) {
     const root = document.querySelector('#app');
     if (root) root.innerHTML='<main class="login-shell"><section class="login-panel"><div class="login-card"><div class="login-heading"><p class="eyebrow">Authorized dashboard access</p><h1>Set your password</h1><p>Choose a private password of at least 12 characters.</p></div><form id="invite-form" class="login-form"><label>New password<input id="invite-next" type="password" minlength="12" autocomplete="new-password" required></label><label>Confirm password<input id="invite-confirm" type="password" minlength="12" autocomplete="new-password" required></label><button type="button" class="login-link" id="invite-toggle">Show password</button><button class="gold login-submit" type="submit">Set password</button><p id="invite-status" class="login-error" role="alert"></p></form></div></section></main>';
