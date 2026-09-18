@@ -19,7 +19,9 @@ const icons={today:'M3 5h18v16H3z M7 2v6 M17 2v6 M3 11h18',clients:'M16 21v-2a4 
 const icon=n=>`<svg aria-hidden="true" viewBox="0 0 24 24"><path d="${icons[n]}"/></svg>`;
 const dashboardRoutes=[...M.AREAS.map(label=>({key:M.areaKey(label),label})),{key:'agent-operations',label:'Agent Operations'}];
 function resolveRoute(hash=location.hash){const key=String(hash||'').replace(/^#/,'').toLowerCase();return dashboardRoutes.some(route=>route.key===key)?key:'today';}
-function routeTitle(key){return key==='today'?'Good morning, Daron':dashboardRoutes.find(route=>route.key===key)?.label||'Good morning, Daron';}
+function authenticatedDisplayName(){return data?.user?.displayName||data?.user?.email||'Daron';}
+function authenticatedRole(){return data?.user?.role||'owner';}
+function routeTitle(key){return key==='today'?`Good morning, ${authenticatedDisplayName()}`:dashboardRoutes.find(route=>route.key===key)?.label||`Good morning, ${authenticatedDisplayName()}`;}
 const badge=([label,cls])=>`<span class="badge ${E(cls)}">${E(label)}</span>`;
 const initials=name=>String(name||'?').split(/\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase();
 const visibleClients=()=>data.clients.filter(c=>!c.merged_into_client_id&&(includeQA||!M.qa(c)));
