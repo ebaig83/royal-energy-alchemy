@@ -29,6 +29,9 @@ begin
       and s.stripe_checkout_session_id is null
       and s.stripe_payment_intent_id is null
       and s.stripe_payment_status is null
+      and s.google_calendar_event_id is null
+      and s.google_meet_url is null
+      and (s.google_calendar_status is null or s.google_calendar_status = 'not_requested')
       and not exists (
         select 1
         from public.stripe_webhook_events e

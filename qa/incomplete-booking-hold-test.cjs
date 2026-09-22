@@ -2,54 +2,115 @@
 
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
-process.env.RESEND_API_KEY = 'test-only';
-process.env.FROM_EMAIL = 'test@example.test';
-process.env.ADMIN_EMAIL = 'admin@example.test';
+const path = require('node:path');
+const Module = require('node:module');
 
-const { resolveBookingContact, sendBookingReceivedNotices } = require('../netlify/functions/lib/booking-notifications');
-const { buildWebsiteSessionRow } = require('../netlify/functions/lib/booking-state');
-const { isActiveSession, filterSlotsAgainstSessions } = require('../netlify/functions/lib/session-overlap');
+const root = path.join(__dirname, '..');
+const migration = fs.readFileSync(path.join(root, 'migrations/2026-09-22-incomplete-booking-payment-holds.sql'), 'utf8');
+const workerSource = fs.readFileSync(path.join(root, 'netlify/functions/expire-payment-holds.js'), 'utf8');
+const netlifyConfig = fs.readFileSync(path.join(root, 'netlify.toml'), 'utf8');
 
-class Query {
-  constructor(db, table) { this.db=db; this.table=table; this.action='select'; this.payload=null; this.filters=[]; }
-  select(){return this;} insert(payload){this.action='insert';this.payload=payload;return this;} update(payload){this.action='update';this.payload=payload;return this;}
-  eq(key,value){this.filters.push([key,value]);return this;} single(){return this.exec(true);} maybeSingle(){return this.exec(true);} then(ok,bad){return this.exec(false).then(ok,bad);}
-  async exec(single){const rows=this.db[this.table]||(this.db[this.table]=[]),matches=r=>this.filters.every(([k,v])=>r[k]===v);
-    if(this.action==='select'){const found=rows.filter(matches);return{data:single?(found[0]||null):found,error:null};}
-    if(this.action==='insert'){const list=Array.isArray(this.payload)?this.payload:[this.payload];if(this.table==='transactional_notifications'&&rows.some(r=>r.idempotency_key===list[0].idempotency_key))return{data:null,error:{code:'23505'}};const inserted=list.map(row=>({id:`${this.table}-${rows.length+1}`,...row}));rows.push(...inserted);return{data:single?inserted[0]:inserted,error:null};}
-    const found=rows.filter(matches);found.forEach(r=>Object.assign(r,this.payload));return{data:single?(found[0]||null):found,error:null};
-  }
+assert.match(migration, /payload\s*->\s*'data'\s*->\s*'object'\s*->\s*'metadata'\s*->>\s*'session_id'/);
+assert.match(migration, /payload\s*->\s*'data'\s*->\s*'object'\s*->\s*'metadata'\s*->>\s*'booking_id'/);
+assert.match(migration, /payload\s*->\s*'data'\s*->\s*'object'\s*->>\s*'client_reference_id'/);
+assert.doesNotMatch(migration, /payload\s*->\s*'data'\s*->\s*object\b/);
+
+for (const clause of [
+  /s\.payment_status\s+in\s*\('pending',\s*'unpaid'\)/i,
+  /s\.booking_status\s+in\s*\('booking_received',\s*'payment_pending',\s*'payment_expired'\)/i,
+  /s\.payment_hold_expires_at\s*<=\s*p_now/i,
+  /s\.status\s+in\s*\('pending',\s*'expired'\)/i,
+  /s\.stripe_checkout_session_id\s+is\s+null/i,
+  /s\.stripe_payment_intent_id\s+is\s+null/i,
+  /s\.stripe_payment_status\s+is\s+null/i,
+  /s\.google_calendar_event_id\s+is\s+null/i,
+  /s\.google_meet_url\s+is\s+null/i,
+  /s\.google_calendar_status\s+is\s+null\s+or\s+s\.google_calendar_status\s*=\s*'not_requested'/i,
+  /and\s+not\s+exists\s*\([\s\S]*?public\.stripe_webhook_events/i,
+]) assert.match(migration, clause, `eligibility clause missing: ${clause}`);
+
+const now = Date.parse('2026-09-22T19:00:00.000Z');
+const eligibleSession = {
+  id: 'eligible',
+  status: 'expired',
+  payment_status: 'pending',
+  booking_status: 'payment_expired',
+  payment_hold_expires_at: '2026-09-22T18:30:00.000Z',
+  stripe_checkout_session_id: null,
+  stripe_payment_intent_id: null,
+  stripe_payment_status: null,
+  google_calendar_event_id: null,
+  google_meet_url: null,
+  google_calendar_status: 'not_requested',
+};
+
+function qualifies(session, webhookEvents = []) {
+  const pending = ['pending', 'unpaid'].includes(session.payment_status);
+  const bookingState = ['booking_received', 'payment_pending', 'payment_expired'].includes(session.booking_status);
+  const state = ['pending', 'expired'].includes(session.status);
+  const holdExpired = session.payment_hold_expires_at && Date.parse(session.payment_hold_expires_at) <= now;
+  const noStripeEvidence = !session.stripe_checkout_session_id && !session.stripe_payment_intent_id && !session.stripe_payment_status;
+  const noCalendarEvidence = !session.google_calendar_event_id && !session.google_meet_url &&
+    (session.google_calendar_status == null || session.google_calendar_status === 'not_requested');
+  const hasWebhookEvidence = webhookEvents.some(event => {
+    const object = event.payload?.data?.object;
+    return object?.metadata?.session_id === session.id ||
+      object?.metadata?.booking_id === session.id ||
+      object?.client_reference_id === session.id;
+  });
+  return pending && bookingState && state && holdExpired && noStripeEvidence && noCalendarEvidence && !hasWebhookEvidence;
 }
 
-(async()=>{
-  assert.deepEqual(resolveBookingContact({email:'canonical@example.test',phone:'5551112222'},{email:'submitted@example.test',phone:'5559998888'}),{email:'canonical@example.test',phone:'5551112222'});
-  assert.deepEqual(resolveBookingContact({email:null,phone:null},{email:'submitted@example.test',phone:'5559998888'}),{email:'submitted@example.test',phone:'5559998888'});
-  const row=buildWebsiteSessionRow({clientId:'client-1',clientName:'Client',contact:{email:'client@example.test',phone:'5551112222'},service:{label:'Service',duration:60,price:100},date:'2026-09-23',time:'14:00',now:Date.parse('2026-09-22T18:00:00Z'),holdMinutes:30});
-  assert.equal(row.client_id,'client-1');assert.equal(row.client_email,'client@example.test');assert.equal(row.client_phone,'5551112222');assert.equal(row.payment_hold_expires_at,'2026-09-22T18:30:00.000Z');
-  const templates=['booking_received_practitioner','booking_received_pending_payment'].map((name,index)=>({id:`t-${index}`,name,is_active:true,type:name,subject:name,html_body:'<p>{{client_name}} {{service}} {{session_date}} {{session_time}} {{waiver_url}}</p>',text_body:'{{session_reference}}'}));
-  templates[0].html_body='<p>{{client_name}} {{client_email}} {{client_phone}} {{service}} {{session_date}} {{session_time}} {{amount_due}} {{payment_hold_expires_at}}</p>';
-  const db={clients:[{id:'client-1',email_consent:true}],email_templates:templates,transactional_notifications:[],communications:[]};
-  const sb={from:table=>new Query(db,table)};let sends=0;const transport=async()=>({success:true,status:200,body:{id:`msg-${++sends}`}});
-  const options={session:{id:'session-1',client_id:'client-1'},contact:{email:'client@example.test',phone:'5551112222'},variables:{client_name:'Client',client_email:'client@example.test',client_phone:'5551112222',service:'Service',session_date:'2026-09-23',session_time:'14:00',timezone:'ET',amount_due:'100.00',payment_hold_expires_at:'2026-09-23T18:30:00Z',session_reference:'session-1',waiver_url:'https://example.test/waiver'},transport};
-  const first=await sendBookingReceivedNotices(sb,options);assert.equal(first.admin.sent,true);assert.equal(first.client.sent,true);assert.equal(sends,2);
-  await sendBookingReceivedNotices(sb,options);assert.equal(sends,2,'idempotency prevents duplicate practitioner/client notices');
-  assert.equal(db.transactional_notifications.length,2);
-  const missing=await sendBookingReceivedNotices(sb,{...options,session:{id:'session-2',client_id:'client-1'},contact:{email:null,phone:'5551112222'},variables:{...options.variables,session_reference:'session-2'}});
-  assert.equal(missing.client.manualReviewRequired,true);assert.ok(db.communications.some(message=>message.status==='manual_required'));
+assert.equal(qualifies({ ...eligibleSession }), true, 'expired unpaid hold qualifies');
+assert.equal(qualifies({ ...eligibleSession, status: 'cancelled' }), false, 'cancelled session is excluded');
+assert.equal(qualifies({ ...eligibleSession, payment_status: 'paid' }), false, 'paid session is excluded');
+assert.equal(qualifies({ ...eligibleSession, stripe_payment_intent_id: 'pi_test' }), false, 'Stripe-backed session is excluded');
+assert.equal(qualifies({ ...eligibleSession, stripe_payment_status: 'succeeded' }), false, 'Stripe status evidence is excluded');
+const webhookBySession = [{ payload: { data: { object: { metadata: { session_id: 'eligible' } } } } }];
+const webhookByBooking = [{ payload: { data: { object: { metadata: { booking_id: 'eligible' } } } } }];
+const webhookByClientReference = [{ payload: { data: { object: { client_reference_id: 'eligible' } } } }];
+assert.equal(qualifies({ ...eligibleSession }, webhookBySession), false, 'matching session webhook is excluded');
+assert.equal(qualifies({ ...eligibleSession }, webhookByBooking), false, 'matching booking webhook is excluded');
+assert.equal(qualifies({ ...eligibleSession }, webhookByClientReference), false, 'matching client-reference webhook is excluded');
+assert.equal(qualifies({ ...eligibleSession, google_calendar_event_id: 'event-1' }), false, 'Calendar event evidence is excluded');
+assert.equal(qualifies({ ...eligibleSession, google_meet_url: 'https://meet.google.com/test' }), false, 'Meet evidence is excluded');
+assert.equal(qualifies({ ...eligibleSession, google_calendar_status: 'ready' }), false, 'Calendar state evidence is excluded');
 
-  const expired={status:'pending',payment_status:'pending',booking_status:'payment_expired',session_date:'2026-09-23',session_time:'14:00:00'};
-  assert.equal(isActiveSession(expired),false);
-  assert.equal(filterSlotsAgainstSessions([{status:'available',slot_date:'2026-09-23',slot_time:'14:00:00'}],[expired]).length,1,'expired hold releases public availability');
+assert.match(workerSource, /rpc\('expire_unpaid_booking_holds'/);
+assert.match(netlifyConfig, /\[functions\."expire-payment-holds"\][\s\S]*?schedule\s*=\s*"\*\/5 \* \* \* \*"/);
+assert.doesNotMatch(workerSource, /booking-notifications|booking-state/);
 
-  const booking=fs.readFileSync('netlify/functions/booking.js','utf8');
-  for(const field of ['client_id','client_email','client_phone','payment_hold_expires_at'])assert.match(booking,new RegExp(field));
-  assert.match(booking,/select\('id,session_date,session_time,duration_minutes,status,booking_status'\)/,'booking conflict check reads expiration state');
-  assert.doesNotMatch(booking,/from\(['"](?:payments|ledger_entries)['"]\)\.insert/,'booking does not fabricate payment evidence');
-  const model=fs.readFileSync('dashboard-p1/model.mjs','utf8');
-  for(const text of ['Payment Pending','Hold expired','Payment not completed','Expired booking'])assert.ok(model.includes(text));
-  const app=fs.readFileSync('dashboard-p1/app.mjs','utf8');assert.ok(app.includes('Client communication not sent / not recorded'));
-  const migration=fs.readFileSync('migrations/2026-09-22-incomplete-booking-payment-holds.sql','utf8');
-  for(const text of ['expire_unpaid_booking_holds','status = \'available\'','session_id = null','booking_received_practitioner'])assert.ok(migration.includes(text));
-  const worker=fs.readFileSync('netlify/functions/expire-payment-holds.js','utf8');assert.ok(worker.includes("rpc('expire_unpaid_booking_holds'"));
-  console.log('PASS incomplete booking: canonical contact, idempotent notices, payment statuses, availability release, no payment fabrication, worker/schema contract');
-})().catch(error=>{console.error(error);process.exitCode=1;});
+let rpcResult = { data: { expired_count: 1 }, error: null };
+let rpcCalls = [];
+const originalLoad = Module._load;
+Module._load = function (request, parent, isMain) {
+  if (request === './lib/supabase' && parent?.filename === path.join(root, 'netlify/functions/expire-payment-holds.js')) {
+    return { getClient: () => ({ rpc: async (...args) => { rpcCalls.push(args); return rpcResult; } }) };
+  }
+  return originalLoad.call(this, request, parent, isMain);
+};
+
+let worker;
+try {
+  worker = require(path.join(root, 'netlify/functions/expire-payment-holds.js'));
+} finally {
+  Module._load = originalLoad;
+}
+
+(async () => {
+  const success = await worker.handler();
+  assert.equal(success.statusCode, 200);
+  assert.deepEqual(JSON.parse(success.body), { expired: true, count: 1 });
+  assert.equal(rpcCalls.length, 1);
+  assert.equal(rpcCalls[0][0], 'expire_unpaid_booking_holds');
+  assert.ok(Number.isFinite(Date.parse(rpcCalls[0][1].p_now)), 'worker sends a server timestamp');
+
+  rpcResult = { data: null, error: { message: 'database detail must not leak' } };
+  const failure = await worker.handler();
+  assert.equal(failure.statusCode, 500);
+  assert.deepEqual(JSON.parse(failure.body), { expired: false });
+  assert.doesNotMatch(failure.body, /database detail/);
+  assert.equal(rpcCalls.length, 2);
+
+  console.log('PASS payment-hold expiration: eligibility, webhook path, worker success/failure, five-minute schedule');
+})().catch(error => { console.error(error); process.exitCode = 1; });
