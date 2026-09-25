@@ -11,7 +11,7 @@ const SERVICES = [
   { id: 'energy-session-15-youth', label: '15 Minute Energy Session (10 - 14 yrs)', price: 40, duration: 15 },
   { id: 'energy-session-10-child', label: '10 Minute Energy Session (9 yrs + down)', price: 30, duration: 10 },
   { id: 'spiritual-coaching', label: 'Spiritual Coaching', price: 75, duration: 60 },
-  { id: 'house-cleansing-blessing', label: 'House Cleansing/Blessing In-Person', price: 80, duration: 60 },
+  { id: 'house-cleansing-blessing', label: 'House Cleansing/Blessing In-Person', price: 80, duration: 60, locationType: 'in_person' },
 ];
 
 function normalize(value) {

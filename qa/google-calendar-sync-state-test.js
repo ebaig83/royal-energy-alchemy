@@ -19,7 +19,18 @@ class Query {
     return { data: null, error: null };
   }
 }
-const sb = { from: table => new Query(table) };
+const mutations=[];
+const sb = {
+  from: table => new Query(table),
+  rpc: async (name,args) => {
+    assert.strictEqual(name,'trusted_session_update_with_audit');
+    const row=rows.find(r=>r.id===args.p_id);
+    if(!row)return {data:null,error:new Error('missing session')};
+    Object.assign(row,args.p_updates);
+    mutations.push({id:row.id,action:args.p_action,correlation_id:args.p_correlation_id});
+    return {data:{session:{...row},eligible:true},error:null};
+  },
+};
 const sends = [];
 const api = {
   create: async body => { if (body.extendedProperties.private.reaSessionId === 'B') { const e = new Error('temporary'); e.retryable = true; throw e; } return { id: body.id, conferenceData: { entryPoints: [{ entryPointType: 'video', uri: 'https://meet.google.com/abc-defg-hij' }] } }; },
@@ -34,6 +45,8 @@ const api = {
   assert.strictEqual(rows.find(r => r.id === 'B').google_calendar_status, 'retryable_error');
   assert.strictEqual(rows.find(r => r.id === 'C').google_calendar_status, 'cancelled');
   assert.deepStrictEqual(sends, ['session-google-meet-ready:A']);
+  assert(mutations.some(x=>x.id==='A'&&x.action==='calendar_sync_completed'&&x.correlation_id));
+  assert(mutations.some(x=>x.id==='B'&&x.action==='calendar_sync_failed'&&x.correlation_id));
   const second = await processPending({ sb, api, send: async () => { throw new Error('ready email must not repeat'); }, syncOptions: { delayMs: 0, attempts: 1, sleep: async () => {} } });
   assert(!second.synced.some(x => x.id === 'A') && !second.synced.some(x => x.id === 'C'));
   assert(second.failed.length === 1 && second.failed[0].id === 'B');

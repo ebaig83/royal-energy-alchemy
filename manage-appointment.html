@@ -192,6 +192,12 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
       </div>
     </div>
 
+    <div class="state-card hidden" id="expiredState" role="status" aria-live="polite">
+      <p class="label" style="color:#e8b84b">Payment hold expired</p>
+      <p>This appointment request has expired because payment was not completed in time. No cancellation is required. Please contact us if you would still like to book.</p>
+      <p style="margin-top:16px;font-size:15px;color:#e8b84b">royalenergyalchemy@gmail.com &nbsp;|&nbsp; 814-392-2095</p>
+    </div>
+
     <!-- Action Selector -->
     <div class="action-grid" id="actionGrid">
       <div class="action-opt" id="actReschedule" onclick="selectAction('reschedule')">
@@ -468,6 +474,13 @@ function renderAppointment(s) {
   var status = (s.status || 'scheduled').toLowerCase();
   badge.textContent = s.status || 'Scheduled';
   badge.className   = 'status-badge ' + (status === 'completed' ? 'confirmed' : status === 'cancelled' ? 'cancelled' : 'pending');
+
+  var expiredUnpaid = (status === 'expired' || String(s.booking_status || '').toLowerCase() === 'payment_expired') && String(s.payment_status || '').toLowerCase() !== 'paid';
+  if (expiredUnpaid) {
+    document.getElementById('expiredState').classList.remove('hidden');
+    document.getElementById('actionGrid').classList.add('hidden');
+    return;
+  }
 
   if (status === 'cancelled' || status === 'completed') {
     document.getElementById('actReschedule').style.opacity = '.35';

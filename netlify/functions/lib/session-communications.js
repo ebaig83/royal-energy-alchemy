@@ -2,6 +2,7 @@
 
 const SITE_URL = process.env.SITE_URL || 'https://royal-energy-alchemy.netlify.app';
 const SUPPRESSED = new Set(['cancelled', 'no_show']);
+const { isWebsiteBooking, isOperationalWebsiteBooking } = require('./booking-state');
 
 const { easternInstant } = require('./business-time');
 function sessionStart(session) { return easternInstant(session?.session_date, session?.session_time); }
@@ -11,8 +12,13 @@ function sessionDuration(session) {
   return Number.isFinite(n) && n > 0 ? n : 60;
 }
 
-function isActiveSession(session) {
-  return !!session && !SUPPRESSED.has(String(session.status || '').toLowerCase());
+function isActiveSession(session, { allowCompletedWebsiteFollowup = false } = {}) {
+  const status = String(session?.status || '').toLowerCase();
+  if (!session || SUPPRESSED.has(status) || status === 'expired') return false;
+  if (status === 'completed') {
+    return isWebsiteBooking(session) ? allowCompletedWebsiteFollowup && isOperationalWebsiteBooking(session,{allowCompleted:true}) : true;
+  }
+  return !isWebsiteBooking(session) || isOperationalWebsiteBooking(session);
 }
 
 function isDue(start, now, minutes, toleranceMinutes = 5) {

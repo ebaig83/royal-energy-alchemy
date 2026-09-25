@@ -4,12 +4,12 @@ import {sampleData} from '../dashboard-p1/fixture.mjs';
 const d=sampleData(),imported=d.sessions.find(s=>M.silent(s)),online=d.sessions.find(s=>s.id==='s2');
 assert.deepEqual(M.AREAS,['Today','Clients','Schedule','Communications','Finance','Content Studio','System']);
 const now=d.now;
-const future=JSON.parse(JSON.stringify(online));future.id='future-active';future.session_date='2099-01-01';future.session_time='11:00:00';future.status='confirmed';future.waiver_completed=true;future.google_meet_url='https://meet.google.com/abc-defg-hij';future.session_notes=[];
+const future=JSON.parse(JSON.stringify(online));future.id='future-active';future.session_date='2099-01-01';future.session_time='11:00:00';future.status='confirmed';future.booking_status='confirmed';future.operational_eligible=true;future.waiver_completed=true;future.google_meet_url='https://meet.google.com/abc-defg-hij';future.session_notes=[];
 const futureWithPaymentLink=JSON.parse(JSON.stringify(future));futureWithPaymentLink.payment_status='unpaid';
 const canceled={...future,id:'future-cancelled',status:'cancelled'};
 const past={...online,id:'past-session',session_date:'2026-09-01',session_time:'10:00:00',status:'confirmed'};
 const qa={...future,id:'qa-session',client_name:'[QA] fixture',source:'qa'};
-const futureUnpaid={...future,id:'future-unpaid',payment_status:'unpaid'};
+const futureUnpaid={...future,id:'future-unpaid',payment_status:'unpaid',operational_eligible:false,pending_payment:true};
 const malformedAppointments=[
  {...future,id:'null-date',session_date:null},
  Object.fromEntries(Object.entries({...future,id:'missing-date'}).filter(([key])=>key!=='session_date')),
@@ -21,7 +21,7 @@ assert.deepEqual(M.eligibleActions(future,now),['View','Join Meet','Manage','Res
 assert.deepEqual(M.eligibleActions(futureWithPaymentLink,now),['View','Manage','Reschedule','Cancel','Send Payment Link']);
 assert.deepEqual(M.eligibleActions(canceled,now),['View']);
 assert.deepEqual(M.eligibleActions(past,now),['View','Reschedule']);
-assert.deepEqual(M.eligibleActions(futureUnpaid,now),['View','Manage','Reschedule','Cancel','Send Payment Link']);
+assert.deepEqual(M.eligibleActions(futureUnpaid,now),['View']);
 assert.deepEqual(M.eligibleActions(qa,now),['View','Join Meet']);
 for(const session of malformedAppointments){assert.equal(M.validAppointmentDateTime(session),false);assert.equal(M.future(session,now),false);assert.equal(M.stamp(session),'');}
 assert.equal(M.date('2026-02-30'),'Date needs review');

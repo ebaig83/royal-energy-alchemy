@@ -6,7 +6,16 @@
 // All sends are logged to the communications table.
 
 const https = require('https');
+const crypto = require('crypto');
 const { renderTemplate } = require('./email-render');
+const CORRELATION_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function correlationUuid(opts = {}) {
+  const value = opts.correlationId || opts.metadata?.correlation_id;
+  if (value == null || value === '') return crypto.randomUUID();
+  if (typeof value !== 'string' || !CORRELATION_UUID.test(value)) throw new TypeError('Communication correlation ID must be a UUID.');
+  return value.toLowerCase();
+}
 
 function callResend(payload, idempotencyKey) {
   const apiKey = process.env.RESEND_API_KEY;
@@ -56,6 +65,7 @@ async function logComm(sb, entry) {
       provider_message_id: entry.message_id   || null,
       template_id:         entry.template_id  || null,
       metadata:            entry.metadata     || null,
+      correlation_uuid:    entry.correlation_id || null,
       sent_at:             new Date().toISOString(),
     }).select('id').single();
     return data;
@@ -70,6 +80,7 @@ async function logComm(sb, entry) {
  */
 async function sendTransactional(sb, opts) {
   const { templateName, recipientEmail, clientId, variables, metadata, idempotencyKey, transport } = opts || {};
+  const correlationId = correlationUuid(opts || {});
 
   const apiKey    = process.env.RESEND_API_KEY;
   const fromEmail = process.env.FROM_EMAIL;
@@ -93,6 +104,7 @@ async function sendTransactional(sb, opts) {
     const row = {
       idempotency_key: idempotencyKey,
       stripe_event_id: metadata?.stripe_event_id || null,
+      correlation_uuid: correlationId,
       recipient: recipientEmail.toLowerCase(),
       notification_type: metadata?.notification_type || templateName,
       status: 'reserved',
@@ -152,6 +164,7 @@ async function sendTransactional(sb, opts) {
       client_id: clientId || null, message_type: tmpl.type, recipient: recipientEmail,
       subject: null, status: 'failed', template_id: tmpl.id,
       metadata: { ...(metadata || {}), rendering_error: true, error_code: error.code || 'EMAIL_RENDER_ERROR' },
+      correlation_id: correlationId,
     });
     if (reservation && sb) {
       await sb.from('transactional_notifications').update({
@@ -187,6 +200,7 @@ async function sendTransactional(sb, opts) {
     message_id:  msgId,
     template_id: tmpl.id,
     metadata:    metadata || null,
+    correlation_id: correlationId,
   });
 
   if (reservation && sb) {
@@ -202,4 +216,4 @@ async function sendTransactional(sb, opts) {
   return { sent: result.success, status, message_id: msgId };
 }
 
-module.exports = { sendTransactional, _test: { renderTemplate, callResend } };
+module.exports = { sendTransactional, _test: { renderTemplate, callResend, correlationUuid } };

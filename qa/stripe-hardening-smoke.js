@@ -8,6 +8,7 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const checkoutSource = read('netlify/functions/create-stripe-checkout.js');
 const webhookSource = read('netlify/functions/stripe-webhook.js');
 const migration = read('migrations/2026-08-26-stripe-booking-flow.sql');
+const integrityMigration = read('supabase/migrations/20260925020224_appointment_attribution_booking_integrity_hardening.sql');
 const confirmation = read('booking-confirmation.html');
 const checkout = require('../netlify/functions/create-stripe-checkout')._test;
 
@@ -18,8 +19,8 @@ const tests = [
   ['delayed failure', webhookSource.includes('checkout.session.async_payment_failed')],
   ['expired Checkout', webhookSource.includes('checkout.session.expired')],
   ['failed PaymentIntent', webhookSource.includes('payment_intent.payment_failed')],
-  ['processed duplicates acknowledged', /data\.state === 'processed'.*return false/s.test(webhookSource)],
-  ['failed event can be reclaimed', webhookSource.includes("state: 'failed'") && webhookSource.includes("state: 'processing'") && webhookSource.includes("data.state === 'processed'")],
+  ['processed duplicates acknowledged by atomic RPC', integrityMigration.includes("if ev.state='processed' then") && webhookSource.includes("finalize_stripe_webhook_event")],
+  ['failed event can be reclaimed transactionally', integrityMigration.includes("if ev.state='processing' then raise exception") && integrityMigration.includes("state='processing',payload=p_payload") && !webhookSource.includes("from('stripe_webhook_events').update")],
   ['amount mismatch rejected', webhookSource.includes('payment amount does not match')],
   ['currency mismatch rejected', webhookSource.includes('currency does not match USD')],
   ['missing waiver rejected', checkoutSource.includes('Waiver must be completed before payment.')],

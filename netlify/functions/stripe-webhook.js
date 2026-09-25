@@ -8,7 +8,7 @@ const { sendWithPreferences } = require('./lib/comms');
 const { sendTransactional } = require('./lib/mailer');
 const { appointmentManageUrl } = require('./lib/appointment-token');
 const { isCalendarEligible } = require('./lib/record-policy');
-const { isWebsiteBooking } = require('./lib/booking-state');
+const { isWebsiteBooking, isOperationalWebsiteBooking, completeWebsiteDetails, attachServiceAddress } = require('./lib/booking-state');
 
 const SITE_URL = process.env.SITE_URL || 'https://www.daronroyal.com';
 
@@ -51,14 +51,37 @@ function isWaiverDone(session) {
   return session?.waiver_completed === true || ['complete', 'completed', 'signed'].includes(String(session?.waiver_status || '').toLowerCase());
 }
 
+async function processStripeEvent(sb, stripeEvent, { sessionId = null, updates = null, payment = null, paymentAction = 'none' } = {}) {
+  const { data, error } = await sb.rpc('process_stripe_webhook_event_with_audit', {
+    p_event_id: stripeEvent.id,
+    p_event_type: stripeEvent.type,
+    p_payload: stripeEvent,
+    p_session_id: sessionId,
+    p_updates: updates,
+    p_payment: payment,
+    p_payment_action: paymentAction,
+    p_request_path: '/.netlify/functions/stripe-webhook',
+  });
+  if (error || !data) throw error || new Error('Stripe transaction returned no result.');
+  if (sessionId && !data.session) throw new Error('Stripe session mutation was not committed.');
+  console.info('[stripe-webhook] atomic event mutation', JSON.stringify({ session_id: sessionId, correlation_id: data.correlation_id, stripe_event_id: stripeEvent.id, actor_type: 'system', source: 'stripe_webhook', action: stripeEvent.type }));
+  return data;
+}
+
 async function markPayment(sb, sessionId, event, checkout) {
-  const { data: session, error } = await sb
+  const { data: rawSession, error } = await sb
     .from('sessions')
-    .select('id, status, source, service, location_type, session_date, session_time, waiver_status, waiver_completed, client_id, client_name, amount_due, amount_paid, payment_status, google_calendar_status, payment_hold_expires_at')
+    .select('id, status, source, service, location_type, session_date, session_time, waiver_status, waiver_completed, client_id, client_name, client_email, client_phone, amount_due, amount_paid, payment_status, google_calendar_status, payment_hold_expires_at, booking_status')
     .eq('id', sessionId)
     .single();
 
-  if (error || !session) throw new Error('Session not found.');
+  if (error || !rawSession) throw new Error('Session not found.');
+  let session=rawSession;
+  if (['in_person','in-person'].includes(String(session.location_type||'').toLowerCase())) {
+    const {data:address,error:addressError}=await sb.from('session_service_addresses').select('address_line1,address_line2,city,state,postal_code,country').eq('session_id',session.id).maybeSingle();
+    if(addressError)throw addressError;
+    session=attachServiceAddress(session,address);
+  }
 
   const service = findService(session.service);
   const expectedCents = Math.round(Number(session.amount_due) * 100);
@@ -73,8 +96,10 @@ async function markPayment(sb, sessionId, event, checkout) {
   const amountPaid = checkout.amount_total != null ? Number(checkout.amount_total) / 100 : Number(session.amount_due || 0);
   const waiverDone = isWaiverDone(session);
   const websiteBooking = isWebsiteBooking(session);
+  const holdActive = !!session.payment_hold_expires_at && Date.parse(session.payment_hold_expires_at) > Date.now() && String(session.status || '').toLowerCase() === 'pending';
+  const complete = !websiteBooking || (holdActive && waiverDone && completeWebsiteDetails(session));
   const updates = {
-    status: websiteBooking ? 'confirmed' : session.status,
+    status: websiteBooking ? (complete ? 'confirmed' : 'pending') : session.status,
     payment_status: 'paid',
     amount_paid: amountPaid,
     payment_paid_at: new Date().toISOString(),
@@ -82,15 +107,16 @@ async function markPayment(sb, sessionId, event, checkout) {
     stripe_payment_intent_id: checkout.payment_intent || null,
     stripe_payment_status: checkout.payment_status || 'paid',
     payment_hold_expires_at: null,
-    google_calendar_status: isCalendarEligible({ ...session, payment_status: 'paid' }) ? 'pending' : (session.google_calendar_status || 'not_requested'),
-    booking_status: waiverDone ? 'ready' : 'payment_paid',
+    google_calendar_status: websiteBooking ? (complete && isCalendarEligible({ ...session, status: 'confirmed', booking_status: 'confirmed', payment_status: 'paid' }) ? 'pending' : 'not_requested') : (isCalendarEligible({ ...session, payment_status: 'paid' }) ? 'pending' : (session.google_calendar_status || 'not_requested')),
+    booking_status: websiteBooking ? (complete ? 'confirmed' : 'payment_received_incomplete') : waiverDone ? 'ready' : 'payment_paid',
     updated_at: new Date().toISOString(),
   };
 
-  const { error: updateErr } = await sb.from('sessions').update(updates).eq('id', sessionId);
-  if (updateErr) throw updateErr;
-
-  await recordStripePayment(sb, {
+  const result = await processStripeEvent(sb, event, {
+    sessionId,
+    updates,
+    paymentAction: 'upsert',
+    payment: {
     session_id: sessionId,
     client_id: session.client_id || null,
     client_name: session.client_name || null,
@@ -100,63 +126,13 @@ async function markPayment(sb, sessionId, event, checkout) {
     paid_at: new Date().toISOString(),
     reference_id: checkout.payment_intent || checkout.id || event.id,
     notes: 'Stripe Checkout',
+    },
   });
 
-  return { ...session, amount_paid: amountPaid, payment_reference: checkout.payment_intent || checkout.id || event.id };
+  return { ...session, ...(result.session || updates), correlation_id: result.correlation_id, duplicate: result.duplicate === true, amount_paid: amountPaid, payment_reference: checkout.payment_intent || checkout.id || event.id };
 }
 
-// Postgres cannot infer the partial Stripe-only unique index through
-// PostgREST's onConflict=reference_id upsert. Use an explicit lookup followed
-// by insert/update instead. The partial unique index remains the final race
-// guard, so duplicate webhook deliveries still converge on one ledger row
-// without changing any historical non-Stripe references.
-async function recordStripePayment(sb, row) {
-  const referenceId = row.reference_id;
-  if (!referenceId) throw new Error('Stripe payment is missing a reference ID.');
-
-  const { data: existing, error: lookupError } = await sb
-    .from('payments')
-    .select('id')
-    .eq('method', 'stripe')
-    .eq('reference_id', referenceId)
-    .maybeSingle();
-  if (lookupError) throw lookupError;
-
-  if (existing) {
-    const { error: updateError } = await sb
-      .from('payments')
-      .update(row)
-      .eq('id', existing.id);
-    if (updateError) throw updateError;
-    return { id: existing.id, created: false };
-  }
-
-  const { data: inserted, error: insertError } = await sb
-    .from('payments')
-    .insert(row)
-    .select('id')
-    .single();
-  if (!insertError) return { id: inserted.id, created: true };
-  if (insertError.code !== '23505') throw insertError;
-
-  // A concurrent delivery won the insert race. Resolve the row through the
-  // same Stripe-only key and update it to the authoritative event state.
-  const { data: raced, error: racedError } = await sb
-    .from('payments')
-    .select('id')
-    .eq('method', 'stripe')
-    .eq('reference_id', referenceId)
-    .single();
-  if (racedError) throw racedError;
-  const { error: retryUpdateError } = await sb
-    .from('payments')
-    .update(row)
-    .eq('id', raced.id);
-  if (retryUpdateError) throw retryUpdateError;
-  return { id: raced.id, created: false };
-}
-
-async function markPaymentProblem(sb, checkout, status) {
+async function markPaymentProblem(sb, checkout, status, stripeEvent) {
   const sessionId = checkout?.metadata?.session_id || checkout?.metadata?.booking_id || checkout?.client_reference_id;
   if (!sessionId) throw new Error('Stripe event is missing a booking ID.');
   const isPaymentIntent = checkout.object === 'payment_intent';
@@ -169,32 +145,11 @@ async function markPaymentProblem(sb, checkout, status) {
     updated_at: new Date().toISOString(),
   };
   Object.keys(updates).forEach(key => updates[key] === undefined && delete updates[key]);
-  const { error } = await sb.from('sessions').update(updates).eq('id', sessionId);
-  if (error) throw error;
-  const { data: session, error: sessionError } = await sb
-    .from('sessions')
-    .select('id,client_id,client_name,service,session_date,session_time,amount_due')
-    .eq('id', sessionId)
-    .single();
-  if (sessionError) throw sessionError;
-  return session;
+  const result = await processStripeEvent(sb, stripeEvent, { sessionId, updates });
+  return { ...result.session, id: sessionId, correlation_id: result.correlation_id, duplicate: result.duplicate === true, client_id: result.session?.client_id || null, client_name: result.session?.client_name || null, service: result.session?.service || null, session_date: result.session?.session_date || null, session_time: result.session?.session_time || null, amount_due: result.session?.amount_due || null };
 }
 
-async function claimEvent(sb, stripeEvent) {
-  const now = new Date().toISOString();
-  const { error } = await sb.from('stripe_webhook_events').insert({ id: stripeEvent.id, type: stripeEvent.type, state: 'processing', received_at: now, processing_started_at: now, attempt_count: 1, payload: stripeEvent });
-  if (!error) return true;
-  if (error.code !== '23505') throw error;
-  const { data, error: readError } = await sb.from('stripe_webhook_events').select('state, attempt_count').eq('id', stripeEvent.id).single();
-  if (readError) throw readError;
-  if (data.state === 'processed') return false;
-  if (data.state === 'processing') throw new Error('Stripe event is already being processed.');
-  const { error: retryError } = await sb.from('stripe_webhook_events').update({ state: 'processing', processing_error: null, processing_started_at: now, attempt_count: Number(data.attempt_count || 0) + 1 }).eq('id', stripeEvent.id).neq('state', 'processed');
-  if (retryError) throw retryError;
-  return true;
-}
-
-async function reconcileRefund(sb, charge) {
+async function reconcileRefund(sb, charge, stripeEvent) {
   if (!charge.payment_intent) throw new Error('Refunded charge is missing its PaymentIntent.');
   const { data: session, error: sessionLookupError } = await sb
     .from('sessions')
@@ -207,11 +162,13 @@ async function reconcileRefund(sb, charge) {
   const refundId = charge.refunds?.data?.[0]?.id || null;
   const updates = { refunded_amount: Number(charge.amount_refunded || 0) / 100, refund_status: full ? 'full' : 'partial', refund_updated_at: now, stripe_charge_id: charge.id || null, stripe_refund_id: refundId, stripe_payment_status: full ? 'refunded' : 'partially_refunded', updated_at: now };
   if (full) Object.assign(updates, { payment_status: 'refunded', booking_status: 'payment_refunded' });
-  const { error } = await sb.from('sessions').update(updates).eq('stripe_payment_intent_id', charge.payment_intent);
-  if (error) throw error;
-  const { error: paymentError } = await sb.from('payments').update({ refunded_amount: updates.refunded_amount, refund_status: updates.refund_status, refunded_at: now, stripe_charge_id: charge.id || null, stripe_refund_id: refundId }).eq('reference_id', charge.payment_intent);
-  if (paymentError) throw paymentError;
-  return { ...session, refunded_amount: updates.refunded_amount, refund_reference: refundId || charge.id };
+  const result = await processStripeEvent(sb, stripeEvent, {
+    sessionId: session.id,
+    updates,
+    paymentAction: 'refund',
+    payment: { method: 'stripe', reference_id: charge.payment_intent, refunded_amount: updates.refunded_amount, refunded_at: now, refund_status: updates.refund_status, stripe_charge_id: charge.id || null, stripe_refund_id: refundId },
+  });
+  return { ...session, ...result.session, correlation_id: result.correlation_id, duplicate: result.duplicate === true, refunded_amount: updates.refunded_amount, refund_reference: refundId || charge.id };
 }
 
 async function clientEmail(sb, session) {
@@ -225,8 +182,9 @@ function notificationKey(eventId, type, recipient) {
 }
 
 async function sendStripeNotification(sb, { eventId, type, templateName, recipientEmail, session, variables, practitioner = false, transport }) {
+  if (session?.duplicate) return { skipped: true, duplicate: true };
   if (!recipientEmail) return { skipped: true, reason: 'no_recipient' };
-  const metadata = { stripe_event_id: eventId, notification_type: type, session_id: session.id };
+  const metadata = { stripe_event_id: eventId, correlation_id: session.correlation_id || null, notification_type: type, session_id: session.id };
   const opts = {
     templateName,
     recipientEmail,
@@ -234,6 +192,7 @@ async function sendStripeNotification(sb, { eventId, type, templateName, recipie
     sessionId: session.id,
     variables,
     metadata,
+    correlationId: session.correlation_id,
     idempotencyKey: notificationKey(eventId, type, recipientEmail),
     transport,
   };
@@ -241,6 +200,7 @@ async function sendStripeNotification(sb, { eventId, type, templateName, recipie
 }
 
 async function notifyPaymentSuccess(sb, eventId, session, transport) {
+  if (isWebsiteBooking(session) && !isOperationalWebsiteBooking(session)) return [{ skipped: true, reason: 'website_booking_not_operational' }];
   const email = await clientEmail(sb, session);
   const admin = process.env.ADMIN_EMAIL;
   const common = {
@@ -303,37 +263,37 @@ exports.handler = async function(event) {
   const sb = getClient();
   const eventId = stripeEvent.id;
   try {
-    if (!await claimEvent(sb, stripeEvent)) return respond(200, { received: true, duplicate: true });
     const object = stripeEvent.data?.object || {};
+    let session = null;
     if (stripeEvent.type === 'checkout.session.completed' && object.payment_status === 'paid') {
-      const session = await markPayment(sb, object.metadata?.session_id || object.metadata?.booking_id || object.client_reference_id, stripeEvent, object);
+      session = await markPayment(sb, object.metadata?.session_id || object.metadata?.booking_id || object.client_reference_id, stripeEvent, object);
       await notifyPaymentSuccess(sb, eventId, session);
     }
-    if (stripeEvent.type === 'checkout.session.async_payment_succeeded') {
-      const session = await markPayment(sb, object.metadata?.session_id || object.metadata?.booking_id || object.client_reference_id, stripeEvent, object);
+    else if (stripeEvent.type === 'checkout.session.async_payment_succeeded') {
+      session = await markPayment(sb, object.metadata?.session_id || object.metadata?.booking_id || object.client_reference_id, stripeEvent, object);
       await notifyPaymentSuccess(sb, eventId, session);
     }
-    if (stripeEvent.type === 'checkout.session.async_payment_failed') {
-      const session = await markPaymentProblem(sb, object, 'failed');
+    else if (stripeEvent.type === 'checkout.session.async_payment_failed') {
+      session = await markPaymentProblem(sb, object, 'failed', stripeEvent);
       await notifyPaymentFailure(sb, eventId, session);
     }
-    if (stripeEvent.type === 'checkout.session.expired') await markPaymentProblem(sb, object, 'expired');
-    if (stripeEvent.type === 'payment_intent.payment_failed') {
-      const session = await markPaymentProblem(sb, object, 'failed');
+    else if (stripeEvent.type === 'checkout.session.expired') session = await markPaymentProblem(sb, object, 'expired', stripeEvent);
+    else if (stripeEvent.type === 'payment_intent.payment_failed') {
+      session = await markPaymentProblem(sb, object, 'failed', stripeEvent);
       await notifyPaymentFailure(sb, eventId, session);
     }
-    if (stripeEvent.type === 'charge.refunded') {
-      const session = await reconcileRefund(sb, object);
+    else if (stripeEvent.type === 'charge.refunded') {
+      session = await reconcileRefund(sb, object, stripeEvent);
       await notifyRefund(sb, eventId, session);
     }
-    const { error: doneError } = await sb.from('stripe_webhook_events').update({ state: 'processed', processed_at: new Date().toISOString(), processing_error: null }).eq('id', eventId);
-    if (doneError) throw doneError;
-    return respond(200, { received: true });
+    else await processStripeEvent(sb, stripeEvent); // claim unsupported/unpaid events idempotently
+    const { data: finalized, error: doneError } = await sb.rpc('finalize_stripe_webhook_event', { p_event_id: eventId });
+    if (doneError || finalized !== true) throw doneError || new Error('Stripe event finalization failed.');
+    return respond(200, { received: true, duplicate: !!session?.duplicate });
   } catch (e) {
     console.error('[stripe-webhook]', eventId, e.message);
-    try { await sb.from('stripe_webhook_events').update({ state: 'failed', processing_error: String(e.message || e).slice(0, 2000), failed_at: new Date().toISOString() }).eq('id', eventId).neq('state', 'processed'); } catch { /* Stripe will retry */ }
     return respond(500, { error: 'Stripe event processing failed.' });
   }
 };
 
-exports._test = { verifyStripeSignature, markPayment, recordStripePayment, markPaymentProblem, claimEvent, reconcileRefund, notificationKey, sendStripeNotification, notifyPaymentSuccess, notifyRefund, notifyPaymentFailure };
+exports._test = { verifyStripeSignature, processStripeEvent, markPayment, markPaymentProblem, reconcileRefund, notificationKey, sendStripeNotification, notifyPaymentSuccess, notifyRefund, notifyPaymentFailure };

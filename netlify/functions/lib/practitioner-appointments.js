@@ -3,7 +3,6 @@ const {respond}=require('./auth');
 const {isCalendarEligible}=require('./google-calendar');
 const {easternInstant}=require('./business-time');
 const {isQaRecord}=require('./record-policy');
-const {isWebsiteBooking,isPaid}=require('./booking-state');
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 function calendarIntentStatus(session, action) {
   const hasEvent = Boolean(session?.google_calendar_event_id);
@@ -26,14 +25,15 @@ async function change(sb,session,body,actor){
  if(!['reschedule','cancel'].includes(body.action))return respond(400,{error:'Unsupported appointment action.'});
  if(body.action==='reschedule'&&!easternInstant(body.new_date,body.new_time))return respond(400,{error:'Enter a valid, unambiguous Eastern date and time.'});
  if(!body.expected_date||!body.expected_time)return respond(400,{error:'Reload the appointment before changing it.'});
- const {data,error}=await sb.rpc('practitioner_appointment_change',{p_id:session.id,p_action:body.action,p_expected_date:body.expected_date,p_expected_time:body.expected_time,p_date:body.action==='reschedule'?body.new_date:null,p_time:body.action==='reschedule'?body.new_time:null,p_actor:actor,p_reason:String(body.reason||'').slice(0,500),p_request:body.request_id,p_slot:body.new_slot_id||null});
- if(error)return respond(409,{error:'The appointment could not be changed. Reload and check that the destination is available.'});
+ const requestId=body.request_id;
+ const correlationId=require('crypto').randomUUID();
+ const trustedActor=actor;
+ if(!trustedActor||!['practitioner','client'].includes(trustedActor.actor_type)||!trustedActor.actor_id||!trustedActor.actor_email||!['dashboard','manage_appointment'].includes(trustedActor.source))return respond(401,{error:'Verified appointment actor is required.'});
+ const {data,error}=await sb.rpc('practitioner_appointment_change',{p_id:session.id,p_action:body.action,p_expected_date:body.expected_date,p_expected_time:body.expected_time,p_date:body.action==='reschedule'?body.new_date:null,p_time:body.action==='reschedule'?body.new_time:null,p_actor_type:trustedActor.actor_type,p_actor_id:trustedActor.actor_id,p_actor_email:trustedActor.actor_email,p_source:trustedActor.source,p_request_path:trustedActor.request_path,p_reason:String(body.reason||'').slice(0,500),p_request:requestId,p_correlation:correlationId,p_slot:body.new_slot_id||null});
+ if(error){console.error('[practitioner-appointments] mutation failed',JSON.stringify({session_id:session.id,correlation_id:correlationId,source:trustedActor.source}));return respond(409,{error:'The appointment could not be changed. Reload and check that the destination is available.'});}
+ const persistedCorrelationId=data?.correlation_id||correlationId;
+ console.info('[practitioner-appointments] mutation',JSON.stringify({session_id:session.id,correlation_id:persistedCorrelationId,actor_type:trustedActor.actor_type,source:trustedActor.source,action:body.action}));
  const nextSession = data?.session || {};
- if(body.action==='reschedule'&&isWebsiteBooking(session)&&!isPaid(session)&&typeof sb.from==='function'){
-  const {data: gated,error:gatedError}=await sb.from('sessions').update({status:'pending',booking_status:'payment_required',google_calendar_status:'not_requested'}).eq('id',session.id).neq('payment_status','paid').select().single();
-  if(gatedError)return respond(500,{error:'The unpaid website appointment was rescheduled but its payment gate could not be enforced.'});
-  nextSession.status=gated.status; nextSession.booking_status=gated.booking_status; nextSession.google_calendar_status=gated.google_calendar_status;
- }
  const calendar_status = nextSession.google_calendar_status || calendarIntentStatus(nextSession, body.action);
  return respond(200,{...data,[body.action==='cancel'?'cancelled':'rescheduled']:true,communication_status:'Queued subject to contact and communication policy',calendar_status});
 }
@@ -48,9 +48,10 @@ async function retryCalendar(sb,session,body,actor){
   return respond(409,{error:'This appointment has no retryable Calendar failure.'});
  }
  const next=session.google_calendar_event_id?'reschedule_pending':'pending';
- const {data,error}=await sb.from('sessions').update({google_calendar_status:next,google_calendar_error:null}).eq('id',session.id).in('google_calendar_status',retryable).select().maybeSingle();
- if(error) return respond(409,{error:'The Calendar retry could not be queued. Reload and try again.'});
- if(!data)return respond(200,{session,calendar_status:session.google_calendar_status,duplicate:true});
- return respond(200,{session:data,retried:true,calendar_status:next,request_id:body.request_id,actor});
+ if(!actor||actor.actor_type!=='practitioner'||actor.source!=='dashboard'||!actor.actor_id||!actor.actor_email)return respond(401,{error:'Verified practitioner context is required.'});
+ const correlationId=require('crypto').randomUUID();
+ const {data:result,error}=await sb.rpc('practitioner_update_session_with_audit',{p_id:session.id,p_updates:{google_calendar_status:next,google_calendar_error:null},p_actor_id:actor.actor_id,p_actor_email:actor.actor_email,p_request:correlationId,p_request_path:'/.netlify/functions/sessions'});
+ if(error||!result?.session)return respond(409,{error:'The Calendar retry could not be queued. Reload and try again.'});
+ return respond(200,{session:result.session,retried:true,calendar_status:next,request_id:body.request_id,correlation_id:correlationId});
 }
 module.exports={change,retryCalendar};

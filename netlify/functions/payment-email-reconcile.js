@@ -29,8 +29,15 @@ async function processPayments({ sb, env = process.env, now = () => new Date() }
     for (const row of rows.filter(item => item.status === 'matched' && item.confidence === 'high' && item.matched_session_id)) {
       const itemLookup = await sb.from('payment_reconciliation_items').select('id').eq('provider_reference_key', `${row.provider}:${row.provider_reference_id}`.toLowerCase()).maybeSingle();
       if (itemLookup.error || !itemLookup.data?.id) continue;
-      const result = await sb.rpc('payment_reconciliation_attach', { p_item_id: itemLookup.data.id, p_session_id: row.matched_session_id, p_actor: 'payment-email-reconcile', p_mode: 'automatic' });
-      if (!result.error && result.data?.status === 'attached') attached += 1;
+      const correlationId = require('crypto').randomUUID();
+      console.info('[payment-email-reconcile] attach attempt', JSON.stringify({ reconciliation_id: itemLookup.data.id, session_id: row.matched_session_id, correlation_id: correlationId, actor_type: 'system', source: 'payment_email_reconcile' }));
+      const result = await sb.rpc('payment_reconciliation_attach_with_audit', {
+        p_item_id: itemLookup.data.id, p_session_id: row.matched_session_id,
+        p_actor_type: 'system', p_actor_id: 'payment-email-reconcile', p_actor_email: null,
+        p_source: 'payment_email_reconcile', p_correlation_id: correlationId,
+        p_request_path: '/.netlify/functions/payment-email-reconcile',
+      });
+      if (!result.error && result.data?.status === 'attached' && !result.data?.idempotent) attached += 1;
     }
   }
   const latest = messages.map(message => message.internalDate).filter(Boolean).sort().at(-1) || checkpoint?.last_message_at || now().toISOString();

@@ -137,6 +137,9 @@
       html += sectionHead('Revenue');
       html += '<div class="fc-kpi-row">';
       html += kpi('Total Revenue',       fmtMoney(r.total),       'green');
+      html += kpi('Service Revenue',     fmtMoney(r.serviceRevenue), 'green');
+      html += kpi('Tips',                fmtMoney(r.tips),        'green');
+      html += kpi('Total Collected',     fmtMoney(r.totalCollected));
       html += kpi('Monthly Revenue',     fmtMoney(r.monthly),     r.monthly > 0 ? 'green' : '');
       html += kpi('Outstanding',         fmtMoney(r.outstanding), r.outstanding > 0 ? 'amber' : 'green',
                   'unpaid / partial sessions');
@@ -547,16 +550,24 @@
     if (!client.trim()) { msg.style.color = '#ee7070'; msg.textContent = 'Client name is required.'; return; }
     if (!desc.trim())   { msg.style.color = '#ee7070'; msg.textContent = 'Description is required.'; return; }
     msg.textContent = 'Saving…'; msg.style.color = 'rgba(176,158,248,.6)';
+    var ledgerRequest = {
+      client_name: client.trim(), entry_type: type, amount: parseFloat(amount) || 0,
+      description: desc.trim(), entry_date: date || undefined, notes: notes || undefined,
+    };
+    var ledgerSignature = JSON.stringify(ledgerRequest);
+    if (msg.dataset.idempotencySignature !== ledgerSignature) {
+      msg.dataset.idempotencyKey = crypto.randomUUID();
+      msg.dataset.idempotencySignature = ledgerSignature;
+    }
+    var idempotencyKey = msg.dataset.idempotencyKey;
 
     try {
       await api('/financial?action=create_ledger', { method: 'POST', body: JSON.stringify({
-        client_name:  client.trim(),
-        entry_type:   type,
-        amount:       parseFloat(amount) || 0,
-        description:  desc.trim(),
-        entry_date:   date || undefined,
-        notes:        notes || undefined,
+        idempotency_key: idempotencyKey,
+        ...ledgerRequest,
       })});
+      delete msg.dataset.idempotencyKey;
+      delete msg.dataset.idempotencySignature;
       msg.style.color = '#22c98a'; msg.textContent = 'Entry saved.';
       fcToggleForm('ledger-form');
       setTimeout(renderLedger, 400);
@@ -737,15 +748,33 @@
     if (!amtStr) return;
     var amt = parseFloat(amtStr);
     if (isNaN(amt) || amt <= 0) { alert('Invalid amount.'); return; }
+    var excessAllocation = null;
+    if (amt > balance) {
+      var allocationChoice = prompt('The payment exceeds the outstanding balance. Allocate the excess as “tip” or “client credit”?', 'tip');
+      if (allocationChoice === null) return;
+      excessAllocation = allocationChoice.trim().toLowerCase();
+    }
+    if (excessAllocation && !['tip', 'client credit', 'client_credit'].includes(excessAllocation)) { alert('Choose tip or client credit.'); return; }
+    if (excessAllocation) excessAllocation = excessAllocation === 'tip' ? 'tip' : 'client_credit';
     btn.disabled = true; btn.textContent = '…';
+    var paymentSignature = JSON.stringify({ invoice_id: invId, client_id: clientId, amount: amt, excess_allocation: excessAllocation });
+    if (btn.dataset.idempotencySignature !== paymentSignature) {
+      btn.dataset.idempotencyKey = crypto.randomUUID();
+      btn.dataset.idempotencySignature = paymentSignature;
+    }
+    var idempotencyKey = btn.dataset.idempotencyKey;
     try {
       await api('/financial?action=record_payment', { method: 'POST', body: JSON.stringify({
+        idempotency_key: idempotencyKey,
         client_id:   clientId,
         client_name: clientName,
         invoice_id:  invId,
         amount:      amt,
+        excess_allocation: excessAllocation,
         description: 'Payment received for invoice',
       })});
+      delete btn.dataset.idempotencyKey;
+      delete btn.dataset.idempotencySignature;
       renderInvoices();
     } catch (e) { btn.disabled = false; btn.textContent = 'Record Payment'; alert(e.message); }
   };
@@ -763,6 +792,9 @@
       // Top KPIs
       html += '<div class="fc-kpi-row">';
       html += kpi('Total Revenue',          fmtMoney(data.totalRevenue),                      'green');
+      html += kpi('Service Revenue',        fmtMoney(data.serviceRevenue),                    'green');
+      html += kpi('Tips',                   fmtMoney(data.tipRevenue),                        'green');
+      html += kpi('Total Collected',        fmtMoney(data.totalCollected));
       html += kpi('Avg Client Value',       fmtMoney(data.avgClientValue));
       html += kpi('Package Completion',     (data.packages && data.packages.completionRate) + '%');
       html += kpi('Unused Package Value',   fmtMoney(data.packages && data.packages.unusedValue), 'amber',

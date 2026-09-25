@@ -1,9 +1,11 @@
 'use strict';
 
+const crypto = require('crypto');
 const { respond }     = require('./lib/auth');
 const { getClient }   = require('./lib/supabase');
 const { findService } = require('./lib/services');
 const { createAppointmentToken } = require('./lib/appointment-token');
+const { isWebsiteBooking, completeWebsiteDetails, attachServiceAddress } = require('./lib/booking-state');
 
 const SITE_URL = process.env.SITE_URL || 'https://www.daronroyal.com';
 
@@ -61,19 +63,29 @@ exports.handler = async function(event) {
   if (!sessionId) return respond(400, { error: 'Booking ID is required to start payment.' });
 
   const sb = getClient();
-  const { data: session, error } = await sb
+  const { data: rawSession, error } = await sb
     .from('sessions')
-    .select('id, client_id, client_name, service, session_date, session_time, duration_minutes, amount_due, amount_paid, payment_status, waiver_status, waiver_completed')
+    .select('id, client_id, client_name, client_email, client_phone, service, session_date, session_time, duration_minutes, location_type, source, status, booking_status, payment_hold_expires_at, amount_due, amount_paid, payment_status, waiver_status, waiver_completed')
     .eq('id', sessionId)
     .single();
 
-  if (error || !session) return respond(404, { error: 'Booking was not found.' });
+  if (error || !rawSession) return respond(404, { error: 'Booking was not found.' });
+  let session=rawSession;
+  if(['in_person','in-person'].includes(String(session.location_type||'').toLowerCase())){
+    const {data:address,error:addressError}=await sb.from('session_service_addresses').select('address_line1,address_line2,city,state,postal_code,country').eq('session_id',session.id).maybeSingle();
+    if(addressError)return respond(503,{error:'Unable to verify the in-person service address.'});
+    session=attachServiceAddress(session,address);
+  }
 
   if (String(session.payment_status || '').toLowerCase() === 'paid') {
     return respond(409, {
       paid: true,
       error: 'This booking is already paid.',
     });
+  }
+
+  if (isWebsiteBooking(session) && (String(session.status || '').toLowerCase() !== 'pending' || !session.payment_hold_expires_at || Date.parse(session.payment_hold_expires_at) <= Date.now() || !completeWebsiteDetails(session))) {
+    return respond(409, { error: 'This booking request is incomplete or its payment hold has expired. Please submit a new request.' });
   }
 
   if (!isWaiverDone(session)) {
@@ -129,14 +141,21 @@ exports.handler = async function(event) {
 
   try {
     const checkout = await stripePost('/checkout/sessions', params);
-    const { error: updateError } = await sb.from('sessions').update({
+    const correlationId = crypto.randomUUID();
+    const { data: mutation, error: updateError } = await sb.rpc('trusted_session_update_with_audit', {
+      p_id: sessionId,
+      p_updates: {
       payment_status: 'pending',
       booking_status: 'payment_pending',
       stripe_checkout_session_id: checkout.id,
-      payment_currency: 'usd',
       updated_at: new Date().toISOString(),
-    }).eq('id', sessionId);
-    if (updateError) throw updateError;
+      },
+      p_actor_type: 'system', p_actor_id: 'stripe-checkout', p_actor_email: null,
+      p_source: 'stripe-checkout', p_action: 'checkout_session_created',
+      p_correlation_id: correlationId, p_request_path: '/.netlify/functions/create-stripe-checkout',
+    });
+    if (updateError || !mutation?.session) throw updateError || new Error('Checkout state was not committed.');
+    console.info('[create-stripe-checkout] appointment mutation', JSON.stringify({ session_id: sessionId, correlation_id: correlationId, actor_type: 'system', source: 'stripe-checkout', action: 'checkout_session_created' }));
 
     return respond(200, {
       url: checkout.url,

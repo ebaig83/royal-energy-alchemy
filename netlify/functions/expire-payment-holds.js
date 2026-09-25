@@ -9,5 +9,8 @@ exports.handler = async function () {
     console.error('[expire-payment-holds] Worker failed:', error.message);
     return { statusCode: 500, body: JSON.stringify({ expired: false }) };
   }
+  for (const action of data?.actions || []) {
+    console.info('[expire-payment-holds] appointment mutation', JSON.stringify({ session_id: action.session_id, correlation_id: action.correlation_id, actor_type: 'system', source: 'expire-payment-holds', action: 'payment_hold_expired' }));
+  }
   return { statusCode: 200, body: JSON.stringify({ expired: true, count: Number(data?.expired_count || 0) }) };
 };

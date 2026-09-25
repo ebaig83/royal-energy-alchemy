@@ -79,18 +79,17 @@ test('availability checks have no communications or payment side effects', () =>
 
 test('silent importer is authenticated, session-only, and has no communications or payment workflow imports', () => {
   assert.match(importSource, /requireAdmin\(event\)/);
-  assert.match(importSource, /from\('sessions'\)[\s\S]*\.insert\(row\)/);
+  assert.match(importSource, /practitioner_create_session_with_audit/);
+  assert.doesNotMatch(importSource, /from\('sessions'\)\s*\.insert/);
   assert.doesNotMatch(importSource, /from\('availability_slots'\)|require\([^)]*(comms|stripe|payment|refund)/i);
 });
 
-test('booking flow independently rejects conflicts before creating a session', () => {
+test('booking flow independently rejects conflicts before calling the atomic booking RPC', () => {
   const conflictIndex = bookingSource.indexOf('findSessionConflicts');
-  const sessionInsertPattern = /\.from\('sessions'\)\r?\n\s*\.insert/;
-  assert.match(".from('sessions')\n  .insert", sessionInsertPattern);
-  assert.match(".from('sessions')\r\n  .insert", sessionInsertPattern);
-  const sessionInsertMatch = sessionInsertPattern.exec(bookingSource);
-  const sessionInsertIndex = sessionInsertMatch ? sessionInsertMatch.index : -1;
-  assert.ok(conflictIndex >= 0 && sessionInsertIndex > conflictIndex);
+  const bookingRpcIndex = bookingSource.indexOf("rpc('create_website_booking_with_audit'");
+  assert.ok(conflictIndex >= 0 && bookingRpcIndex > conflictIndex);
+  assert.match(bookingSource, /create_website_booking_with_audit/);
+  assert.doesNotMatch(bookingSource, /from\('sessions'\)\s*\.insert/);
   assert.match(bookingSource, /This time is no longer available/);
 });
 

@@ -2,6 +2,7 @@
 
 const { requireAdmin, respond } = require('./lib/auth');
 const { getClient } = require('./lib/supabase');
+const crypto = require('crypto');
 
 const SAFE_FIELDS = 'id,provider,provider_reference_id,payer_display_name,payer_email,payer_phone,amount,transaction_at,memo,recipient_context,detected_at,status,confidence,match_reason,candidate_matches,matched_client_id,matched_session_id,amount_applied,auto_attached,resolved_at,resolved_by,resolution_note';
 const VALID_ACTIONS = new Set(['attach', 'unrelated', 'ignore_duplicate']);
@@ -33,9 +34,15 @@ exports.handler = async event => {
   let body;
   try { body = JSON.parse(event.body || '{}'); } catch { return respond(400, { error: 'Invalid JSON.' }); }
   if (!VALID_ACTIONS.has(body.action) || !body.id) return respond(400, { error: 'A reconciliation action and item id are required.' });
+  const correlationId = crypto.randomUUID();
   if (body.action === 'attach') {
     if (!body.session_id) return respond(400, { error: 'A target session is required.' });
-    const { data, error } = await sb.rpc('payment_reconciliation_attach', { p_item_id: body.id, p_session_id: body.session_id, p_actor: auth.user.email, p_mode: 'manual' });
+    const { data, error } = await sb.rpc('payment_reconciliation_attach_with_audit', {
+      p_item_id: body.id, p_session_id: body.session_id,
+      p_actor_type: 'practitioner', p_actor_id: auth.user.id, p_actor_email: auth.user.email,
+      p_source: 'dashboard', p_correlation_id: correlationId,
+      p_request_path: '/.netlify/functions/payment-reconciliation',
+    });
     if (error) {
       const message = String(error.message || '');
       const safe = /amount_conflict|stripe|not_found|not_payable|session_not_found/.test(message) ? message : 'The payment could not be attached safely.';
@@ -44,9 +51,11 @@ exports.handler = async event => {
     return respond(200, { result: data });
   }
   const nextStatus = body.action === 'unrelated' ? 'unrelated' : 'duplicate';
-  const { data: item, error: itemError } = await sb.from('payment_reconciliation_items').update({ status: nextStatus, resolved_at: new Date().toISOString(), resolved_by: auth.user.email, resolution_note: body.note ? String(body.note).slice(0, 500) : null }).eq('id', body.id).in('status', ['needs_reconciliation', 'matched']).select(SAFE_FIELDS).maybeSingle();
-  if (itemError) return respond(500, { error: 'The reconciliation item could not be updated.' });
-  if (!item) return respond(200, { duplicate: true, status: nextStatus });
-  await sb.from('payment_reconciliation_audit').insert({ reconciliation_id: item.id, action: nextStatus, actor: auth.user.email, provider: item.provider, provider_reference_id: item.provider_reference_id, matched_client_id: item.matched_client_id, matched_session_id: item.matched_session_id, match_confidence: item.confidence, match_reason: item.match_reason });
-  return respond(200, { item: { id: item.id, status: nextStatus } });
+  const { data, error } = await sb.rpc('practitioner_decide_payment_reconciliation_item_with_audit', {
+    p_item_id: body.id, p_action: nextStatus, p_note: body.note ? String(body.note).slice(0, 500) : null,
+    p_actor_id: auth.user.id, p_actor_email: auth.user.email, p_correlation_id: correlationId,
+    p_request_path: '/.netlify/functions/payment-reconciliation',
+  });
+  if (error) return respond(409, { error: 'The reconciliation item could not be updated safely.' });
+  return respond(200, { item: { id: body.id, status: data?.status || nextStatus }, duplicate: Boolean(data?.idempotent) });
 };

@@ -9,24 +9,29 @@ const { isSilentPlannerImport } = require('./lib/record-policy');
 const { sendWithPreferences } = require('./lib/comms');
 const { pickTemplate } = require('./lib/followup-templates');
 const { sessionStart, isActiveSession, isDue, followupDue, followupUrl } = require('./lib/session-communications');
+const { isWebsiteBooking, attachServiceAddress } = require('./lib/booking-state');
 
 async function processDue({ sb, now = new Date(), send = sendWithPreferences } = {}) {
   if (!sb) throw new Error('Supabase client is required');
   const from = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const to = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const { data: sessions, error } = await sb.from('sessions')
-    .select('id, client_id, client_name, service, session_date, session_time, duration_minutes, status, google_meet_url, source')
+    .select('id, client_id, client_name, client_email, client_phone, service, session_date, session_time, duration_minutes, status, booking_status, payment_status, waiver_status, waiver_completed, location_type, google_meet_url, source')
     .gte('session_date', from).lte('session_date', to);
   if (error) throw error;
+  const inPersonIds=(sessions||[]).filter(s=>isWebsiteBooking(s)&&['in_person','in-person'].includes(String(s.location_type||'').toLowerCase())).map(s=>s.id);
+  let addressBySession=new Map();
+  if(inPersonIds.length){const {data:addresses,error:addressError}=await sb.from('session_service_addresses').select('session_id,address_line1,address_line2,city,state,postal_code,country').in('session_id',inPersonIds);if(addressError)throw addressError;addressBySession=new Map((addresses||[]).map(a=>[a.session_id,a]));}
+  const eligibleSessions=(sessions||[]).map(s=>attachServiceAddress(s,addressBySession.get(s.id)));
   const sent = [], skipped = [], failed = [];
-  for (const session of sessions || []) {
+  for (const session of eligibleSessions) {
     try {
     if (isSilentPlannerImport(session)) { skipped.push({ id: session.id, reason: 'silent_planner_import' }); continue; }
-    if (!isActiveSession(session)) { skipped.push({ id: session.id, reason: 'inactive' }); continue; }
     const start = sessionStart(session);
     const reminder = isDue(start, now, 30);
     const followup = followupDue(session, now);
     if (!reminder && !followup) continue;
+    if (!isActiveSession(session,{allowCompletedWebsiteFollowup:followup&&!reminder})) { skipped.push({ id: session.id, reason: 'inactive_or_unconfirmed' }); continue; }
     const kind = reminder ? 'reminder' : 'followup';
     const messageType = reminder ? 'appointment_reminder' : 'followup_reminder';
     const templateName = reminder ? 'session_30_minute_reminder' : 'session_72_hour_followup';

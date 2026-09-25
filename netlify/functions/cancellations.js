@@ -34,17 +34,7 @@ exports.handler = async function(event) {
     // Calculate refund eligibility server-side
     const refund = calcRefund(body.appointment_date, body.appointment_time);
 
-    // Try to find matching session by email + date
-    let session_id = null;
-    const { data: sessions } = await sb
-      .from('sessions')
-      .select('id')
-      .eq('session_date', body.appointment_date)
-      .ilike('client_name', `%${client_name.split(' ')[0]}%`)
-      .in('status', ['pending', 'confirmed'])
-      .limit(1);
-    if (sessions && sessions.length) session_id = sessions[0].id;
-
+    const correlationId=require('crypto').randomUUID();
     const insert = {
       client_name:       body.client_name,
       email:             body.email,
@@ -60,28 +50,22 @@ exports.handler = async function(event) {
       refund_eligible:   refund.eligible,
       refund_estimate:   refund.estimate,
       refund_pct:        refund.pct,
-      session_id,
       status:            'pending',
     };
-
-    const { data, error } = await sb.from('cancellation_requests').insert(insert).select().single();
-    if (error) return respond(500, { error: error.message });
-
-    // Mark linked session as cancellation requested
-    if (session_id) {
-      await sb.from('sessions').update({
-        cancel_reason:       body.reason,
-        cancel_requested_at: new Date().toISOString(),
-      }).eq('id', session_id);
-    }
+    const {data:created,error}=await sb.rpc('create_client_cancellation_request_with_audit',{
+      p_request:insert,p_correlation_id:correlationId,p_request_path:'/.netlify/functions/cancellations',
+    });
+    if(error||!created?.request)return respond(500,{error:'Cancellation request could not be recorded.'});
+    const data=created.request;
+    console.info('[cancellations] request recorded',JSON.stringify({request_id:data.id,correlation_id:correlationId,actor_type:'unknown',source:'public_cancellation_form'}));
 
     await log({
-      actor:     body.email,
+      actor:     'public_cancellation_form',
       action:    'created',
       tableName: 'cancellation_requests',
       recordId:  data.id,
       newData:   data,
-      context:   `Client cancellation request from ${body.client_name} for ${body.appointment_date}`,
+      context:   `Cancellation request submitted for ${body.appointment_date}; correlation ${correlationId}`,
       ip,
     });
 
@@ -124,51 +108,16 @@ exports.handler = async function(event) {
     const { data: old } = await sb.from('cancellation_requests').select('*').eq('id', params.id).single();
     if (!old) return respond(404, { error: 'Request not found.' });
 
-    const allowed = ['status','admin_notes','refund_approved_amt'];
-    const updates = {};
-    allowed.forEach(k => { if (body[k] !== undefined) updates[k] = body[k]; });
-
-    if (body.status && ['approved','denied','rescheduled','no_show'].includes(body.status)) {
-      updates.approved_by = auth.user.email;
-      updates.approved_at = new Date().toISOString();
-    }
-
-    const { data, error } = await sb.from('cancellation_requests').update(updates).eq('id', params.id).select().single();
-    if (error) return respond(500, { error: error.message });
-
-    // Cascade to the linked session
-    if (old.session_id) {
-      const sessionUpdates = {};
-
-      if (body.status === 'approved') {
-        sessionUpdates.status         = 'cancelled';
-        sessionUpdates.cancel_reason  = old.reason;
-        if (body.refund_approved_amt != null) {
-          sessionUpdates.refund_status = body.refund_approved_amt > 0 ? 'approved' : 'denied';
-          sessionUpdates.refund_amount = body.refund_approved_amt;
-          sessionUpdates.payment_status = 'refunded';
-        }
-      } else if (body.status === 'no_show') {
-        sessionUpdates.status        = 'no_show';
-        sessionUpdates.cancel_reason = 'No-show / no-call';
-        sessionUpdates.refund_status = 'denied';
-      } else if (body.status === 'denied') {
-        sessionUpdates.refund_status = 'denied';
-      }
-
-      if (Object.keys(sessionUpdates).length) {
-        await sb.from('sessions').update(sessionUpdates).eq('id', old.session_id);
-      }
-    }
-
-    // Release the availability slot back to available when cancellation approved
-    if (body.status === 'approved' && old.appointment_date && old.appointment_time) {
-      const timeNorm = old.appointment_time.slice(0,8);
-      await sb.from('availability_slots')
-        .update({ status: 'available', session_id: null })
-        .eq('slot_date', old.appointment_date)
-        .eq('slot_time', timeNorm);
-    }
+    const correlationId=require('crypto').randomUUID();
+    const {data:decision,error}=await sb.rpc('practitioner_decide_cancellation_request',{
+      p_request_id:params.id,p_status:body.status,p_admin_notes:body.admin_notes||null,
+      p_refund_amount:body.refund_approved_amt==null?null:Number(body.refund_approved_amt),
+      p_actor_id:auth.user.id,p_actor_email:auth.user.email,p_correlation_id:correlationId,
+      p_request_path:'/.netlify/functions/cancellations',
+    });
+    if(error||!decision?.request)return respond(409,{error:'Cancellation request could not be finalized. Reload and review its current state.'});
+    const data=decision.request;
+    console.info('[cancellations] appointment mutation',JSON.stringify({session_id:decision.session?.id||null,correlation_id:correlationId,actor_type:'practitioner',source:'dashboard',action:body.status}));
 
     await log({
       actor:     auth.user.email,
@@ -177,7 +126,7 @@ exports.handler = async function(event) {
       recordId:  params.id,
       oldData:   old,
       newData:   data,
-      context:   `Cancellation request ${body.status} for ${old.client_name} on ${old.appointment_date}`,
+      context:   `Cancellation request ${body.status}; correlation ${correlationId}`,
       ip,
     });
 

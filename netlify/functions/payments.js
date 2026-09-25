@@ -2,14 +2,23 @@
 // GET    ?session_id=uuid  — payments for a session
 // GET    ?client_id=uuid   — all payments for a client
 // GET    ?unpaid=1         — sessions with unpaid/partial payment
-// POST                     — record a payment, update session.payment_status
+// POST                     — record a payment (requires idempotency_key UUID)
 // PATCH  ?id=uuid          — edit/correct a payment record
 
 const { requireAdmin, respond } = require('./lib/auth');
 const { getClient }             = require('./lib/supabase');
 const { log }                   = require('./lib/audit');
-const { isCalendarEligible }    = require('./lib/record-policy');
-const { isWebsiteBooking }      = require('./lib/booking-state');
+const crypto                    = require('crypto');
+
+function requestCorrelationId(body) {
+  const requested = String(body?.idempotency_key || '').trim();
+  if (requested && !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(requested)) return null;
+  return requested || crypto.randomUUID();
+}
+
+function hasIdempotencyKey(body) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(body?.idempotency_key || '').trim());
+}
 
 exports.handler = async function(event) {
   if (event.httpMethod === 'OPTIONS') return respond(200, {});
@@ -78,16 +87,13 @@ exports.handler = async function(event) {
     let body;
     try { body = JSON.parse(event.body || '{}'); } catch { return respond(400, { error: 'Invalid JSON.' }); }
 
-    if (!body.amount || isNaN(body.amount)) return respond(400, { error: 'amount is required.' });
+    if (!hasIdempotencyKey(body)) return respond(400, { error: 'A UUID idempotency_key is required for payment creation.' });
+    if (!Number.isFinite(Number(body.amount)) || Number(body.amount) <= 0) return respond(400, { error: 'A positive amount is required.' });
     if (!body.session_id && !body.client_id) return respond(400, { error: 'session_id or client_id is required.' });
-    if (body.session_id) {
-      const { data: targetSession } = await sb.from('sessions').select('id,source').eq('id', body.session_id).single();
-      if (isWebsiteBooking(targetSession)) return respond(409, { error: 'Website bookings become paid only through verified Stripe webhook processing.' });
-    }
-
-    const { data: payment, error: payErr } = await sb
-      .from('payments')
-      .insert({
+    if (String(body.method || '').toLowerCase() === 'stripe') return respond(400, { error: 'Stripe payments can only be recorded by verified webhook processing.' });
+    const correlationId = requestCorrelationId(body);
+    if (!correlationId) return respond(400, { error: 'idempotency_key must be a valid UUID.' });
+    const paymentInput = {
         session_id:   body.session_id   || null,
         client_id:    body.client_id    || null,
         client_name:  body.client_name  || null,
@@ -96,36 +102,26 @@ exports.handler = async function(event) {
         reference_id: body.reference_id || null,
         status:       body.status       || 'received',
         notes:        body.notes        || null,
+        excess_allocation: body.excess_allocation || null,
         paid_at:      body.paid_at      || new Date().toISOString(),
-      })
-      .select()
-      .single();
-
-    if (payErr) return respond(500, { error: payErr.message });
-
-    // Update session.amount_paid and payment_status
+    };
+    let payment;
     if (body.session_id) {
-      const { data: session } = await sb
-        .from('sessions')
-        .select('id,amount_due,amount_paid,service,session_date,session_time,location_type,status,source,google_calendar_status,google_calendar_event_id')
-        .eq('id', body.session_id)
-        .single();
-
-      if (session) {
-        const totalPaid = (session.amount_paid || 0) + parseFloat(body.amount);
-        const due       = session.amount_due || 0;
-        const newStatus = totalPaid >= due && due > 0 ? 'paid' : totalPaid > 0 ? 'partial' : 'unpaid';
-        if (isWebsiteBooking(session) && newStatus === 'paid') return respond(409, { error: 'Website bookings become paid only through verified Stripe webhook processing.' });
-
-        const sessionPatch = { amount_paid: totalPaid, payment_status: newStatus };
-        if (newStatus === 'paid' && isCalendarEligible({ ...session, payment_status: newStatus }) && !session.google_calendar_event_id && session.google_calendar_status === 'not_requested') {
-          sessionPatch.google_calendar_status = 'pending';
-          sessionPatch.google_calendar_error = null;
-        }
-        await sb.from('sessions')
-          .update(sessionPatch)
-          .eq('id', body.session_id);
-      }
+      const {data:recorded,error:recordError}=await sb.rpc('practitioner_record_manual_payment_with_audit',{
+        p_session_id:body.session_id,p_payment:paymentInput,p_actor_id:auth.user.id,p_actor_email:auth.user.email,
+        p_correlation_id:correlationId,p_request_path:'/.netlify/functions/payments',
+      });
+      if(recordError||!recorded?.payment)return respond(409,{error:'The payment could not be recorded against this appointment. Reload and review its current state.'});
+      payment=recorded.payment;
+      console.info('[payments] appointment mutation',JSON.stringify({session_id:body.session_id,correlation_id:correlationId,actor_type:'practitioner',source:'dashboard',action:'manual_payment_recorded'}));
+    } else {
+      const { data:recorded,error:recordError }=await sb.rpc('practitioner_create_standalone_payment_with_audit',{
+        p_payment:paymentInput,p_actor_id:auth.user.id,p_actor_email:auth.user.email,
+        p_correlation_id:correlationId,p_request_path:'/.netlify/functions/payments',
+      });
+      if(recordError||!recorded?.payment)return respond(409,{error:'The standalone payment could not be recorded. Reload and verify its current state.'});
+      payment=recorded.payment;
+      console.info('[payments] standalone mutation',JSON.stringify({payment_id:payment.id,correlation_id:correlationId,actor_type:'practitioner',source:'dashboard',action:'standalone_payment_recorded'}));
     }
 
     await log({ actor: auth.user.email, action: 'created', tableName: 'payments', recordId: payment.id, newData: payment, context: `Recorded $${payment.amount} via ${payment.method} for ${payment.client_name || payment.client_id}`, ip });
@@ -139,14 +135,22 @@ exports.handler = async function(event) {
     let body;
     try { body = JSON.parse(event.body || '{}'); } catch { return respond(400, { error: 'Invalid JSON.' }); }
 
-    const allowed = ['amount','method','reference_id','status','notes','paid_at'];
+    const allowed = ['amount','method','reference_id','status','notes','paid_at','excess_allocation'];
     const updates = {};
     allowed.forEach(k => { if (body[k] !== undefined) updates[k] = body[k]; });
-
-    const { data, error } = await sb.from('payments').update(updates).eq('id', params.id).select().single();
-    if (error) return respond(500, { error: error.message });
-
-    await log({ actor: auth.user.email, action: 'updated', tableName: 'payments', recordId: params.id, newData: data, context: `Edited payment record`, ip });
+    if (!Object.keys(updates).length) return respond(400, { error: 'At least one payment field is required.' });
+    if (String(updates.method || '').toLowerCase() === 'stripe') return respond(400, { error: 'Stripe payment records cannot be edited manually.' });
+    if (updates.amount !== undefined && (!Number.isFinite(Number(updates.amount)) || Number(updates.amount) <= 0)) return respond(400, { error: 'Payment amount must be positive.' });
+    const correlationId = requestCorrelationId(body);
+    if (!correlationId) return respond(400, { error: 'idempotency_key must be a valid UUID.' });
+    const { data:recorded,error:recordError }=await sb.rpc('practitioner_update_payment_with_audit',{
+      p_payment_id:params.id,p_updates:updates,p_actor_id:auth.user.id,p_actor_email:auth.user.email,
+      p_correlation_id:correlationId,p_request_path:'/.netlify/functions/payments',
+    });
+    if(recordError||!recorded?.payment)return respond(409,{error:'The payment could not be updated. Stripe and session-linked payments require their authorized mutation workflow.'});
+    const data=recorded.payment;
+    console.info('[payments] payment mutation',JSON.stringify({payment_id:data.id,session_id:data.session_id||null,correlation_id:correlationId,actor_type:'practitioner',source:'dashboard',action:'payment_updated'}));
+    await log({ actor: auth.user.email, action: 'updated', tableName: 'payments', recordId: params.id, newData: data, context: `Edited payment record; correlation ${correlationId}`, ip });
     return respond(200, { payment: data });
   }
 

@@ -19,6 +19,7 @@ function publicCatalog() {
     price: service.price,
     priceNote: service.priceNote || null,
     duration: service.duration,
+    location_type: service.locationType || 'distance',
     publicBookable: true,
   }));
 }

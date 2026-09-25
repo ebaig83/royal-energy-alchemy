@@ -38,6 +38,8 @@
 const { requireAdmin, respond } = require('./lib/auth');
 const { getClient }             = require('./lib/supabase');
 const { log }                   = require('./lib/audit');
+const { receiptRows, summarizeReceipts } = require('./lib/payment-revenue');
+const crypto                    = require('crypto');
 
 // ── Package type catalogue ────────────────────────────────────────────────
 const PACKAGE_TYPES = {
@@ -84,6 +86,10 @@ async function safeOne(query, fallback = null) {
 }
 
 function userErr(msg) { const e = new Error(msg); e.name = 'UserError'; return e; }
+function validCorrelationId(value) {
+  const id = String(value || '').trim();
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id) ? id : null;
+}
 
 // ── Invoice number: timestamp-based, collision-resistant ─────────────────
 async function nextInvoiceNumber(sb) {
@@ -99,33 +105,33 @@ async function nextInvoiceNumber(sb) {
   return `INV-${year}-${String(existing + 1).padStart(3, '0')}`;
 }
 
-// ── Ledger write helper — centralises all ledger creation ────────────────
-// Called by every function that moves money. Non-fatal if ledger table
-// does not exist yet (pre-migration). Audit-logged.
-async function writeLedger(sb, entry) {
-  try {
-    const { data, error } = await sb.from('ledger_entries').insert({
-      client_id:          entry.client_id          || null,
-      client_name:        entry.client_name        || null,
-      entry_type:         entry.entry_type,
-      description:        entry.description,
-      amount:             Math.abs(parseFloat(entry.amount)),
-      balance_impact:     parseFloat(entry.balance_impact),
-      related_session_id: entry.related_session_id || null,
-      related_payment_id: entry.related_payment_id || null,
-      related_package_id: entry.related_package_id || null,
-      invoice_id:         entry.invoice_id         || null,
-      entry_date:         entry.entry_date         || new Date().toISOString().slice(0, 10),
-      notes:              entry.notes              || null,
-      created_by:         entry.created_by         || 'daron',
-    }).select().single();
-    if (error && error.code !== '42P01') throw error;
-    return data || null;
-  } catch (err) {
-    // Never let a ledger write failure break the main operation
-    console.error('[financial] ledger write failed:', err.message);
-    return null;
-  }
+// ── Ledger write helper — all rows go through a correlated audited RPC ──
+async function writeLedger(sb, entry, auth, correlationId = crypto.randomUUID()) {
+  if (!auth?.user?.id || !auth?.user?.email) throw new Error('An authenticated practitioner is required for ledger mutations.');
+  const ledgerEntry = {
+    client_id: entry.client_id || null,
+    client_name: entry.client_name || null,
+    entry_type: entry.entry_type,
+    description: entry.description,
+    amount: Math.abs(parseFloat(entry.amount)),
+    balance_impact: parseFloat(entry.balance_impact),
+    related_session_id: entry.related_session_id || null,
+    related_payment_id: entry.related_payment_id || null,
+    related_package_id: entry.related_package_id || null,
+    invoice_id: entry.invoice_id || null,
+    entry_date: entry.entry_date || null,
+    notes: entry.notes || null,
+  };
+  const { data, error } = await sb.rpc('practitioner_create_ledger_entry_with_audit', {
+    p_entry: ledgerEntry,
+    p_actor_id: auth.user.id,
+    p_actor_email: auth.user.email,
+    p_correlation_id: correlationId,
+    p_request_path: '/.netlify/functions/financial',
+  });
+  if (error || !data?.entry) throw error || new Error('Audited ledger transaction returned no entry.');
+  console.info('[financial] audited ledger mutation', JSON.stringify({ ledger_entry_id: data.entry.id, correlation_id: correlationId, actor_type: 'practitioner', source: 'dashboard' }));
+  return data.entry;
 }
 
 // ── Financial alert upsert (one active alert per type+client+package) ────
@@ -264,7 +270,7 @@ async function getOverview(sb) {
   // Existing tables — always available
   const [sessRes, payRes] = await Promise.all([
     sb.from('sessions').select('id, amount_due, amount_paid, payment_status, session_date, status'),
-    sb.from('payments').select('amount, paid_at, status'),
+    sb.from('payments').select('amount, tip_amount, client_credit_amount, correlation_id, paid_at, status'),
   ]);
   if (sessRes.error) throw new Error('sessions: ' + sessRes.error.message);
   if (payRes.error)  throw new Error('payments: ' + payRes.error.message);
@@ -273,18 +279,19 @@ async function getOverview(sb) {
   const payments = payRes.data  || [];
 
   // New financial tables — graceful fallback if migration not yet run
-  const [packages, ledger, invoices, alerts] = await Promise.all([
+  const [packages, ledger, invoices, alerts, receiptLedger] = await Promise.all([
     safeRows(sb.from('packages').select('*').is('deleted_at', null)),
     safeRows(sb.from('ledger_entries').select('entry_type,amount,balance_impact,entry_date').is('deleted_at', null).order('entry_date', { ascending: false }).limit(500)),
     safeRows(sb.from('invoices').select('id,status,total,amount_paid,due_date').is('deleted_at', null)),
     safeRows(sb.from('financial_alerts').select('id').eq('is_read', false)),
+    safeRows(sb.from('ledger_entries').select('entry_type,amount,tip_amount,client_credit_amount,correlation_id,related_payment_id,entry_date,deleted_at').eq('entry_type', 'payment').is('related_payment_id', null).is('deleted_at', null)),
   ]);
 
-  // Revenue from payments table (existing)
-  const totalRevenue   = payments.filter(p => p.status === 'received').reduce((s, p) => s + Number(p.amount), 0);
-  const monthlyRevenue = payments
-    .filter(p => p.status === 'received' && (p.paid_at || '').startsWith(`${y}-${m}`))
-    .reduce((s, p) => s + Number(p.amount), 0);
+  const receipts = receiptRows(payments, receiptLedger);
+  const totals = summarizeReceipts(receipts);
+  const monthlyTotals = summarizeReceipts(receipts.filter(p => (p.paid_at || p.entry_date || '').startsWith(`${y}-${m}`)));
+  const totalRevenue = totals.serviceRevenue + totals.tips;
+  const monthlyRevenue = monthlyTotals.serviceRevenue + monthlyTotals.tips;
 
   // Outstanding = sum of unpaid/partial sessions
   const outstanding = sessions
@@ -314,7 +321,10 @@ async function getOverview(sb) {
     .reduce((s, inv) => s + Number(inv.total || 0), 0);
 
   return {
-    revenue: { total: totalRevenue, monthly: monthlyRevenue, outstanding, packageRevenue },
+    revenue: { total: totalRevenue, monthly: monthlyRevenue, serviceRevenue: totals.serviceRevenue, tips: totals.tips,
+      totalCollected: totals.totalCollected, clientCredits: totals.clientCredits,
+      monthlyServiceRevenue: monthlyTotals.serviceRevenue, monthlyTips: monthlyTotals.tips,
+      outstanding, packageRevenue },
     packages: { active: activePackages, expiringSoon, utilizationRate, totalPackages: packages.length },
     invoices: { overdue, outstanding: outstandingInvAmt, paidThisMonth },
     alerts:   { unread: alerts.length },
@@ -367,19 +377,22 @@ async function getInvoices(sb, params) {
 async function getRevenue(sb) {
   const now = new Date();
 
-  const [payments, sessions, packages] = await Promise.all([
-    safeRows(sb.from('payments').select('amount, method, paid_at, status, client_id').eq('status', 'received').order('paid_at', { ascending: false }).limit(500)),
+  const [paymentRecords, receiptLedger, sessions, packages] = await Promise.all([
+    safeRows(sb.from('payments').select('amount, tip_amount, client_credit_amount, correlation_id, method, paid_at, status, client_id').eq('status', 'received').order('paid_at', { ascending: false }).limit(500)),
+    safeRows(sb.from('ledger_entries').select('entry_type,amount,tip_amount,client_credit_amount,correlation_id,related_payment_id,entry_date,deleted_at').eq('entry_type', 'payment').is('related_payment_id', null).is('deleted_at', null)),
     safeRows(sb.from('sessions').select('service, amount_due, amount_paid, payment_status, session_date, status')),
     safeRows(sb.from('packages').select('package_type,package_name,purchase_price,sessions_included,sessions_used,status,purchase_date').is('deleted_at', null)),
   ]);
+  const payments = receiptRows(paymentRecords, receiptLedger);
 
   // Monthly revenue last 12 months
   const monthlyBreakdown = Array.from({ length: 12 }, (_, i) => {
     const d   = new Date(now.getFullYear(), now.getMonth() - (11 - i), 1);
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-    const rev = payments.filter(p => (p.paid_at || '').startsWith(key))
-                        .reduce((s, p) => s + Number(p.amount), 0);
-    return { month: key, revenue: rev };
+    const monthRows = payments.filter(p => (p.paid_at || p.entry_date || '').startsWith(key));
+    const metric = summarizeReceipts(monthRows);
+    return { month: key, revenue: metric.serviceRevenue + metric.tips, serviceRevenue: metric.serviceRevenue,
+      tips: metric.tips, totalCollected: metric.totalCollected, clientCredits: metric.clientCredits };
   });
 
   // Revenue by payment method
@@ -404,7 +417,8 @@ async function getRevenue(sb) {
     const id = p.client_id || '_unknown';
     clientTotals[id] = (clientTotals[id] || 0) + Number(p.amount);
   });
-  const totalRevenue   = payments.reduce((s, p) => s + Number(p.amount), 0);
+  const revenueTotals = summarizeReceipts(payments);
+  const totalRevenue = revenueTotals.serviceRevenue + revenueTotals.tips;
   const clientCount    = Object.keys(clientTotals).length;
   const avgClientValue = clientCount > 0 ? Math.round((totalRevenue / clientCount) * 100) / 100 : 0;
 
@@ -421,6 +435,10 @@ async function getRevenue(sb) {
 
   return {
     totalRevenue,
+    serviceRevenue: revenueTotals.serviceRevenue,
+    tipRevenue: revenueTotals.tips,
+    totalCollected: revenueTotals.totalCollected,
+    clientCreditTotal: revenueTotals.clientCredits,
     monthlyBreakdown,
     byMethod,
     byService,
@@ -520,7 +538,7 @@ async function createPackage(sb, body, auth, ip) {
       related_package_id: pkg.id,
       entry_date:         purchaseDate,
       created_by:         auth.user.email || 'daron',
-    });
+    }, auth);
   }
 
   await log({ actor: auth.user.email, action: 'created', tableName: 'packages', recordId: pkg.id, newData: pkg,
@@ -579,6 +597,17 @@ async function createLedgerEntry(sb, body, auth, ip) {
 
   const VALID_TYPES = ['charge', 'payment', 'credit', 'refund', 'adjustment', 'write_off'];
   if (!VALID_TYPES.includes(body.entry_type)) throw new Error(`entry_type must be one of: ${VALID_TYPES.join(', ')}`);
+  if (body.entry_type === 'payment' && body.related_session_id) {
+    const idempotencyKey = validCorrelationId(body.idempotency_key);
+    if (!idempotencyKey) throw new Error('A UUID idempotency_key is required for payment entries.');
+    return recordPayment(sb, {
+      ...body,
+      session_id: body.related_session_id,
+      idempotency_key: idempotencyKey,
+    }, auth, ip);
+  }
+  const correlationId = validCorrelationId(body.idempotency_key);
+  if (!correlationId) throw userErr('A UUID idempotency_key is required for ledger entries.');
 
   const amount = Math.abs(parseFloat(body.amount));
   // charge → positive impact (increases what client owes)
@@ -599,9 +628,9 @@ async function createLedgerEntry(sb, body, auth, ip) {
     entry_date:         body.entry_date          || new Date().toISOString().slice(0, 10),
     notes:              body.notes               || null,
     created_by:         auth.user.email          || 'daron',
-  });
+  }, auth, correlationId);
 
-  if (!entry) throw new Error('Ledger table not yet created. Run the financial-ops SQL migration first.');
+  if (!entry) throw new Error('The audited ledger transaction returned no entry.');
 
   await log({ actor: auth.user.email, action: 'created', tableName: 'ledger_entries', recordId: entry.id, newData: entry,
     context: `Ledger ${body.entry_type}: $${amount} for ${body.client_name || body.client_id}`, ip });
@@ -665,7 +694,7 @@ async function createInvoice(sb, body, auth, ip) {
       invoice_id:   invoice.id,
       entry_date:   insert.issue_date,
       created_by:   auth.user.email || 'daron',
-    });
+    }, auth);
   }
 
   await log({ actor: auth.user.email, action: 'created', tableName: 'invoices', recordId: invoice.id, newData: invoice,
@@ -699,48 +728,38 @@ async function addInvoiceItem(sb, body, auth, ip) {
 }
 
 async function recordPayment(sb, body, auth, ip) {
-  // Records a payment → creates ledger entry → updates invoice balance
+  // Payment ledger and linked session/invoice state are committed by one RPC.
   if (!body.client_id)                    throw new Error('client_id is required.');
   if (body.amount == null || isNaN(body.amount)) throw new Error('amount is required.');
-
   const amount    = parseFloat(body.amount);
-  const entryDate = body.payment_date || new Date().toISOString().slice(0, 10);
-
-  // ── Ledger: payment entry ──────────────────────────────────────────────
-  const entry = await writeLedger(sb, {
-    client_id:          body.client_id,
-    client_name:        body.client_name       || null,
-    entry_type:         'payment',
-    description:        body.description || 'Payment received',
-    amount,
-    balance_impact:     -amount,               // payment reduces balance owed
-    related_session_id: body.session_id        || null,
-    related_payment_id: body.payment_id        || null,
-    invoice_id:         body.invoice_id        || null,
-    entry_date:         entryDate,
-    notes:              body.notes             || null,
-    created_by:         auth.user.email        || 'daron',
+  if (!(amount > 0) || !Number.isFinite(amount)) throw new Error('A positive payment amount is required.');
+  const correlationId = validCorrelationId(body.idempotency_key);
+  if (!correlationId) throw new Error('A UUID idempotency_key is required for payment recording.');
+  const excessAllocation = body.excess_allocation == null || body.excess_allocation === '' ? null : String(body.excess_allocation);
+  if (excessAllocation !== null && !['tip', 'client_credit'].includes(excessAllocation)) throw new Error('excess_allocation must be tip or client_credit.');
+  if (!auth?.user?.id || !auth?.user?.email) throw new Error('An authenticated practitioner is required.');
+  const { data, error } = await sb.rpc('practitioner_record_financial_payment_with_audit', {
+    p_client_id: body.client_id,
+    p_client_name: body.client_name || null,
+    p_session_id: body.session_id || null,
+    p_invoice_id: body.invoice_id || null,
+    p_payment_id: body.payment_id || null,
+    p_amount: amount,
+    p_method: body.method || 'cash_app',
+    p_description: body.description || 'Payment received',
+    p_entry_date: body.payment_date || null,
+    p_notes: body.notes || null,
+    p_actor_id: auth.user.id,
+    p_actor_email: auth.user.email,
+    p_correlation_id: correlationId,
+    p_request_path: '/.netlify/functions/financial',
+    p_excess_allocation: excessAllocation,
   });
-
-  // ── Invoice: update amount_paid and status ─────────────────────────────
-  let invoice = null;
-  if (body.invoice_id) {
-    let inv = null;
-    try { const { data } = await sb.from('invoices').select('*').eq('id', body.invoice_id).single(); inv = data; } catch {}
-    if (inv) {
-      const newPaid   = Number(inv.amount_paid || 0) + amount;
-      const total     = Number(inv.total || 0);
-      const newStatus = newPaid >= total && total > 0 ? 'paid' : newPaid > 0 ? 'partial' : inv.status;
-      const upd       = { amount_paid: newPaid, status: newStatus };
-      if (newStatus === 'paid') upd.paid_at = new Date().toISOString();
-      const { data: updated } = await sb.from('invoices').update(upd).eq('id', body.invoice_id).select().single();
-      invoice = updated;
-    }
-  }
-
-  await log({ actor: auth.user.email, action: 'created', tableName: 'ledger_entries', recordId: entry?.id, newData: entry,
-    context: `Payment $${amount} from ${body.client_name || body.client_id}`, ip });
-  return { entry, invoice };
+  if (error || !data?.entry) throw error || new Error('Audited payment transaction returned no ledger entry.');
+  console.info('[financial] payment mutation', JSON.stringify({ ledger_entry_id: data.entry.id, session_id: body.session_id || null, invoice_id: body.invoice_id || null, correlation_id: correlationId, actor_type: 'practitioner', source: 'dashboard' }));
+  await log({ actor: auth.user.email, action: 'created', tableName: 'ledger_entries', recordId: data.entry.id, newData: data.entry,
+    context: `Payment $${amount} from ${body.client_name || body.client_id}; correlation ${correlationId}`, ip });
+  return data;
 }
 
 async function generateAlerts(sb, auth, ip) {
@@ -839,6 +858,9 @@ async function updateInvoice(sb, id, body, auth, ip) {
   const allowed = ['status', 'notes', 'due_date', 'sent_at', 'paid_at', 'adjustment'];
   const updates = {};
   allowed.forEach(k => { if (body[k] !== undefined) updates[k] = body[k]; });
+  if (['paid', 'partial'].includes(String(updates.status || '').toLowerCase()) || updates.paid_at !== undefined) {
+    throw userErr('Invoice payments must be recorded through the audited payment workflow.');
+  }
   if (updates.status === 'sent' && !updates.sent_at) updates.sent_at = new Date().toISOString();
   const { data, error } = await sb.from('invoices').update(updates).eq('id', id).select().single();
   if (error) throw new Error(error.message);
@@ -1445,13 +1467,18 @@ async function getPnL(sb) {
 
   const earliest = months[0] + '-01';
 
-  const [payments, expenses] = await Promise.all([
+  const [paymentRecords, receiptLedger, expenses] = await Promise.all([
     safeRows(
       sb.from('payments')
-        .select('amount, paid_at, status')
+        .select('amount, tip_amount, client_credit_amount, correlation_id, paid_at, status')
         .eq('status', 'received')
         .gte('paid_at', earliest)
         .order('paid_at', { ascending: false })
+    ),
+    safeRows(
+      sb.from('ledger_entries')
+        .select('entry_type,amount,tip_amount,client_credit_amount,correlation_id,related_payment_id,entry_date,deleted_at')
+        .eq('entry_type', 'payment').is('related_payment_id', null).is('deleted_at', null).gte('entry_date', earliest)
     ),
     safeRows(
       sb.from('expenses')
@@ -1461,32 +1488,36 @@ async function getPnL(sb) {
         .order('expense_date', { ascending: false })
     ),
   ]);
+  const payments = receiptRows(paymentRecords, receiptLedger);
 
   const monthly = months.map(key => {
-    const revenue = payments
-      .filter(p => (p.paid_at || '').startsWith(key))
-      .reduce((s, p) => s + Number(p.amount), 0);
+    const revenueMetric = summarizeReceipts(payments.filter(p => (p.paid_at || p.entry_date || '').startsWith(key)));
+    const revenue = revenueMetric.serviceRevenue + revenueMetric.tips;
     const expenseAmt = expenses
       .filter(e => (e.expense_date || '').startsWith(key))
       .reduce((s, e) => s + Number(e.amount), 0);
-    return { month: key, revenue, expenses: expenseAmt, net: revenue - expenseAmt };
+    return { month: key, revenue, serviceRevenue: revenueMetric.serviceRevenue, tips: revenueMetric.tips,
+      totalCollected: revenueMetric.totalCollected, expenses: expenseAmt, net: revenue - expenseAmt };
   });
 
-  const totalRevenue  = payments.reduce((s, p) => s + Number(p.amount), 0);
+  const allRevenueMetric = summarizeReceipts(payments);
+  const totalRevenue = allRevenueMetric.serviceRevenue + allRevenueMetric.tips;
   const totalExpenses = expenses.reduce((s, e) => s + Number(e.amount), 0);
   const netIncome     = totalRevenue - totalExpenses;
 
   const ytdStart  = `${now.getFullYear()}-01-01`;
-  const ytdRev    = payments.filter(p => (p.paid_at || '') >= ytdStart)
-                            .reduce((s, p) => s + Number(p.amount), 0);
+  const ytdRevenueMetric = summarizeReceipts(payments.filter(p => (p.paid_at || p.entry_date || '') >= ytdStart));
+  const ytdRev = ytdRevenueMetric.serviceRevenue + ytdRevenueMetric.tips;
   const ytdExp    = expenses.filter(e => (e.expense_date || '') >= ytdStart)
                             .reduce((s, e) => s + Number(e.amount), 0);
   const ytdNet    = ytdRev - ytdExp;
 
   return {
     monthly,
-    totals: { revenue: totalRevenue, expenses: totalExpenses, net: netIncome },
-    ytd:    { revenue: ytdRev, expenses: ytdExp, net: ytdNet },
+    totals: { revenue: totalRevenue, serviceRevenue: allRevenueMetric.serviceRevenue, tips: allRevenueMetric.tips,
+      totalCollected: allRevenueMetric.totalCollected, clientCredits: allRevenueMetric.clientCredits, expenses: totalExpenses, net: netIncome },
+    ytd:    { revenue: ytdRev, serviceRevenue: ytdRevenueMetric.serviceRevenue, tips: ytdRevenueMetric.tips,
+      totalCollected: ytdRevenueMetric.totalCollected, clientCredits: ytdRevenueMetric.clientCredits, expenses: ytdExp, net: ytdNet },
   };
 }
 

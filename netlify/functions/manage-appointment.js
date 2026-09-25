@@ -22,16 +22,9 @@ const { calcRefund, POLICY } = require('./lib/policy');
 const { sendTransactional }  = require('./lib/mailer');
 const { verifyAppointmentToken, appointmentManageUrl } = require('./lib/appointment-token');
 
-const TOKEN_ROLLOUT_AT = Date.parse(process.env.APPOINTMENT_TOKEN_ROLLOUT_AT || '2026-09-05T21:30:00Z');
-const LEGACY_LINK_CUTOFF = Date.parse(process.env.APPOINTMENT_LEGACY_LINK_CUTOFF || '2026-10-05T23:59:59Z');
-
-function managementAuthorized(token, session, action, now = Date.now()) {
+function managementAuthorized(token, session, action) {
   const verified = verifyAppointmentToken(token, session.id, action);
   if (verified.ok) return { ok: true, legacy: false };
-  const created = Date.parse(session.created_at || '');
-  if (!token && now <= LEGACY_LINK_CUTOFF && Number.isFinite(created) && created < TOKEN_ROLLOUT_AT) {
-    return { ok: true, legacy: true };
-  }
   return { ok: false, reason: verified.reason || 'required' };
 }
 
@@ -456,5 +449,7 @@ async function managedChange(sb,body,id,action){
  if(action==='reschedule'&&!body.slot_id)return respond(400,{error:'Select an available slot.'});
  const hash=require('crypto').createHash('sha256').update([id,action,s.session_date,s.session_time,body.new_date,body.new_time].join(':')).digest('hex');
  const request=hash.slice(0,8)+'-'+hash.slice(8,12)+'-'+hash.slice(12,16)+'-'+hash.slice(16,20)+'-'+hash.slice(20,32);
- return require('./lib/practitioner-appointments').change(sb,s,{...body,action,confirmed:true,request_id:request,expected_date:s.session_date,expected_time:s.session_time,new_slot_id:body.slot_id},'client');
+ let clientEmail=s.client_email||null;
+ if(!clientEmail&&s.client_id){const {data:client}=await sb.from('clients').select('email').eq('id',s.client_id).maybeSingle();clientEmail=client?.email||null;}
+ return require('./lib/practitioner-appointments').change(sb,s,{...body,action,confirmed:true,request_id:request,expected_date:s.session_date,expected_time:s.session_time,new_slot_id:body.slot_id},{actor_type:'client',actor_id:s.client_id||null,actor_email:clientEmail,source:'manage_appointment',request_path:'/.netlify/functions/manage-appointment'});
 }

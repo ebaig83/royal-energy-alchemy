@@ -20,7 +20,7 @@ assert(page.includes("session_id:   _sessionId") && page.includes("token:       
 assert(page.includes("session_id:  _sessionId") && page.includes("token:       _actionToken") && page.includes("action:      'cancel_confirmed'"));
 assert(endpoint.includes(".eq('id', sessionId)") && endpoint.includes(".eq('id', session_id)"));
 assert(endpoint.includes('verifyAppointmentToken'));
-assert(endpoint.includes('LEGACY_LINK_CUTOFF') && endpoint.includes('TOKEN_ROLLOUT_AT'));
+assert(!endpoint.includes('LEGACY_LINK_CUTOFF') && !endpoint.includes('TOKEN_ROLLOUT_AT'));
 assert(!sessions.includes('session_id=undefined') && !booking.includes('session_id=undefined'));
 
 console.log('appointment management email link contract: 12/12 passed');

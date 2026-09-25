@@ -36,15 +36,39 @@ function normalizePhone(value) {
 function isBlockedClient(client, email, phone) {
   return normalizeEmail(client?.email) === email || normalizePhone(client?.phone) === phone;
 }
+function validateServiceAddress(value, locationType) {
+  if (!['in_person', 'in-person'].includes(String(locationType || '').toLowerCase())) return { address: null };
+  const address = {
+    line1: String(value?.line1 || '').trim(),
+    line2: String(value?.line2 || '').trim(),
+    city: String(value?.city || '').trim(),
+    state: String(value?.state || '').trim(),
+    postal_code: String(value?.postal_code || '').trim(),
+    country: String(value?.country || '').trim(),
+  };
+  if (Object.values(address).some(part => !part) || Object.values(address).some(part => /^(?:n\/?a|none|unknown|test|address)$/i.test(part))) return { error: 'Complete the street address, city, state/province, ZIP/postal code, and country for this in-person service.' };
+  if (!/^[\p{L}\p{N}][\p{L}\p{N}\s.'#,/\-]{1,199}$/u.test(address.line1) || !/^[\p{L}\p{N}][\p{L}\p{N}\s.'\-]{1,99}$/u.test(address.city) || !/^[\p{L}\p{N}][\p{L}\p{N}\s.'\-]{1,99}$/u.test(address.state) || !/^[\p{L}\p{N}][\p{L}\p{N}\s\-]{1,19}$/u.test(address.postal_code) || !/^[\p{L}][\p{L}\s.'\-]{1,99}$/u.test(address.country)) return { error: 'Check the in-person service address fields and try again.' };
+  return { address };
+}
 function validatePublicBookingFields(body) {
-  const name = String(body?.client_name == null ? '' : body.client_name).trim();
+  const fullName = String(body?.client_name == null ? '' : body.client_name).trim();
+  const firstName = String(body?.client_first_name == null ? '' : body.client_first_name).trim();
+  const lastName = String(body?.client_last_name == null ? '' : body.client_last_name).trim();
+  const splitName = fullName.split(/\s+/).filter(Boolean);
+  const first = firstName || splitName[0] || '';
+  const last = lastName || (splitName.length > 1 ? splitName.slice(1).join(' ') : '');
+  const name = [first, last].filter(Boolean).join(' ').trim();
   const email = normalizeEmail(body?.client_email);
   const phoneProvided = Object.prototype.hasOwnProperty.call(body || {}, 'client_phone');
   const phone = normalizePhone(body?.client_phone);
-  if (!name) return { error: 'Your name is required.' };
+  if (!first) return { error: 'Your first name is required.' };
+  if (!last) return { error: 'Your last name is required.' };
+  if (/^(?:test|unknown|not provided|n\/?a|none|your name|first name)$/i.test(first) || /^(?:test|unknown|not provided|n\/?a|none|last name)$/i.test(last) || /^(?:john doe|jane doe|test user|test client|unknown unknown|first last)$/i.test(`${first} ${last}`)) return { error: 'Please enter your real first and last name.' };
   if (!email) return { error: 'Your email address is required.' };
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { error: 'Please enter a valid email address.' };
+  if (!/^[A-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?(?:\.[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?)+$/i.test(email) || /(?:example\.(?:com|org|net)|test\.com|invalid)$/i.test(email)) return { error: 'Please enter a valid email address.' };
   if (!phoneProvided || !phone) return { error: 'Your telephone number is required.' };
+  const phoneDigits = (phone.match(/\d/g) || []).join('');
+  if (/^(\d)\1+$/.test(phoneDigits) || /^1234567\d*$/.test(phoneDigits)) return { error: 'Please enter a valid telephone number.' };
   return { name, email, phone };
 }
 
@@ -73,7 +97,7 @@ exports.handler = async function(event) {
   // Honeypot — silent 200 for bots
   if (body.bot_field || body['bot-field']) return respond(200, { booked: true });
 
-  const { slot_id, service, client_name, client_email, client_phone, preferred_contact } = body;
+  const { slot_id, service, client_email, client_phone, preferred_contact } = body;
 
   // ── Validation ────────────────────────────────────────────────────────────
   if (!slot_id)       return respond(400, { error: 'Please select an available time slot.' });
@@ -83,10 +107,13 @@ exports.handler = async function(event) {
   const normalizedName = fields.name;
   const normalizedEmail = fields.email;
   const normalizedPhone = fields.phone;
-  const serviceInfo = findService(String(service || '').trim());
-  if (!serviceInfo || serviceInfo.price == null) {
+  const serviceValue = String(service || '').trim();
+  const serviceInfo = findService(serviceValue);
+  if (!serviceInfo || serviceInfo.price == null || ![serviceInfo.id, serviceInfo.label, ...(serviceInfo.aliases || [])].some(value => String(value).trim().toLowerCase() === serviceValue.toLowerCase())) {
     return respond(400, { error: 'Selected service price could not be verified. Please choose a service again.' });
   }
+  const addressResult = validateServiceAddress(body.service_address, serviceInfo.locationType || 'distance');
+  if (addressResult.error) return respond(400, { error: addressResult.error });
 
   // Enforce rebooking blocks before claiming a slot or creating any booking/payment state.
   const { data: blockedClients, error: blockLookupError } = await sb
@@ -214,50 +241,46 @@ exports.handler = async function(event) {
     // Non-fatal — continue without clientId
   }
 
-  // ── Step 3: Create session record ─────────────────────────────────────────
-  let sessionId = null;
-  try {
-    const { data: session, error: sessionErr } = await sb
-      .from('sessions')
-      .insert({
+  // ── Step 3: Create session, private address, slot link, and audit atomically ──
+  const correlationId = crypto.randomUUID();
+  const sessionInput = {
         client_id:        clientId    || null,
         client_name:      normalizedName,
         service:          serviceInfo.label,
         session_date:     sessionDate,
         session_time:     sessionTime.length === 5 ? sessionTime + ':00' : sessionTime,
         duration_minutes: serviceInfo.duration,
-        location_type:    'distance',
+        location_type:    serviceInfo.locationType || 'distance',
         status:           'pending',
         payment_status:   'pending',
         payment_hold_expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
         amount_due:       serviceInfo.price,
         amount_paid:      0,
-        source:           body.source || 'online',
+        client_email:     normalizedEmail,
+        client_phone:     normalizedPhone,
+        source:           'online',
         intake_status:    'pending',
         waiver_status:    'pending',
         waiver_completed: false,
         booking_status:   'payment_required',
         // Public bookings are never eligible for sync before payment finalization.
         google_calendar_status: 'not_requested',
-      })
-      .select('id')
-      .single();
-
-    if (sessionErr) {
-      await bookingFailure(sb, { step: 'session_create', clientId, error: sessionErr });
-      // Release slot since session creation failed
-      await sb.from('availability_slots').update({ status: 'available', session_id: null }).eq('id', slot_id);
-      return respond(500, { error: 'Booking could not be completed. Please try again or contact us directly.' });
-    }
-    sessionId = session.id;
-  } catch (e) {
-    await bookingFailure(sb, { step: 'session_create', clientId, error: e });
-    await sb.from('availability_slots').update({ status: 'available', session_id: null }).eq('id', slot_id);
+      };
+  let sessionId = null;
+  try {
+    const { data: created, error: createError } = await sb.rpc('create_website_booking_with_audit', {
+      p_session: sessionInput, p_slot_id: slot_id, p_address: addressResult.address, p_correlation_id: correlationId,
+    });
+    if (createError || !created?.session?.id) throw createError || new Error('Booking transaction returned no session.');
+    sessionId = created.session.id;
+    console.info('[booking] appointment mutation', JSON.stringify({ session_id: sessionId, correlation_id: correlationId, actor_type: 'system', source: 'website_booking', action: 'booking_created' }));
+  } catch (error) {
+    // A transaction may have committed even if the response was lost. Only
+    // release an unlinked claimed slot; never unlink a committed booking.
+    await sb.from('availability_slots').update({ status: 'available', session_id: null }).eq('id', slot_id).eq('status', 'booked').is('session_id', null);
+    await bookingFailure(sb, { step: 'session_create', clientId, error });
     return respond(500, { error: 'Booking could not be completed. Please try again or contact us directly.' });
   }
-
-  // ── Step 4: Link slot to session ──────────────────────────────────────────
-  await sb.from('availability_slots').update({ session_id: sessionId }).eq('id', slot_id);
 
   // ── Step 5: Audit log ─────────────────────────────────────────────────────
   try {
@@ -312,7 +335,8 @@ exports.handler = async function(event) {
     clientId,
     sessionId,
     variables:      emailVars,
-    metadata:       { trigger: 'online_booking_pending_payment', session_id: sessionId },
+    metadata:       { trigger: 'online_booking_pending_payment', session_id: sessionId, correlation_id: correlationId },
+    idempotencyKey: `pending-payment:${sessionId}`,
   }).catch(async e => {
     await emailFailure(sb, { templateName: 'booking_received_pending_payment', clientId, sessionId, error: e });
   });
@@ -324,13 +348,11 @@ exports.handler = async function(event) {
     clientId,
     sessionId,
     variables:      { ...emailVars, intake_url: intakeUrl },
-    metadata:       { trigger: 'booking_intake_invite', session_id: sessionId },
+    metadata:       { trigger: 'booking_intake_invite', session_id: sessionId, correlation_id: correlationId },
+    idempotencyKey: `booking-intake-invitation:${sessionId}`,
   }).catch(async e => {
     await emailFailure(sb, { templateName: 'intake_invitation', clientId, sessionId, error: e });
   });
-
-  // Mark intake_sent_at on session
-  sb.from('sessions').update({ intake_sent_at: new Date().toISOString() }).eq('id', sessionId).then(() => {}).catch(() => {});
 
   // ── Step 8: Return to client ──────────────────────────────────────────────
   return respond(200, {
@@ -353,4 +375,4 @@ exports.handler = async function(event) {
   });
 };
 
-exports._test = { normalizeEmail, normalizePhone, validatePublicBookingFields, isBlockedClient };
+exports._test = { normalizeEmail, normalizePhone, validatePublicBookingFields, validateServiceAddress, isBlockedClient };

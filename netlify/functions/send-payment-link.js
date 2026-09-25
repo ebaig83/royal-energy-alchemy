@@ -51,7 +51,8 @@ async function offPlatformRequest(sb, session, provider, requestId) {
     await sb.from('payment_requests').update({ status: 'failed', last_error: 'Payment request email was not sent.', updated_at: new Date().toISOString() }).eq('id', request.id);
     return respond(502, { error: 'Payment request email was not sent.', code: 'payment_request_email_failed' });
   }
-  await sb.from('sessions').update({ payment_request_reference: request.safe_reference }).eq('id', session.id).is('payment_request_reference', null);
+  // The payment_requests row is the source of truth for this reference; avoid
+  // a second, unaudited session mutation after sending the request.
   await sb.from('payment_requests').update({ status: 'sent', sent_at: new Date().toISOString(), provider_message_id: mail.message_id || null, updated_at: new Date().toISOString() }).eq('id', request.id);
   return respond(200, { sent: true, duplicate: false, provider: selected, payment_reference: request.safe_reference, amount_due: amountDue, request_status: 'sent', payment_status: 'pending' });
 }

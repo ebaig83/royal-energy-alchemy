@@ -79,6 +79,7 @@ async function logCommunication(sb, entry) {
       provider_message_id: entry.provider_message_id || null,
       template_id:         entry.template_id         || null,
       metadata:            entry.metadata            || null,
+      correlation_uuid:    entry.correlation_id      || null,
       sent_at:             new Date().toISOString(),
     }).select().single();
     if (error && !isMissingTableError(error)) console.error('[send-email] comm log error:', error.message);
@@ -98,6 +99,7 @@ exports.handler = async function (event) {
 
   const auth = await requireAdmin(event);
   if (auth.error) return auth.error;
+  const correlationId = require('crypto').randomUUID();
 
   const apiKey   = process.env.RESEND_API_KEY;
   const fromEmail = process.env.FROM_EMAIL;
@@ -116,8 +118,8 @@ exports.handler = async function (event) {
   const action = params.action || 'send_email';
 
   try {
-    if (action === 'send_email')    return respond(200, await sendFreeform(sb, body, auth, ip, apiKey, fromEmail));
-    if (action === 'send_template') return respond(200, await sendTemplate(sb, body, auth, ip, apiKey, fromEmail));
+    if (action === 'send_email')    return respond(200, await sendFreeform(sb, body, auth, ip, apiKey, fromEmail, correlationId));
+    if (action === 'send_template') return respond(200, await sendTemplate(sb, body, auth, ip, apiKey, fromEmail, correlationId));
     return respond(400, { error: `Unknown action: ${action}` });
   } catch (err) {
     console.error('[send-email]', action, err.message);
@@ -126,7 +128,7 @@ exports.handler = async function (event) {
 };
 
 // ── Send freeform email ───────────────────────────────────────────────────
-async function sendFreeform(sb, body, auth, ip, apiKey, fromEmail) {
+async function sendFreeform(sb, body, auth, ip, apiKey, fromEmail, correlationId) {
   if (!body.recipient_email) throw new Error('recipient_email is required.');
   if (!body.subject)         throw new Error('subject is required.');
   if (!body.message_type)    throw new Error('message_type is required.');
@@ -168,7 +170,8 @@ async function sendFreeform(sb, body, auth, ip, apiKey, fromEmail) {
     subject:             body.subject,
     status,
     provider_message_id: msgId,
-    metadata:            body.metadata     || null,
+    metadata:            { ...(body.metadata || {}), correlation_id: correlationId },
+    correlation_id:      correlationId,
   });
 
   await log({
@@ -191,7 +194,7 @@ async function sendFreeform(sb, body, auth, ip, apiKey, fromEmail) {
 }
 
 // ── Send template email ───────────────────────────────────────────────────
-async function sendTemplate(sb, body, auth, ip, apiKey, fromEmail) {
+async function sendTemplate(sb, body, auth, ip, apiKey, fromEmail, correlationId) {
   if (!body.recipient_email) throw new Error('recipient_email is required.');
   if (!body.template_id && !body.template_name) throw new Error('template_id or template_name is required.');
 
@@ -232,7 +235,8 @@ async function sendTemplate(sb, body, auth, ip, apiKey, fromEmail) {
     status,
     provider_message_id: msgId,
     template_id:         tmpl.id,
-    metadata:            body.metadata || null,
+    metadata:            { ...(body.metadata || {}), correlation_id: correlationId },
+    correlation_id:      correlationId,
   });
 
   await log({

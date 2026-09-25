@@ -15,6 +15,8 @@ const { sendWithPreferences }   = require('./lib/comms');
 const { reminderFailure }       = require('./lib/ops-alert');
 const { appointmentManageUrl }  = require('./lib/appointment-token');
 const { isSilentPlannerImport } = require('./lib/record-policy');
+const { isOperationalAppointment, isWebsiteBooking, attachServiceAddress } = require('./lib/booking-state');
+const { reminderCorrelationId } = require('./lib/appointment-audit');
 
 const SITE_URL = process.env.SITE_URL || 'https://royal-energy-alchemy.netlify.app';
 
@@ -38,7 +40,7 @@ exports.handler = async function(event) {
 
   const { data: sessions, error: sessErr } = await sb
     .from('sessions')
-    .select('id, client_id, client_name, service, session_date, session_time, status, reminder_sent, reminder_sent_at, source')
+    .select('id, client_id, client_name, client_email, client_phone, service, session_date, session_time, status, booking_status, payment_status, waiver_status, waiver_completed, location_type, payment_hold_expires_at, reminder_sent, reminder_sent_at, source')
     .gte('session_date', todayStr)
     .lte('session_date', cutoffStr)
     .in('status', ['pending', 'confirmed'])
@@ -47,8 +49,14 @@ exports.handler = async function(event) {
 
   if (sessErr) return respond(500, { error: sessErr.message });
 
-  const candidates = (sessions || []).filter(s => {
+  const inPersonIds=(sessions||[]).filter(s=>isWebsiteBooking(s)&&['in_person','in-person'].includes(String(s.location_type||'').toLowerCase())).map(s=>s.id);
+  let addressBySession=new Map();
+  if(inPersonIds.length){const {data:addresses,error:addressError}=await sb.from('session_service_addresses').select('session_id,address_line1,address_line2,city,state,postal_code,country').in('session_id',inPersonIds);if(addressError)return respond(503,{error:'Reminder eligibility could not be verified.'});addressBySession=new Map((addresses||[]).map(a=>[a.session_id,a]));}
+  const sessionsWithAddresses=(sessions||[]).map(s=>attachServiceAddress(s,addressBySession.get(s.id)));
+
+  const candidates = sessionsWithAddresses.filter(s => {
     if (isSilentPlannerImport(s)) return false;
+    if (!isOperationalAppointment(s)) return false;
     // If session is today, only include if session_time is ≥ now
     if (s.session_date === todayStr && s.session_time) {
       const [hh, mm] = s.session_time.split(':').map(Number);
@@ -71,12 +79,26 @@ exports.handler = async function(event) {
       // Dedup: check if reminder already logged in communications
       const { data: existing } = await sb
         .from('communications')
-        .select('id')
+        .select('id,metadata')
         .eq('message_type', 'appointment_reminder')
         .contains('metadata', { session_id: session.id })
         .limit(1);
 
       if (existing && existing.length > 0) {
+        const metadata = existing[0].metadata || {};
+        const correlationId = metadata.correlation_id;
+        if (correlationId) {
+          const { error: auditError } = await sb.rpc('record_session_reminder_with_audit', {
+            p_session_id: session.id,
+            p_actor_type: metadata.actor_type || 'system',
+            p_actor_id: metadata.actor_id || 'reminder_worker',
+            p_actor_email: metadata.actor_email || null,
+            p_source: metadata.source || 'reminder_worker',
+            p_correlation_id: correlationId,
+            p_request_path: '/.netlify/functions/reminder',
+          });
+          if (auditError) throw auditError;
+        }
         skipped.push({ session_id: session.id, reason: 'already_logged_in_communications' });
         continue;
       }
@@ -99,6 +121,10 @@ exports.handler = async function(event) {
 
       const manageUrl = appointmentManageUrl(session.id, { siteUrl: SITE_URL });
       const timeStr   = session.session_time ? session.session_time.slice(0, 5) : '';
+      const correlationId = reminderCorrelationId(session);
+      const reminderKey = `appointment-reminder:${session.id}:${session.session_date}:${timeStr}`;
+      const reminderMetadata = { trigger: 'reminder_job', session_id: session.id, correlation_id: correlationId, actor_type: 'system', actor_id: 'reminder_worker', source: 'reminder_worker' };
+      console.info('[reminder] appointment reminder', JSON.stringify({ session_id: session.id, correlation_id: correlationId, actor_type: 'system', source: 'reminder_worker' }));
 
       const result = await sendWithPreferences(sb, {
         templateName:   'appointment_reminder',
@@ -115,21 +141,26 @@ exports.handler = async function(event) {
           manage_url:   manageUrl,
           contact_email: process.env.ADMIN_EMAIL || 'royalenergyalchemy@gmail.com',
         },
-        metadata: { trigger: 'reminder_job', session_id: session.id },
+        metadata: reminderMetadata,
+        idempotencyKey: reminderKey,
       });
 
       if (result && result.skipped && result.reason === 'email_consent_off') {
         skipped.push({ session_id: session.id, reason: 'email_consent_off', preferred_contact: result.preferred_contact });
         // Still mark reminder_sent so we don't retry email — manual outreach already logged
-        await sb.from('sessions').update({ reminder_sent: true, reminder_sent_at: new Date().toISOString() }).eq('id', session.id);
+        const { error: auditError } = await sb.rpc('record_session_reminder_with_audit', {
+          p_session_id: session.id, p_actor_type: 'system', p_actor_id: 'reminder_worker', p_actor_email: null,
+          p_source: 'reminder_worker', p_correlation_id: correlationId, p_request_path: '/.netlify/functions/reminder',
+        });
+        if (auditError) throw auditError;
         continue;
       }
 
-      // Mark reminder sent on session
-      await sb.from('sessions').update({
-        reminder_sent:    true,
-        reminder_sent_at: new Date().toISOString(),
-      }).eq('id', session.id);
+      const { error: auditError } = await sb.rpc('record_session_reminder_with_audit', {
+        p_session_id: session.id, p_actor_type: 'system', p_actor_id: 'reminder_worker', p_actor_email: null,
+        p_source: 'reminder_worker', p_correlation_id: correlationId, p_request_path: '/.netlify/functions/reminder',
+      });
+      if (auditError) throw auditError;
 
       sent.push({ session_id: session.id, client_id: session.client_id, email: clientEmail });
 

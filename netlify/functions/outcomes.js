@@ -113,17 +113,6 @@ exports.handler = async function(event) {
       return respond(400, { error: `outcome_category must be one of: ${validCategories.join(', ')}` });
     }
 
-    // Sync state_before/state_after to session if provided
-    if (body.session_id && (body.state_before != null || body.state_after != null)) {
-      const stateUpdate = {};
-      if (body.state_before != null) stateUpdate.state_before = body.state_before;
-      if (body.state_after  != null) stateUpdate.state_after  = body.state_after;
-      if (body.mark_completed) stateUpdate.status = 'completed';
-      if (Object.keys(stateUpdate).length) {
-        await sb.from('sessions').update(stateUpdate).eq('id', body.session_id);
-      }
-    }
-
     const insert = {
       session_id:         body.session_id       || null,
       client_id:          body.client_id        || null,
@@ -138,8 +127,25 @@ exports.handler = async function(event) {
       research_notes:     body.research_notes   || null,
     };
 
-    const { data, error } = await sb.from('session_outcomes').insert(insert).select().single();
-    if (error) return respond(500, { error: error.message });
+    let data;
+    if(body.session_id){
+      const updates={};
+      if(body.state_before!=null)updates.state_before=body.state_before;
+      if(body.state_after!=null)updates.state_after=body.state_after;
+      if(body.mark_completed===true||body.mark_completed==='true')updates.status='completed';
+      const correlationId=require('crypto').randomUUID();
+      const {data:recorded,error}=await sb.rpc('practitioner_record_session_outcome_with_audit',{
+        p_session_id:body.session_id,p_outcome:insert,p_updates:updates,p_actor_id:auth.user.id,p_actor_email:auth.user.email,
+        p_correlation_id:correlationId,p_request_path:'/.netlify/functions/outcomes',
+      });
+      if(error||!recorded?.outcome)return respond(409,{error:'The outcome could not be recorded against this session. Reload and review its current state.'});
+      data=recorded.outcome;
+      console.info('[outcomes] appointment mutation',JSON.stringify({session_id:body.session_id,correlation_id:correlationId,actor_type:'practitioner',source:'dashboard',action:updates.status==='completed'?'session_completed_with_outcome':'session_outcome_recorded'}));
+    }else{
+      const { data: inserted, error } = await sb.from('session_outcomes').insert(insert).select().single();
+      if (error) return respond(500, { error: error.message });
+      data=inserted;
+    }
     await log({ actor: auth.user.email, action: 'created', tableName: 'session_outcomes', recordId: data.id, newData: data, context: `Outcome recorded for session ${body.session_id || body.client_id}`, ip });
     return respond(201, { outcome: data });
   }

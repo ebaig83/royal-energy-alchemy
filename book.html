@@ -140,11 +140,14 @@ body{background:var(--bg);color:var(--text);font-family:'EB Garamond',serif;min-
     <button class="btn-back" id="p3Back">← Back</button>
     <div class="section-title">Your Contact Information</div>
     <div class="field-row">
-      <div class="fg"><label for="clientName">Full Name *</label><input type="text" id="clientName" placeholder="Your full name" autocomplete="name" required></div>
-      <div class="fg"><label for="clientEmail">Email Address *</label><input type="email" id="clientEmail" placeholder="your@email.com" autocomplete="email" required></div>
+      <div class="fg"><label for="clientFirstName">First Name *</label><input type="text" id="clientFirstName" placeholder="First name" autocomplete="given-name" required></div>
+      <div class="fg"><label for="clientLastName">Last Name *</label><input type="text" id="clientLastName" placeholder="Last name" autocomplete="family-name" required></div>
     </div>
     <div class="field-row">
+      <div class="fg"><label for="clientEmail">Email Address *</label><input type="email" id="clientEmail" placeholder="your@email.com" autocomplete="email" required></div>
       <div class="fg"><label for="clientPhone">Phone Number *</label><input type="tel" id="clientPhone" placeholder="Your phone number" autocomplete="tel" required></div>
+    </div>
+    <div class="field-row">
       <div class="fg">
         <label for="preferredContact">Preferred Contact</label>
         <select id="preferredContact">
@@ -154,6 +157,13 @@ body{background:var(--bg);color:var(--text);font-family:'EB Garamond',serif;min-
         </select>
       </div>
     </div>
+    <section id="serviceAddressFields" class="summary-card" hidden aria-labelledby="serviceAddressHeading">
+      <h2 id="serviceAddressHeading" class="section-title">Service Address</h2>
+      <div class="field-row"><div class="fg"><label for="serviceAddressLine1">Street Address *</label><input id="serviceAddressLine1" autocomplete="address-line1" maxlength="200"></div><div class="fg"><label for="serviceAddressCity">City *</label><input id="serviceAddressCity" autocomplete="address-level2" maxlength="100"></div></div>
+      <div class="field-row"><div class="fg"><label for="serviceAddressState">State / Province *</label><input id="serviceAddressState" autocomplete="address-level1" maxlength="100"></div><div class="fg"><label for="serviceAddressPostal">ZIP / Postal Code *</label><input id="serviceAddressPostal" autocomplete="postal-code" maxlength="20"></div></div>
+      <div class="fg"><label for="serviceAddressCountry">Country *</label><input id="serviceAddressCountry" autocomplete="country-name" value="United States" maxlength="100"></div>
+      <p class="tiny-label">This address is stored with this appointment for the practitioner and is not included in public booking responses.</p>
+    </section>
     <input type="text" id="botField" style="display:none" tabindex="-1" autocomplete="off">
     <button class="btn-primary" id="p3Next">Review Booking →</button>
   </div>
@@ -200,7 +210,7 @@ body{background:var(--bg);color:var(--text);font-family:'EB Garamond',serif;min-
 'use strict';
 
 // ── State ─────────────────────────────────────────────────────────────────────
-const state = { service: null, serviceLabel: '', slotId: null, slotDate: '', slotTime: '', slotLabel: '' };
+const state = { service: null, serviceLabel: '', locationType: 'distance', slotId: null, slotDate: '', slotTime: '', slotLabel: '' };
 
 function easternLabel(value) {
   const label = String(value || '').trim();
@@ -211,6 +221,12 @@ function easternLabel(value) {
 function showPanel(n) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.getElementById('panel' + n).classList.add('active');
+  if (n === 3) {
+    const address = document.getElementById('serviceAddressFields');
+    const required = state.locationType === 'in_person';
+    address.hidden = !required;
+    address.querySelectorAll('input').forEach(input => { input.required = required; });
+  }
   // Update step indicators
   [1,2,3,4].forEach(i => {
     const dot = document.getElementById('sd' + i);
@@ -255,7 +271,7 @@ function validCatalog(data) {
     typeof service.label === 'string' && service.label.trim() &&
     Number.isFinite(Number(service.price)) && Number(service.price) >= 0 &&
     Number.isInteger(Number(service.duration)) && Number(service.duration) > 0 &&
-    service.publicBookable === true
+    service.publicBookable === true && ['distance','remote','in_person','in-person'].includes(service.location_type)
   ));
 }
 
@@ -280,6 +296,7 @@ function loadCatalog() {
           card.classList.add('selected');
           state.service = svc.id;
           state.serviceLabel = svc.label;
+          state.locationType = svc.location_type === 'in-person' ? 'in_person' : svc.location_type;
           p1Next.textContent = `Continue with ${svc.label} →`;
           p1Next.disabled = false;
         });
@@ -354,9 +371,12 @@ document.getElementById('p2Next').addEventListener('click', () => {
 document.getElementById('p3Back').addEventListener('click', () => showPanel(2));
 document.getElementById('p3Next').addEventListener('click', () => {
   clearError();
-  const name  = document.getElementById('clientName').value.trim();
+  const firstName = document.getElementById('clientFirstName').value.trim();
+  const lastName = document.getElementById('clientLastName').value.trim();
+  const name = `${firstName} ${lastName}`.trim();
   const email = document.getElementById('clientEmail').value.trim();
-  if (!name)  { showError('Please enter your full name.'); return; }
+  if (!firstName)  { showError('Please enter your first name.'); return; }
+  if (!lastName)  { showError('Please enter your last name.'); return; }
   if (!email) { showError('Please enter your email address.'); return; }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showError('Please enter a valid email address.'); return; }
 
@@ -364,6 +384,7 @@ document.getElementById('p3Next').addEventListener('click', () => {
   const phone   = document.getElementById('clientPhone').value.trim();
   const phoneDigits = (phone.match(/\d/g) || []).join('');
   if (!phone || phoneDigits.length < 7 || phoneDigits.length > 15 || !/^[+()\-\.\s\dextEXT#x]+$/.test(phone)) { showError('Please enter a valid telephone number.'); return; }
+  if (state.locationType === 'in_person' && ['serviceAddressLine1','serviceAddressCity','serviceAddressState','serviceAddressPostal','serviceAddressCountry'].some(id => !document.getElementById(id).value.trim())) { showError('Please complete the service street address, city, state, ZIP/postal code, and country.'); return; }
   const contact = document.getElementById('preferredContact').value;
   const card    = document.getElementById('summaryCard');
   card.innerHTML = [
@@ -390,12 +411,20 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
   const payload = {
     slot_id:           state.slotId,
     service:           state.service,
-    client_name:       document.getElementById('clientName').value.trim(),
+    client_name:       `${document.getElementById('clientFirstName').value.trim()} ${document.getElementById('clientLastName').value.trim()}`.trim(),
+    client_first_name: document.getElementById('clientFirstName').value.trim(),
+    client_last_name:  document.getElementById('clientLastName').value.trim(),
     client_email:      document.getElementById('clientEmail').value.trim(),
     client_phone:      document.getElementById('clientPhone').value.trim(),
+    service_address: state.locationType === 'in_person' ? {
+      line1: document.getElementById('serviceAddressLine1').value.trim(),
+      city: document.getElementById('serviceAddressCity').value.trim(),
+      state: document.getElementById('serviceAddressState').value.trim(),
+      postal_code: document.getElementById('serviceAddressPostal').value.trim(),
+      country: document.getElementById('serviceAddressCountry').value.trim(),
+    } : null,
     preferred_contact: document.getElementById('preferredContact').value,
     bot_field:         document.getElementById('botField').value || null,
-    source:            'online',
   };
 
   try {

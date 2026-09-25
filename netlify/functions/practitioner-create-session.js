@@ -86,11 +86,18 @@ exports.handler = async event => {
   if (slotError || !slot || slot.status !== 'available' || slot.session_id || slot.slot_date !== date || String(slot.slot_time || '').slice(0, 5) !== time) return respond(409, { error: 'That availability slot is no longer available.' });
   const wantsMeet = body.create_google_meet === true;
   const row = { client_id: body.client_id || null, client_name: clientName, client_email: email, client_phone: phone, service: serviceInfo.id, session_date: date, session_time: `${time}:00`, duration_minutes: duration, amount_due: serviceInfo.price, amount_paid: payment.amountPaid, payment_status: payment.status, payment_method: payment.method, payment_reference: payment.reference, payment_note: payment.note, payment_source: payment.source, location_type: 'distance', status: 'pending', source: wantsMeet ? 'manual_practitioner_calendar' : 'manual_practitioner', google_calendar_status: wantsMeet ? 'pending' : 'not_requested', seller_notes: null };
-  const { data: session, error: insertError } = await sb.from('sessions').insert(row).select('id,session_date,session_time,client_name,source,google_calendar_status').single();
-  if (insertError || !session) return respond(500, { error: 'Appointment creation failed.' });
-  const { data: reserved, error: reserveError } = await sb.from('availability_slots').update({ status: 'booked', session_id: session.id }).eq('id', slot.id).eq('status', 'available').is('session_id', null).select('id').maybeSingle();
-  if (reserveError || !reserved) { await sb.from('sessions').delete().eq('id', session.id); return respond(409, { error: 'That availability slot was claimed by another appointment.' }); }
-  await log({ actor: auth.user.email, action: 'practitioner_session_created', tableName: 'sessions', recordId: session.id, newData: { session_date: date, session_time: `${time}:00`, source: row.source, google_calendar_status: row.google_calendar_status }, context: 'Practitioner appointment creation; communications and Calendar suppressed', ip: event.headers['x-forwarded-for'] || '' });
+  const correlationId = require('crypto').randomUUID();
+  const { data: created, error: createError } = await sb.rpc('practitioner_create_appointment_with_audit', {
+    p_session: row, p_slot_id: slot.id, p_actor_id: auth.user.id, p_actor_email: auth.user.email,
+    p_request: correlationId, p_request_path: '/.netlify/functions/practitioner-create-session',
+  });
+  const session = created?.session;
+  if (createError || !session) {
+    console.error('[practitioner-create-session] atomic create failed', JSON.stringify({ correlation_id: correlationId, actor_type: 'practitioner', source: 'dashboard' }));
+    return respond(409, { error: 'Appointment creation failed or the slot is no longer available.' });
+  }
+  console.info('[practitioner-create-session] appointment mutation', JSON.stringify({ session_id: session.id, correlation_id: correlationId, actor_type: 'practitioner', source: 'dashboard', action: 'manual_appointment_created' }));
+  await log({ actor: auth.user.email, action: 'practitioner_session_created', tableName: 'sessions', recordId: session.id, newData: { session_date: date, session_time: `${time}:00`, source: row.source, google_calendar_status: row.google_calendar_status, correlation_id: correlationId }, context: 'Practitioner appointment creation; communications and Calendar suppressed', ip: event.headers['x-forwarded-for'] || '' });
   return respond(201, { created: true, duplicate: false, session });
 };
 

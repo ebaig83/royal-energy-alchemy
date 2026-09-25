@@ -41,10 +41,10 @@ test('caller supplied email is not authoritative', () => {
   assert(!source.includes('body.client_email || await lookupClientEmail'));
   assert(source.includes('const clientEmail = await lookupClientEmail'));
 });
-test('bare link compatibility is explicit and time limited', () => {
+test('bare appointment links are rejected in favor of signed tokens', () => {
   const source = read('netlify/functions/manage-appointment.js');
-  assert(source.includes('APPOINTMENT_LEGACY_LINK_CUTOFF'));
-  assert(source.includes('created < TOKEN_ROLLOUT_AT'));
+  assert(!source.includes('APPOINTMENT_LEGACY_LINK_CUTOFF'));
+  assert(source.includes('verifyAppointmentToken(token, session.id, action)'));
 });
 test('permanent admin secret is never returned or accepted', () => {
   const verify = read('netlify/functions/verify-pin.js');
@@ -72,11 +72,11 @@ test('calendar eligibility excludes historical and in-person records', () => {
   assert.equal(policy.isCalendarEligible({ ...base, source: 'planner-reconciliation' }, '2098-01-01'), false);
   assert.equal(policy.isCalendarEligible({ ...base, location_type: 'in-person' }, '2098-01-01'), false);
 });
-test('manual payment path queues only eligible paid sessions', () => {
+test('manual payment state changes use audited RPCs; calendar eligibility is database-driven', () => {
   const source = read('netlify/functions/payments.js');
-  assert(source.includes("newStatus === 'paid'"));
-  assert(source.includes('isCalendarEligible'));
-  assert(source.includes("session.google_calendar_status === 'not_requested'"));
+  assert(source.includes("sb.rpc('practitioner_record_manual_payment_with_audit'"));
+  assert(source.includes("sb.rpc('practitioner_update_payment_with_audit'"));
+  assert(!source.includes(".from('sessions').update("));
 });
 test('sessions endpoint supports explicit QA diagnostics', () => {
   const source = read('netlify/functions/sessions.js');

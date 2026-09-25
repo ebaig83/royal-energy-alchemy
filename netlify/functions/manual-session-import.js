@@ -116,14 +116,14 @@ exports.handler = async function(event) {
     seller_notes: body.notes ? String(body.notes).trim() : null,
   };
 
-  // One database insert is the operation boundary. A failure creates nothing;
-  // a success always returns the exact created session id for reconciliation.
-  const { data: session, error: insertError } = await sb
-    .from('sessions')
-    .insert(row)
-    .select('id,session_date,session_time,duration_minutes,payment_status')
-    .single();
-  if (insertError || !session) return respond(500, { created: false, error: 'Session import failed.' });
+  const correlationId=require('crypto').randomUUID();
+  const {data:created,error:insertError}=await sb.rpc('practitioner_create_session_with_audit',{
+    p_session:row,p_actor_id:auth.user.id,p_actor_email:auth.user.email,p_correlation_id:correlationId,
+    p_request_path:'/.netlify/functions/manual-session-import',
+  });
+  const session=created?.session;
+  if (insertError || !session) return respond(409, { created: false, error: 'Session import failed. Verify its schedule and reload.' });
+  console.info('[manual-session-import] appointment mutation',JSON.stringify({session_id:session.id,correlation_id:correlationId,actor_type:'practitioner',source:'dashboard',action:'historical_session_imported'}));
 
   await log({
     actor: auth.user.email,
@@ -131,7 +131,7 @@ exports.handler = async function(event) {
     tableName: 'sessions',
     recordId: session.id,
     newData: { session_date: sessionDate, session_time: normalizedTime, source: row.source },
-    context: 'Silent administrative historical session import',
+    context: `Silent administrative historical session import; correlation ${correlationId}`,
     ip: event.headers['x-forwarded-for'] || '',
   });
 

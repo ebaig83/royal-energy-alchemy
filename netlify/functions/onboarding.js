@@ -113,7 +113,9 @@ exports.handler = async function(event) {
     // 3. Create session record for the preferred session window
     let sessionId = null;
     if (session_window_1) {
-      const { data: sess } = await sb.from('sessions').insert({
+      const correlationId=require('crypto').randomUUID();
+      const { data:created,error:sessionError } = await sb.rpc('create_intake_session_with_audit',{
+        p_source:'onboarding_form',p_correlation_id:correlationId,p_request_path:'/.netlify/functions/onboarding',p_session:{
         client_name:    intakeRow.client_name,
         service:        service || 'Initial Energy Session',
         status:         'pending',
@@ -126,11 +128,13 @@ exports.handler = async function(event) {
           `Buffer required: ${Number(buffer_hours) || 48}h after intake`,
         ].filter(Boolean).join(' | '),
         source: 'onboarding_form',
-      }).select().single();
+      }});
+      const sess=created?.session;
       if (sess) {
         sessionId = sess.id;
+        console.info('[onboarding] appointment mutation',JSON.stringify({session_id:sessionId,correlation_id:correlationId,actor_type:'system',source:'onboarding_form',action:'intake_session_created'}));
         await sb.from('intakes').update({ session_id: sessionId }).eq('id', intake.id);
-      }
+      } else if(sessionError) console.error('[onboarding] session creation failed',JSON.stringify({correlation_id:correlationId,source:'onboarding_form'}));
     }
 
     // 4. Create onboarding_package linking intake + session

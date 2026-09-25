@@ -7,6 +7,8 @@
 // when digital consent is off but contact is still needed.
 
 const { sendTransactional } = require('./mailer');
+const crypto = require('crypto');
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 // ── Preference lookup ─────────────────────────────────────────────────────────
 
@@ -39,7 +41,7 @@ async function canEmail(sb, clientId) {
 
 // ── Log that manual outreach is required ──────────────────────────────────────
 
-async function logManualOutreachNeeded(sb, { clientId, sessionId, messageType, reason, channel }) {
+async function logManualOutreachNeeded(sb, { clientId, sessionId, messageType, reason, channel, metadata, correlation_id }) {
   try {
     await sb.from('communications').insert({
       client_id:    clientId    || null,
@@ -49,11 +51,13 @@ async function logManualOutreachNeeded(sb, { clientId, sessionId, messageType, r
       subject:      'Manual Outreach Required',
       status:       'manual_required',
       metadata: {
+        ...(metadata || {}),
         session_id: sessionId || null,
         reason,
         requires_manual_contact: true,
         flagged_at: new Date().toISOString(),
       },
+      correlation_uuid: correlation_id || (UUID.test(metadata?.correlation_id || '') ? metadata.correlation_id : null),
       sent_at: new Date().toISOString(),
     });
   } catch (e) {
@@ -66,6 +70,9 @@ async function logManualOutreachNeeded(sb, { clientId, sessionId, messageType, r
 
 async function sendWithPreferences(sb, opts) {
   const { clientId, sessionId, templateName, recipientEmail, variables, metadata, messageType } = opts;
+  const suppliedCorrelationId = opts.correlationId || metadata?.correlation_id;
+  if (suppliedCorrelationId && !UUID.test(suppliedCorrelationId)) throw new TypeError('Communication correlation ID must be a UUID.');
+  const correlationId = suppliedCorrelationId || crypto.randomUUID();
 
   const prefs = await getPreferences(sb, clientId);
 
@@ -77,6 +84,8 @@ async function sendWithPreferences(sb, opts) {
       messageType: messageType || templateName,
       reason:      `Email consent is off. Template '${templateName}' not sent. Preferred contact: ${prefs.preferred_contact}.`,
       channel:     prefs.preferred_contact || 'phone',
+      metadata,
+      correlation_id: correlationId,
     });
     return { skipped: true, reason: 'email_consent_off', preferred_contact: prefs.preferred_contact };
   }
@@ -87,6 +96,7 @@ async function sendWithPreferences(sb, opts) {
     clientId,
     variables,
     metadata,
+    correlationId,
     idempotencyKey: opts.idempotencyKey,
     transport: opts.transport,
   });

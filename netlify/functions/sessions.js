@@ -8,6 +8,7 @@
 // PATCH  ?id=uuid          — update status, payment_status, notes, etc.
 
 const { requireAdmin, respond } = require('./lib/auth');
+const { reminderCorrelationId } = require('./lib/appointment-audit');
 const { getClient }             = require('./lib/supabase');
 const { log }                   = require('./lib/audit');
 const { scheduleAftercare }     = require('./agents/aftercare-agent');
@@ -15,10 +16,10 @@ const { sendTransactional }     = require('./lib/mailer');
 const { emailFailure }          = require('./lib/ops-alert');
 const { appointmentManageUrl }  = require('./lib/appointment-token');
 const { isCalendarEligible, isQaRecord } = require('./lib/record-policy');
-const { isWebsiteBooking, isPaid, websiteAppointmentStatus } = require('./lib/booking-state');
+const { isWebsiteBooking, isPaid, isOperationalWebsiteBooking, isOperationalAppointment, websiteAppointmentStatus, attachServiceAddress } = require('./lib/booking-state');
 
 function calendarEligible(session) {
-  return String(session?.payment_status || '').toLowerCase() === 'paid' && isCalendarEligible(session);
+  return isCalendarEligible(session) && (!isWebsiteBooking(session) || isOperationalWebsiteBooking(session));
 }
 
 exports.handler = async function(event) {
@@ -69,7 +70,17 @@ exports.handler = async function(event) {
 
     const { data, error } = await query;
     if (error) return respond(500, { error: error.message });
-    const sessions = params.include_qa === 'true' ? (data || []) : (data || []).filter(s => !isQaRecord(s));
+    let sessions = params.include_qa === 'true' ? (data || []) : (data || []).filter(s => !isQaRecord(s));
+    if (params.upcoming) {
+      const inPersonIds = sessions.filter(s => isWebsiteBooking(s) && ['in_person','in-person'].includes(String(s.location_type || '').toLowerCase())).map(s => s.id);
+      if (inPersonIds.length) {
+        const { data: addresses, error: addressError } = await sb.from('session_service_addresses').select('session_id,address_line1,address_line2,city,state,postal_code,country').in('session_id', inPersonIds);
+        if (addressError) return respond(503, { error: 'Upcoming booking eligibility could not be verified.' });
+        const bySession = new Map((addresses || []).map(a => [a.session_id, a]));
+        sessions = sessions.map(s => attachServiceAddress(s, bySession.get(s.id)));
+      }
+      sessions = sessions.filter(isOperationalAppointment);
+    }
     return respond(200, { sessions });
   }
 
@@ -80,34 +91,40 @@ exports.handler = async function(event) {
 
     if (!body.client_id && !body.client_name) return respond(400, { error: 'client_id or client_name is required.' });
     const websiteBooking = isWebsiteBooking({ source: body.source || 'manual' });
-    if (websiteBooking && (String(body.status || '').toLowerCase() === 'confirmed' || String(body.payment_status || '').toLowerCase() === 'paid')) {
-      return respond(409, { error: 'Website bookings require verified Stripe payment before confirmation.' });
-    }
+    if (websiteBooking) return respond(409, { error: 'Website bookings must use the public booking workflow.' });
+    const correlationId=require('crypto').randomUUID();
 
     const insert = {
       client_id:         body.client_id        || null,
       client_name:       body.client_name       || null,
+      client_email:      body.client_email      || null,
+      client_phone:      body.client_phone      || null,
       service:           body.service           || null,
       session_date:      body.session_date       || null,
       session_time:      body.session_time       || null,
       duration_minutes:  body.duration_minutes   || 60,
       location_type:     body.location_type      || 'distance',
-      status:            websiteBooking ? 'pending' : (body.status || 'pending'),
-      payment_status:    websiteBooking ? 'pending' : (body.payment_status || 'unpaid'),
+      status:            body.status || 'pending',
+      payment_status:    body.payment_status || 'unpaid',
       amount_due:        body.amount_due         || null,
       square_booking_id: body.square_booking_id  || null,
       source:            body.source             || 'manual',
-      ...(websiteBooking ? { booking_status: 'payment_required', payment_hold_expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString() } : {}),
+      booking_status:    body.booking_status || null,
+      waiver_status:     body.waiver_status || 'not_sent',
+      waiver_completed:  body.waiver_completed === true,
       seller_notes:      body.seller_notes       || null,
       state_before:      body.state_before       || null,
       state_after:       body.state_after        || null,
       google_calendar_status: calendarEligible({ ...body, id: 'new', location_type: body.location_type || 'distance', session_date: body.session_date, session_time: body.session_time }) ? 'pending' : 'not_requested',
     };
 
-    const { data, error } = await sb.from('sessions').insert(insert).select().single();
-    if (error) return respond(500, { error: error.message });
-
-    await log({ actor: auth.user.email, action: 'created', tableName: 'sessions', recordId: data.id, newData: data, context: `Created session for ${data.client_name || data.client_id}`, ip });
+    const {data:created,error}=await sb.rpc('practitioner_create_session_with_audit',{
+      p_session:insert,p_actor_id:auth.user.id,p_actor_email:auth.user.email,p_correlation_id:correlationId,p_request_path:'/.netlify/functions/sessions',
+    });
+    if(error||!created?.session)return respond(409,{error:'The session could not be created. Verify its source, schedule, and current availability.'});
+    const data=created.session;
+    console.info('[sessions] appointment mutation',JSON.stringify({session_id:data.id,correlation_id:correlationId,actor_type:'practitioner',source:'dashboard',action:'session_created'}));
+    await log({ actor: auth.user.email, action: 'created', tableName: 'sessions', recordId: data.id, newData: data, context: `Created session for ${data.client_name || data.client_id}; correlation ${correlationId}`, ip });
 
     // Auto-schedule aftercare when a completed session is created
     if (data.status === 'completed' && data.session_date) {
@@ -122,7 +139,9 @@ exports.handler = async function(event) {
         return c?.email || null;
       } catch { return null; }
     })();
-    if (clientEmail) {
+    const websiteBookingCreated = isWebsiteBooking(data);
+    const explicitlyConfirmedManual = !websiteBookingCreated && ['confirmed', 'ready'].includes(String(data.status || '').toLowerCase());
+    if (clientEmail && explicitlyConfirmedManual) {
       sendTransactional(sb, {
         templateName:   'appointment_confirmation',
         recipientEmail: clientEmail,
@@ -138,7 +157,7 @@ exports.handler = async function(event) {
           contact_email: process.env.ADMIN_EMAIL || 'droyal168@gmail.com',
           manage_url:   appointmentManageUrl(data.id),
         },
-        metadata: { trigger: 'booking_created', session_id: data.id },
+        metadata: { trigger: 'booking_created', session_id: data.id, correlation_id: correlationId },
       }).catch(async e => {
       await emailFailure(sb, { templateName: 'appointment_confirmation', clientId: data.client_id, sessionId: data.id, error: e });
     });
@@ -156,8 +175,8 @@ exports.handler = async function(event) {
 
     const { data: old } = await sb.from('sessions').select('*').eq('id', params.id).single();
     if (!old) return respond(404, { error: 'Session not found.' });
-    if(body.p1===true && ['reschedule','cancel'].includes(body.action))return require('./lib/practitioner-appointments').change(sb,old,body,auth.user.email);
-    if(body.p1===true && body.action==='retry-calendar')return require('./lib/practitioner-appointments').retryCalendar(sb,old,body,auth.user.email);
+    if(['reschedule','cancel'].includes(body.action))return require('./lib/practitioner-appointments').change(sb,old,{...body,confirmed:true,request_id:body.request_id||require('crypto').randomUUID(),expected_date:old.session_date,expected_time:old.session_time},{actor_type:'practitioner',actor_id:auth.user.id,actor_email:auth.user.email,source:'dashboard',request_path:'/.netlify/functions/sessions'});
+    if(['retry-calendar','retry_google_sync'].includes(body.action))return require('./lib/practitioner-appointments').retryCalendar(sb,old,{...body,request_id:body.request_id||require('crypto').randomUUID()},{actor_type:'practitioner',actor_id:auth.user.id,actor_email:auth.user.email,source:'dashboard'});
 
     if (body.action === 'cancel') {
       if (old.status === 'cancelled') return respond(409, { error: 'Session is already cancelled.' });
@@ -173,16 +192,23 @@ exports.handler = async function(event) {
 
     if (body.action === 'restore') {
       if (old.status !== 'cancelled') return respond(409, { error: 'Only cancelled sessions can be restored.' });
-      const timeNorm = old.session_time && old.session_time.length === 5 ? old.session_time + ':00' : old.session_time;
-      const { data: slot } = await sb.from('availability_slots').select('id,status,session_id')
-        .eq('slot_date', old.session_date).eq('slot_time', timeNorm).maybeSingle();
-      if (slot && slot.status === 'booked' && slot.session_id && slot.session_id !== params.id) {
-        return respond(409, { error: 'The original time is now booked. Reschedule instead of restoring.' });
+      let restoreSession = old;
+      if (isWebsiteBooking(old) && ['in_person','in-person'].includes(String(old.location_type || '').toLowerCase())) {
+        const { data: address, error: addressError } = await sb.from('session_service_addresses').select('address_line1,address_line2,city,state,postal_code,country').eq('session_id', old.id).maybeSingle();
+        if (addressError) return respond(503, { error: 'The appointment could not be restored because eligibility could not be verified.' });
+        restoreSession = require('./lib/booking-state').attachServiceAddress(old, address);
       }
-      if (slot) await sb.from('availability_slots').update({ status: 'booked', session_id: params.id }).eq('id', slot.id);
-      const { data: restored, error: restoreErr } = await sb.from('sessions')
-        .update({ status: websiteAppointmentStatus(old), booking_status: isWebsiteBooking(old) && !isPaid(old) ? 'payment_required' : old.booking_status, google_calendar_status: calendarEligible({ ...old, status: websiteAppointmentStatus(old) }) ? 'pending' : 'not_requested', google_calendar_error: null }).eq('id', params.id).select().single();
-      if (restoreErr) return respond(500, { error: restoreErr.message });
+      const websiteEligible = isWebsiteBooking(old) && isOperationalWebsiteBooking({ ...restoreSession, status: 'confirmed', booking_status: 'confirmed' });
+      const restoredStatus = isWebsiteBooking(old) ? (websiteEligible ? 'confirmed' : 'pending') : (old.state_before || 'confirmed');
+      const correlationId = require('crypto').randomUUID();
+      const { data: restoreResult, error: restoreErr } = await sb.rpc('practitioner_restore_appointment', {
+        p_id: params.id, p_actor_id: auth.user.id, p_actor_email: auth.user.email, p_request: correlationId,
+        p_calendar_status: calendarEligible({ ...restoreSession, status: restoredStatus, booking_status: websiteEligible ? 'confirmed' : old.booking_status }) ? 'pending' : 'not_requested',
+        p_request_path: '/.netlify/functions/sessions', p_website_eligible: websiteEligible,
+      });
+      if (restoreErr || !restoreResult?.session) return respond(409, { error: 'The appointment could not be restored. Verify the slot and reload.' });
+      const restored = restoreResult.session;
+      console.info('[sessions] appointment mutation', JSON.stringify({ session_id: params.id, correlation_id: correlationId, actor_type: 'practitioner', source: 'dashboard', action: 'session_restored' }));
       await log({ actor: auth.user.email, action: 'session_restored', tableName: 'sessions', recordId: params.id,
         oldData: old, newData: restored, context: body.reason || 'Restored cancelled session from dashboard', ip });
       return respond(200, { session: restored, restored: true });
@@ -192,12 +218,15 @@ exports.handler = async function(event) {
       if (old.status === 'cancelled' || old.status === 'completed') {
         return respond(409, { error: 'Reminders can only be sent for active appointments.' });
       }
+      if (isWebsiteBooking(old) && !isOperationalAppointment(old)) return respond(409, { error: 'Website booking reminders require a complete, paid and confirmed appointment.' });
       let clientEmail = body.client_email || null;
       if (!clientEmail && old.client_id) {
         const { data: client } = await sb.from('clients').select('email').eq('id', old.client_id).single();
         clientEmail = client?.email || null;
       }
       if (!clientEmail) return respond(409, { error: 'No client email is available for this appointment.' });
+      const correlationId = reminderCorrelationId(old);
+      const reminderKey = `appointment-reminder:${old.id}:${old.session_date}:${String(old.session_time || '').slice(0, 5)}`;
       const result = await sendTransactional(sb, {
         templateName: 'appointment_reminder', recipientEmail: clientEmail, clientId: old.client_id || null,
         variables: { client_name: old.client_name || '', service: old.service || '',
@@ -205,13 +234,17 @@ exports.handler = async function(event) {
           timezone: 'ET', manage_url: appointmentManageUrl(old.id),
           contact_email: process.env.ADMIN_EMAIL || 'royalenergyalchemy@gmail.com',
           ...(/^https:\/\/meet\.google\.com\//i.test(old.google_meet_url || '') ? { google_meet_url: old.google_meet_url } : {}) },
-        metadata: { trigger: 'dashboard_manual_reminder', session_id: old.id },
-        idempotencyKey: `dashboard-manual-reminder:${old.id}:${old.session_date}:${String(old.session_time || '').slice(0, 5)}`,
+        metadata: { trigger: 'dashboard_manual_reminder', session_id: old.id, correlation_id: correlationId, actor_type: 'practitioner', actor_id: auth.user.id, actor_email: auth.user.email, source: 'dashboard' },
+        idempotencyKey: reminderKey,
       });
-      const { data: reminded } = await sb.from('sessions')
-        .update({ reminder_sent: true, reminder_sent_at: new Date().toISOString() }).eq('id', params.id).select().single();
+      const { data: mutation, error: reminderError } = await sb.rpc('record_session_reminder_with_audit', {
+        p_session_id: old.id, p_actor_type: 'practitioner', p_actor_id: auth.user.id, p_actor_email: auth.user.email,
+        p_source: 'dashboard', p_correlation_id: correlationId, p_request_path: '/.netlify/functions/sessions',
+      });
+      if (reminderError || !mutation?.session) return respond(500, { error: 'Reminder state could not be audited. Retry safely; the email is idempotent.' });
+      const reminded = mutation.session;
       await log({ actor: auth.user.email, action: 'session_reminder_sent', tableName: 'sessions', recordId: params.id,
-        oldData: old, newData: reminded, context: `Sent appointment reminder to ${clientEmail}`, ip });
+        oldData: old, newData: reminded, context: `Sent appointment reminder to ${clientEmail}; correlation ${correlationId}`, ip });
       return respond(200, { session: reminded, reminder_sent: true, result });
     }
 
@@ -306,15 +339,13 @@ exports.handler = async function(event) {
 
     // ── Generic field update ─────────────────────────────────────────
     const allowed = ['status','booking_status','payment_status','amount_due','amount_paid','payment_paid_at','waiver_status','waiver_completed','waiver_completed_at','session_date','session_time','service','location_type','seller_notes','square_booking_id','stripe_checkout_session_id','stripe_payment_intent_id','stripe_payment_status','state_before','state_after'];
-    if (isWebsiteBooking(old) && (!isPaid(old) || String(body.payment_status || '').toLowerCase() !== 'paid') && (String(body.status || '').toLowerCase() === 'confirmed' || String(body.payment_status || '').toLowerCase() === 'paid' || String(body.stripe_payment_status || '').toLowerCase() === 'paid')) {
+    if (isWebsiteBooking(old) && (String(body.status || '').toLowerCase() === 'confirmed' || String(body.booking_status || '').toLowerCase() === 'confirmed' || String(body.payment_status || '').toLowerCase() === 'paid' || String(body.stripe_payment_status || '').toLowerCase() === 'paid')) {
       return respond(409, { error: 'Website bookings become confirmed/paid only through verified Stripe webhook processing.' });
     }
     const updates = {};
     allowed.forEach(k => { if (body[k] !== undefined) updates[k] = body[k]; });
-    if (isWebsiteBooking(old) && !isPaid(old)) {
-      updates.status = websiteAppointmentStatus({ ...old, ...updates });
-      if (updates.booking_status === 'ready' || updates.payment_status !== 'paid') updates.booking_status = 'payment_required';
-    }
+    const lifecycleKeys=['status','booking_status','payment_status','amount_paid','payment_paid_at','session_date','session_time','stripe_checkout_session_id','stripe_payment_intent_id','stripe_payment_status'];
+    if(lifecycleKeys.some(key=>body[key]!==undefined))return respond(409,{error:'Use the dedicated audited appointment lifecycle or payment workflow.'});
     const calendarRelevantChange = ['session_date','session_time','service','location_type','payment_status'].some(k => body[k] !== undefined && body[k] !== old[k]);
     const nextLocation = String(body.location_type !== undefined ? body.location_type : old.location_type || '').toLowerCase();
     const nextStatus = String(body.status !== undefined ? body.status : old.status || '').toLowerCase();
@@ -326,8 +357,14 @@ exports.handler = async function(event) {
       updates.google_calendar_error = null;
     }
 
-    const { data, error } = await sb.from('sessions').update(updates).eq('id', params.id).select().single();
-    if (error) return respond(500, { error: error.message });
+    const correlationId = require('crypto').randomUUID();
+    const { data: updateResult, error } = await sb.rpc('practitioner_update_session_with_audit', {
+      p_id: params.id, p_updates: updates, p_actor_id: auth.user.id, p_actor_email: auth.user.email,
+      p_request: correlationId, p_request_path: '/.netlify/functions/sessions',
+    });
+    if (error || !updateResult?.session) return respond(409, { error: 'The session could not be updated. Reload and verify its current state.' });
+    const data = updateResult.session;
+    console.info('[sessions] appointment mutation', JSON.stringify({ session_id: params.id, correlation_id: correlationId, actor_type: 'practitioner', source: 'dashboard', action: 'session_updated' }));
 
     await log({ actor: auth.user.email, action: 'updated', tableName: 'sessions', recordId: params.id, oldData: old, newData: data, context: body._context || `Updated session ${params.id}`, ip });
 

@@ -1,2 +1,20 @@
-const http=require('http'),fs=require('fs'),path=require('path');const root=path.resolve(__dirname,'..');
-http.createServer((req,res)=>{let pathname;try{pathname=decodeURIComponent(new URL(req.url,'http://localhost').pathname)}catch{res.writeHead(400);return res.end()};if(req.method!=='GET'||pathname.includes('..')||pathname.startsWith('/.')||!(pathname==='/'||pathname==='/dashboard-p1.html'||pathname.startsWith('/dashboard-p1/'))){res.writeHead(403);return res.end('Read-only preview');}const file=path.join(root,pathname==='/'?'dashboard-p1.html':pathname);if(!file.startsWith(root+path.sep)){res.writeHead(403);return res.end()};fs.readFile(file,(err,data)=>{if(err){res.writeHead(404);return res.end('Not found')};res.setHeader('Content-Type',({'.html':'text/html','.css':'text/css','.mjs':'text/javascript','.js':'text/javascript'})[path.extname(file)]||'application/octet-stream');res.setHeader('Cache-Control','no-store');res.end(data)});}).listen(4387,'127.0.0.1',()=>console.log('Local read-only preview: http://127.0.0.1:4387/dashboard-p1.html?preview=1'));
+const http=require('http'),fs=require('fs'),path=require('path');
+const root=path.resolve(__dirname,'..');
+const localStaticExact=new Set(['/pwa-install.js','/assets/icons/favicon-32.png']);
+
+http.createServer((req,res)=>{
+ let pathname;
+ try{pathname=decodeURIComponent(new URL(req.url,'http://localhost').pathname)}catch{res.writeHead(400);return res.end()}
+ const allowed=req.method==='GET'&&!pathname.includes('..')&&!pathname.startsWith('/.')&&(
+  pathname==='/'||pathname==='/dashboard-p1.html'||pathname.startsWith('/dashboard-p1/')||localStaticExact.has(pathname)
+ );
+ if(!allowed){res.writeHead(403);return res.end('Read-only preview')}
+ const file=path.join(root,pathname==='/'?'dashboard-p1.html':pathname);
+ if(!file.startsWith(root+path.sep)){res.writeHead(403);return res.end()}
+ fs.readFile(file,(err,data)=>{
+  if(err){res.writeHead(404);return res.end('Not found')}
+  res.setHeader('Content-Type',({'.html':'text/html','.css':'text/css','.mjs':'text/javascript','.js':'text/javascript','.png':'image/png'})[path.extname(file)]||'application/octet-stream');
+  res.setHeader('Cache-Control','no-store');
+  res.end(data);
+ });
+}).listen(4387,'127.0.0.1',()=>console.log('Local read-only preview: http://127.0.0.1:4387/dashboard-p1.html?preview=1'));
