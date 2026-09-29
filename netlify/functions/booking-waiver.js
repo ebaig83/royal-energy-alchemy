@@ -40,7 +40,6 @@ async function markBookingState(sb, sessionId, updates, trustedContext) {
   const candidate = { ...currentSession, ...updates, payment_status: paymentPaid ? 'paid' : currentSession.payment_status, waiver_status: waiverDone ? COMPLETE_WAIVER : currentSession.waiver_status, waiver_completed: waiverDone };
   const confirmed = website && paymentPaid && waiverDone && (holdActive || (String(currentSession.status||'').toLowerCase()==='confirmed' && String(currentSession.booking_status||'').toLowerCase()!=='cancelled')) && isOperationalWebsiteBooking({ ...candidate, status: 'confirmed', booking_status: 'confirmed' });
   const next = Object.assign({}, updates, {
-    ...(website ? { client_email: currentSession.client_email || null, client_phone: currentSession.client_phone || null } : {}),
     ...(website ? { status: confirmed ? 'confirmed' : 'pending', booking_status: confirmed ? 'confirmed' : paymentPaid ? 'payment_received_incomplete' : 'payment_required', google_calendar_status: confirmed ? 'pending' : 'not_requested' } : {}),
     ...(!website ? { booking_status: paymentPaid && waiverDone ? 'ready' : paymentPaid ? 'payment_paid' : 'payment_required' } : {}),
     updated_at: new Date().toISOString(),

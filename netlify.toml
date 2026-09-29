@@ -38,3 +38,6 @@
 
 [functions."expire-website-bookings"]
   schedule = "*/10 * * * *"
+
+[functions."website-booking-consistency"]
+  schedule = "*/15 * * * *"
