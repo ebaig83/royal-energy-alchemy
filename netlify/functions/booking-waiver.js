@@ -27,13 +27,20 @@ async function markBookingState(sb, sessionId, updates, trustedContext) {
     currentSession=attachServiceAddress(current,address);
   }
 
+  if(currentSession.client_id){
+    const {data:client,error:clientError}=await sb.from('clients').select('email,phone').eq('id',currentSession.client_id).maybeSingle();
+    if(clientError)return {error:'Unable to verify the linked client record.'};
+    currentSession={...currentSession,client_email:currentSession.client_email||client?.email||null,client_phone:currentSession.client_phone||client?.phone||null};
+  }
+
   const paymentPaid = String(updates.payment_status || current.payment_status || '').toLowerCase() === 'paid';
   const waiverDone = updates.waiver_completed === true || isDone(updates.waiver_status || current.waiver_status) || current.waiver_completed === true;
   const website = isWebsiteBooking(currentSession);
   const holdActive = !!currentSession.payment_hold_expires_at && Date.parse(currentSession.payment_hold_expires_at) > Date.now() && String(currentSession.status || '').toLowerCase() === 'pending';
   const candidate = { ...currentSession, ...updates, payment_status: paymentPaid ? 'paid' : currentSession.payment_status, waiver_status: waiverDone ? COMPLETE_WAIVER : currentSession.waiver_status, waiver_completed: waiverDone };
-  const confirmed = website && holdActive && paymentPaid && waiverDone && isOperationalWebsiteBooking({ ...candidate, status: 'confirmed', booking_status: 'confirmed' });
+  const confirmed = website && paymentPaid && waiverDone && (holdActive || (String(currentSession.status||'').toLowerCase()==='confirmed' && String(currentSession.booking_status||'').toLowerCase()!=='cancelled')) && isOperationalWebsiteBooking({ ...candidate, status: 'confirmed', booking_status: 'confirmed' });
   const next = Object.assign({}, updates, {
+    ...(website ? { client_email: currentSession.client_email || null, client_phone: currentSession.client_phone || null } : {}),
     ...(website ? { status: confirmed ? 'confirmed' : 'pending', booking_status: confirmed ? 'confirmed' : paymentPaid ? 'payment_received_incomplete' : 'payment_required', google_calendar_status: confirmed ? 'pending' : 'not_requested' } : {}),
     ...(!website ? { booking_status: paymentPaid && waiverDone ? 'ready' : paymentPaid ? 'payment_paid' : 'payment_required' } : {}),
     updated_at: new Date().toISOString(),
@@ -56,10 +63,27 @@ exports.handler = async function(event) {
   try { body = JSON.parse(event.body || '{}'); } catch { return respond(400, { error: 'Invalid JSON.' }); }
 
   const sessionId = body.session_id || body.booking_id;
+  const attemptId = body.attempt_id;
+  const resumeToken = body.resume_token;
   const name = String(body.name || '').trim();
   const email = String(body.email || '').trim().toLowerCase();
   const phone = String(body.phone || '').trim();
 
+  if (attemptId) {
+    if (!resumeToken) return respond(401, { error: 'A secure resume token is required.' });
+    if (!name) return respond(400, { error: 'Client name is required.' });
+    if (!email) return respond(400, { error: 'Client email is required.' });
+    const sb = getClient();
+    const correlationId = require('crypto').randomUUID();
+    const { data: attemptBefore, error: attemptLookupError } = await sb.from('booking_attempts').select('client_first_name,client_last_name,client_email').eq('id', attemptId).maybeSingle();
+    if (attemptLookupError || !attemptBefore) return respond(404, { error: 'Booking attempt was not found.' });
+    const attemptNameBefore = `${attemptBefore.client_first_name || ''} ${attemptBefore.client_last_name || ''}`.trim().toLowerCase();
+    if (attemptBefore.client_email !== email || attemptNameBefore !== name.toLowerCase()) return respond(409, { error: 'The waiver identity does not match this booking attempt.' });
+    const { data: attempt, error: attemptError } = await sb.rpc('record_booking_attempt_waiver', { p_attempt_id: attemptId, p_resume_token: resumeToken, p_correlation_id: correlationId });
+    if (attemptError) return respond(409, { error: attemptError.message });
+    console.info('[booking-waiver] booking attempt mutation', JSON.stringify({ attempt_id: attemptId, correlation_id: correlationId, actor_type: 'client', source: 'signed_waiver', action: 'waiver_completed' }));
+    return respond(200, { saved: true, attempt_id: attempt.id, waiver_status: COMPLETE_WAIVER, payment_status: attempt.payment_status || 'pending', next: 'payment' });
+  }
   if (!sessionId) return respond(400, { error: 'Booking ID is required before the waiver can be saved.' });
   const tokenResult = verifyAppointmentToken(body.token, sessionId, 'waiver');
   if (!tokenResult.ok) return respond(401, { error: 'This waiver link is invalid or has expired.', code: tokenResult.reason });

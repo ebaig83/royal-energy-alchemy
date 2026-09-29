@@ -52,6 +52,27 @@ async function stripePost(path, params) {
   return data;
 }
 
+async function stripeGet(path) {
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!key) {
+    const err = new Error('Stripe is not configured yet.');
+    err.statusCode = 503;
+    throw err;
+  }
+  const res = await fetch('https://api.stripe.com/v1' + path, {
+    method: 'GET',
+    headers: { Authorization: 'Bearer ' + key },
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    const err = new Error(data?.error?.message || 'Stripe Checkout could not be retrieved.');
+    err.statusCode = res.status;
+    err.detail = data;
+    throw err;
+  }
+  return data;
+}
+
 exports.handler = async function(event) {
   if (event.httpMethod === 'OPTIONS') return respond(200, {});
   if (event.httpMethod !== 'POST') return respond(405, { error: 'Method not allowed.' });
@@ -59,10 +80,69 @@ exports.handler = async function(event) {
   let body;
   try { body = JSON.parse(event.body || '{}'); } catch { return respond(400, { error: 'Invalid JSON.' }); }
 
+  const attemptId = body.attempt_id;
   const sessionId = body.session_id || body.booking_id;
-  if (!sessionId) return respond(400, { error: 'Booking ID is required to start payment.' });
+  if (!sessionId && !attemptId) return respond(400, { error: 'Booking ID is required to start payment.' });
 
   const sb = getClient();
+  if (attemptId) {
+    const { data: attempt, error: attemptError } = await sb.from('booking_attempts').select('id,client_first_name,client_last_name,client_email,service,service_id,session_date,session_time,location_type,status,waiver_completed,payment_status,payment_amount,payment_reference,expires_at,slot_id,stripe_checkout_session_id').eq('id', attemptId).single();
+    if (attemptError || !attempt) return respond(404, { error: 'Booking attempt was not found.' });
+    if (attempt.status === 'completed' || attempt.payment_status === 'paid') return respond(409, { error: 'This booking attempt is already paid or finalized.' });
+    if (attempt.stripe_checkout_session_id) {
+      try {
+        const existing = await stripeGet(`/checkout/sessions/${encodeURIComponent(attempt.stripe_checkout_session_id)}`);
+        if (existing.status === 'open' && existing.url) {
+          return respond(200, {
+            url: existing.url,
+            checkout_session_id: existing.id,
+            payment_status: 'pending',
+            attempt_id: attemptId,
+            reused: true,
+          });
+        }
+        if (existing.status === 'complete') {
+          return respond(409, { error: 'Payment is complete and is being finalized.' });
+        }
+        if (existing.status === 'expired') {
+          const { error: clearError } = await sb.from('booking_attempts').update({ stripe_checkout_session_id: null, updated_at: new Date().toISOString() }).eq('id', attemptId).eq('stripe_checkout_session_id', attempt.stripe_checkout_session_id);
+          if (clearError) throw clearError;
+        }
+      } catch (e) {
+        return respond(e.statusCode || 502, { error: e.message, detail: e.detail || null });
+      }
+    }
+    if (!attempt.expires_at || Date.parse(attempt.expires_at) <= Date.now() || !attempt.waiver_completed) return respond(409, { error: 'This booking attempt is incomplete or expired. Please resume and revalidate it.' });
+    const service = findService(attempt.service);
+    const expected = centsFromDollars(attempt.payment_amount);
+    if (!service || expected !== centsFromDollars(service.price)) return respond(409, { error: 'The booking price does not match the current service catalog.' });
+    const { data: validation, error: validationError } = await sb.rpc('validate_booking_completion', { p_attempt_id: attemptId, p_payment_status: 'paid' });
+    if (validationError || !validation?.valid) return respond(409, { error: 'This booking attempt is no longer available. Please choose a fresh time.' });
+    const email = String(attempt.client_email || '').trim().toLowerCase();
+    if (!email) return respond(409, { error: 'A verified booking email is required before payment.' });
+    const params = new URLSearchParams();
+    params.set('mode', 'payment');
+    params.set('success_url', `${SITE_URL}/book.html?attempt_id=${encodeURIComponent(attemptId)}&payment=success`);
+    params.set('cancel_url', `${SITE_URL}/book.html?attempt_id=${encodeURIComponent(attemptId)}&payment=cancelled`);
+    params.set('client_reference_id', attemptId);
+    params.set('customer_email', email);
+    params.set('line_items[0][quantity]', '1');
+    params.set('line_items[0][price_data][currency]', 'usd');
+    params.set('line_items[0][price_data][unit_amount]', String(expected));
+    params.set('line_items[0][price_data][product_data][name]', attempt.service || 'Royal Energy Alchemy Session');
+    params.set('metadata[attempt_id]', attemptId);
+    params.set('metadata[booking_attempt_id]', attemptId);
+    params.set('metadata[service_id]', service.id);
+    params.set('metadata[expected_amount]', String(expected));
+    params.set('payment_intent_data[metadata][attempt_id]', attemptId);
+    params.set('payment_intent_data[metadata][expected_amount]', String(expected));
+    try {
+      const checkout = await stripePost('/checkout/sessions', params);
+      const { error: claimError } = await sb.from('booking_attempts').update({ payment_status: 'pending', stripe_checkout_session_id: checkout.id }).eq('id', attemptId).is('stripe_checkout_session_id', null);
+      if (claimError) throw claimError;
+      return respond(200, { url: checkout.url, checkout_session_id: checkout.id, payment_status: 'pending', attempt_id: attemptId });
+    } catch (e) { return respond(e.statusCode || 500, { error: e.message, detail: e.detail || null }); }
+  }
   const { data: rawSession, error } = await sb
     .from('sessions')
     .select('id, client_id, client_name, client_email, client_phone, service, session_date, session_time, duration_minutes, location_type, source, status, booking_status, payment_hold_expires_at, amount_due, amount_paid, payment_status, waiver_status, waiver_completed')

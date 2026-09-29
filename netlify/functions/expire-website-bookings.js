@@ -9,10 +9,12 @@ async function processExpired({ sb, now = () => new Date() } = {}) {
   if (!sb) throw new Error('Supabase client required');
   const { data, error } = await sb.rpc('expire_unpaid_booking_holds', { p_now: now().toISOString() });
   if (error) throw error;
+  const { data: attempts, error: attemptsError } = await sb.rpc('expire_booking_attempts', { p_now: now().toISOString() });
+  if (attemptsError) throw attemptsError;
   for (const action of data?.actions || []) {
     console.info('[expire-website-bookings] appointment mutation', JSON.stringify({ session_id: action.session_id, correlation_id: action.correlation_id, actor_type: 'system', source: 'expire-payment-holds', action: 'payment_hold_expired' }));
   }
-  return { expired: Number(data?.expired_count || 0), released_slot_count: Number(data?.released_slot_count || 0), session_ids: data?.session_ids || [] };
+  return { expired: Number(data?.expired_count || 0), released_slot_count: Number(data?.released_slot_count || 0), session_ids: data?.session_ids || [], expired_attempts: Number(attempts?.expired_attempts || 0), expired_reservations: Number(attempts?.expired_reservations || 0) };
 }
 
 exports.processExpired = processExpired;

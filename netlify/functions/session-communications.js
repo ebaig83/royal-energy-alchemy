@@ -35,11 +35,11 @@ async function processDue({ sb, now = new Date(), send = sendWithPreferences } =
     const kind = reminder ? 'reminder' : 'followup';
     const messageType = reminder ? 'appointment_reminder' : 'followup_reminder';
     const templateName = reminder ? 'session_30_minute_reminder' : 'session_72_hour_followup';
-    const { data: client } = await sb.from('clients').select('email').eq('id', session.client_id).single();
+    const { data: client } = await sb.from('clients').select('email,phone').eq('id', session.client_id).single();
     if (!client?.email) { skipped.push({ id: session.id, reason: 'no_client_email', kind }); continue; }
     const { data: existing } = await sb.from('communications').select('id').eq('message_type', messageType).contains('metadata', { session_id: session.id, automation: templateName, appointment_date: session.session_date, appointment_time: String(session.session_time||'').slice(0,5) }).limit(1);
     if (existing?.length) { skipped.push({ id: session.id, reason: 'already_sent', kind }); continue; }
-    let vars = { client_name: session.client_name || '', service: session.service || '', session_date: session.session_date, session_time: String(session.session_time || '').slice(0, 5), timezone: 'ET', contact_email: process.env.ADMIN_EMAIL || 'royalenergyalchemy@gmail.com' };
+    let vars = { client_name: session.client_name || '', service: session.service || '', client_email: session.client_email || client.email || '', client_phone: session.client_phone || client.phone || '', session_date: session.session_date, session_time: String(session.session_time || '').slice(0, 5), timezone: 'ET', contact_email: process.env.ADMIN_EMAIL || 'royalenergyalchemy@gmail.com' };
     if (reminder && /^https:\/\/meet\.google\.com\//i.test(session.google_meet_url || '')) vars.google_meet_url = session.google_meet_url;
     if (followup) {
       const { data: existingFollowup } = await sb.from('aftercare').select('id, status, followup_template_used').eq('session_id', session.id).eq('followup_type', '72hr').limit(1);
@@ -52,7 +52,9 @@ async function processDue({ sb, now = new Date(), send = sendWithPreferences } =
       if (!row?.id) throw new Error('Unable to create follow-up record');
       vars = { ...vars, followup_url: followupUrl(row.id, template), followup_type: '72hr' };
     }
-    await send(sb, { templateName, recipientEmail: client.email, clientId: session.client_id, sessionId: session.id, messageType, variables: vars, metadata: { session_id: session.id, automation: templateName, notification_type: messageType, appointment_date: session.session_date, appointment_time: String(session.session_time||'').slice(0,5) }, idempotencyKey: `${templateName}:${session.id}:${session.session_date}:${String(session.session_time || '').slice(0, 5)}` });
+    const sendResult = await send(sb, { templateName, recipientEmail: client.email, clientId: session.client_id, sessionId: session.id, messageType, variables: vars, metadata: { session_id: session.id, automation: templateName, notification_type: messageType, appointment_date: session.session_date, appointment_time: String(session.session_time||'').slice(0,5) }, idempotencyKey: `${templateName}:${session.id}:${session.session_date}:${String(session.session_time || '').slice(0, 5)}` });
+    if (sendResult?.skipped && ['email_not_configured', 'template_not_found', 'no_recipient'].includes(sendResult.reason)) throw new Error(`email_provider_${sendResult.reason}`);
+    if (sendResult?.sent === false || sendResult?.status === 'failed') throw new Error('email_provider_delivery_failed');
     sent.push({ id: session.id, kind });
     } catch (error) {
       // Log only the session identifier and sanitized error message; never PII, tokens, or payloads.
@@ -66,6 +68,6 @@ async function processDue({ sb, now = new Date(), send = sendWithPreferences } =
 exports.config = { schedule: '*/5 * * * *' };
 exports.processDue = processDue;
 exports.handler = async () => {
-  try { return { statusCode: 200, body: JSON.stringify(await observeWorker(getClient(), 'communications', async () => { const due=await processDue({sb:getClient()}); const notices=await require('./lib/appointment-notices').processNotices(getClient()); return {...due,appointment_notices:notices}; })) }; }
-  catch (error) { console.error('[session-communications]', error.message); return { statusCode: 500, body: JSON.stringify({ error: 'Communication job failed.' }) }; }
+  try { return { statusCode: 200, body: JSON.stringify(await observeWorker(getClient(), 'communications', async () => { const due=await processDue({sb:getClient()}); let notices; try { notices=await require('./lib/appointment-notices').processNotices(getClient()); } catch { notices={sent:0,skipped:0,waiting:0,failed:1,unavailable:true}; } return {...due,appointment_notices:notices}; })) }; }
+  catch (error) { console.error('[session-communications]', String(error?.message || 'unknown').replace(/(token|secret|key|password)=?\S*/gi, '$1=[redacted]')); return { statusCode: 500, body: JSON.stringify({ error: 'Communication job failed.' }) }; }
 };

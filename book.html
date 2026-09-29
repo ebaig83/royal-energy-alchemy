@@ -210,7 +210,10 @@ body{background:var(--bg);color:var(--text);font-family:'EB Garamond',serif;min-
 'use strict';
 
 // ── State ─────────────────────────────────────────────────────────────────────
-const state = { service: null, serviceLabel: '', locationType: 'distance', slotId: null, slotDate: '', slotTime: '', slotLabel: '' };
+const state = { service: null, serviceLabel: '', price: 0, locationType: 'distance', slotId: null, slotDate: '', slotTime: '', slotLabel: '' };
+const BOOK_PARAMS = new URLSearchParams(window.location.search);
+let waitlistOfferToken = BOOK_PARAMS.get('offer') || '';
+let waitlistOffer = null;
 
 function easternLabel(value) {
   const label = String(value || '').trim();
@@ -296,6 +299,7 @@ function loadCatalog() {
           card.classList.add('selected');
           state.service = svc.id;
           state.serviceLabel = svc.label;
+          state.price = Number(svc.price);
           state.locationType = svc.location_type === 'in-person' ? 'in_person' : svc.location_type;
           p1Next.textContent = `Continue with ${svc.label} →`;
           p1Next.disabled = false;
@@ -306,7 +310,36 @@ function loadCatalog() {
     })
     .catch(() => { catalogError(); });
 }
-loadCatalog();
+const catalogReady = loadCatalog();
+
+async function initializeResumeOrOffer() {
+  const resume = BOOK_PARAMS.get('resume');
+  if (resume) {
+    const response = await fetch('/.netlify/functions/booking-attempt', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'resume', resume_token: resume }) });
+    const result = await response.json();
+    if (!response.ok) { showError(result.error || 'This booking link is expired or unavailable.'); return; }
+    window.location.href = '/waiver-esign.html?attempt_id=' + encodeURIComponent(result.attempt.id) + '&resume_token=' + encodeURIComponent(result.resume_token || resume) + '&name=' + encodeURIComponent(`${result.attempt.client_first_name || ''} ${result.attempt.client_last_name || ''}`.trim()) + '&email=' + encodeURIComponent(result.attempt.client_email || '') + '&phone=' + encodeURIComponent(result.attempt.client_phone || '');
+    return;
+  }
+  if (waitlistOfferToken) {
+    const response = await fetch('/.netlify/functions/waitlist?offer=' + encodeURIComponent(waitlistOfferToken));
+    const result = await response.json();
+    if (!response.ok) { showError(result.error || 'This waitlist offer is expired or unavailable.'); return; }
+    waitlistOffer = result.offer;
+    state.service = waitlistOffer.service;
+    state.serviceLabel = waitlistOffer.service;
+    state.slotId = null;
+    state.slotDate = waitlistOffer.slot_date;
+    state.slotTime = String(waitlistOffer.slot_time || '').slice(0, 5);
+    document.getElementById('clientFirstName').value = waitlistOffer.first_name || '';
+    document.getElementById('clientLastName').value = waitlistOffer.last_name || '';
+    document.getElementById('clientEmail').value = waitlistOffer.email || '';
+    document.getElementById('clientPhone').value = waitlistOffer.phone || '';
+    document.getElementById('p3Next').disabled = false;
+    showPanel(3);
+  }
+}
+catalogReady.then(initializeResumeOrOffer).catch(() => {});
 document.getElementById('p1Next').addEventListener('click', () => {
   if (!state.service) return;
   clearError();
@@ -335,7 +368,8 @@ document.getElementById('dateInput').addEventListener('change', async function()
     const available = (res.slots || []).filter(s => s.status === 'available');
 
     if (!available.length) {
-      container.innerHTML = '<div class="no-slots">No available times on this date. Please select another day.</div>';
+      container.innerHTML = '<div class="no-slots">No available times on this date.</div><button type="button" class="btn-primary" id="joinWaitlistBtn">Join the waitlist</button>';
+      document.getElementById('joinWaitlistBtn').addEventListener('click', () => showWaitlistForm(container));
       return;
     }
 
@@ -360,6 +394,28 @@ document.getElementById('dateInput').addEventListener('change', async function()
     container.innerHTML = '<div class="no-slots">Unable to load available times. Please refresh and try again.</div>';
   }
 });
+
+function showWaitlistForm(container) {
+  container.insertAdjacentHTML('beforeend', `<form id="waitlistForm" class="waitlist-form"><h3>Join the waitlist</h3><label>First name<input name="first_name" required></label><label>Last name<input name="last_name" required></label><label>Email<input name="email" type="email" required></label><label>Phone<input name="phone" required></label><label>Preferred days<input name="preferred_days" placeholder="e.g. Mon, Wed"></label><label>Preferred times<input name="preferred_times" placeholder="e.g. mornings"></label><label>Timezone<input name="timezone" value="America/New_York" required></label><label><input name="consent" type="checkbox" required> Notify me about suitable availability</label><button class="btn-primary" type="submit">Join waitlist</button><p class="waitlist-status" role="status"></p></form>`);
+  const form = document.getElementById('waitlistForm');
+  form.addEventListener('submit', async event => {
+    event.preventDefault();
+    const status = form.querySelector('.waitlist-status');
+    const values = Object.fromEntries(new FormData(form));
+    values.preferred_days = String(values.preferred_days || '').split(',').map(v => v.trim()).filter(Boolean);
+    values.preferred_times = String(values.preferred_times || '').split(',').map(v => v.trim()).filter(Boolean);
+    values.service = state.service;
+    values.consent = form.elements.consent.checked ? 'true' : 'false';
+    status.textContent = 'Joining…';
+    try {
+      const response = await fetch('/.netlify/functions/waitlist', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(values) });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Waitlist signup failed.');
+      status.textContent = 'You are on the waitlist. We will email you if a suitable time opens.';
+      form.querySelector('button').disabled = true;
+    } catch (error) { status.textContent = error.message; }
+  });
+}
 
 document.getElementById('p2Next').addEventListener('click', () => {
   if (!state.slotId) return;
@@ -406,10 +462,10 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
   clearError();
   const btn   = document.getElementById('submitBtn');
   btn.disabled = true;
-  btn.textContent = 'Creating Booking...';
+  btn.textContent = 'Saving Booking Request...';
 
   const payload = {
-    slot_id:           state.slotId,
+    slot_id:           waitlistOfferToken ? null : state.slotId,
     service:           state.service,
     client_name:       `${document.getElementById('clientFirstName').value.trim()} ${document.getElementById('clientLastName').value.trim()}`.trim(),
     client_first_name: document.getElementById('clientFirstName').value.trim(),
@@ -424,32 +480,46 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
       country: document.getElementById('serviceAddressCountry').value.trim(),
     } : null,
     preferred_contact: document.getElementById('preferredContact').value,
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/New_York',
+    date: state.slotDate,
+    time: state.slotTime,
+    location_type: state.locationType,
+    payment_amount: state.price,
+    waitlist_offer_token: waitlistOfferToken || null,
+    idempotency_key: (() => { try { const existing = sessionStorage.getItem('rea_booking_attempt_idempotency'); if (existing) return existing; const value = crypto.randomUUID(); sessionStorage.setItem('rea_booking_attempt_idempotency', value); return value; } catch { return `${Date.now()}-${Math.random()}`; } })(),
     bot_field:         document.getElementById('botField').value || null,
   };
 
   try {
-    const r   = await fetch('/.netlify/functions/booking', {
+    const r   = await fetch('/.netlify/functions/booking-attempt', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(payload),
+      body:    JSON.stringify({ action: 'start', idempotency_key: payload.idempotency_key, payload }),
     });
     const res = await r.json();
 
-    if (!r.ok || !res.booked) {
+    if (!r.ok || !res.attempt?.id || !res.resume_token) {
       showError(res.error || 'Booking failed. Please try again or contact us directly.');
       btn.disabled = false;
       btn.textContent = 'Book Session & Continue to Waiver →';
       return;
     }
 
+    if (waitlistOfferToken) {
+      const offerResponse = await fetch('/.netlify/functions/waitlist', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'accept_offer', offer_token: waitlistOfferToken, attempt_id: res.attempt.id }) });
+      const offerResult = await offerResponse.json();
+      if (!offerResponse.ok) throw new Error(offerResult.error || 'This waitlist offer is no longer available.');
+    }
+
     try {
       sessionStorage.setItem('rea_prefill_name', payload.client_name);
       sessionStorage.setItem('rea_prefill_email', payload.client_email);
       sessionStorage.setItem('rea_prefill_phone', payload.client_phone || '');
-      sessionStorage.setItem('rea_booking_session_id', res.session_id || '');
+      sessionStorage.setItem('rea_booking_attempt_id', res.attempt.id);
+      sessionStorage.setItem('rea_booking_resume_token', res.resume_token);
     } catch (err) {}
 
-    window.location.href = res.waiver_url || ('/waiver-esign.html?session_id=' + encodeURIComponent(res.session_id || ''));
+    window.location.href = '/waiver-esign.html?attempt_id=' + encodeURIComponent(res.attempt.id) + '&resume_token=' + encodeURIComponent(res.resume_token) + '&name=' + encodeURIComponent(payload.client_name) + '&email=' + encodeURIComponent(payload.client_email) + '&phone=' + encodeURIComponent(payload.client_phone);
 
   } catch (e) {
     showError('Connection error. Please check your internet and try again.');

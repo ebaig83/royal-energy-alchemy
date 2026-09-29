@@ -1,0 +1,21 @@
+'use strict';
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const root = path.resolve(__dirname, '..');
+const sql = fs.readFileSync(path.join(root, 'supabase/migrations/20260925030002_booking_attempt_waitlist_rpcs.sql'), 'utf8');
+const schema = fs.readFileSync(path.join(root, 'supabase/migrations/20260925030000_booking_attempt_recovery_schema.sql'), 'utf8');
+const dashboard = fs.readFileSync(path.join(root, 'dashboard-p1/app.mjs'), 'utf8');
+const booking = fs.readFileSync(path.join(root, 'netlify/functions/booking-attempt.js'), 'utf8');
+
+for (const name of ['booking_attempts','booking_resume_tokens','booking_recovery_events','booking_attempt_audit']) assert.match(schema, new RegExp(`create table if not exists public\\.${name}`));
+for (const field of ['first_name','last_name','email','phone','service','date','time','mode','in_person_address','waiver','payment','availability']) assert.match(sql, new RegExp(`'${field}'`));
+for (const fn of ['start_booking_attempt','resume_booking_attempt','validate_booking_completion','finalize_booking_attempt','expire_booking_attempts','signup_waitlist']) assert.match(sql, new RegExp(`create or replace function public\\.${fn}`));
+assert.match(schema, /revoke all on public\.booking_attempts, public\.booking_resume_tokens/);
+assert.match(schema, /unique \(attempt_id, reminder_number\)/);
+assert.match(booking, /event\.httpMethod !== 'POST'/);
+assert.match(booking, /action === 'resume'/);
+assert.match(booking, /action === 'finalize'/);
+assert.match(dashboard, /function waitlist\(\)/);
+assert.match(dashboard, /function incompleteBookings\(\)/);
+console.log('waitlist/booking recovery contract checks passed');

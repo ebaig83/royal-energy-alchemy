@@ -9,6 +9,10 @@ const FIELDS={
  aftercare:'id,session_id,client_id,client_name,status,scheduled_for,source',
  client_relationships:'id,client_id,related_client_id,relationship_type,relationship_label',
  session_notes:'id,session_id,client_id,content,created_at'
+ ,booking_attempts:'id,client_id,client_first_name,client_last_name,client_email,client_phone,client_timezone,client_preferences,service,service_id,session_date,session_time,location_type,slot_id,waiver_completed,payment_status,status,source,waitlist_offer_id,abandoned_at,expires_at,completed_at,last_resumed_at,recovery_1_sent_at,recovery_2_sent_at,created_at'
+ ,waitlist_entries:'id,client_id,first_name,last_name,email,phone,service,preferred_days,preferred_times,timezone,status,exclusion_reason,joined_at,expires_at'
+ ,waitlist_offers:'id,waitlist_entry_id,wave,slot_id,status,offered_at,expires_at,accepted_at'
+ ,booking_recovery_events:'id,attempt_id,reminder_number,status,scheduled_at,sent_at'
 };
 const RECONCILIATION_FIELDS='id,client_id,client_name,session_date,session_time,status,source,google_calendar_status,google_calendar_event_id,google_meet_url';
 async function readTable(base,key,table){
@@ -48,6 +52,7 @@ function project(raw){
  const addresses=new Map(d.session_service_addresses.map(a=>[a.session_id,{service_address_line1:a.address_line1,service_address_line2:a.address_line2,service_city:a.city,service_state:a.state,service_postal_code:a.postal_code,service_country:a.country}]));
  return {preview:false,fullHistory:true,now:new Date().toISOString(),coverage:'Complete paginated Supabase reads · refreshed when the page loads · provider heartbeats not checked',errors:[],
   clients:d.clients.filter(c=>!c.merged_into_client_id),sessions:d.sessions.map(s=>{const client=canonicalClients.get(s.client_id);const session={...s,...(addresses.get(s.id)||{}),client_email:s.client_email||client?.email||null,client_phone:s.client_phone||client?.phone||null};const gate=require('./booking-state');const website=gate.isWebsiteBooking(session);const operational=gate.isOperationalAppointment(session);return {...withCurrentIdentity(session),operational_eligible:operational,incomplete_booking:website&&!gate.isOperationalWebsiteBooking(session)&&!gate.isExpiredWebsiteBooking(session)&&!gate.isPendingWebsiteBooking(session),pending_payment:gate.isPendingWebsiteBooking(session),expired_request:gate.isExpiredWebsiteBooking(session),session_notes:d.session_notes.filter(n=>n.session_id===s.id)};}),
+  booking_attempts:d.booking_attempts||[],waitlist_entries:d.waitlist_entries||[],waitlist_offers:d.waitlist_offers||[],booking_recovery_events:d.booking_recovery_events||[],
   ledger:d.ledger_entries.filter(l=>!l.deleted_at).map(l=>({...withCurrentIdentity(l),payment_method:payments.get(l.related_payment_id)?.method||null})),
   communications:d.communications.map(m=>({...withCurrentIdentity(m),error_message:m.status==='failed'?'Delivery failed. Detailed provider diagnostics are not connected.':null})),
   payments:d.payments.map(withCurrentIdentity),aftercare:d.aftercare.map(withCurrentIdentity),relationships:d.client_relationships};

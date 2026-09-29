@@ -1,5 +1,5 @@
 export const IMPORT='manual_planner_import_20260905';
-export const AREAS=['Today','Clients','Schedule','Communications','Finance','Content Studio','System'];
+export const AREAS=['Today','Clients','Schedule','Waitlist','Incomplete Bookings','Communications','Finance','Content Studio','System'];
 export const escapeHTML=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export const money=v=>Number.isFinite(Number(v))?new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(Number(v)):'—';
 export function dateKey(now=new Date()){return new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(now);}

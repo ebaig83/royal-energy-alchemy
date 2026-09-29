@@ -396,6 +396,8 @@ document.getElementById('signDate').value = today;
 const WAIVER_PARAMS = new URLSearchParams(window.location.search);
 const WAIVER_SESSION_ID = WAIVER_PARAMS.get('session_id') || WAIVER_PARAMS.get('booking_id') || '';
 const WAIVER_ACTION_TOKEN = WAIVER_PARAMS.get('token') || '';
+const WAIVER_ATTEMPT_ID = WAIVER_PARAMS.get('attempt_id') || '';
+const WAIVER_RESUME_TOKEN = WAIVER_PARAMS.get('resume_token') || '';
 
 // Pre-fill from assessment sessionStorage
 (function() {
@@ -460,10 +462,11 @@ const provisionalClientId = getOrCreateClientId(null);
 document.getElementById('client_id').value = provisionalClientId;
 
 async function beginStripeCheckout(sessionId, email) {
+  const attemptId = WAIVER_ATTEMPT_ID;
   const res = await fetch('/.netlify/functions/create-stripe-checkout', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ session_id: sessionId, client_email: email }),
+    body: JSON.stringify(attemptId ? { attempt_id: attemptId, client_email: email } : { session_id: sessionId, client_email: email }),
   });
   const data = await res.json();
   if (!res.ok || !data.url) throw new Error(data.error || 'Secure payment could not be started.');
@@ -548,7 +551,7 @@ document.getElementById('waiverForm').addEventListener('submit', async function(
     localStorage.setItem('rea_intake_' + clientId, JSON.stringify(legacySnap));
   } catch(err) {}
 
-  if (!WAIVER_SESSION_ID) {
+  if (!WAIVER_SESSION_ID && !WAIVER_ATTEMPT_ID) {
     showWaiverSuccess(
       clientId,
       '',
@@ -570,7 +573,7 @@ document.getElementById('waiverForm').addEventListener('submit', async function(
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        session_id: WAIVER_SESSION_ID,
+        ...(WAIVER_ATTEMPT_ID ? { attempt_id: WAIVER_ATTEMPT_ID, resume_token: WAIVER_RESUME_TOKEN } : { session_id: WAIVER_SESSION_ID }),
         client_reference: clientId,
         name,
         email,
@@ -595,7 +598,7 @@ document.getElementById('waiverForm').addEventListener('submit', async function(
       WAIVER_SESSION_ID,
       (err.message || 'Your waiver was saved locally, but secure payment could not be opened.') + ' Please use the payment button to continue.',
       'Continue to Payment →',
-      '/booking-confirmation.html?session_id=' + encodeURIComponent(WAIVER_SESSION_ID) + '&token=' + encodeURIComponent(WAIVER_ACTION_TOKEN) + '&payment=pending'
+      WAIVER_ATTEMPT_ID ? '/book.html?attempt_id=' + encodeURIComponent(WAIVER_ATTEMPT_ID) : '/booking-confirmation.html?session_id=' + encodeURIComponent(WAIVER_SESSION_ID) + '&token=' + encodeURIComponent(WAIVER_ACTION_TOKEN) + '&payment=pending'
     );
   }
 });

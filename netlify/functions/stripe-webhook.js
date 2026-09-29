@@ -77,6 +77,11 @@ async function markPayment(sb, sessionId, event, checkout) {
 
   if (error || !rawSession) throw new Error('Session not found.');
   let session=rawSession;
+  if(session.client_id){
+    const {data:client,error:clientError}=await sb.from('clients').select('email,phone').eq('id',session.client_id).maybeSingle();
+    if(clientError)throw clientError;
+    session={...session,client_email:session.client_email||client?.email||null,client_phone:session.client_phone||client?.phone||null};
+  }
   if (['in_person','in-person'].includes(String(session.location_type||'').toLowerCase())) {
     const {data:address,error:addressError}=await sb.from('session_service_addresses').select('address_line1,address_line2,city,state,postal_code,country').eq('session_id',session.id).maybeSingle();
     if(addressError)throw addressError;
@@ -106,6 +111,8 @@ async function markPayment(sb, sessionId, event, checkout) {
     stripe_checkout_session_id: checkout.id || null,
     stripe_payment_intent_id: checkout.payment_intent || null,
     stripe_payment_status: checkout.payment_status || 'paid',
+    client_email: session.client_email || null,
+    client_phone: session.client_phone || null,
     payment_hold_expires_at: null,
     google_calendar_status: websiteBooking ? (complete && isCalendarEligible({ ...session, status: 'confirmed', booking_status: 'confirmed', payment_status: 'paid' }) ? 'pending' : 'not_requested') : (isCalendarEligible({ ...session, payment_status: 'paid' }) ? 'pending' : (session.google_calendar_status || 'not_requested')),
     booking_status: websiteBooking ? (complete ? 'confirmed' : 'payment_received_incomplete') : waiverDone ? 'ready' : 'payment_paid',
@@ -147,6 +154,17 @@ async function markPaymentProblem(sb, checkout, status, stripeEvent) {
   Object.keys(updates).forEach(key => updates[key] === undefined && delete updates[key]);
   const result = await processStripeEvent(sb, stripeEvent, { sessionId, updates });
   return { ...result.session, id: sessionId, correlation_id: result.correlation_id, duplicate: result.duplicate === true, client_id: result.session?.client_id || null, client_name: result.session?.client_name || null, service: result.session?.service || null, session_date: result.session?.session_date || null, session_time: result.session?.session_time || null, amount_due: result.session?.amount_due || null };
+}
+
+async function markAttemptPayment(sb, attemptId, event, checkout) {
+  const { data: attempt, error } = await sb.from('booking_attempts').select('id,payment_amount,service,client_email,status,waiver_completed').eq('id', attemptId).single();
+  if (error || !attempt) throw new Error('Booking attempt not found.');
+  const expectedCents = Math.round(Number(attempt.payment_amount) * 100);
+  if (Number(checkout.amount_total) !== expectedCents || String(checkout.currency || '').toLowerCase() !== 'usd' || checkout.payment_status !== 'paid') throw new Error('Stripe payment does not match the booking attempt.');
+  const { data, error: finalizeError } = await sb.rpc('record_attempt_payment_and_finalize', { p_attempt_id: attemptId, p_checkout_id: checkout.id || null, p_payment_intent: checkout.payment_intent || null, p_amount: Number(checkout.amount_total) / 100, p_correlation_id: crypto.randomUUID() });
+  if (finalizeError) throw finalizeError;
+  if (data?.duplicate) return { duplicate: true, ...data.session };
+  return { ...(data.session || {}), correlation_id: data.correlation_id, duplicate: false };
 }
 
 async function reconcileRefund(sb, charge, stripeEvent) {
@@ -266,11 +284,11 @@ exports.handler = async function(event) {
     const object = stripeEvent.data?.object || {};
     let session = null;
     if (stripeEvent.type === 'checkout.session.completed' && object.payment_status === 'paid') {
-      session = await markPayment(sb, object.metadata?.session_id || object.metadata?.booking_id || object.client_reference_id, stripeEvent, object);
+      session = object.metadata?.attempt_id ? await markAttemptPayment(sb, object.metadata.attempt_id, stripeEvent, object) : await markPayment(sb, object.metadata?.session_id || object.metadata?.booking_id || object.client_reference_id, stripeEvent, object);
       await notifyPaymentSuccess(sb, eventId, session);
     }
     else if (stripeEvent.type === 'checkout.session.async_payment_succeeded') {
-      session = await markPayment(sb, object.metadata?.session_id || object.metadata?.booking_id || object.client_reference_id, stripeEvent, object);
+      session = object.metadata?.attempt_id ? await markAttemptPayment(sb, object.metadata.attempt_id, stripeEvent, object) : await markPayment(sb, object.metadata?.session_id || object.metadata?.booking_id || object.client_reference_id, stripeEvent, object);
       await notifyPaymentSuccess(sb, eventId, session);
     }
     else if (stripeEvent.type === 'checkout.session.async_payment_failed') {
