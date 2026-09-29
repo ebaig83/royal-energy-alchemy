@@ -5675,16 +5675,6 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
       <div id="payLinkSummary"></div>
     </div>
 
-    <!-- WAITLIST QUEUE -->
-    <div class="booking-section" style="border:1px solid #6644aa55;margin-bottom:24px">
-      <div class="booking-section-header">
-        <div class="section-title" style="color:#b08ae0">⏳ Waitlist Queue</div>
-        <button class="action-btn" onclick="clearWaitlist()" style="border-color:#cc445588;color:#cc4455">Clear All</button>
-      </div>
-      <p style="font-family:'EB Garamond',serif;font-size:14px;color:#aaa8cc;padding:0 0 10px 0;margin:0">Clients who joined when no slots were available. Contact them when a cancellation opens up.</p>
-      <div id="waitlistQueue"></div>
-    </div>
-
     <!-- PENDING BOOKINGS -->
     <div class="booking-section" style="border:1px solid #2a6a3a55;margin-bottom:24px">
       <div class="booking-section-header">
@@ -5753,27 +5743,6 @@ button.week-more-toggle:hover { color: #ffd977; text-decoration: underline; text
 
       <!-- ACTIVE SLOTS LIST -->
       <div id="slotList" style="margin-top:14px"></div>
-    </div>
-
-    <!-- WAITLIST -->
-    <div class="booking-section">
-      <div class="booking-section-header">
-        <div class="section-title">Waitlist</div>
-        <button class="action-btn approve" onclick="toggleWaitlistForm()">+ Add to Waitlist</button>
-      </div>
-      <div id="waitlistFormWrap" style="display:none" class="appt-form-wrap">
-        <div class="appt-form-grid">
-          <div><label>Client Name</label><input class="appt-input" id="wlClient" placeholder="Full name" /></div>
-          <div><label>Service Requested</label><input class="appt-input" id="wlService" placeholder="e.g. Energy Session" /></div>
-          <div><label>Date Added</label><input class="appt-input" id="wlDate" type="date" /></div>
-          <div><label>Notes</label><input class="appt-input" id="wlNotes" placeholder="Urgency, availability, etc." /></div>
-        </div>
-        <div style="margin-top:18px;display:flex;gap:10px">
-          <button class="action-btn approve" onclick="saveWaitlist()">Add to Waitlist</button>
-          <button class="action-btn reject" onclick="toggleWaitlistForm()">Cancel</button>
-        </div>
-      </div>
-      <div id="waitlistBody"></div>
     </div>
 
     <!-- UPCOMING APPOINTMENTS -->
@@ -6209,7 +6178,7 @@ function showTab(name) {
   if (name === 'clients')     { try { renderRealClients(); } catch(e){ console.error('renderRealClients', e); } }
   if (name === 'environment') { try { renderTodayEnvCard(); } catch(e){} try { renderEnvLog(); } catch(e){} try { renderPatterns(); } catch(e){} }
   if (name === 'onboarding')  { try { loadOnboardingQueue(); } catch(e){ console.error('loadOnboardingQueue', e); } }
-  if (name === 'booking')     { try { organizeBookingWorkspace(); renderCal(); renderUpcoming(); renderWaitlist(); updateCapacityStats(); renderCancellationLog(); renderBooking(); renderSyncLastRun(); loadCancelRequests(); updateBookingCommandKpis(); } catch(e){ console.error('booking tab',e); } }
+  if (name === 'booking')     { try { organizeBookingWorkspace(); renderCal(); renderUpcoming(); updateCapacityStats(); renderCancellationLog(); renderBooking(); renderSyncLastRun(); loadCancelRequests(); updateBookingCommandKpis(); } catch(e){ console.error('booking tab',e); } }
   if (name === 'operations')  { try { renderOperationsCenter(); } catch(e){ console.error('renderOperationsCenter', e); } }
   if (name === 'followups')   { try { loadFollowUps(); } catch(e){ console.error('loadFollowUps', e); } }
   if (name === 'knowledge')   { try { renderKnowledgeCenter(knowledgeSub); } catch(e){ console.error('renderKnowledgeCenter', e); } }
@@ -6306,7 +6275,7 @@ function organizeBookingWorkspace() {
     if (section.querySelector('#calGrid') || section.querySelector('#upcomingList')) target = 'calendar';
     if (section.querySelector('#capacityInput') || section.querySelector('#slotCalGrid') || section.querySelector('#slotList')) target = 'availability';
     if (section.id === 'syncPanel' || section.querySelector('#settingsFormWrap') || section.querySelector('#payLinkSummary')) target = 'payments';
-    if (section.querySelector('#intakeList') || section.querySelector('#waitlistQueue') || section.querySelector('#pendingBookingsList') || section.querySelector('#waitlistBody') || section.querySelector('#cancelRequestsBody')) target = 'requests';
+    if (section.querySelector('#intakeList') || section.querySelector('#pendingBookingsList') || section.querySelector('#cancelRequestsBody')) target = 'requests';
     if (section.querySelector('#bk-week-glance') || section.querySelector('#bk-issues') || section.querySelector('#cancellationLog')) target = 'issues';
     var panel = document.getElementById('booking-panel-' + target);
     if (panel) panel.appendChild(section);
@@ -11245,9 +11214,6 @@ function updateCapacityStats() {
   const bookedThisWeek = appts.filter(a => a.date >= mon && a.date <= sun).length;
   const available = Math.max(0, cap - bookedThisWeek);
 
-  const waitlist = getWaitlist();
-  const waitCount = waitlist.length;
-
   // Avg days to next upcoming appointment
   const today = new Date().toISOString().slice(0,10);
   const upcoming = appts.filter(a => a.date >= today).sort((a,b) => a.date.localeCompare(b.date));
@@ -11262,74 +11228,11 @@ function updateCapacityStats() {
 
   const avEl = document.getElementById('capAvailable');
   const bkEl = document.getElementById('capBooked');
-  const wlEl = document.getElementById('capWaitlist');
   const adEl = document.getElementById('capAvgDays');
 
   if (avEl) { avEl.textContent = available; avEl.className = 'stat-val ' + (available === 0 ? 'warn' : available <= 3 ? '' : 'good'); }
   if (bkEl) { bkEl.textContent = bookedThisWeek + ' / ' + cap; }
-  if (wlEl) { wlEl.textContent = waitCount; wlEl.className = 'stat-val ' + (waitCount > 0 ? 'warn' : ''); }
   if (adEl) { adEl.textContent = avgDays === '—' ? '—' : avgDays + ' days'; }
-}
-
-// ── WAITLIST ──────────────────────────────────────────────────
-function getWaitlist() { try { return JSON.parse(localStorage.getItem('rea_waitlist') || '[]'); } catch(e) { return []; } }
-function saveWaitlistData(arr) { localStorage.setItem('rea_waitlist', JSON.stringify(arr)); }
-function toggleWaitlistForm() {
-  const w = document.getElementById('waitlistFormWrap');
-  if (w) w.style.display = w.style.display === 'none' ? 'block' : 'none';
-  // Set default date to today
-  const d = document.getElementById('wlDate');
-  if (d && !d.value) d.value = new Date().toISOString().slice(0,10);
-}
-function saveWaitlist() {
-  const client  = (document.getElementById('wlClient')||{}).value.trim();
-  const service = (document.getElementById('wlService')||{}).value.trim();
-  const date    = (document.getElementById('wlDate')||{}).value;
-  const notes   = (document.getElementById('wlNotes')||{}).value.trim();
-  if (!client) { alert('Client name is required.'); return; }
-  const list = getWaitlist();
-  list.push({ client, service, date, notes, id: Date.now() });
-  saveWaitlistData(list);
-  ['wlClient','wlService','wlDate','wlNotes'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
-  toggleWaitlistForm();
-  renderWaitlist();
-  updateCapacityStats();
-}
-function removeWaitlist(id) {
-  saveWaitlistData(getWaitlist().filter(w => w.id !== id));
-  renderWaitlist();
-  updateCapacityStats();
-}
-function renderWaitlist() {
-  const el = document.getElementById('waitlistBody');
-  if (!el) return;
-  const list = getWaitlist();
-  if (!list.length) {
-    el.innerHTML = '<p style="color:#dddaeecc;font-style:italic;padding:8px 0 16px">No one on the waitlist.</p>';
-    return;
-  }
-  el.innerHTML = list.map((w, i) => `
-    <div class="appt-card" style="border-left-color:#9b7fe855;background:#9b7fe808;margin-bottom:8px">
-      <div>
-        <div class="appt-date">#${i+1} · Added ${w.date||'—'}</div>
-        <div class="appt-client">${w.client}</div>
-        <div class="appt-meta">${w.service||''}</div>
-        ${w.notes ? `<div style="font-size:14px;color:#dddaeecc;font-style:italic;margin-top:4px">${w.notes}</div>` : ''}
-      </div>
-      <button class="action-btn approve" style="padding:4px 12px;font-size:11px;white-space:nowrap" onclick="bookFromWaitlist(${w.id})">Book ↓</button>
-      <button class="action-btn reject" style="padding:4px 10px;font-size:11px;white-space:nowrap" onclick="removeWaitlist(${w.id})">✕</button>
-    </div>`).join('');
-}
-function bookFromWaitlist(id) {
-  const entry = getWaitlist().find(w => w.id === id);
-  if (!entry) return;
-  // Pre-fill appointment form with waitlist client
-  toggleApptForm();
-  const c = document.getElementById('apptClient'); if(c) c.value = entry.client;
-  const s = document.getElementById('apptService'); if(s) s.value = entry.service||'';
-  const d = document.getElementById('apptDate');   if(d) d.value = '';
-  // Remove from waitlist
-  removeWaitlist(id);
 }
 
 // ── HOME DASHBOARD ──────────────────────────────────────────
@@ -12730,7 +12633,6 @@ function initDashboard() {
   renderAnalytics();
   renderBooking();
   renderUpcoming();
-  renderWaitlist();
   updateCapacityStats();
   try { renderCancellationLog(); } catch(e) {}
   try { populateMoonPhases(); } catch(e) { console.error('moonPhases',e); }
@@ -14682,32 +14584,6 @@ function renderPaySummary(){
 }
 renderPaySummary();
 
-/* ====== WAITLIST QUEUE ====== */
-function renderWaitlistQueue(){
-  var arr;try{arr=JSON.parse(localStorage.getItem('rea_waitlist')||'[]');}catch(e){arr=[];}
-  var el=document.getElementById('waitlistQueue');
-  if(!el)return;
-  if(!arr.length){el.innerHTML='<p style="font-family:EB Garamond,serif;color:#6662aa;font-style:italic;font-size:14px">No one on the waitlist right now.</p>';return;}
-  el.innerHTML=arr.map(function(w,i){
-    return '<div style="display:flex;align-items:flex-start;justify-content:space-between;padding:12px 14px;margin-bottom:6px;background:#16102a;border:1px solid #6644aa55;border-radius:6px">'+
-      '<div>'+
-        '<div style="font-family:Cinzel,serif;font-size:13px;color:#b08ae0">'+w.name+'</div>'+
-        '<div style="font-family:EB Garamond,serif;font-size:13px;color:#aaa8cc">'+w.contact+'</div>'+
-        '<div style="font-family:EB Garamond,serif;font-size:13px;color:#e0ddf8;margin-top:2px">'+w.service+'</div>'+
-        (w.note?'<div style="font-family:EB Garamond,serif;font-size:12px;color:#7a78a0;margin-top:2px;font-style:italic">'+w.note+'</div>':'')+
-        '<div style="font-family:EB Garamond,serif;font-size:11px;color:#4a4870;margin-top:4px">Added: '+new Date(w.ts).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})+'</div>'+
-      '</div>'+
-      '<button onclick="removeWaitlistEntry('+i+')" style="font-size:11px;padding:5px 10px;background:transparent;border:1px solid #cc445588;color:#cc4455;border-radius:4px;cursor:pointer;flex-shrink:0;margin-left:12px">Remove</button>'+
-    '</div>';
-  }).join('');
-}
-function removeWaitlistEntry(i){
-  var arr;try{arr=JSON.parse(localStorage.getItem('rea_waitlist')||'[]');}catch(e){arr=[];}
-  arr.splice(i,1);localStorage.setItem('rea_waitlist',JSON.stringify(arr));renderWaitlistQueue();
-}
-function clearWaitlist(){if(confirm('Clear the entire waitlist?')){localStorage.removeItem('rea_waitlist');renderWaitlistQueue();}}
-renderWaitlistQueue();
-
 /* ====== PENDING BOOKINGS ====== */
 function renderPendingBookings(){
   var arr;try{arr=JSON.parse(localStorage.getItem('rea_pending_bookings')||'[]');}catch(ex){arr=[];}
@@ -15105,8 +14981,7 @@ var _schedBookingId=null;var _schedSlotId=null;
 function openSchedModal(bookingId){
   _schedBookingId=bookingId;_schedSlotId=null;
   var pending=[];try{pending=JSON.parse(localStorage.getItem('rea_pending_bookings')||'[]');}catch(e){}
-  var waitlist=[];try{waitlist=JSON.parse(localStorage.getItem('rea_waitlist')||'[]');}catch(e){}
-  var r=pending.concat(waitlist).filter(function(b){return b.ts==bookingId;})[0]||{};
+  var r=pending.filter(function(b){return b.ts==bookingId;})[0]||{};
   document.getElementById('schedClientName').textContent=r.name||'Client';
   document.getElementById('schedPrefWindow').textContent=r.window1?'Client requested: '+r.window1:'No preference on file';
   document.getElementById('schedService').value=r.service||'';
@@ -15154,8 +15029,7 @@ function confirmScheduleSession(){
   if(!date||!time){errEl.textContent='Please select a date and time.';errEl.style.display='block';return;}
   errEl.style.display='none';
   var pending=[];try{pending=JSON.parse(localStorage.getItem('rea_pending_bookings')||'[]');}catch(e){}
-  var waitlist=[];try{waitlist=JSON.parse(localStorage.getItem('rea_waitlist')||'[]');}catch(e){}
-  var r=pending.concat(waitlist).filter(function(b){return b.ts==_schedBookingId;})[0]||{};
+  var r=pending.filter(function(b){return b.ts==_schedBookingId;})[0]||{};
   var token=sessionStorage.getItem('rea_api_token');
   var confirmBtn=document.querySelector('#schedModal button[onclick="confirmScheduleSession()"]');
   if(confirmBtn){confirmBtn.textContent='Creating...';confirmBtn.disabled=true;}
@@ -15205,8 +15079,7 @@ var _reschedBookingId=null;var _reschedSlotId=null;
 function openReschedModal(bookingId){
   _reschedBookingId=bookingId;_reschedSlotId=null;
   var pending=[];try{pending=JSON.parse(localStorage.getItem('rea_pending_bookings')||'[]');}catch(e){}
-  var waitlist=[];try{waitlist=JSON.parse(localStorage.getItem('rea_waitlist')||'[]');}catch(e){}
-  var r=pending.concat(waitlist).filter(function(b){return b.ts==bookingId;})[0]||{};
+  var r=pending.filter(function(b){return b.ts==bookingId;})[0]||{};
   var lc=getLC(bookingId);
   // Mark as reschedule_requested immediately
   lc.session_status='reschedule_requested';
@@ -15319,11 +15192,9 @@ function confirmReschedule(){
 
 function renderIntake(){
   var pending=[];try{pending=JSON.parse(localStorage.getItem('rea_pending_bookings')||'[]');}catch(e){}
-  var waitlist=[];try{waitlist=JSON.parse(localStorage.getItem('rea_waitlist')||'[]');}catch(e){}
   var el=document.getElementById('intakeList');if(!el)return;
   var all=[];
   pending.forEach(function(b){all.push(Object.assign({},b,{_type:'booking'}));});
-  waitlist.forEach(function(w){all.push(Object.assign({},w,{_type:'waitlist'}));});
   all.sort(function(a,b){return b.ts-a.ts;});
 
   renderIntakeMetrics(all);
@@ -15430,9 +15301,8 @@ function renderIntake(){
 function clearIntake(){
   if(confirm('Clear all booking submissions and lifecycle data? This cannot be undone.')){
     localStorage.removeItem('rea_pending_bookings');
-    localStorage.removeItem('rea_waitlist');
     localStorage.removeItem('rea_booking_lifecycle');
-    renderIntake();renderPendingBookings();renderWaitlistQueue();
+    renderIntake();renderPendingBookings();
   }
 }
 renderIntake();
@@ -15520,18 +15390,14 @@ function pullNetlifySubmissions(){
         .then(function(forms){
           if(!Array.isArray(forms)){throw new Error('Could not fetch forms');}
           var bookingForm=forms.filter(function(f){return f.name==='booking';})[0];
-          var waitlistForm=forms.filter(function(f){return f.name==='waitlist';})[0];
           var pulls=[];
           if(bookingForm)pulls.push(fetch(apiBase+'/forms/'+bookingForm.id+'/submissions?access_token='+token+'&per_page=50').then(function(r){return r.json();}).catch(function(){return [];}));
-          else pulls.push(Promise.resolve([]));
-          if(waitlistForm)pulls.push(fetch(apiBase+'/forms/'+waitlistForm.id+'/submissions?access_token='+token+'&per_page=50').then(function(r){return r.json();}).catch(function(){return [];}));
           else pulls.push(Promise.resolve([]));
           return Promise.all(pulls);
         });
     })
     .then(function(results){
       var bookings=Array.isArray(results[0])?results[0]:[];
-      var waitlists=Array.isArray(results[1])?results[1]:[];
       /* merge bookings */
       var existing=[];try{existing=JSON.parse(localStorage.getItem('rea_pending_bookings')||'[]');}catch(e){}
       var existingIds=new Set(existing.map(function(b){return b.netlifyId||'';}));
@@ -15556,19 +15422,8 @@ function pullNetlifySubmissions(){
         added++;
       });
       localStorage.setItem('rea_pending_bookings',JSON.stringify(existing));
-      /* merge waitlist */
-      var wl=[];try{wl=JSON.parse(localStorage.getItem('rea_waitlist')||'[]');}catch(e){}
-      var wlIds=new Set(wl.map(function(w){return w.netlifyId||'';}));
-      var wlAdded=0;
-      waitlists.forEach(function(sub){
-        if(wlIds.has(sub.id))return;
-        var dv=sub.data||{};
-        wl.push({netlifyId:sub.id,name:dv['name']||'',contact:dv['contact']||'',service:dv['service']||'',note:dv['note']||'',ts:new Date(sub.created_at).getTime()||Date.now()});
-        wlAdded++;
-      });
-      localStorage.setItem('rea_waitlist',JSON.stringify(wl));
-      if(status)status.innerHTML='<span style="color:#66cc88">✓ '+added+' new booking'+(added!==1?'s':'')+' + '+wlAdded+' waitlist entr'+(wlAdded!==1?'ies':'y')+' imported.</span>';
-      renderPendingBookings();renderWaitlistQueue();renderIntake();
+      if(status)status.innerHTML='<span style="color:#66cc88">✓ '+added+' new booking'+(added!==1?'s':'')+' imported.</span>';
+      renderPendingBookings();renderIntake();
     })
     .catch(function(err){
       if(status)status.innerHTML='<span style="color:#cc4455">Error: '+err.message+'</span>';
@@ -15585,9 +15440,6 @@ function purgeTestEntries(){
   var bookings=[];try{bookings=JSON.parse(localStorage.getItem('rea_pending_bookings')||'[]');}catch(e){}
   bookings=bookings.filter(function(b){return !shouldSkipEntry(b.name,b.email);});
   localStorage.setItem('rea_pending_bookings',JSON.stringify(bookings));
-  var wl=[];try{wl=JSON.parse(localStorage.getItem('rea_waitlist')||'[]');}catch(e){}
-  wl=wl.filter(function(w){return !shouldSkipEntry(w.name,w.contact);});
-  localStorage.setItem('rea_waitlist',JSON.stringify(wl));
 }
 purgeTestEntries();
 (function(){var st=getSettings();if(st&&st.netlifyToken)setTimeout(pullNetlifySubmissions,1500);})();
