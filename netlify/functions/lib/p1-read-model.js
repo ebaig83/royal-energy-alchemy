@@ -9,7 +9,7 @@ const FIELDS={
  aftercare:'id,session_id,client_id,client_name,status,scheduled_for,source',
  client_relationships:'id,client_id,related_client_id,relationship_type,relationship_label',
  session_notes:'id,session_id,client_id,content,created_at'
- ,booking_attempts:'id,client_id,client_first_name,client_last_name,client_email,client_phone,client_timezone,client_preferences,service,service_id,session_date,session_time,location_type,slot_id,waiver_completed,payment_status,status,source,waitlist_offer_id,abandoned_at,expires_at,completed_at,last_resumed_at,recovery_1_sent_at,recovery_2_sent_at,created_at'
+ ,booking_attempts:'id,client_id,client_first_name,client_last_name,client_email,client_phone,client_timezone,client_preferences,service,service_id,session_date,session_time,location_type,slot_id,waiver_completed,payment_status,status,source,waitlist_offer_id,abandoned_at,withdrawn_at,expires_at,completed_at,last_resumed_at,recovery_1_scheduled_at,recovery_1_sent_at,recovery_2_scheduled_at,recovery_2_sent_at,created_at'
  ,waitlist_entries:'id,client_id,first_name,last_name,email,phone,service,preferred_days,preferred_times,timezone,status,exclusion_reason,joined_at,expires_at'
  ,waitlist_offers:'id,waitlist_entry_id,wave,slot_id,status,offered_at,expires_at,accepted_at'
  ,booking_recovery_events:'id,attempt_id,reminder_number,status,scheduled_at,sent_at'
