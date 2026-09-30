@@ -23,7 +23,7 @@ const mutations=[];
 const sb = {
   from: table => new Query(table),
   rpc: async (name,args) => {
-    assert.strictEqual(name,'trusted_session_update_with_audit');
+    assert.strictEqual(name,'trusted_session_update_with_audit_calendar');
     const row=rows.find(r=>r.id===args.p_id);
     if(!row)return {data:null,error:new Error('missing session')};
     Object.assign(row,args.p_updates);
