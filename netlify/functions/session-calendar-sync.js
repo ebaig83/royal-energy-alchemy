@@ -49,7 +49,7 @@ async function processPending({ sb, api, limit = 25, now = () => new Date(), sen
       };
       if (result.meetUrl) patch.google_meet_url = result.meetUrl;
       else if (result.operation === 'cancel') patch.google_meet_url = null;
-      const { data: mutation, error: updateError } = await sb.rpc('trusted_session_update_with_audit', { p_id: session.id, p_updates: patch, p_actor_type: 'system', p_actor_id: 'session-calendar-sync', p_actor_email: null, p_source: 'calendar-worker', p_action: 'calendar_sync_completed', p_correlation_id: correlationId, p_request_path: '/.netlify/functions/session-calendar-sync' });
+      const { data: mutation, error: updateError } = await sb.rpc('trusted_session_update_with_audit_calendar', { p_id: session.id, p_updates: patch, p_actor_type: 'system', p_actor_id: 'session-calendar-sync', p_actor_email: null, p_source: 'calendar-worker', p_action: 'calendar_sync_completed', p_correlation_id: correlationId, p_request_path: '/.netlify/functions/session-calendar-sync' });
       if (updateError || !mutation?.session) throw updateError || new Error('Calendar state was not committed.');
       console.info('[session-calendar-sync] appointment mutation', JSON.stringify({ session_id: session.id, correlation_id: correlationId, actor_type: 'system', source: 'calendar-worker', action: 'calendar_sync_completed' }));
       if (result.status === 'ready' && session.google_calendar_status !== 'ready') {
@@ -65,7 +65,7 @@ async function processPending({ sb, api, limit = 25, now = () => new Date(), sen
     } catch (error) {
       const message = sanitizeError(error);
       const status = error?.retryable ? 'retryable_error' : 'failed';
-      const {error:updateError}=await sb.rpc('trusted_session_update_with_audit',{p_id:session.id,p_updates:{google_calendar_status:status,google_calendar_error:message,updated_at:now().toISOString()},p_actor_type:'system',p_actor_id:'session-calendar-sync',p_actor_email:null,p_source:'calendar-worker',p_action:'calendar_sync_failed',p_correlation_id:correlationId,p_request_path:'/.netlify/functions/session-calendar-sync'});
+      const {error:updateError}=await sb.rpc('trusted_session_update_with_audit_calendar',{p_id:session.id,p_updates:{google_calendar_status:status,google_calendar_error:message,updated_at:now().toISOString()},p_actor_type:'system',p_actor_id:'session-calendar-sync',p_actor_email:null,p_source:'calendar-worker',p_action:'calendar_sync_failed',p_correlation_id:correlationId,p_request_path:'/.netlify/functions/session-calendar-sync'});
       if(updateError)throw updateError;
       results.failed.push({ id: session.id, reason: 'sync_failed', retryable: Boolean(error?.retryable) });
       console.error('[session-calendar-sync] session failed', session.id, message);
