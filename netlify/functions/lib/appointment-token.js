@@ -34,10 +34,30 @@ function verifyAppointmentToken(token, sessionId, action = 'view', options = {})
   } catch (_) { return { ok: false, reason: 'invalid' }; }
 }
 
-function appointmentManageUrl(sessionId, options = {}) {
-  const base = String(options.siteUrl || process.env.SITE_URL || 'https://www.daronroyal.com').replace(/\/$/, '');
-  const token = createAppointmentToken(sessionId, options.scope || 'manage', options);
-  return `${base}/manage-appointment.html?session_id=${encodeURIComponent(sessionId)}&token=${encodeURIComponent(token)}`;
+function canonicalSiteOrigin(options = {}) {
+  const hasExplicitSiteUrl = Object.prototype.hasOwnProperty.call(options, 'siteUrl');
+  const raw = hasExplicitSiteUrl ? options.siteUrl : (process.env.SITE_URL || 'https://www.daronroyal.com');
+  if (raw == null || !String(raw).trim()) throw new Error('Appointment management base URL is not configured.');
+  let parsed;
+  try { parsed = new URL(String(raw).trim()); } catch { throw new Error('Appointment management base URL is invalid.'); }
+  const hostname = parsed.hostname.toLowerCase();
+  const allowedHost = hostname === 'www.daronroyal.com' || hostname === 'daronroyal.com' || hostname.endsWith('.netlify.app');
+  if (parsed.protocol !== 'https:' || !allowedHost || parsed.username || parsed.password || parsed.search || parsed.hash || (parsed.pathname !== '/' && parsed.pathname !== '')) {
+    throw new Error('Appointment management base URL is invalid.');
+  }
+  return `https://${hostname}`;
 }
 
-module.exports = { createAppointmentToken, verifyAppointmentToken, appointmentManageUrl, DEFAULT_TTL_SECONDS };
+function appointmentManageUrl(sessionId, options = {}) {
+  if (sessionId == null || !String(sessionId).trim() || /\s/.test(String(sessionId))) throw new Error('sessionId is invalid.');
+  const base = canonicalSiteOrigin(options);
+  const token = createAppointmentToken(sessionId, options.scope || 'manage', options);
+  const url = new URL('/manage-appointment.html', `${base}/`);
+  url.searchParams.set('session_id', String(sessionId));
+  url.searchParams.set('token', token);
+  const result = url.href;
+  if (!/^https:\/\/[^\s/]+\/manage-appointment\.html\?session_id=[^&]+&token=[^&]+$/.test(result)) throw new Error('Appointment management URL could not be constructed safely.');
+  return result;
+}
+
+module.exports = { createAppointmentToken, verifyAppointmentToken, canonicalSiteOrigin, appointmentManageUrl, DEFAULT_TTL_SECONDS };

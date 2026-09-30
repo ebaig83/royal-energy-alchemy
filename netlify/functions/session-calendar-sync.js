@@ -4,6 +4,7 @@ const { observeWorker } = require('./lib/worker-health');
 const { getClient } = require('./lib/supabase');
 const { isSilentPlannerImport, isReviewedPlannerCalendar, isQaRecord } = require('./lib/record-policy');
 const { sendWithPreferences } = require('./lib/comms');
+const { appointmentManageUrl } = require('./lib/appointment-token');
 const { syncSession, sanitizeError, createGoogleCalendarApi } = require('./lib/google-calendar');
 const { isWebsiteBooking, isOperationalWebsiteBooking, attachServiceAddress } = require('./lib/booking-state');
 
@@ -23,9 +24,49 @@ async function sendMeetingReady(sb, session, send = sendWithPreferences) {
   return send(sb, {
     templateName: 'session_google_meet_ready', recipientEmail: email, clientId: session.client_id || null, sessionId: session.id,
     messageType: 'appointment_meeting_ready', idempotencyKey: `session-google-meet-ready:${session.id}`,
-    variables: { client_name: session.client_name || '', service: session.service || '', session_date: session.session_date, session_time: String(session.session_time || '').slice(0, 5), timezone: 'ET', google_meet_url: session.google_meet_url },
+    variables: { client_name: session.client_name || '', service: session.service || '', session_date: session.session_date, session_time: String(session.session_time || '').slice(0, 5), timezone: 'ET', google_meet_url: session.google_meet_url, manage_url: appointmentManageUrl(session.id) },
     metadata: { session_id: session.id, automation: 'session_google_meet_ready', notification_type: 'appointment_meeting_ready', correlation_id: correlationId },
   });
+}
+
+async function retryFailedMeetingReady({ sb, limit = 25, send = sendWithPreferences } = {}) {
+  if (!sb) throw new Error('Supabase client is required');
+  const { data: failed, error } = await sb.from('communications')
+    .select('metadata')
+    .eq('message_type', 'appointment_meeting_ready')
+    .eq('status', 'failed')
+    .contains('metadata', { automation: 'session_google_meet_ready', error_code: 'EMAIL_INVALID_URL' })
+    .limit(limit);
+  if (error) throw error;
+  const ids = [...new Set((failed || []).map(row => row.metadata?.session_id).filter(Boolean))];
+  if (!ids.length) return { retried: [], skipped: [], failed: [] };
+  const { data: sessions, error: sessionError } = await sb.from('sessions')
+    .select('*').in('id', ids).eq('google_calendar_status', 'ready');
+  if (sessionError) throw sessionError;
+  const retried = [], skipped = [], failedResults = [];
+  for (const session of sessions || []) {
+    try {
+      if (!/^https:\/\/meet\.google\.com\//i.test(session.google_meet_url || '')) {
+        skipped.push({ id: session.id, reason: 'meet_not_ready' });
+        continue;
+      }
+      const { data: successful } = await sb.from('communications')
+        .select('id').eq('message_type', 'appointment_meeting_ready')
+        .contains('metadata', { session_id: session.id })
+        .in('status', ['sent', 'delivered']).limit(1);
+      if (successful?.length) {
+        skipped.push({ id: session.id, reason: 'already_sent' });
+        continue;
+      }
+      const result = await sendMeetingReady(sb, session, send);
+      if (result?.sent === true) retried.push({ id: session.id, sent: true });
+      else failedResults.push({ id: session.id, reason: 'delivery_failed' });
+    } catch (retryError) {
+      failedResults.push({ id: session.id, reason: 'retry_failed' });
+      console.error('[session-calendar-sync] meeting-ready retry failed', session.id, sanitizeError(retryError));
+    }
+  }
+  return { retried, skipped, failed: failedResults };
 }
 
 async function processPending({ sb, api, limit = 25, now = () => new Date(), send = sendWithPreferences, syncOptions = {} } = {}) {
@@ -77,6 +118,7 @@ async function processPending({ sb, api, limit = 25, now = () => new Date(), sen
 exports.config = { schedule: '*/5 * * * *' };
 exports.ACTIONABLE_STATUSES = ACTIONABLE_STATUSES;
 exports.sendMeetingReady = sendMeetingReady;
+exports.retryFailedMeetingReady = retryFailedMeetingReady;
 exports.processPending = processPending;
 exports.handler = async () => {
   try { return { statusCode: 200, body: JSON.stringify(await observeWorker(getClient(), 'calendar', () => processPending({ sb: getClient(), api: createGoogleCalendarApi() }))) }; }

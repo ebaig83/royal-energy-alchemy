@@ -7,6 +7,7 @@ const { observeWorker } = require('./lib/worker-health');
 const { getClient } = require('./lib/supabase');
 const { isSilentPlannerImport } = require('./lib/record-policy');
 const { sendWithPreferences } = require('./lib/comms');
+const { appointmentManageUrl } = require('./lib/appointment-token');
 const { pickTemplate } = require('./lib/followup-templates');
 const { sessionStart, isActiveSession, isDue, followupDue, followupUrl } = require('./lib/session-communications');
 const { isWebsiteBooking, attachServiceAddress } = require('./lib/booking-state');
@@ -39,7 +40,7 @@ async function processDue({ sb, now = new Date(), send = sendWithPreferences } =
     if (!client?.email) { skipped.push({ id: session.id, reason: 'no_client_email', kind }); continue; }
     const { data: existing } = await sb.from('communications').select('id').eq('message_type', messageType).contains('metadata', { session_id: session.id, automation: templateName, appointment_date: session.session_date, appointment_time: String(session.session_time||'').slice(0,5) }).limit(1);
     if (existing?.length) { skipped.push({ id: session.id, reason: 'already_sent', kind }); continue; }
-    let vars = { client_name: session.client_name || '', service: session.service || '', client_email: session.client_email || client.email || '', client_phone: session.client_phone || client.phone || '', session_date: session.session_date, session_time: String(session.session_time || '').slice(0, 5), timezone: 'ET', contact_email: process.env.ADMIN_EMAIL || 'royalenergyalchemy@gmail.com' };
+    let vars = { client_name: session.client_name || '', service: session.service || '', client_email: session.client_email || client.email || '', client_phone: session.client_phone || client.phone || '', session_date: session.session_date, session_time: String(session.session_time || '').slice(0, 5), timezone: 'ET', contact_email: process.env.ADMIN_EMAIL || 'royalenergyalchemy@gmail.com', manage_url: appointmentManageUrl(session.id) };
     if (reminder && /^https:\/\/meet\.google\.com\//i.test(session.google_meet_url || '')) vars.google_meet_url = session.google_meet_url;
     if (followup) {
       const { data: existingFollowup } = await sb.from('aftercare').select('id, status, followup_template_used').eq('session_id', session.id).eq('followup_type', '72hr').limit(1);

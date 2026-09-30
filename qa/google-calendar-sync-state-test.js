@@ -1,6 +1,7 @@
 'use strict';
 const assert = require('assert');
 const { processPending } = require('../netlify/functions/session-calendar-sync');
+process.env.APPOINTMENT_ACTION_SECRET = 'synthetic-only-appointment-secret-2026-long';
 
 const rows = [
   { id: 'A', client_id: 'ca', client_name: 'A', session_date: '2099-09-01', session_time: '10:00', service: 'Remote', status: 'confirmed', payment_status: 'paid', location_type: 'distance', google_calendar_status: 'pending' },

@@ -5,6 +5,7 @@ const state = require('../netlify/functions/lib/booking-state');
 const comms = require('../netlify/functions/lib/session-communications');
 const { sendMeetingReady } = require('../netlify/functions/session-calendar-sync');
 const read = p => fs.readFileSync(p, 'utf8');
+process.env.APPOINTMENT_ACTION_SECRET = 'synthetic-only-appointment-secret-2026-long';
 
 const paid = {
   id: 's1', source: 'online', client_name: 'Ada Lovelace', client_email: 'ada@sample.org', client_phone: '8145550199',
