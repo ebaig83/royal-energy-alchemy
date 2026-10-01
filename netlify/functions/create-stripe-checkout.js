@@ -81,11 +81,13 @@ exports.handler = async function(event) {
   try { body = JSON.parse(event.body || '{}'); } catch { return respond(400, { error: 'Invalid JSON.' }); }
 
   const attemptId = body.attempt_id;
+  const resumeToken = String(body.resume_token || '').trim();
   const sessionId = body.session_id || body.booking_id;
   if (!sessionId && !attemptId) return respond(400, { error: 'Booking ID is required to start payment.' });
 
   const sb = getClient();
   if (attemptId) {
+    if (resumeToken.length < 64) return respond(400, { error: 'A valid booking resume token is required to start payment.' });
     const { data: attempt, error: attemptError } = await sb.from('booking_attempts').select('id,client_first_name,client_last_name,client_email,service,service_id,session_date,session_time,location_type,status,waiver_completed,payment_status,payment_amount,payment_reference,expires_at,slot_id,stripe_checkout_session_id').eq('id', attemptId).single();
     if (attemptError || !attempt) return respond(404, { error: 'Booking attempt was not found.' });
     if (attempt.status === 'completed' || attempt.payment_status === 'paid') return respond(409, { error: 'This booking attempt is already paid or finalized.' });
@@ -122,8 +124,8 @@ exports.handler = async function(event) {
     if (!email) return respond(409, { error: 'A verified booking email is required before payment.' });
     const params = new URLSearchParams();
     params.set('mode', 'payment');
-    params.set('success_url', `${SITE_URL}/book.html?attempt_id=${encodeURIComponent(attemptId)}&payment=success`);
-    params.set('cancel_url', `${SITE_URL}/book.html?attempt_id=${encodeURIComponent(attemptId)}&payment=cancelled`);
+    params.set('success_url', `${SITE_URL}/booking-confirmation.html?attempt_id=${encodeURIComponent(attemptId)}&resume_token=${encodeURIComponent(resumeToken)}&payment=success`);
+    params.set('cancel_url', `${SITE_URL}/booking-confirmation.html?attempt_id=${encodeURIComponent(attemptId)}&resume_token=${encodeURIComponent(resumeToken)}&payment=cancelled`);
     params.set('client_reference_id', attemptId);
     params.set('customer_email', email);
     params.set('line_items[0][quantity]', '1');

@@ -57,6 +57,8 @@ p{font-size:18px;line-height:1.8;color:#d8d4f0c9;max-width:620px;margin:0 auto 1
 const params = new URLSearchParams(window.location.search);
 const sessionId = params.get('session_id') || params.get('id') || '';
 const actionToken = params.get('token') || '';
+const attemptId = params.get('attempt_id') || '';
+const resumeToken = params.get('resume_token') || '';
 const payment = params.get('payment') || '';
 
 function fmtDate(date) {
@@ -85,14 +87,14 @@ function setState(kind, title, message) {
   document.getElementById('message').textContent = message;
 }
 async function beginPayment(btn) {
-  if (!sessionId) return;
+  if (!sessionId && !attemptId) return;
   btn.disabled = true;
   btn.textContent = 'Opening Secure Checkout...';
   try {
     const res = await fetch('/.netlify/functions/create-stripe-checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ session_id: sessionId }),
+      body: JSON.stringify(attemptId ? { attempt_id: attemptId, resume_token: resumeToken } : { session_id: sessionId }),
     });
     const data = await res.json();
     if (!res.ok || !data.url) throw new Error(data.error || 'Checkout could not be opened.');
@@ -104,15 +106,39 @@ async function beginPayment(btn) {
   }
 }
 async function load() {
-  if (!sessionId) {
+  if (!sessionId && !attemptId) {
     setState('err', 'Booking Not Found', 'This confirmation link is missing a booking ID.');
     return;
   }
   try {
-    const res = await fetch('/.netlify/functions/manage-appointment?session_id=' + encodeURIComponent(sessionId) + '&token=' + encodeURIComponent(actionToken));
-    const data = await res.json();
-    if (!res.ok || !data.session) throw new Error(data.error || 'Booking was not found.');
-    const s = data.session;
+    let s;
+    if (attemptId) {
+      if (resumeToken.length < 64) throw new Error('This booking resume link is missing or invalid.');
+      const res = await fetch('/.netlify/functions/booking-attempt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'resume', resume_token: resumeToken }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.attempt || data.attempt.id !== attemptId) throw new Error(data.error || 'Booking attempt was not found.');
+      const a = data.attempt;
+      s = {
+        id: a.id,
+        client_name: [a.client_first_name, a.client_last_name].filter(Boolean).join(' '),
+        service: a.service,
+        session_date: a.session_date,
+        session_time: a.session_time,
+        amount_due: a.payment_amount,
+        payment_status: a.payment_status,
+        waiver_completed: a.waiver_completed,
+        waiver_status: a.waiver_completed ? 'complete' : 'incomplete',
+      };
+    } else {
+      const res = await fetch('/.netlify/functions/manage-appointment?session_id=' + encodeURIComponent(sessionId) + '&token=' + encodeURIComponent(actionToken));
+      const data = await res.json();
+      if (!res.ok || !data.session) throw new Error(data.error || 'Booking was not found.');
+      s = data.session;
+    }
     const waiverDone = isWaiverDone(s);
     const paymentStatus = String(s.payment_status || '').toLowerCase();
     const paid = paymentStatus === 'paid';
@@ -133,9 +159,9 @@ async function load() {
     ].map(row => '<div class="row"><span class="label">' + row[0] + '</span><span class="value">' + row[1] + '</span></div>').join('');
 
     const actions = [];
-    if (!waiverDone) actions.push('<a class="btn primary" href="/waiver-esign.html?session_id=' + encodeURIComponent(sessionId) + '&token=' + encodeURIComponent(actionToken) + '">Complete Waiver</a>');
+    if (!waiverDone) actions.push(attemptId ? '<a class="btn primary" href="/waiver-esign.html?attempt_id=' + encodeURIComponent(attemptId) + '&resume_token=' + encodeURIComponent(resumeToken) + '">Complete Waiver</a>' : '<a class="btn primary" href="/waiver-esign.html?session_id=' + encodeURIComponent(sessionId) + '&token=' + encodeURIComponent(actionToken) + '">Complete Waiver</a>');
     if (waiverDone && !paid && !refunded) actions.push('<button class="btn primary" onclick="beginPayment(this)">Pay Now</button>');
-    actions.push('<a class="btn secondary" href="/manage-appointment.html?session_id=' + encodeURIComponent(sessionId) + '&token=' + encodeURIComponent(actionToken) + '">Manage Appointment</a>');
+    if (!attemptId) actions.push('<a class="btn secondary" href="/manage-appointment.html?session_id=' + encodeURIComponent(sessionId) + '&token=' + encodeURIComponent(actionToken) + '">Manage Appointment</a>');
     document.getElementById('actions').innerHTML = actions.join('');
 
     if (paid && waiverDone) {
