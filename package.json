@@ -6,6 +6,7 @@
     "qa": "node qa/qa-agent.js"
   },
   "dependencies": {
+    "@netlify/blobs": "^11.1.3",
     "@supabase/supabase-js": "^2.39.0"
   }
 }

@@ -1,0 +1,31 @@
+const assert=require('node:assert/strict');
+const auth=require('../netlify/functions/lib/auth');
+const storage=require('../netlify/functions/lib/gmail-oauth-store.cjs');
+const originalAuth=auth.requireAdmin;
+const map=new Map();
+storage.getStore=async()=>({get:async k=>map.get(k)||null,set:async(k,v)=>map.set(k,v),delete:async k=>map.delete(k)});
+auth.requireAdmin=async event=>event.headers.cookie.includes('valid-owner-token')?{role:'owner',sessionId:'session-1'}:{error:true};
+Object.assign(process.env,{GMAIL_RECONNECT_ENABLED:'true',APPOINTMENT_ACTION_SECRET:'s'.repeat(40),SITE_URL:'https://www.daronroyal.com',GMAIL_CLIENT_ID:'client.apps.googleusercontent.com',GMAIL_CLIENT_SECRET:'test-secret',GMAIL_ACCOUNT:'droyal168@gmail.com'});
+let account='droyal168@gmail.com';
+global.fetch=async url=>({ok:true,json:async()=>String(url).includes('/token')?{access_token:'test-access',refresh_token:'test-refresh',scope:'https://www.googleapis.com/auth/gmail.readonly'}:{emailAddress:account}});
+(async()=>{
+ const {default:handle}=await import('../netlify/functions/gmail-reconnect.mts');
+ const base='https://www.daronroyal.com/api/gmail-reconnect';
+ const headers={cookie:'rea_admin_session=valid-owner-token',origin:'https://www.daronroyal.com'};
+ assert.equal((await handle(new Request(base))).status,401);
+ assert.equal((await handle(new Request(base,{method:'POST',headers:{...headers,origin:'https://other.example'}}))).status,403);
+ async function start(){const r=await handle(new Request(base,{method:'POST',headers}));assert.equal(r.status,303);const u=new URL(r.headers.get('location'));assert.equal(u.searchParams.get('scope'),'https://www.googleapis.com/auth/gmail.readonly');assert.equal(u.searchParams.get('code_challenge_method'),'S256');return {state:u.searchParams.get('state'),cookie:r.headers.get('set-cookie').split(';')[0]};}
+ const a=await start();
+ assert.equal((await handle(new Request(base+'?code=x&state='+a.state,{headers:{cookie:'rea_gmail_reconnect=wrong'}}))).status,400);
+ const good=await handle(new Request(base+'?code=x&state='+a.state,{headers:{cookie:a.cookie}}));assert.equal(good.status,303);
+ assert(!map.get('connection').includes('test-refresh'));
+ assert.equal(storage.open(map.get('connection')).refreshToken,'test-refresh');
+ assert.equal((await handle(new Request(base+'?code=x&state='+a.state,{headers:{cookie:a.cookie}}))).status,400);
+ const existing=map.get('connection'),b=await start();account='wrong@example.com';
+ assert.equal((await handle(new Request(base+'?code=x&state='+b.state,{headers:{cookie:b.cookie}}))).status,400);
+ assert.equal(map.get('connection'),existing);
+ const c=await start();const pending=storage.open(map.get('requests/'+c.state));pending.expiresAt=1;map.set('requests/'+c.state,storage.seal(pending));
+ assert.equal((await handle(new Request(base+'?code=x&state='+c.state,{headers:{cookie:c.cookie}}))).status,400);
+ auth.requireAdmin=originalAuth;
+ console.log('PASS owner access, CSRF, PKCE, nonce binding, expiry, replay rejection, wrong-account protection, encrypted persistence.');
+})().catch(error=>{console.error(error);process.exitCode=1;});

@@ -1,0 +1,11 @@
+const assert=require('node:assert/strict');
+const {seal,open,refreshToken}=require('../netlify/functions/lib/gmail-oauth-store.cjs');
+const env={APPOINTMENT_ACTION_SECRET:'a'.repeat(40)};
+const record={refreshToken:'test-refresh',expiresAt:123};
+const encrypted=seal(record,env);
+assert(!encrypted.includes('test-refresh'));
+assert.deepEqual(open(encrypted,env),record);
+assert.throws(()=>open(encrypted,{APPOINTMENT_ACTION_SECRET:'b'.repeat(40)}));
+const parts=encrypted.split('.');parts[2]=Buffer.from('tampered').toString('base64url');assert.throws(()=>open(parts.join('.'),env));
+assert.throws(()=>seal(record,{APPOINTMENT_ACTION_SECRET:'short'}));
+refreshToken({GMAIL_REFRESH_TOKEN:'old'}).then(value=>{assert.equal(value,'old');console.log('PASS encrypted token storage, authentication of ciphertext, wrong-key rejection, disabled-flow fallback.');});

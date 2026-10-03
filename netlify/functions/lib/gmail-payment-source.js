@@ -6,7 +6,8 @@ function requiredConfig(env = process.env) {
   return ['GMAIL_CLIENT_ID', 'GMAIL_CLIENT_SECRET', 'GMAIL_REFRESH_TOKEN', 'GMAIL_ACCOUNT'].filter(key => !env[key]);
 }
 async function accessToken(env = process.env) {
-  const body = new URLSearchParams({ client_id: env.GMAIL_CLIENT_ID, client_secret: env.GMAIL_CLIENT_SECRET, refresh_token: env.GMAIL_REFRESH_TOKEN, grant_type: 'refresh_token' });
+  const refreshedToken = await require('./gmail-oauth-store.cjs').refreshToken(env);
+  const body = new URLSearchParams({ client_id: env.GMAIL_CLIENT_ID, client_secret: env.GMAIL_CLIENT_SECRET, refresh_token: refreshedToken, grant_type: 'refresh_token' });
   const response = await fetch('https://oauth2.googleapis.com/token', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body, signal: AbortSignal.timeout(10000) });
   if (!response.ok) throw new Error('Gmail OAuth refresh failed.');
   const json = await response.json();
