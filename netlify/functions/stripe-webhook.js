@@ -71,7 +71,7 @@ async function processStripeEvent(sb, stripeEvent, { sessionId = null, updates =
 async function markPayment(sb, sessionId, event, checkout) {
   const { data: rawSession, error } = await sb
     .from('sessions')
-    .select('id, status, source, service, location_type, session_date, session_time, waiver_status, waiver_completed, client_id, client_name, client_email, client_phone, amount_due, amount_paid, payment_status, google_calendar_status, payment_hold_expires_at, booking_status')
+    .select('id, stripe_payment_intent_id, status, source, service, location_type, session_date, session_time, waiver_status, waiver_completed, client_id, client_name, client_email, client_phone, amount_due, amount_paid, payment_status, google_calendar_status, payment_hold_expires_at, booking_status')
     .eq('id', sessionId)
     .single();
 
@@ -92,6 +92,11 @@ async function markPayment(sb, sessionId, event, checkout) {
   if (String(checkout.currency || '').toLowerCase() !== 'usd') throw new Error('Stripe payment currency does not match USD.');
   if (checkout.metadata?.service_id && checkout.metadata.service_id !== service.id) throw new Error('Stripe service does not match the booking.');
   if (checkout.payment_status !== 'paid') throw new Error('Stripe has not confirmed this payment as paid.');
+
+  if (session.payment_status === 'paid' && session.stripe_payment_intent_id && session.stripe_payment_intent_id !== checkout.payment_intent) {
+    await processStripeEvent(sb, event);
+    return { ...session, ignored: true, duplicate: true };
+  }
 
   const amountPaid = checkout.amount_total != null ? Number(checkout.amount_total) / 100 : Number(session.amount_due || 0);
   const waiverDone = isWaiverDone(session);
@@ -135,7 +140,16 @@ async function markPayment(sb, sessionId, event, checkout) {
 async function markPaymentProblem(sb, checkout, status, stripeEvent) {
   const sessionId = checkout?.metadata?.session_id || checkout?.metadata?.booking_id || checkout?.client_reference_id;
   if (!sessionId) throw new Error('Stripe event is missing a booking ID.');
+  const { data: current, error: lookupError } = await sb.from('sessions').select('id,payment_status,stripe_checkout_session_id,stripe_payment_intent_id').eq('id', sessionId).single();
+  if (lookupError || !current) throw lookupError || new Error('Session not found.');
   const isPaymentIntent = checkout.object === 'payment_intent';
+  const stale = isPaymentIntent
+    ? current.stripe_payment_intent_id && current.stripe_payment_intent_id !== checkout.id
+    : current.stripe_checkout_session_id && current.stripe_checkout_session_id !== checkout.id;
+  if (['paid','refunded'].includes(current.payment_status) || stale) {
+    await processStripeEvent(sb, stripeEvent);
+    return { id: sessionId, duplicate: true, ignored: true };
+  }
   const updates = {
     payment_status: status,
     stripe_checkout_session_id: isPaymentIntent ? undefined : (checkout.id || null),
@@ -156,7 +170,19 @@ async function reconcileRefund(sb, charge, stripeEvent) {
     .select('id,client_id,client_name,service,session_date,session_time,amount_paid')
     .eq('stripe_payment_intent_id', charge.payment_intent)
     .single();
-  if (sessionLookupError || !session) throw sessionLookupError || new Error('Refunded booking was not found.');
+  if (sessionLookupError || !session) {
+    if (sessionLookupError && sessionLookupError.code !== 'PGRST116') throw sessionLookupError;
+    const { data: extra, error: evidenceError } = await sb.from('stripe_webhook_events')
+      .select('payload').contains('payload', { data: { object: { payment_intent: charge.payment_intent, payment_status: 'paid' } } })
+      .in('type', ['checkout.session.completed','checkout.session.async_payment_succeeded']).limit(1).maybeSingle();
+    if (evidenceError || !extra) throw evidenceError || new Error('Refunded booking was not found.');
+    const bookingId = extra.payload?.data?.object?.metadata?.session_id || extra.payload?.data?.object?.metadata?.booking_id || extra.payload?.data?.object?.client_reference_id;
+    const { data: canonical, error: canonicalError } = await sb.from('sessions').select('id,payment_status,stripe_payment_intent_id').eq('id', bookingId).single();
+    if (canonicalError || canonical?.payment_status !== 'paid' || !canonical.stripe_payment_intent_id || canonical.stripe_payment_intent_id === charge.payment_intent) throw canonicalError || new Error('Duplicate refund requires a verified retained payment.');
+    // Audit the refunded excess charge without marking the retained booking refunded.
+    await processStripeEvent(sb, stripeEvent);
+    return { id: bookingId, ignored: true, duplicate: true };
+  }
   const full = Number(charge.amount || 0) > 0 && Number(charge.amount_refunded || 0) >= Number(charge.amount);
   const now = new Date().toISOString();
   const refundId = charge.refunds?.data?.[0]?.id || null;
@@ -182,8 +208,8 @@ function notificationKey(eventId, type, recipient) {
 }
 
 async function sendStripeNotification(sb, { eventId, type, templateName, recipientEmail, session, variables, practitioner = false, transport }) {
-  if (session?.duplicate) return { skipped: true, duplicate: true };
-  if (!recipientEmail) return { skipped: true, reason: 'no_recipient' };
+  if (session?.ignored) return { skipped: true, reason: 'stale_payment_event' };
+  if (!recipientEmail) throw new Error('Stripe notification recipient is missing: ' + type);
   const metadata = { stripe_event_id: eventId, correlation_id: session.correlation_id || null, notification_type: type, session_id: session.id };
   const opts = {
     templateName,
@@ -196,7 +222,9 @@ async function sendStripeNotification(sb, { eventId, type, templateName, recipie
     idempotencyKey: notificationKey(eventId, type, recipientEmail),
     transport,
   };
-  return practitioner ? sendTransactional(sb, opts) : sendWithPreferences(sb, opts);
+  const result = await (practitioner ? sendTransactional(sb, opts) : sendWithPreferences(sb, opts));
+  if (!result.sent && !result.duplicate && result.reason !== 'email_consent_off') throw new Error('Stripe notification failed: ' + (result.reason || result.status || type));
+  return result;
 }
 
 async function notifyPaymentSuccess(sb, eventId, session, transport) {

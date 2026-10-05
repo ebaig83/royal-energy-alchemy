@@ -26,7 +26,7 @@ function displayDate(session) {
   return parts.join(' ');
 }
 
-async function stripePost(path, params) {
+async function stripeRequest(path, { params, idempotencyKey } = {}) {
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) {
     const err = new Error('Stripe is not configured yet.');
@@ -35,12 +35,13 @@ async function stripePost(path, params) {
   }
 
   const res = await fetch('https://api.stripe.com/v1' + path, {
-    method: 'POST',
+    method: params ? 'POST' : 'GET',
     headers: {
       Authorization: 'Bearer ' + key,
       'Content-Type': 'application/x-www-form-urlencoded',
+      ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}),
     },
-    body: params.toString(),
+    ...(params ? { body: params.toString() } : {}),
   });
   const data = await res.json();
   if (!res.ok) {
@@ -65,7 +66,7 @@ exports.handler = async function(event) {
   const sb = getClient();
   const { data: rawSession, error } = await sb
     .from('sessions')
-    .select('id, client_id, client_name, client_email, client_phone, service, session_date, session_time, duration_minutes, location_type, source, status, booking_status, payment_hold_expires_at, amount_due, amount_paid, payment_status, waiver_status, waiver_completed')
+    .select('id, created_at, stripe_checkout_session_id, stripe_payment_intent_id, client_id, client_name, client_email, client_phone, service, session_date, session_time, duration_minutes, location_type, source, status, booking_status, payment_hold_expires_at, amount_due, amount_paid, payment_status, waiver_status, waiver_completed')
     .eq('id', sessionId)
     .single();
 
@@ -77,11 +78,22 @@ exports.handler = async function(event) {
     session=attachServiceAddress(session,address);
   }
 
-  if (String(session.payment_status || '').toLowerCase() === 'paid') {
+  if (String(session.payment_status || '').toLowerCase() === 'paid' || session.stripe_payment_intent_id) {
     return respond(409, {
       paid: true,
       error: 'This booking is already paid.',
     });
+  }
+
+  // Stripe is authoritative even while its webhook is waiting for a database retry.
+  if (session.stripe_checkout_session_id) {
+    try {
+      const existing = await stripeRequest('/checkout/sessions/' + encodeURIComponent(session.stripe_checkout_session_id));
+      if (existing.client_reference_id !== sessionId) return respond(409, { error: 'Payment reference needs review. Please contact Daron.' });
+      if (existing.payment_status === 'paid' || existing.status === 'complete') return respond(409, { paid: existing.payment_status === 'paid', error: 'Payment has already been submitted. Please contact Daron if confirmation is delayed.' });
+      if (existing.status === 'open' && existing.url) return respond(200, { url: existing.url, checkout_session_id: existing.id, payment_status: 'pending' });
+      return respond(409, { error: 'This payment attempt has expired. Please contact Daron before starting another payment.' });
+    } catch (e) { return respond(503, { error: 'Unable to verify the existing payment. Please try again later.' }); }
   }
 
   if (isWebsiteBooking(session) && (String(session.status || '').toLowerCase() !== 'pending' || !session.payment_hold_expires_at || Date.parse(session.payment_hold_expires_at) <= Date.now() || !completeWebsiteDetails(session))) {
@@ -113,7 +125,9 @@ exports.handler = async function(event) {
 
   const params = new URLSearchParams();
   params.set('mode', 'payment');
-  const actionToken = createAppointmentToken(sessionId);
+  const createdSeconds = Math.floor(Date.parse(session.created_at) / 1000);
+  if (!Number.isFinite(createdSeconds)) return respond(409, { error: 'Booking creation time needs review.' });
+  const actionToken = createAppointmentToken(sessionId, 'manage', { now: createdSeconds });
   params.set('success_url', `${SITE_URL}/booking-confirmation.html?session_id=${encodeURIComponent(sessionId)}&token=${encodeURIComponent(actionToken)}&payment=success`);
   params.set('cancel_url', `${SITE_URL}/booking-confirmation.html?session_id=${encodeURIComponent(sessionId)}&token=${encodeURIComponent(actionToken)}&payment=cancelled`);
   params.set('client_reference_id', sessionId);
@@ -140,7 +154,8 @@ exports.handler = async function(event) {
   params.set('payment_intent_data[metadata][currency]', 'usd');
 
   try {
-    const checkout = await stripePost('/checkout/sessions', params);
+    const checkout = await stripeRequest('/checkout/sessions', { params, idempotencyKey: 'booking-checkout-v1:' + sessionId });
+    if (checkout.payment_status === 'paid' || checkout.status === 'complete') return respond(409, { paid: checkout.payment_status === 'paid', error: 'Payment has already been submitted. Confirmation is being processed.' });
     const correlationId = crypto.randomUUID();
     const { data: mutation, error: updateError } = await sb.rpc('trusted_session_update_with_audit', {
       p_id: sessionId,
@@ -154,7 +169,11 @@ exports.handler = async function(event) {
       p_source: 'stripe-checkout', p_action: 'checkout_session_created',
       p_correlation_id: correlationId, p_request_path: '/.netlify/functions/create-stripe-checkout',
     });
-    if (updateError || !mutation?.session) throw updateError || new Error('Checkout state was not committed.');
+    if (updateError || !mutation?.session) {
+      const { data: committed, error: readError } = await sb.from('sessions').select('stripe_checkout_session_id,payment_status').eq('id', sessionId).single();
+      if (readError || committed?.stripe_checkout_session_id !== checkout.id) throw updateError || new Error('Checkout state was not committed.');
+      if (committed.payment_status === 'paid') return respond(409, { paid: true, error: 'This booking is already paid.' });
+    }
     console.info('[create-stripe-checkout] appointment mutation', JSON.stringify({ session_id: sessionId, correlation_id: correlationId, actor_type: 'system', source: 'stripe-checkout', action: 'checkout_session_created' }));
 
     return respond(200, {
