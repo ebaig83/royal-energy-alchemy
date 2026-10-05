@@ -152,6 +152,7 @@ async function sendTransactional(sb, opts) {
 
   if (!tmpl) {
     console.warn('[mailer] Template not found:', templateName);
+    if (reservation && sb) await sb.from('transactional_notifications').update({ status: 'failed', failed_at: new Date().toISOString(), last_error: 'template_not_found' }).eq('id', reservation.id);
     return { skipped: true, reason: 'template_not_found' };
   }
 

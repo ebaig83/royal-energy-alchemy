@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-const root=new URL('..',import.meta.url).pathname.replace(/^\//,'').replaceAll('/','\\');
-const app=fs.readFileSync(root+'\\dashboard-p1\\app.mjs','utf8');
-const actions=fs.readFileSync(root+'\\dashboard-p1\\actions.mjs','utf8');
-const sessions=fs.readFileSync(root+'\\netlify\\functions\\sessions.js','utf8');
-const practitioner=fs.readFileSync(root+'\\netlify\\functions\\lib\\practitioner-appointments.js','utf8');
+const read = file => fs.readFileSync(new URL('../' + file, import.meta.url), 'utf8');
+const app=read('dashboard-p1/app.mjs');
+const actions=read('dashboard-p1/actions.mjs');
+const sessions=read('netlify/functions/sessions.js');
+const practitioner=read('netlify/functions/lib/practitioner-appointments.js');
 assert.match(app,/Retry Calendar/);assert.match(app,/Google Calendar.*Healthy/);assert.match(app,/retryCalendar/);
 assert.match(actions,/action:'retry-calendar'/);assert.match(actions,/crypto\.randomUUID/);assert.doesNotMatch(actions,/googleapis|calendar\.google/);
-assert.match(sessions,/action==='retry-calendar'/);assert.match(practitioner,/reschedule_pending/);assert.match(practitioner,/google_calendar_event_id/);assert.match(practitioner,/retryable_error/);assert.match(practitioner,/duplicate/);assert.match(practitioner,/cancelled.*completed.*no_show/);
+assert.match(sessions,/\['retry-calendar','retry_google_sync'\]\.includes\(body\.action\)/);assert.match(practitioner,/reschedule_pending/);assert.match(practitioner,/google_calendar_event_id/);assert.match(practitioner,/retryable_error/);assert.match(practitioner,/duplicate/);assert.match(practitioner,/cancelled.*completed.*no_show/);
 console.log('PASS practitioner Calendar retry auth, health gate, event preservation, replay safety, and no-browser-Google-API contract');

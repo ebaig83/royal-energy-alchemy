@@ -78,5 +78,12 @@ const session = { id: 'session-1', client_id: 'client-1', client_name: 'Client',
   assert.strictEqual(db.transactional_notifications.length, 5, 'one reservation per event/recipient/type');
   assert.ok(db.transactional_notifications.every(row => row.status === 'sent'));
   assert.ok(db.communications.length === 5);
-  console.log('Stripe transactional email smoke: 12/12 passed');
+  const committed = { ...session, duplicate: true };
+  const failingTransport = async () => ({ success: false, status: 503, error: 'temporary outage' });
+  await assert.rejects(webhook.notifyPaymentSuccess(sb, 'evt_retry', committed, failingTransport), /Stripe notification failed/);
+  await webhook.notifyPaymentSuccess(sb, 'evt_retry', committed, transport);
+  assert.strictEqual(sends, 7, 'committed payment retries both failed notifications');
+  await webhook.notifyPaymentSuccess(sb, 'evt_retry', committed, transport);
+  assert.strictEqual(sends, 7, 'retry does not resend successful notifications');
+  console.log('Stripe transactional email smoke and committed-event retry: passed');
 })().catch(error => { console.error(error); process.exit(1); });
