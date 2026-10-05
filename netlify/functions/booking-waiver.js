@@ -20,6 +20,7 @@ async function markBookingState(sb, sessionId, updates, trustedContext) {
     .single();
 
   if (error || !current) return { error: 'Session not found.' };
+  if (isWebsiteBooking(current) && current.status === 'confirmed' && current.booking_status === 'confirmed' && current.payment_status === 'paid' && (current.waiver_completed === true || isDone(current.waiver_status))) return { data: current, alreadyComplete: true };
   let currentSession=current;
   if(['in_person','in-person'].includes(String(current.location_type||'').toLowerCase())){
     const {data:address,error:addressError}=await sb.from('session_service_addresses').select('address_line1,address_line2,city,state,postal_code,country').eq('session_id',current.id).maybeSingle();
@@ -91,7 +92,7 @@ exports.handler = async function(event) {
   if (updateResult.error) return respond(500, { error: updateResult.error });
   console.info('[booking-waiver] appointment mutation',JSON.stringify({session_id:sessionId,correlation_id:correlationId,actor_type:'client',source:'signed_waiver',action:'waiver_completed'}));
 
-  if (updateResult.data?.status === 'confirmed' && updateResult.data?.booking_status === 'confirmed') {
+  if (!updateResult.alreadyComplete && updateResult.data?.status === 'confirmed' && updateResult.data?.booking_status === 'confirmed') {
     let recipient = updateResult.data.client_email || null;
     if (!recipient && updateResult.data.client_id) {
       const { data: client } = await sb.from('clients').select('email').eq('id', updateResult.data.client_id).maybeSingle();
@@ -153,3 +154,5 @@ exports.handler = async function(event) {
     next: 'payment',
   });
 };
+
+exports._test = { markBookingState };

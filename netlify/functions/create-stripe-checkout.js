@@ -72,6 +72,11 @@ exports.handler = async function(event) {
 
   if (error || !rawSession) return respond(404, { error: 'Booking was not found.' });
   let session=rawSession;
+  if (session.client_id) {
+    const { data: client, error: clientError } = await sb.from('clients').select('email,phone').eq('id', session.client_id).single();
+    if (clientError || !client) return respond(503, { error: 'Unable to verify the booking contact details.' });
+    session = { ...session, client_email: client.email || null, client_phone: client.phone || null };
+  }
   if(['in_person','in-person'].includes(String(session.location_type||'').toLowerCase())){
     const {data:address,error:addressError}=await sb.from('session_service_addresses').select('address_line1,address_line2,city,state,postal_code,country').eq('session_id',session.id).maybeSingle();
     if(addressError)return respond(503,{error:'Unable to verify the in-person service address.'});
@@ -104,12 +109,7 @@ exports.handler = async function(event) {
     return respond(409, { error: 'Waiver must be completed before payment.' });
   }
 
-  let clientEmail = null;
-  if (!clientEmail && session.client_id) {
-    const { data: client, error: clientError } = await sb.from('clients').select('email').eq('id', session.client_id).single();
-    if (clientError) return respond(500, { error: 'Unable to verify the booking email.' });
-    clientEmail = client?.email || null;
-  }
+  const clientEmail = session.client_id ? session.client_email : null;
 
   if (!clientEmail) {
     return respond(409, { error: 'This booking has no verified email. Please contact Daron before paying.' });
@@ -157,17 +157,10 @@ exports.handler = async function(event) {
     const checkout = await stripeRequest('/checkout/sessions', { params, idempotencyKey: 'booking-checkout-v1:' + sessionId });
     if (checkout.payment_status === 'paid' || checkout.status === 'complete') return respond(409, { paid: checkout.payment_status === 'paid', error: 'Payment has already been submitted. Confirmation is being processed.' });
     const correlationId = crypto.randomUUID();
-    const { data: mutation, error: updateError } = await sb.rpc('trusted_session_update_with_audit', {
+    const { data: mutation, error: updateError } = await sb.rpc('save_stripe_checkout_with_audit', {
       p_id: sessionId,
-      p_updates: {
-      payment_status: 'pending',
-      booking_status: 'payment_pending',
-      stripe_checkout_session_id: checkout.id,
-      updated_at: new Date().toISOString(),
-      },
-      p_actor_type: 'system', p_actor_id: 'stripe-checkout', p_actor_email: null,
-      p_source: 'stripe-checkout', p_action: 'checkout_session_created',
-      p_correlation_id: correlationId, p_request_path: '/.netlify/functions/create-stripe-checkout',
+      p_checkout_session_id: checkout.id,
+      p_correlation_id: correlationId,
     });
     if (updateError || !mutation?.session) {
       const { data: committed, error: readError } = await sb.from('sessions').select('stripe_checkout_session_id,payment_status').eq('id', sessionId).single();

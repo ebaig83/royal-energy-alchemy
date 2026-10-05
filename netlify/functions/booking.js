@@ -46,7 +46,7 @@ function validateServiceAddress(value, locationType) {
     postal_code: String(value?.postal_code || '').trim(),
     country: String(value?.country || '').trim(),
   };
-  if (Object.values(address).some(part => !part) || Object.values(address).some(part => /^(?:n\/?a|none|unknown|test|address)$/i.test(part))) return { error: 'Complete the street address, city, state/province, ZIP/postal code, and country for this in-person service.' };
+  if (['line1','city','state','postal_code','country'].some(key => !address[key]) || Object.values(address).some(part => /^(?:n\/?a|none|unknown|test|address)$/i.test(part))) return { error: 'Complete the street address, city, state/province, ZIP/postal code, and country for this in-person service.' };
   if (!/^[\p{L}\p{N}][\p{L}\p{N}\s.'#,/\-]{1,199}$/u.test(address.line1) || !/^[\p{L}\p{N}][\p{L}\p{N}\s.'\-]{1,99}$/u.test(address.city) || !/^[\p{L}\p{N}][\p{L}\p{N}\s.'\-]{1,99}$/u.test(address.state) || !/^[\p{L}\p{N}][\p{L}\p{N}\s\-]{1,19}$/u.test(address.postal_code) || !/^[\p{L}][\p{L}\s.'\-]{1,99}$/u.test(address.country)) return { error: 'Check the in-person service address fields and try again.' };
   return { address };
 }
@@ -310,7 +310,7 @@ exports.handler = async function(event) {
   const intakeUrl = `${SITE_URL}/full-intake.html?session_id=${sessionId}&name=${encodeURIComponent(normalizedName)}&email=${encodeURIComponent(normalizedEmail)}`;
   const waiverUrl = `${SITE_URL}/waiver-esign.html?session_id=${sessionId}&token=${encodeURIComponent(actionToken)}&name=${encodeURIComponent(normalizedName)}&email=${encodeURIComponent(normalizedEmail)}&phone=${encodeURIComponent(normalizedPhone)}`;
   const cancelUrl = `${SITE_URL}/cancel-session.html?session_id=${sessionId}`;
-  // ── Step 7: Transactional emails (fire-and-forget) ────────────────────────
+  // ── Step 7: Complete transactional sends before the invocation ends ────────────────────────
   const emailVars = {
     client_name:  normalizedName,
     service:      serviceInfo.label,
@@ -329,7 +329,7 @@ exports.handler = async function(event) {
 
   // Receipt only: payment has not happened yet, so this must not imply that
   // the appointment is confirmed. Final confirmation comes from Stripe webhook.
-  sendWithPreferences(sb, {
+  await sendWithPreferences(sb, {
     templateName:   'booking_received_pending_payment',
     recipientEmail: normalizedEmail,
     clientId,
@@ -342,7 +342,7 @@ exports.handler = async function(event) {
   });
 
   // Intake invitation
-  sendWithPreferences(sb, {
+  await sendWithPreferences(sb, {
     templateName:   'intake_invitation',
     recipientEmail: normalizedEmail,
     clientId,

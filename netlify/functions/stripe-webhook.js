@@ -77,6 +77,11 @@ async function markPayment(sb, sessionId, event, checkout) {
 
   if (error || !rawSession) throw new Error('Session not found.');
   let session=rawSession;
+  if (session.client_id) {
+    const { data: client, error: clientError } = await sb.from('clients').select('email,phone').eq('id', session.client_id).single();
+    if (clientError || !client) throw new Error('Unable to verify canonical booking contact details.');
+    session = { ...session, client_email: client.email || null, client_phone: client.phone || null };
+  }
   if (['in_person','in-person'].includes(String(session.location_type||'').toLowerCase())) {
     const {data:address,error:addressError}=await sb.from('session_service_addresses').select('address_line1,address_line2,city,state,postal_code,country').eq('session_id',session.id).maybeSingle();
     if(addressError)throw addressError;

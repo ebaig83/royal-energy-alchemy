@@ -11,10 +11,10 @@ const row = {
   waiver_completed: true, amount_due: 100,
 };
 const sb = {
-  from(table) { return { select() { return this; }, eq() { return this; }, async single() { return { data: table === 'clients' ? { email: row.client_email } : { ...row }, error: null }; } }; },
+  from(table) { return { select() { return this; }, eq() { return this; }, async single() { return { data: table === 'clients' ? { email: 'valid@domain.org', phone: '5552345678' } : { ...row }, error: null }; } }; },
   async rpc(_name, args) {
     if (row.stripe_checkout_session_id) return { error: new Error('Booking is no longer eligible for checkout') };
-    Object.assign(row, args.p_updates);
+    Object.assign(row, { stripe_checkout_session_id: args.p_checkout_session_id, payment_status: 'pending', booking_status: 'payment_pending' });
     return { data: { session: { ...row } }, error: null };
   },
 };
@@ -30,6 +30,8 @@ global.fetch = async (url, opts) => {
 };
 const event = { httpMethod: 'POST', body: JSON.stringify({ session_id: row.id }), headers: {} };
 (async () => {
+  row.client_email = null;
+  row.client_phone = null;
   const responses = await Promise.all([handler(event), handler(event)]);
   assert.ok(responses.every(x => x.statusCode === 200));
   const creates = requests.filter(x => x.method === 'POST');
