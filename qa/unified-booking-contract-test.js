@@ -54,12 +54,12 @@ check('canonical form submits directly to existing booking backend',
   /slot_id:_clientSlot1\.id/.test(index) &&
   /result\.data\.waiver_url/.test(index));
 
-check('homepage canonical service IDs match authoritative catalog', () => {
-  const ids = ["implant-parasite-removal","heavy-duty-removal","exorcism-session","emergency-removal-session","distance-energy-session","spiritual-coaching","house-cleansing-blessing"];
+check('all 11 bookable homepage options use canonical catalog IDs', () => {
+  const ids = ["implant-parasite-removal","follow-up-session","heavy-duty-removal","exorcism-session","emergency-removal-session","distance-energy-session","energy-session-15-adult","energy-session-15-youth","energy-session-10-child","spiritual-coaching","house-cleansing-blessing"];
   return ids.every(id => (index.match(new RegExp('value="' + id + '"', 'g')) || []).length === 2);
 });
-check('homepage service labels and prices remain visible', () => {
-  const labels = ["Implant/Parasite Removal — $100","Heavy Duty Removal — $120","Exorcism Session — $120","Emergency Removal Session — $120","Distance Energy Session — $70","Spiritual Coaching — $75/Hour","House Cleansing/Blessing In-Person — $80"];
+check('all 11 homepage labels and prices remain visible', () => {
+  const labels = ["Implant/Parasite Removal — $100","Follow-Up Session — $80 each","Heavy Duty Removal — $120","Exorcism Session — $120","Emergency Removal Session — $120","Distance Energy Session — $70","15 Minute Energy Session — $50 (15 yrs + up)","15 Minute Energy Session — $40 (10 - 14 yrs)","10 Minute Energy Session — $30 (9 yrs + down)","Spiritual Coaching — $75/Hour","House Cleansing/Blessing In-Person — $80"];
   return labels.every(label => index.includes(label));
 });
 check('homepage inline JavaScript syntax is valid', inlineScriptsAreValid(index));
